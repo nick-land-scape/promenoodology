@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
     imageSizes: [96, 160, 240, 320, 480],
     deviceSizes: [640, 828, 1080, 1200, 1920],
     formats: ["image/webp"],
+    // Photographs live in Supabase storage once the content has been imported.
+    remotePatterns: [
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
+    ],
     // The photographs never change once they are in the repository, so an
     // optimised copy can be kept for a year — by the CDN and by the browser.
     // Adding a new photo means a new file name, so nothing goes stale.

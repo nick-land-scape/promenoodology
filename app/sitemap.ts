@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
-import { getStories } from "@/lib/stories";
+import { getStories } from "@/lib/source";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages = [
     "/",
     "/stories",
@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/handbook",
     "/donations",
   ];
-  const stories = getStories().map((story) => `/stories/${story.slug}`);
+  const stories = (await getStories()).map((story) => `/stories/${story.slug}`);
 
   return [...pages, ...stories].map((route) => ({
     url: `${SITE_URL}${route}`,

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Archive, { type StoryFilter } from "@/components/Archive";
-import { getFilters, getQuotes, getResources } from "@/lib/data";
-import { getStories } from "@/lib/stories";
+import { getFilters, getQuotes, getResources, getStories } from "@/lib/source";
 
 export const metadata: Metadata = {
   title: "Resources",
@@ -10,10 +9,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/resources" },
 };
 
-export default function ResourcesPage() {
-  const resources = getResources();
-  const quotes = getQuotes();
-  const stories = getStories();
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function ResourcesPage() {
+  const [resources, quotes, stories] = await Promise.all([
+    getResources(),
+    getQuotes(),
+    getStories(),
+  ]);
 
   const slides = resources.map((item) => ({
     key: item.file,

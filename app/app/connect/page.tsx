@@ -1,13 +1,15 @@
 import AppHeader from "@/components/app/AppHeader";
 import Feed from "@/components/app/Feed";
-import { getPosts } from "@/lib/app-data";
-import { getMembers } from "@/lib/data";
+import { getMembers, getPosts } from "@/lib/source";
 
 export const metadata = { title: "Connect" };
 
-export default function ConnectPage() {
-  const posts = getPosts();
-  const people = getMembers().sort((a, b) => a.last.localeCompare(b.last));
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function ConnectPage() {
+  const posts = await getPosts();
+  const people = (await getMembers()).sort((a, b) => a.last.localeCompare(b.last));
 
   return (
     <>

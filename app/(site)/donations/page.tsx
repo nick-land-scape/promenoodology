@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Photo from "@/components/Photo";
-import { getDonations } from "@/lib/data";
+import { getDonations } from "@/lib/source";
 
 export const metadata: Metadata = {
   title: "Donation wall",
@@ -13,8 +13,11 @@ export const metadata: Metadata = {
 /* On purpose there is no total anywhere on this page. What matters is who
    turned up, not how much was raised. */
 
-export default function DonationsPage() {
-  const donations = getDonations();
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function DonationsPage() {
+  const donations = await getDonations();
 
   return (
     <main className="page">

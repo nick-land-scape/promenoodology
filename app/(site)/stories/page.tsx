@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Photo from "@/components/Photo";
-import { getStories } from "@/lib/stories";
+import { getStories } from "@/lib/source";
 
 export const metadata: Metadata = {
   title: "Stories",
@@ -9,8 +9,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/stories" },
 };
 
-export default function StoriesPage() {
-  const stories = getStories();
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function StoriesPage() {
+  const stories = await getStories();
 
   return (
     <main className="page">

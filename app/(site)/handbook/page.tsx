@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SupportForm from "@/components/SupportForm";
-import { getHandbook } from "@/lib/handbook";
+import { getPage } from "@/lib/source";
 
 export const metadata: Metadata = {
   title: "Handbook",
@@ -10,8 +10,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/handbook" },
 };
 
-export default function HandbookPage() {
-  const handbook = getHandbook();
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function HandbookPage() {
+  const handbook = (await getPage("handbook"))!;
 
   return (
     <main className="page">

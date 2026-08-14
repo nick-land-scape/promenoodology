@@ -5,17 +5,20 @@ import Cite from "@/components/Cite";
 import type { Slide } from "@/lib/content";
 import { siteUrl } from "@/lib/site";
 import StoryBody from "@/components/StoryBody";
-import { getNeighbours, getStories, getStory } from "@/lib/stories";
+import { getNeighbours, getStories, getStory } from "@/lib/source";
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return getStories().map((story) => ({ slug: story.slug }));
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  return (await getStories()).map((story) => ({ slug: story.slug }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const story = getStory(slug);
+  const story = await getStory(slug);
   if (!story) return {};
 
   const description =
@@ -35,10 +38,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function StoryPage({ params }: Params) {
   const { slug } = await params;
-  const story = getStory(slug);
+  const story = await getStory(slug);
   if (!story) notFound();
 
-  const { previous, next } = getNeighbours(story.slug);
+  const { previous, next } = await getNeighbours(story.slug);
 
   const slides: Slide[] = story.photos.map((item) => ({
     key: item.file,

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import CommunityGrid from "@/components/CommunityGrid";
-import { getMembers } from "@/lib/data";
+import { getMembers } from "@/lib/source";
 
 export const metadata: Metadata = {
   title: "Community",
@@ -8,8 +8,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/community" },
 };
 
-export default function CommunityPage() {
-  const members = getMembers();
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function CommunityPage() {
+  const members = await getMembers();
 
   return (
     <main className="page">

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getMembers } from "@/lib/data";
+import { getMembers } from "@/lib/source";
 
 export const metadata: Metadata = {
   title: "Become a member",
@@ -24,8 +24,11 @@ const STEPS = [
   },
 ];
 
-export default function JoinPage() {
-  const members = getMembers();
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function JoinPage() {
+  const members = await getMembers();
 
   return (
     <main className="page">

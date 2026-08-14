@@ -1,11 +1,15 @@
 import AppHeader from "@/components/app/AppHeader";
 import BookingForm from "@/components/app/BookingForm";
-import { getEvents, shortDate, weekday } from "@/lib/app-data";
+import { shortDate, weekday } from "@/lib/app-data";
+import { getEvents } from "@/lib/source";
 
 export const metadata = { title: "Book" };
 
-export default function BookPage() {
-  const events = getEvents().map((event) => ({
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function BookPage() {
+  const events = (await getEvents()).map((event) => ({
     ...event,
     label: `${weekday(event.date)} ${shortDate(event.date)}, ${event.time} · ${event.place}`,
   }));

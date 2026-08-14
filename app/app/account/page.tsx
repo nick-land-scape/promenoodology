@@ -1,7 +1,8 @@
 import Photo from "@/components/Photo";
 import Link from "next/link";
 import AppHeader from "@/components/app/AppHeader";
-import { dateParts, getEvents } from "@/lib/app-data";
+import { dateParts } from "@/lib/app-data";
+import { getEvents } from "@/lib/source";
 
 export const metadata = { title: "Account" };
 
@@ -18,9 +19,12 @@ const ROWS = [
   { label: "leave the club", href: "mailto:info@promeNOODology.com" },
 ];
 
-export default function AccountPage() {
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function AccountPage() {
   // The first two events stand in for "things you said yes to".
-  const booked = getEvents()
+  const booked = (await getEvents())
     .slice(0, 2)
     .map((event) => ({ ...event, ...dateParts(event.date) }));
 

@@ -1,18 +1,22 @@
 import Link from "next/link";
 import AppHeader from "@/components/app/AppHeader";
 import UpcomingEvents from "@/components/app/UpcomingEvents";
-import { dateParts, getEvents, getNews, shortDate, weekday } from "@/lib/app-data";
+import { dateParts, shortDate, weekday } from "@/lib/app-data";
+import { getEvents, getNews } from "@/lib/source";
 
 export const metadata = { title: "Home" };
 
-export default function AppHome() {
-  const events = getEvents().map((event) => ({
+// A page may serve a cached copy for a minute before asking the database again.
+export const revalidate = 60;
+
+export default async function AppHome() {
+  const events = (await getEvents()).map((event) => ({
     ...event,
     ...dateParts(event.date),
     weekday: weekday(event.date),
   }));
   const places = [...new Set(events.map((event) => event.place))];
-  const news = getNews();
+  const news = await getNews();
 
   return (
     <>
