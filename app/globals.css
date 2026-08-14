@@ -196,6 +196,11 @@ img {
   color: var(--purple);
 }
 
+/* The way into the back of the house: only an admin ever sees it. */
+.nav-admin {
+  color: var(--purple);
+}
+
 /* ------------------------------------------------------------------- contact */
 
 /* A thin sidebar down the right edge: the text is turned a quarter turn, the
@@ -597,6 +602,103 @@ img {
 .support-send:hover {
   background: var(--ink);
   color: var(--paper);
+}
+
+/* ------------------------------------------------------------ signing in */
+
+.auth {
+  max-width: 26rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 24px 0 18px;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-form label > span {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f6a63;
+}
+
+.auth-form input:not([type="checkbox"]) {
+  border: 1px solid var(--ink);
+  background: none;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--ink);
+  width: 100%;
+}
+
+.auth-form input::placeholder {
+  color: #a09a92;
+  font-style: italic;
+}
+
+.auth-check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.auth-check span {
+  font-family: var(--serif) !important;
+  font-size: 1rem !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--ink) !important;
+}
+
+.auth-form button[type="submit"] {
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+.auth-form button[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.auth-code {
+  border-top: 1px solid var(--hairline);
+  padding-top: 18px;
+}
+
+.auth-error,
+.auth-message {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.auth-error {
+  color: var(--pink);
+}
+
+.auth-message {
+  color: var(--purple);
+}
+
+.auth-switch {
+  margin: 10px 0 0;
+  font-size: 0.95em;
+}
+
+.auth-out {
+  margin-top: 34px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
 }
 
 /* --------------------------------------------------------------------- join */
@@ -1326,43 +1428,70 @@ body:has(.hero) .contact {
 @media screen and (max-width: 767px) {
   :root {
     --edge: 15px;
-    --bar-height: 44px;
+    --bar-height: 68px;
+    --top-bar: 52px;
   }
 
-  /* The menu stays where the old site put it: a bar along the bottom. */
+  /* Two fixed strips on a phone: the mark alone at the top, the menu along the
+     bottom — main links on one line, the quieter ones on the next. */
   .nav {
     position: fixed;
     top: auto;
     bottom: 0;
     left: 0;
     right: 0;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 4px 10px;
+    gap: 3px;
     min-height: var(--bar-height);
-    padding: 6px 10px;
+    padding: 7px 10px;
     background: var(--paper);
     border-top: 1px solid var(--hairline);
-  }
-
-  .nav {
     max-height: none;
     overflow: visible;
   }
 
+  /* The strip the mark sits on. */
+  .nav::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--top-bar);
+    background: var(--paper);
+    border-bottom: 1px solid var(--hairline);
+  }
+
   .nav-mark {
-    width: 30px;
-    flex: none;
+    position: fixed;
+    top: 7px;
+    left: var(--edge);
+    z-index: 21;
+    width: 38px;
+  }
+
+  /* Over the video, neither strip should hide anything. */
+  body:has(.hero) .nav,
+  body:has(.hero) .nav::before {
+    background: transparent;
+    border: 0;
   }
 
   .nav-links {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 4px 10px;
-    font-size: 0.7em;
+    gap: 2px 12px;
+    font-size: 0.72em;
+  }
+
+  .nav-more {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px 12px;
+    font-size: 0.78em;
   }
 
   /* The sidebar stays on the right, just clear of the menu bar. */
@@ -1381,6 +1510,7 @@ body:has(.hero) .contact {
   .page {
     padding-left: var(--edge);
     padding-right: 26px;
+    padding-top: calc(var(--top-bar) + var(--edge));
     min-height: 0;
   }
 
