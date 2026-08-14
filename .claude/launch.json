@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "promenoodology",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "promenoodology-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "--", "-p", "3100"],
+      "port": 3100
+    }
+  ]
+}
