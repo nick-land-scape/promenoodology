@@ -115,10 +115,12 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
                 onTouchEnd={() => clear(idOf(member))}
                 aria-label={member.photo ? `Show photo of ${member.name}` : member.name}
               >
-                <span className="community-name">{member.name}</span>
-                <span className="community-country">
-                  {flag ? <span className="community-flag">{flag}</span> : null}
-                  {member.country}
+                <span className="community-label">
+                  <span className="community-name">{member.name}</span>
+                  <span className="community-country">
+                    {flag ? <span className="community-flag">{flag}</span> : null}
+                    {member.country}
+                  </span>
                 </span>
               </button>
             </li>

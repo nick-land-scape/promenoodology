@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import PhotoGrid, { type Slide } from "@/components/PhotoGrid";
+import type { Slide } from "@/components/PhotoGrid";
+import ProjectStory from "@/components/ProjectStory";
 import { getNeighbours, getProject, getProjects } from "@/lib/projects";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -54,16 +55,9 @@ export default async function ProjectPage({ params }: Params) {
         <p className="project-meta">
           {[project.where, project.when, credit(project.credits)].filter(Boolean).join(" · ")}
         </p>
-        {project.paragraphs.length > 0 ? (
-          <div className="prose">
-            {project.paragraphs.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
-          </div>
-        ) : null}
       </header>
 
-      <PhotoGrid slides={slides} />
+      <ProjectStory slides={slides} paragraphs={project.paragraphs} />
 
       {previous && next ? (
         <nav className="project-nav" aria-label="Other projects">
