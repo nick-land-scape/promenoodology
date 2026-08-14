@@ -1,13 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
-import type { Photo } from "@/lib/content";
+import type { Photo as PhotoData } from "@/lib/content";
 import Lightbox from "./Lightbox";
+import Photo from "./Photo";
 
 export type Slide = {
   key: string;
-  photo: Photo;
+  photo: PhotoData;
   caption: string;
 };
 
@@ -32,7 +32,7 @@ export default function PhotoGrid({ slides }: { slides: Slide[] }) {
             >
               {/* Square crop, so the photo fills the cell rather than keeping
                   its own proportions. */}
-              <Image
+              <Photo
                 src={slide.photo.src}
                 alt=""
                 fill

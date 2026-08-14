@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Photo from "../Photo";
 import { useState } from "react";
 import type { ClubEvent } from "@/lib/content";
 
@@ -66,7 +66,7 @@ export default function UpcomingEvents({ events, places }: Props) {
                   </span>
                   {event.photo ? (
                     <span className="row-thumb">
-                      <Image src={event.photo.src} alt="" fill sizes="58px" />
+                      <Photo src={event.photo.src} alt="" fill sizes="58px" />
                     </span>
                   ) : null}
                 </div>

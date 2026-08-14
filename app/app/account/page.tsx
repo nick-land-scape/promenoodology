@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Photo from "@/components/Photo";
 import Link from "next/link";
 import AppHeader from "@/components/app/AppHeader";
 import { dateParts, getEvents } from "@/lib/app-data";
@@ -69,7 +69,7 @@ export default function AccountPage() {
                 </span>
                 {event.photo ? (
                   <span className="row-thumb">
-                    <Image src={event.photo.src} alt="" fill sizes="58px" />
+                    <Photo src={event.photo.src} alt="" fill sizes="58px" />
                   </span>
                 ) : null}
               </div>

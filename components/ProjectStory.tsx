@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Photo from "./Photo";
 import { useState } from "react";
 import Lightbox from "./Lightbox";
 import type { Slide } from "./PhotoGrid";
@@ -57,7 +57,7 @@ export default function ProjectStory({ slides, paragraphs }: Props) {
                   } as React.CSSProperties
                 }
               >
-                <Image
+                <Photo
                   src={block.slide.photo.src}
                   alt=""
                   width={block.slide.photo.width}

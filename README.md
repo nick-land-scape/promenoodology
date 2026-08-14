@@ -21,9 +21,12 @@ Then open http://localhost:3000.
 - **The members' app** — everything under `/app`, made for a phone
 
 To put the app on its own address, add `app.promenoodology.com` to the Vercel
-project. The rewrite in `next.config.ts` sends that host to `/app`, so
-`app.promenoodology.com/book` and `promenoodology.com/app/book` are the same
-page. The app is `noindex`: it is for members, not for search engines.
+project. `proxy.ts` sends that host to `/app`, so `app.promenoodology.com/book`
+and `promenoodology.com/app/book` are the same page. The app is `noindex`: it is
+for members, not for search engines.
+
+On a phone the app can be added to the home screen and opens without browser
+furniture (`public/manifest.webmanifest`).
 
 **The secret door.** There is no menu link to the app. On the front page, knock
 three times on the logo — three clicks or taps inside about a second and a half
@@ -147,6 +150,11 @@ working, waiting for a decision about what should sit behind it.
 - Photos fade up as they scroll into view, using CSS scroll-driven animations —
   no JavaScript, and where the browser lacks them everything is simply there.
 - Everything stops moving if the system asks for reduced motion.
+- The favicon is the two O's cut out of the middle of the logo. The whole
+  wordmark turns to mush at 16 pixels; two loops still read. Regenerate the
+  icons from `logo.png` with `crop=810:500:1155:1440` if the logo ever changes.
+- While a photograph loads, its space is a grey block at the right proportions
+  that breathes gently — every image goes through `components/Photo.tsx`.
 
 ## Notes on the optimisations
 

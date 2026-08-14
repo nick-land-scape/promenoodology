@@ -953,6 +953,32 @@ body:has(.hero) .contact {
   }
 }
 
+/* ------------------------------------------------------------------- loading
+
+   Every photograph on the site goes through components/Photo.tsx, which marks
+   the element as loaded when the file arrives. Until then it is a grey block at
+   the right proportions that breathes gently — no jump, no empty hole. */
+
+@keyframes breathe {
+  0%,
+  100% {
+    background-color: rgba(0, 0, 0, 0.07);
+  }
+  50% {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+}
+
+.photo:not([data-loaded]) {
+  background-color: rgba(0, 0, 0, 0.07);
+  animation: breathe 1.4s ease-in-out infinite;
+}
+
+.photo[data-loaded] {
+  background-color: transparent;
+  animation: none;
+}
+
 /* -------------------------------------------------------------------- motion */
 
 /* Pages arrive with a short lift instead of appearing all at once. */

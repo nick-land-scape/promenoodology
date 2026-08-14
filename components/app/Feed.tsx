@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Photo from "../Photo";
 import { useState } from "react";
 import type { Member, Post } from "@/lib/content";
 
@@ -61,7 +61,7 @@ export default function Feed({ posts, people }: Props) {
 
                 {post.photo ? (
                   <div className="post-photo">
-                    <Image
+                    <Photo
                       src={post.photo.src}
                       alt=""
                       fill

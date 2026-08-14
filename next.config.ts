@@ -12,21 +12,9 @@ const nextConfig: NextConfig = {
     // Adding a new photo means a new file name, so nothing goes stale.
     minimumCacheTTL: 31536000,
   },
-  // app.promenoodology.com serves the members' app that lives under /app.
-  // Add the subdomain to the project in Vercel and this takes care of the rest.
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: "/:path*",
-          has: [{ type: "host", value: "app.promenoodology.com" }],
-          destination: "/app/:path*",
-        },
-      ],
-      afterFiles: [],
-      fallback: [],
-    };
-  },
+  // The app.promenoodology.com subdomain is handled in middleware.ts, where
+  // Next's own files and everything in /public can be left alone.
+
   // Keep links to the old hand-written pages working.
   async redirects() {
     return [

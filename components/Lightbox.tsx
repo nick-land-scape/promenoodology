@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Photo from "./Photo";
 import { useEffect } from "react";
 import type { Slide } from "./PhotoGrid";
 
@@ -44,7 +44,7 @@ export default function Lightbox({ slides, index, onIndex, onClose }: Props) {
           in the middle of the screen; everything else hangs off its corners.
           Clicks inside the frame belong to the frame, not to the backdrop. */}
       <div className="lightbox-frame" onClick={(event) => event.stopPropagation()}>
-        <Image
+        <Photo
           key={slide.photo.src}
           src={slide.photo.src}
           alt=""
@@ -93,7 +93,7 @@ export default function Lightbox({ slides, index, onIndex, onClose }: Props) {
           {[-1, 1].map((by) => {
             const neighbour = slides[(index + by + slides.length) % slides.length];
             return (
-              <Image
+              <Photo
                 key={`${by}-${neighbour.photo.src}`}
                 src={neighbour.photo.src}
                 alt=""

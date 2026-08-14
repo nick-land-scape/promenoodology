@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Photo from "./Photo";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Member } from "@/lib/content";
 
@@ -126,7 +126,7 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
       <div className="portrait" ref={stage} aria-hidden="true">
         {sorted.map((member) =>
           member.photo && (preload || active === idOf(member)) ? (
-            <Image
+            <Photo
               key={member.photo.src}
               src={member.photo.src}
               alt=""

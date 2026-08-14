@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   title: { default: "promeNOODology", template: "%s — promeNOODology" },
   description: "Events, bookings and the people of promeNOODology.",
   robots: { index: false, follow: false }, // members' app, not a public page
+  // Lets a phone add the app to its home screen and open it without browser
+  // furniture. The icons it points at have a paper background, because a home
+  // screen composites transparency onto black.
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "promeNOOD", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Photo from "@/components/Photo";
 import Link from "next/link";
 import { getProjects } from "@/lib/projects";
 
@@ -22,7 +22,7 @@ export default function ProjectsPage() {
             <Link href={`/projects/${project.slug}`}>
               <span className="project-cover">
                 {project.cover ? (
-                  <Image
+                  <Photo
                     src={project.cover.src}
                     alt=""
                     fill
