@@ -164,6 +164,31 @@ for — the booking form says so on screen, and each screen has a line at the
 bottom making it clear. There are no accounts and no server: it is the design,
 working, waiting for a decision about what should sit behind it.
 
+## The backend (Supabase)
+
+The site still reads its content from the files in `/data` and `/content`. The
+database is being put in behind it; until the keys are set, everything falls back
+to the files, so nothing breaks either way.
+
+**Setting it up**
+
+1. Copy `.env.example` to `.env.local` and paste the two keys from
+   Supabase → Project Settings → API Keys. Which variables also belong in Vercel
+   is written next to each one.
+2. Run `supabase/migrations/0001_init.sql` in the Supabase SQL editor. It makes
+   the tables, decides who may read and write what, and creates the `media`
+   bucket for photographs.
+3. `node scripts/import.mjs` moves everything currently in the files into the
+   database, photographs included (`--no-media` to skip the uploads). It is safe
+   to run twice: rows are keyed on something stable, so a second run updates.
+4. Make yourself an admin: sign in once, then in the SQL editor
+   `update profiles set role = 'admin' where id = '<your user id>';`
+
+**Who may do what.** Row level security is on for every table. The public reads
+anything marked published; only an admin writes. Members can read the feed and
+write their own posts and bookings. Applications from the handbook page can be
+written by anybody and read only by admins.
+
 ## Design notes
 
 - Paper (`#fffcf6`) rather than screen white; purple, blue and pink as on the
