@@ -41,7 +41,7 @@ app/
   (site)/               the website — shares the menu and contact details
     page.tsx            front page — video square, logo multiplied over it
     stories/            one page per story + the overview (was "projects")
-    resources/          the archive: photos, and quotes/ next to them
+    resources/          the archive: one wall, photographs and quotes mixed
     community/          the grid of names, photo follows the pointer
     join/               how to become a member
     handbook/           how to run your own, and how to ask us for help
@@ -174,6 +174,14 @@ working, waiting for a decision about what should sit behind it.
   their own lane (`--lane`) so they never cross the menu or the filters.
 - Photos fade up as they scroll into view, using CSS scroll-driven animations —
   no JavaScript, and where the browser lacks them everything is simply there.
+- The archive is a wall, not a grid: photographs keep the shape they arrived in,
+  each item takes a slightly different width, a few sit at a slight angle, and
+  the quotes are the pauses between them.
+- A page's filters appear as a submenu under its own entry in the menu
+  (`components/Submenu.tsx` puts them there). On a phone, where the menu is a bar
+  along the bottom, they stay above the content instead.
+- The about statement alternates between two voices, large and then quiet, and
+  ends by asking you to join or to run your own.
 - Everything stops moving if the system asks for reduced motion.
 - The favicon is the two O's cut out of the middle of the logo. The whole
   wordmark turns to mush at 16 pixels; two loops still read. Regenerate the

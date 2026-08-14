@@ -17,8 +17,6 @@
   /* The contact details get their own narrow lane down the right edge, so
      nothing else has to make room for them. */
   --lane: 40px;
-  /* Published by the menu itself; the fallback covers the first paint. */
-  --nav-height: 190px;
 }
 
 * {
@@ -136,6 +134,15 @@ img {
   flex-direction: column;
   gap: 10px;
   align-items: flex-start;
+  /* With a submenu open the menu can get tall; it scrolls rather than spilling
+     off the screen. */
+  max-height: calc(100vh - var(--edge) * 2);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-mark {
@@ -225,18 +232,46 @@ img {
   min-height: 100vh;
 }
 
-/* For pages with little on them: everything in the middle of the screen. */
-.page-centred {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ----------------------------------------------------------- the statement
+
+   The about text starts at the top of the page and alternates between two
+   voices: a claim set large, then an aside set smaller and in italics. */
+
+.statement {
+  max-width: 46rem;
+  margin: 0 auto;
   text-align: center;
-  min-height: 100vh;
-  padding: calc(var(--edge) + 40px) var(--lane) calc(var(--edge) + 40px) var(--sidebar);
 }
 
-.page-centred .prose {
+.statement-loud {
+  margin: 0 0 18px;
+  font-size: 1.9rem;
+  line-height: 1.2;
   font-weight: bold;
+  text-wrap: pretty;
+}
+
+.statement-quiet {
+  margin: 0 0 34px;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  font-style: italic;
+  color: #4a4640;
+  text-wrap: pretty;
+}
+
+.statement-quiet:last-of-type {
+  margin-bottom: 8px;
+}
+
+.statement-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 26px;
+  border-top: 1px solid var(--hairline);
 }
 
 .page-title {
@@ -1046,18 +1081,27 @@ body:has(.hero) .contact {
 
 /* ------------------------------------------------------------------- filters */
 
-/* A page's own submenu, under the main menu — never behind it, because the
-   menu measures itself into --nav-height. */
+/* The slot Nav leaves under each main link. Filled by the page it belongs to
+   (see components/Submenu.tsx), empty otherwise — and an empty one takes up no
+   room at all. */
+.nav-submenu:not(:empty) {
+  padding: 6px 0 10px 12px;
+  border-left: 1px solid var(--hairline);
+  margin: 2px 0 4px 2px;
+  max-width: calc(var(--sidebar) - var(--edge) - 30px);
+}
+
+/* A page's own filters. In the menu on a wide screen, above the content on a
+   phone; these are the shared parts. */
 .filters {
-  position: fixed;
-  top: calc(var(--edge) + var(--nav-height) + 26px);
-  left: var(--edge);
-  width: calc(var(--sidebar) - var(--edge) - 20px);
-  max-height: calc(100vh - var(--edge) * 2 - var(--nav-height) - 26px);
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  font-family: var(--serif);
+}
+
+.nav-submenu .filters {
+  font-size: 0.92rem;
 }
 
 .filter-label {
@@ -1091,46 +1135,106 @@ body:has(.hero) .contact {
   font-size: 0.9em;
 }
 
-/* -------------------------------------------------------------- photo grids */
+/* ------------------------------------------------------------------- the wall
 
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+   Not a grid: the items fall into columns, each takes a slightly different
+   width, and a few sit at a slight angle. Photographs keep whatever shape they
+   arrived in, and the quotes are pauses between them. */
+
+.archive {
+  columns: 4 220px;
+  column-gap: 26px;
+  max-width: 1250px;
 }
 
-.photo-item {
-  margin: 0;
+.archive-item {
+  break-inside: avoid;
+  margin: 0 0 26px;
 }
 
-.photo-button {
+.archive-item button {
   display: block;
-  position: relative;
   width: 100%;
-  aspect-ratio: 1;
   padding: 0;
   border: 0;
-  background: #f2f2f2;
+  background: none;
   cursor: zoom-in;
-  overflow: hidden;
+  line-height: 0;
 }
 
-.photo-button img {
-  object-fit: cover;
+.archive-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.photo-button:hover img {
-  opacity: 0.85;
+.archive-item button:hover img {
+  transform: scale(1.03);
 }
 
-.photo-caption {
-  font-size: 0.8em;
+.archive-item figcaption {
+  font-size: 0.78em;
   font-style: italic;
-  padding-top: 4px;
-  margin: 0;
+  color: #6f6a63;
+  padding-top: 5px;
+}
+
+/* The nine variants: widths, indents and the odd tilt. */
+.archive-item[data-v="0"] {
+  width: 100%;
+}
+.archive-item[data-v="1"] {
+  width: 80%;
+  margin-left: 20%;
+}
+.archive-item[data-v="2"] {
+  width: 92%;
+  rotate: -0.5deg;
+}
+.archive-item[data-v="3"] {
+  width: 68%;
+}
+.archive-item[data-v="4"] {
+  width: 100%;
+  rotate: 0.4deg;
+}
+.archive-item[data-v="5"] {
+  width: 86%;
+  margin-left: 14%;
+}
+.archive-item[data-v="6"] {
+  width: 74%;
+  margin-left: 8%;
+}
+.archive-item[data-v="7"] {
+  width: 96%;
+}
+.archive-item[data-v="8"] {
+  width: 82%;
+  rotate: 0.6deg;
+}
+
+/* A quote takes the full column width and sets itself apart by being text. */
+.archive-quote {
+  width: 100% !important;
+  margin: 6px 0 30px;
+  rotate: none !important;
+  padding: 2px 0 0;
+  border-top: 1px solid var(--ink);
+}
+
+.archive-quote blockquote {
+  margin: 10px 0 8px;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+
+.archive-quote figcaption {
+  font-style: italic;
+  font-size: 0.9em;
+  color: var(--ink);
 }
 
 /* --------------------------------------------------------------- large photo */
@@ -1243,6 +1347,11 @@ body:has(.hero) .contact {
     border-top: 1px solid var(--hairline);
   }
 
+  .nav {
+    max-height: none;
+    overflow: visible;
+  }
+
   .nav-mark {
     width: 30px;
     flex: none;
@@ -1269,8 +1378,7 @@ body:has(.hero) .contact {
   }
 
   /* Room down the right for the turned contact details. */
-  .page,
-  .page-centred {
+  .page {
     padding-left: var(--edge);
     padding-right: 26px;
     min-height: 0;
@@ -1278,11 +1386,6 @@ body:has(.hero) .contact {
 
   .page {
     padding-bottom: 0;
-  }
-
-  .page-centred {
-    min-height: calc(100vh - var(--bar-height) - 60px);
-    padding-top: var(--edge);
   }
 
   .page-title {
@@ -1293,10 +1396,16 @@ body:has(.hero) .contact {
     font-size: 1.05rem;
   }
 
-  /* The filter list moves out of the sidebar and above the photos. */
+  .statement-loud {
+    font-size: 1.45rem;
+  }
+
+  .statement-quiet {
+    font-size: 1.05rem;
+  }
+
+  /* The filters sit above the content: the menu is a bar at the bottom. */
   .filters {
-    position: static;
-    width: auto;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 6px 18px;
@@ -1325,9 +1434,17 @@ body:has(.hero) .contact {
     width: min(80vw, var(--limit), calc(58vh * var(--ar)));
   }
 
-  .photo-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
+  .archive {
+    columns: 2 130px;
+    column-gap: 12px;
+  }
+
+  .archive-item {
+    margin-bottom: 14px;
+  }
+
+  .archive-quote blockquote {
+    font-size: 1.05rem;
   }
 
   .story-list {
@@ -1429,8 +1546,7 @@ body:has(.hero) .contact {
 
 /* Fade only — animating a transform here would make the page a containing
    block, and the fixed menu, filters and photo overlay would go with it. */
-.page,
-.page-centred {
+.page {
   animation: fade 0.5s ease-out both;
 }
 

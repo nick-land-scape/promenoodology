@@ -1,6 +1,7 @@
 "use client";
 
 import Photo from "./Photo";
+import Submenu from "./Submenu";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Member } from "@/lib/content";
 
@@ -38,8 +39,11 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
   const sorted = useMemo(() => sortMembers(members, order), [members, order]);
 
   useEffect(() => {
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200));
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches)
+      return;
+    const idle =
+      window.requestIdleCallback ??
+      ((cb: () => void) => window.setTimeout(cb, 1200));
     const handle = idle(() => setPreload(true));
     return () => window.cancelIdleCallback?.(handle as number);
   }, []);
@@ -53,8 +57,14 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
       if (!element) return;
       const middleX = window.innerWidth / 2;
       const middleY = window.innerHeight / 2;
-      element.style.setProperty("--x", `${clientX + (middleX - clientX) * PULL_TO_CENTRE}px`);
-      element.style.setProperty("--y", `${clientY + (middleY - clientY) * PULL_TO_CENTRE}px`);
+      element.style.setProperty(
+        "--x",
+        `${clientX + (middleX - clientX) * PULL_TO_CENTRE}px`,
+      );
+      element.style.setProperty(
+        "--y",
+        `${clientY + (middleY - clientY) * PULL_TO_CENTRE}px`,
+      );
       element.style.setProperty(
         "--tilt",
         `${(((clientX - middleX) / middleX) * 2.5).toFixed(2)}deg`,
@@ -64,28 +74,34 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
 
   useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
-  const clear = (id: string) => setActive((current) => (current === id ? null : current));
+  const clear = (id: string) =>
+    setActive((current) => (current === id ? null : current));
 
   return (
     <>
-      <div className="filters">
-        <div className="filter-group">
-          <span className="filter-label">sort by</span>
-          {ORDERS.map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              className="text-button"
-              aria-pressed={order === option.key}
-              onClick={() => setOrder(option.key)}
-            >
-              {option.label}
-            </button>
-          ))}
+      <Submenu section="community">
+        <div className="filters">
+          <div className="filter-group">
+            <span className="filter-label">sort by</span>
+            {ORDERS.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                className="text-button"
+                aria-pressed={order === option.key}
+                onClick={() => setOrder(option.key)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      </Submenu>
 
-      <ul className="community-grid" onPointerMove={(event) => place(event.clientX, event.clientY)}>
+      <ul
+        className="community-grid"
+        onPointerMove={(event) => place(event.clientX, event.clientY)}
+      >
         {sorted.map((member) => {
           return (
             <li key={idOf(member)}>
@@ -111,7 +127,9 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
                   setActive(idOf(member));
                 }}
                 onTouchEnd={() => clear(idOf(member))}
-                aria-label={member.photo ? `Show photo of ${member.name}` : member.name}
+                aria-label={
+                  member.photo ? `Show photo of ${member.name}` : member.name
+                }
               >
                 <span className="community-label">
                   <span className="community-name">{member.name}</span>
@@ -155,10 +173,12 @@ function idOf(member: Member) {
 }
 
 function sortMembers(members: Member[], order: Order) {
-  const by = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" });
+  const by = (a: string, b: string) =>
+    a.localeCompare(b, undefined, { sensitivity: "base" });
   return [...members].sort((a, b) => {
     if (order === "first") return by(a.first, b.first) || by(a.last, b.last);
-    if (order === "country") return by(a.country, b.country) || by(a.last, b.last);
+    if (order === "country")
+      return by(a.country, b.country) || by(a.last, b.last);
     return by(a.last, b.last) || by(a.first, b.first);
   });
 }

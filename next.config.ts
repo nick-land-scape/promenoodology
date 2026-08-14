@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
       { source: "/index.html", destination: "/", permanent: true },
       // Projects became stories.
       { source: "/projects", destination: "/stories", permanent: true },
+      { source: "/resources/quotes", destination: "/resources", permanent: true },
       { source: "/projects/:slug", destination: "/stories/:slug", permanent: true },
       { source: "/munity", destination: "/community", permanent: true },
       { source: "/munity/index.html", destination: "/community", permanent: true },

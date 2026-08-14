@@ -2,7 +2,7 @@
 
 import Photo from "./Photo";
 import { useEffect } from "react";
-import type { Slide } from "./PhotoGrid";
+import type { Slide } from "@/lib/content";
 
 type Props = {
   slides: Slide[];

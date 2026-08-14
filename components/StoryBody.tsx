@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { Section } from "@/lib/content";
+import type { Section, Slide } from "@/lib/content";
 import Lightbox from "./Lightbox";
-import type { Slide } from "./PhotoGrid";
 import Photo from "./Photo";
 
 /** How much larger than the original file a photo may be drawn. */

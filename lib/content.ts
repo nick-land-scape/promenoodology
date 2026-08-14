@@ -73,6 +73,13 @@ export type Donation = {
   photo: Photo | null;
 };
 
+/** One photograph as it is shown in a gallery or the lightbox. */
+export type Slide = {
+  key: string;
+  photo: Photo;
+  caption: string;
+};
+
 export type Section = {
   /** "Opportunity", "Strategy", … or null for text before any heading. */
   heading: string | null;

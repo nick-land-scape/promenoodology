@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Cite from "@/components/Cite";
-import type { Slide } from "@/components/PhotoGrid";
+import type { Slide } from "@/lib/content";
 import StoryBody from "@/components/StoryBody";
 import { getNeighbours, getStories, getStory } from "@/lib/stories";
 
