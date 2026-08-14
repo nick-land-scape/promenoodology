@@ -3,7 +3,10 @@
 export type Photo = { src: string; width: number; height: number };
 
 export type Member = {
+  /** First and last name joined, for showing. */
   name: string;
+  first: string;
+  last: string;
   country: string;
   color: string | null;
   photo: Photo | null;

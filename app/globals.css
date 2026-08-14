@@ -14,9 +14,11 @@
 
   --edge: 25px;
   --sidebar: 250px;
-  /* The contact details get their own narrow lane down the very left edge;
-     everything else in the left column starts after it. */
-  --lane: 42px;
+  /* The contact details get their own narrow lane down the right edge, so
+     nothing else has to make room for them. */
+  --lane: 30px;
+  /* Published by the menu itself; the fallback covers the first paint. */
+  --nav-height: 190px;
 }
 
 * {
@@ -97,7 +99,7 @@ img {
 .nav {
   position: fixed;
   top: var(--edge);
-  left: var(--lane);
+  left: var(--edge);
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -140,11 +142,11 @@ img {
 
 /* ------------------------------------------------------------------- contact */
 
-/* A thin sidebar down the left edge: the text is turned a quarter turn, the
+/* A thin sidebar down the right edge: the text is turned a quarter turn, the
    way it was on the old site's phone layout. */
 .contact {
   position: fixed;
-  left: 6px;
+  right: 6px;
   bottom: var(--edge);
   z-index: 20;
   display: flex;
@@ -169,6 +171,7 @@ img {
 .page {
   padding: var(--edge);
   padding-left: var(--sidebar);
+  padding-right: var(--lane);
   padding-bottom: calc(var(--edge) + 40px);
   min-height: 100vh;
 }
@@ -180,8 +183,7 @@ img {
   justify-content: center;
   text-align: center;
   min-height: 100vh;
-  padding: calc(var(--edge) + 40px) var(--edge);
-  padding-left: var(--sidebar);
+  padding: calc(var(--edge) + 40px) var(--lane) calc(var(--edge) + 40px) var(--sidebar);
 }
 
 .page-centred .prose {
@@ -355,8 +357,10 @@ body:has(.hero) .contact {
 .community-item {
   aspect-ratio: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   text-align: center;
   margin: 0;
   padding: 4px;
@@ -365,7 +369,28 @@ body:has(.hero) .contact {
   font: inherit;
   color: inherit;
   cursor: default;
-  line-height: 1.2;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.community-country {
+  white-space: nowrap;
+}
+
+.community-flag {
+  padding-right: 0.3em;
+  font-style: normal;
+}
+
+/* The name of the person you are pointing at stays on top of their photo. */
+.community-item[data-active] {
+  position: relative;
+  z-index: 6;
+  color: var(--purple);
+  text-shadow:
+    0 0 10px var(--paper),
+    0 0 4px var(--paper),
+    0 0 2px var(--paper);
 }
 
 .community-item[data-color="orange"] {
@@ -423,14 +448,24 @@ body:has(.hero) .contact {
 
 /* ------------------------------------------------------------------- filters */
 
+/* A page's own submenu, under the main menu — never behind it, because the
+   menu measures itself into --nav-height. */
 .filters {
   position: fixed;
-  top: 220px;
-  left: var(--lane);
-  width: calc(var(--sidebar) - var(--lane) - 20px);
+  top: calc(var(--edge) + var(--nav-height) + 26px);
+  left: var(--edge);
+  width: calc(var(--sidebar) - var(--edge) - 20px);
+  max-height: calc(100vh - var(--edge) * 2 - var(--nav-height) - 26px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.filter-label {
+  font-style: italic;
+  color: #8a8a8a;
+  padding-bottom: 2px;
 }
 
 .filter-group {
@@ -499,13 +534,38 @@ body:has(.hero) .contact {
   cursor: zoom-out;
 }
 
+/* Sized to the photo alone, so the photo sits dead centre. The caption, the
+   step controls and the close button hang off its corners. */
 .lightbox-frame {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  position: relative;
+  line-height: 0;
   cursor: default;
-  padding: var(--edge);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  line-height: 1;
+  font-style: normal;
+  text-shadow:
+    0 0 10px var(--paper),
+    0 0 4px var(--paper),
+    0 0 3px var(--paper);
+}
+
+.lightbox-caption {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  max-width: 60%;
+  text-align: left;
+}
+
+.lightbox-controls {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
 }
 
 /* The photographs are small originals, so they are never blown up much past
@@ -517,16 +577,18 @@ body:has(.hero) .contact {
   height: auto;
 }
 
-.lightbox-caption {
+.lightbox-caption,
+.lightbox-controls {
   font-style: italic;
   font-size: 0.9em;
-  text-align: center;
+  line-height: 1.2;
 }
 
 .lightbox-controls {
   display: flex;
   align-items: baseline;
-  gap: 22px;
+  gap: 20px;
+  white-space: nowrap;
 }
 
 .lightbox-count {
@@ -585,9 +647,9 @@ body:has(.hero) .contact {
     font-size: 0.7em;
   }
 
-  /* The sidebar stays, just clear of the menu bar. */
+  /* The sidebar stays on the right, just clear of the menu bar. */
   .contact {
-    left: 4px;
+    right: 2px;
     bottom: calc(var(--bar-height) + 14px);
     gap: 12px;
     font-size: 0.85em;
@@ -597,10 +659,11 @@ body:has(.hero) .contact {
     padding-bottom: calc(var(--bar-height) + 24px);
   }
 
-  /* Room down the left for the turned contact details. */
+  /* Room down the right for the turned contact details. */
   .page,
   .page-centred {
-    padding-left: 30px;
+    padding-left: var(--edge);
+    padding-right: 26px;
     min-height: 0;
   }
 
@@ -671,7 +734,15 @@ body:has(.hero) .contact {
     width: min(92vw, var(--limit), calc(64vh * var(--ar)));
   }
 
+  /* Not enough width for caption and controls side by side: stack them. */
+  .lightbox-caption {
+    max-width: 100%;
+  }
+
   .lightbox-controls {
+    top: calc(100% + 34px);
+    left: 0;
+    right: auto;
     gap: 16px;
   }
 

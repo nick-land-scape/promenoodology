@@ -26,6 +26,8 @@ export function getMembers(): Member[] {
   const [, ...rows] = readRows("community.csv"); // first row is the header
   return rows.map(([first, last, country, image, special]) => ({
     name: [first, last].filter(Boolean).join(" "),
+    first: first ?? "",
+    last: last ?? "",
     country: country ?? "",
     color: special || null,
     photo: photo(`/community/${image}`, image),

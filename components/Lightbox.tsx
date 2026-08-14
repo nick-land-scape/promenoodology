@@ -40,7 +40,9 @@ export default function Lightbox({ slides, index, onIndex, onClose }: Props) {
       aria-label={slide.caption}
       onClick={onClose}
     >
-      {/* Clicks inside the frame belong to the frame, not to the backdrop. */}
+      {/* The frame is exactly the size of the photo, so the photo itself ends up
+          in the middle of the screen; everything else hangs off its corners.
+          Clicks inside the frame belong to the frame, not to the backdrop. */}
       <div className="lightbox-frame" onClick={(event) => event.stopPropagation()}>
         <Image
           key={slide.photo.src}
@@ -58,26 +60,31 @@ export default function Lightbox({ slides, index, onIndex, onClose }: Props) {
           }
         />
 
+        <button
+          type="button"
+          className="text-button lightbox-close"
+          onClick={onClose}
+          autoFocus
+          aria-label="Close the photo"
+        >
+          close ×
+        </button>
+
         <figcaption className="lightbox-caption">{slide.caption}</figcaption>
 
-        <div className="lightbox-controls">
-          {many ? (
-            <>
-              <button type="button" className="text-button" onClick={() => step(-1)}>
-                ← previous
-              </button>
-              <span className="lightbox-count">
-                {index + 1} / {slides.length}
-              </span>
-              <button type="button" className="text-button" onClick={() => step(1)}>
-                next →
-              </button>
-            </>
-          ) : null}
-          <button type="button" className="text-button" onClick={onClose} autoFocus>
-            close
-          </button>
-        </div>
+        {many ? (
+          <div className="lightbox-controls">
+            <button type="button" className="text-button" onClick={() => step(-1)}>
+              ← previous
+            </button>
+            <span className="lightbox-count">
+              {index + 1} / {slides.length}
+            </span>
+            <button type="button" className="text-button" onClick={() => step(1)}>
+              next →
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {/* Quietly fetch the neighbours so stepping through feels instant. */}
