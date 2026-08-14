@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 import { getStories } from "@/lib/stories";
-
-const SITE = "https://promenoodology.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const pages = [
@@ -17,7 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const stories = getStories().map((story) => `/stories/${story.slug}`);
 
   return [...pages, ...stories].map((route) => ({
-    url: `${SITE}${route}`,
+    url: `${SITE_URL}${route}`,
     changeFrequency: "monthly",
     priority: route === "/" ? 1 : 0.7,
   }));

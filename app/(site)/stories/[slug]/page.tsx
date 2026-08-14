@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Cite from "@/components/Cite";
 import type { Slide } from "@/lib/content";
+import { siteUrl } from "@/lib/site";
 import StoryBody from "@/components/StoryBody";
 import { getNeighbours, getStories, getStory } from "@/lib/stories";
 
@@ -64,7 +65,7 @@ export default async function StoryPage({ params }: Params) {
       <Cite
         title={story.title}
         year={story.when}
-        url={`https://promenoodology.com/stories/${story.slug}`}
+        url={siteUrl(`/stories/${story.slug}`)}
       />
 
       {previous && next ? (
