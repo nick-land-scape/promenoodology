@@ -40,9 +40,12 @@ app/
   layout.tsx            html, metadata, the stylesheet
   (site)/               the website — shares the menu and contact details
     page.tsx            front page — video square, logo multiplied over it
-    projects/           one page per project + the overview
-    resources/          the whole photo archive, filtered
+    stories/            one page per story + the overview (was "projects")
+    resources/          the archive: photos, and quotes/ next to them
     community/          the grid of names, photo follows the pointer
+    join/               how to become a member
+    handbook/           how to run your own, and how to ask us for help
+    donations/          the wall — every gift, one by one, no total
     about/              what we are about
   app/                  the members' app — its own shell and tab bar
     page.tsx            Home — what is coming up, latest news
@@ -53,12 +56,15 @@ app/
   globals.css           the website's stylesheet, one file on purpose
 components/             nav, contact and the interactive bits
 components/app/         the app's shell, tab bar, feed and booking form
-content/projects/       one text file per project
+content/stories/        one text file per story
+content/handbook.md     the handbook
 data/
   community.csv         who is in the community
   resources.csv         which photo belongs to which project
   events.csv            what is coming up (app)
   news.csv              latest news (app)
+  quotes.csv            things people said
+  donations.csv         the wall
   posts.csv             the connect feed (app)
 lib/                    reads the files above at build time
 public/
@@ -92,10 +98,10 @@ A row without a photo still shows the name.
 The last column is the project tag. A photo with an empty tag only shows up
 under "all" in the archive.
 
-### Add or edit a project
+### Add or edit a story
 
-One file per project in `content/projects/`. The file name becomes the address
-(`dinner-for-500.md` → `/projects/dinner-for-500`). A few `key: value` lines,
+One file per story in `content/stories/`. The file name becomes the address
+(`dinner-for-500.md` → `/stories/dinner-for-500`). A few `key: value` lines,
 a blank line, then as much text as you like:
 
 ```
@@ -116,9 +122,22 @@ Every paragraph is separated by a blank line.
 - `where` — optional. Leave it out and it is simply not shown.
 - `when` — optional; without it the years come from the photos.
 
-**The four project files currently have no text.** The pages work without it
-(title, year, photo credits, photos), but they are the place for your own
-words — nothing was invented for you.
+The four story files have **placeholder text** in them, marked with a `note:`
+line. Replace the paragraphs with your own words; the layout spreads them
+through the photographs by itself. `content/handbook.md` works the same way and
+is also placeholder text.
+
+### The wall and the quotes
+
+`data/donations.csv` is `who,when,amount,note` — leave `who` empty for somebody
+who would rather stay anonymous, and the wall shows "someone" instead. There is
+deliberately **no total anywhere on the page**: it is a list of people, not a
+fundraising thermometer. When gifts start arriving automatically this file is
+what the live feed replaces.
+
+`data/quotes.csv` is `who,where,year,story,text` — `story` is a story tag, so a
+quote can be filtered to the thing it was said about. Both files match names
+against the community list to show a face.
 
 ### The app's content
 

@@ -14,7 +14,6 @@ export default function BookPage() {
     <>
       <AppHeader eyebrow="book" title="what would you like to join?" />
       <BookingForm events={events} />
-      <p className="app-foot">Placeholder screen — nothing is reserved.</p>
     </>
   );
 }

@@ -56,9 +56,6 @@ export default function AppHome() {
         </Link>
       </section>
 
-      <p className="app-foot">
-        This app is a placeholder — nothing is booked, posted or paid for yet.
-      </p>
     </>
   );
 }

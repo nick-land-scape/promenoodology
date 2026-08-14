@@ -1,28 +1,34 @@
 import type { Metadata } from "next";
 import ResourceGallery, { type EventFilter } from "@/components/ResourceGallery";
+import ResourceKinds from "@/components/ResourceKinds";
 import { getFilters, getResources } from "@/lib/data";
-import { getProjects } from "@/lib/projects";
+import { getStories } from "@/lib/stories";
 
 export const metadata: Metadata = {
-  title: "Resources",
-  description: "Every photo we have, filtered by project and by year.",
+  title: "Photos",
+  description: "Every photo we have, filtered by story and by year.",
   alternates: { canonical: "/resources" },
 };
 
 export default function ResourcesPage() {
   const resources = getResources();
   const { years } = getFilters(resources);
-  const projects = getProjects();
+  const stories = getStories();
 
-  // Only offer a filter for projects that actually have photos.
-  const events: EventFilter[] = projects
-    .filter((project) => project.photos.length > 0)
-    .map((project) => ({ tag: project.tag, title: project.title, slug: project.slug }));
+  // Only offer a filter for stories that actually have photos.
+  const events: EventFilter[] = stories
+    .filter((story) => story.photos.length > 0)
+    .map((story) => ({ tag: story.tag, title: story.title, slug: story.slug }));
 
   return (
     <main className="page">
-      <h1 className="visually-hidden">Resources</h1>
-      <ResourceGallery resources={resources} events={events} years={years} />
+      <h1 className="visually-hidden">Photos</h1>
+      <ResourceGallery
+        resources={resources}
+        events={events}
+        years={years}
+        kinds={<ResourceKinds current="/resources" />}
+      />
     </main>
   );
 }

@@ -51,9 +51,31 @@ export type Post = {
   photo: Photo | null;
 };
 
-export type Project = {
+export type Quote = {
+  id: string;
+  who: string;
+  where: string;
+  year: string;
+  /** The story tag this was said about, if any. */
+  story: string | null;
+  text: string;
+  /** The portrait from the community list, when we have one. */
+  photo: Photo | null;
+};
+
+export type Donation = {
+  id: string;
+  /** Empty when the donor would rather stay anonymous. */
+  who: string;
+  when: string;
+  amount: string;
+  note: string;
+  photo: Photo | null;
+};
+
+export type Story = {
   slug: string;
-  /** The short tag used in data/resources.csv to mark this project's photos. */
+  /** The short tag used in data/resources.csv to mark this story's photos. */
   tag: string;
   title: string;
   order: number;

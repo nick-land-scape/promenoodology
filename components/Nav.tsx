@@ -1,15 +1,23 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import Photo from "./Photo";
 
-const LINKS = [
-  { href: "/projects", label: "PROJECTS" },
+/** The four places most people are looking for. */
+const MAIN = [
+  { href: "/stories", label: "STORIES" },
   { href: "/resources", label: "RESOURCES" },
   { href: "/community", label: "COMMUNITY" },
   { href: "/about", label: "ABOUT US" },
+];
+
+/** The three you go to once you are interested. */
+const MORE = [
+  { href: "/join", label: "become a member" },
+  { href: "/handbook", label: "handbook" },
+  { href: "/donations", label: "the wall" },
 ];
 
 export default function Nav() {
@@ -33,17 +41,30 @@ export default function Nav() {
     return () => observer.disconnect();
   }, []);
 
-  // /projects/dinner-for-500 keeps PROJECTS marked as the section you are in.
+  // /stories/dinner-for-500 keeps STORIES marked as the section you are in.
   const current = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <nav className="nav" ref={nav}>
       {/* The mark is the way back to the front page. */}
       <Link href="/" className="nav-mark" aria-label="promeNOODology — home">
-        <Image src="/logo-mark.png" alt="" width={600} height={582} priority sizes="74px" />
+        <Photo src="/logo-mark.png" alt="" width={600} height={582} priority sizes="74px" />
       </Link>
+
       <div className="nav-links">
-        {LINKS.map((link) => (
+        {MAIN.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            aria-current={current(link.href) ? "page" : undefined}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+
+      <div className="nav-more">
+        {MORE.map((link) => (
           <Link
             key={link.href}
             href={link.href}

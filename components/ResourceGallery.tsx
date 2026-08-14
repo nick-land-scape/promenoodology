@@ -11,10 +11,12 @@ type Props = {
   resources: Resource[];
   events: EventFilter[];
   years: string[];
+  /** The photos/quotes switch, rendered on the server. */
+  kinds: React.ReactNode;
 };
 
 /** Everything we have photographed, filtered by project and by year. */
-export default function ResourceGallery({ resources, events, years }: Props) {
+export default function ResourceGallery({ resources, events, years, kinds }: Props) {
   const [event, setEvent] = useState<string | null>(null);
   const [year, setYear] = useState<string | null>(null);
 
@@ -33,6 +35,8 @@ export default function ResourceGallery({ resources, events, years }: Props) {
   return (
     <>
       <div className="filters">
+        {kinds}
+
         <div className="filter-group">
           <button
             type="button"
@@ -70,7 +74,7 @@ export default function ResourceGallery({ resources, events, years }: Props) {
         </div>
 
         {selected ? (
-          <Link className="filter-link" href={`/projects/${selected.slug}`}>
+          <Link className="filter-link" href={`/stories/${selected.slug}`}>
             about {selected.title} →
           </Link>
         ) : null}

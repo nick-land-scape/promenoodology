@@ -31,7 +31,12 @@
 
 /* -------------------------------------------------------------------- header */
 
+/* Stays at the top while the screen scrolls under it. */
 .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  background: var(--paper);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -180,7 +185,9 @@
   overflow-x: auto;
   padding: 14px var(--gutter) 4px;
   scrollbar-width: none;
-  scroll-snap-type: x proximity;
+  /* No scroll snapping here: it would pull the first chip flush against the
+     left edge and eat the padding. */
+  scroll-padding-left: var(--gutter);
 }
 
 .app-scroll::-webkit-scrollbar {
@@ -201,7 +208,6 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
-  scroll-snap-align: start;
 }
 
 .chip[aria-pressed="true"] {
@@ -736,11 +742,11 @@
   color: var(--ink);
 }
 
-/* ------------------------------------------------------------------- footer */
-
+/* A single quiet line, only where it is actually needed. */
 .app-foot {
-  padding: 26px var(--gutter) 30px;
-  text-align: center;
+  padding: 4px var(--gutter) 18px;
   color: var(--muted);
-  font-size: 0.85em;
+  font-size: 0.8em;
+  font-style: italic;
+  margin: 0;
 }

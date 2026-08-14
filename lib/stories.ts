@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { Photo, Project, Resource } from "./content";
+import type { Photo, Resource, Story } from "./content";
 import { getResources } from "./data";
 
 /**
- * One project = one text file in content/projects/ + every photo in
+ * One story = one text file in content/stories/ + every photo in
  * data/resources.csv that carries its tag.
  *
  * The text files start with a few `key: value` lines, then a blank line, then
@@ -20,43 +20,43 @@ import { getResources } from "./data";
  *   The second paragraph.
  */
 
-const PROJECTS_DIR = path.join(process.cwd(), "content", "projects");
+const STORIES_DIR = path.join(process.cwd(), "content", "stories");
 
-export function getProjects(): Project[] {
+export function getStories(): Story[] {
   const resources = getResources();
 
   return fs
-    .readdirSync(PROJECTS_DIR)
+    .readdirSync(STORIES_DIR)
     .filter((file) => file.endsWith(".md"))
     .map((file) => parse(file, resources))
     .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
 }
 
-export function getProject(slug: string): Project | undefined {
-  return getProjects().find((project) => project.slug === slug);
+export function getStory(slug: string): Story | undefined {
+  return getStories().find((story) => story.slug === slug);
 }
 
-/** The projects before and after this one, wrapping around at the ends. */
+/** The stories before and after this one, wrapping around at the ends. */
 export function getNeighbours(slug: string) {
-  const projects = getProjects();
-  const index = projects.findIndex((project) => project.slug === slug);
+  const stories = getStories();
+  const index = stories.findIndex((story) => story.slug === slug);
   if (index === -1) return { previous: undefined, next: undefined };
   return {
-    previous: projects[(index - 1 + projects.length) % projects.length],
-    next: projects[(index + 1) % projects.length],
+    previous: stories[(index - 1 + stories.length) % stories.length],
+    next: stories[(index + 1) % stories.length],
   };
 }
 
 /** tag -> title, for the archive's filter buttons and captions. */
-export function getProjectLabels(): Record<string, { title: string; slug: string }> {
+export function getStoryLabels(): Record<string, { title: string; slug: string }> {
   return Object.fromEntries(
-    getProjects().map((project) => [project.tag, { title: project.title, slug: project.slug }]),
+    getStories().map((story) => [story.tag, { title: story.title, slug: story.slug }]),
   );
 }
 
-function parse(file: string, resources: Resource[]): Project {
+function parse(file: string, resources: Resource[]): Story {
   const slug = file.replace(/\.md$/, "");
-  const raw = fs.readFileSync(path.join(PROJECTS_DIR, file), "utf8").replace(/^﻿/, "");
+  const raw = fs.readFileSync(path.join(STORIES_DIR, file), "utf8").replace(/^﻿/, "");
 
   const lines = raw.split(/\r?\n/);
   const fields: Record<string, string> = {};

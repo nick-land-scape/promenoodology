@@ -88,9 +88,7 @@ export default function AccountPage() {
       </section>
 
       <p className="app-foot">
-        Placeholder screen — there are no accounts to sign into yet.
-        <br />
-        <Link href="/">back to the website</Link>
+        A preview — nothing is booked or posted yet. <Link href="/">Back to the website</Link>.
       </p>
     </>
   );

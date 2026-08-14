@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { Member, Photo, Resource } from "./content";
+import type { Donation, Member, Photo, Quote, Resource } from "./content";
 import { imageSize } from "./image-size";
 
 /**
@@ -42,6 +42,59 @@ export function getResources(): Resource[] {
       return { file, credit: credit ?? "", year: year ?? "", event: event || null, photo: image };
     })
     .filter((row): row is Resource => row !== null);
+}
+
+/**
+ * Things people said. The text is the last column, so it may contain commas.
+ * A portrait is attached when the person is in the community list.
+ */
+export function getQuotes(): Quote[] {
+  const portraits = portraitsByName();
+  const [, ...rows] = readRows("quotes.csv");
+  return rows.map((columns, index) => {
+    const [who, where, year, story, ...text] = columns;
+    return {
+      id: `${who}-${index}`,
+      who: who ?? "",
+      where: where ?? "",
+      year: year ?? "",
+      story: story || null,
+      text: text.join(", "),
+      photo: portraits.get((who ?? "").toLowerCase()) ?? null,
+    };
+  });
+}
+
+/**
+ * The donation wall. Individual gifts only — deliberately no total, because the
+ * point is who turned up, not how much was raised. An empty name means the
+ * donor would rather stay anonymous.
+ */
+export function getDonations(): Donation[] {
+  const portraits = portraitsByName();
+  const [, ...rows] = readRows("donations.csv");
+  return rows
+    .map((columns, index) => {
+      const [who, when, amount, ...note] = columns;
+      return {
+        id: `${when}-${index}`,
+        who: who ?? "",
+        when: when ?? "",
+        amount: amount ?? "",
+        note: note.join(", "),
+        photo: who ? portraits.get(who.toLowerCase()) ?? null : null,
+      };
+    })
+    .sort((a, b) => b.when.localeCompare(a.when));
+}
+
+/** name (lower case) -> portrait, so quotes and donations can show a face. */
+function portraitsByName() {
+  return new Map(
+    getMembers()
+      .filter((member) => member.photo)
+      .map((member) => [member.name.toLowerCase(), member.photo!]),
+  );
 }
 
 /** Every event and year that actually has photos. */

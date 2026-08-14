@@ -13,9 +13,6 @@ export default function ConnectPage() {
     <>
       <AppHeader eyebrow="connect" title="what everyone is up to" />
       <Feed posts={posts} people={people} />
-      <p className="app-foot">
-        Placeholder screen — posts are examples and nothing is sent anywhere.
-      </p>
     </>
   );
 }
