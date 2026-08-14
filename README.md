@@ -15,21 +15,48 @@ npm run dev
 
 Then open http://localhost:3000.
 
+## Two things in one repository
+
+- **The website** — promenoodology.com
+- **The members' app** — everything under `/app`, made for a phone
+
+To put the app on its own address, add `app.promenoodology.com` to the Vercel
+project. The rewrite in `next.config.ts` sends that host to `/app`, so
+`app.promenoodology.com/book` and `promenoodology.com/app/book` are the same
+page. The app is `noindex`: it is for members, not for search engines.
+
+**The secret door.** There is no menu link to the app. On the front page, knock
+three times on the logo — three clicks or taps inside about a second and a half
+— and it opens. (Pressing Tab on the front page also reveals a way in, so the
+app stays reachable with a keyboard or a screen reader.)
+
 ## Where things are
 
 ```
 app/
-  page.tsx              front page — video square, logo multiplied over it
-  projects/             one page per project + the overview
-  resources/            the whole photo archive, filtered
-  community/            the grid of names, photo follows the pointer
-  about/                what we are about
-  globals.css           the whole stylesheet, one file on purpose
-components/             nav, contact, and the four interactive bits
+  layout.tsx            html, metadata, the stylesheet
+  (site)/               the website — shares the menu and contact details
+    page.tsx            front page — video square, logo multiplied over it
+    projects/           one page per project + the overview
+    resources/          the whole photo archive, filtered
+    community/          the grid of names, photo follows the pointer
+    about/              what we are about
+  app/                  the members' app — its own shell and tab bar
+    page.tsx            Home — what is coming up, latest news
+    book/               Book — ask for a place, spaces, a whole evening
+    connect/            Connect — the feed and who is around
+    account/            Account — membership, bookings, settings
+    app.css             the app's stylesheet
+  globals.css           the website's stylesheet, one file on purpose
+components/             nav, contact and the interactive bits
+components/app/         the app's shell, tab bar, feed and booking form
 content/projects/       one text file per project
 data/
   community.csv         who is in the community
   resources.csv         which photo belongs to which project
+  events.csv            what is coming up (app)
+  news.csv              latest news (app)
+  posts.csv             the connect feed (app)
 lib/                    reads the files above at build time
 public/
   hero.mp4              the front page video
@@ -89,6 +116,25 @@ Every paragraph is separated by a blank line.
 **The four project files currently have no text.** The pages work without it
 (title, year, photo credits, photos), but they are the place for your own
 words — nothing was invented for you.
+
+### The app's content
+
+Three more CSV files, same idea. In each of them the **last column may contain
+commas** — everything after the last fixed column counts as one piece of text.
+
+```
+data/events.csv   date,time,title,place,spots,photo,note
+data/news.csv     date,title,text
+data/posts.csv    author,place,when,likes,replies,photo,text
+```
+
+Dates are ISO days (`2026-08-22`); the weekday is worked out for you. Photos are
+file names from `public/resources/`, and may be left empty.
+
+**Everything in the app is a placeholder.** Nothing is booked, posted or paid
+for — the booking form says so on screen, and each screen has a line at the
+bottom making it clear. There are no accounts and no server: it is the design,
+working, waiting for a decision about what should sit behind it.
 
 ## Design notes
 

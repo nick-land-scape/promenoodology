@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Member } from "@/lib/content";
-import { flagFor } from "@/lib/countries";
 
 /** How much larger than the original file a portrait may be drawn. */
 const MAX_SCALE = 2.2;
@@ -88,7 +87,6 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
 
       <ul className="community-grid" onPointerMove={(event) => place(event.clientX, event.clientY)}>
         {sorted.map((member) => {
-          const flag = flagFor(member.country);
           return (
             <li key={idOf(member)}>
               <button
@@ -117,10 +115,7 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
               >
                 <span className="community-label">
                   <span className="community-name">{member.name}</span>
-                  <span className="community-country">
-                    {flag ? <span className="community-flag">{flag}</span> : null}
-                    {member.country}
-                  </span>
+                  <span className="community-country">{member.country}</span>
                 </span>
               </button>
             </li>

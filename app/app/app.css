@@ -1,0 +1,746 @@
+/* The members' app. Mobile first: everything here is designed for a phone and
+   simply keeps its column on a bigger screen. Same paper, same type, same
+   plainness as the website — no shadows, no gradients, hairlines only. */
+
+.app-shell {
+  --gutter: 18px;
+  --hair: rgba(0, 0, 0, 0.14);
+  --muted: #6f6a63;
+  --tabbar: 58px;
+
+  min-height: 100vh;
+  background: var(--paper);
+  padding-bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px));
+}
+
+.app-column {
+  max-width: 560px;
+  margin: 0 auto;
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+}
+
+@media (min-width: 561px) {
+  /* On a wide screen the column gets edges, so it reads as one thing. */
+  .app-column {
+    border-left-color: var(--hair);
+    border-right-color: var(--hair);
+    min-height: 100vh;
+  }
+}
+
+/* -------------------------------------------------------------------- header */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px var(--gutter) 12px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.app-mark {
+  display: block;
+  width: 34px;
+  flex: none;
+  line-height: 0;
+  mix-blend-mode: multiply;
+}
+
+.app-mark img {
+  width: 100%;
+  height: auto;
+}
+
+.app-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-eyebrow {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.app-title {
+  margin: 0;
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.app-header-aside {
+  flex: none;
+  font-size: 0.85em;
+}
+
+/* ------------------------------------------------------------------ sections */
+
+.app-section {
+  padding: 22px var(--gutter) 8px;
+}
+
+.app-section + .app-section {
+  padding-top: 26px;
+}
+
+.app-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+}
+
+.app-h2 {
+  margin: 0;
+  font: inherit;
+  font-size: 1.2rem;
+}
+
+.app-label {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.app-note {
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+/* ------------------------------------------------------- buttons and pills */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 18px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-style: normal;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.pill:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.pill-solid {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.pill-solid:hover {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: var(--paper);
+}
+
+.pill-wide {
+  width: 100%;
+  min-height: 46px;
+}
+
+.pill-small {
+  min-height: 30px;
+  padding: 0 12px;
+  font-size: 0.64rem;
+}
+
+/* --------------------------------------------------------- chips and strips */
+
+/* Horizontally scrolling row: chips, tabs, cards. */
+.app-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 14px var(--gutter) 4px;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+.app-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex: none;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+/* Underlined tab strip, as on the booking screen. */
+.strip {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding: 10px var(--gutter) 0;
+  border-bottom: 1px solid var(--hair);
+  scrollbar-width: none;
+}
+
+.strip::-webkit-scrollbar {
+  display: none;
+}
+
+.strip button {
+  flex: none;
+  border: 0;
+  background: none;
+  padding: 0 0 8px;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.strip button[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+/* Two-part switch, as on the connect screen. */
+.segmented {
+  display: flex;
+  margin: 12px var(--gutter) 0;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.segmented button {
+  flex: 1;
+  min-height: 36px;
+  border: 0;
+  background: none;
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.segmented button[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* --------------------------------------------------------------------- rows */
+
+.row-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row-list > li {
+  border-top: 1px solid var(--hair);
+}
+
+.row-list > li:last-child {
+  border-bottom: 1px solid var(--hair);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  text-decoration: none;
+  font-style: normal;
+  color: inherit;
+}
+
+.row-date {
+  flex: none;
+  width: 46px;
+  text-align: center;
+  line-height: 1;
+}
+
+.row-day {
+  display: block;
+  font-size: 1.35rem;
+}
+
+.row-month {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 3px;
+}
+
+.row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-title {
+  display: block;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.row-meta {
+  display: block;
+  font-size: 0.85em;
+  color: var(--muted);
+  padding-top: 2px;
+}
+
+.row-thumb {
+  flex: none;
+  position: relative;
+  width: 58px;
+  height: 58px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.row-thumb img {
+  object-fit: cover;
+}
+
+.row-chevron {
+  flex: none;
+  color: var(--muted);
+}
+
+/* A wide tappable row with a chevron, as on the account screen. */
+.wide-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-style: normal;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wide-row:hover {
+  border-color: var(--ink);
+}
+
+/* --------------------------------------------------------------------- band */
+
+/* The one place with a flat colour, for something we want you to notice. */
+.band {
+  margin-top: 26px;
+  padding: 22px var(--gutter);
+  background: var(--purple);
+  color: var(--paper);
+}
+
+.band h2 {
+  margin: 0 0 8px;
+  font: inherit;
+  font-size: 1.3rem;
+}
+
+.band p {
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
+
+.band .pill {
+  border-color: var(--paper);
+  color: var(--paper);
+}
+
+.band .pill:hover {
+  background: var(--paper);
+  color: var(--purple);
+}
+
+/* -------------------------------------------------------------------- cards */
+
+.card-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 0 var(--gutter) 4px;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+
+.card-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.card {
+  flex: none;
+  width: 63%;
+  max-width: 260px;
+  scroll-snap-align: start;
+}
+
+.card-image {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.05);
+  margin-bottom: 7px;
+}
+
+.card-image img {
+  object-fit: cover;
+}
+
+.card-title {
+  display: block;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.card-meta {
+  display: block;
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+/* --------------------------------------------------------------------- form */
+
+.field-block {
+  margin: 0 var(--gutter);
+  border: 1px solid var(--ink);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--hair);
+}
+
+.field:first-child {
+  border-top: 0;
+}
+
+.field-pair {
+  display: flex;
+  border-top: 1px solid var(--hair);
+}
+
+.field-pair .field {
+  flex: 1;
+  border-top: 0;
+}
+
+.field-pair .field + .field {
+  border-left: 1px solid var(--hair);
+}
+
+.field > label {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field select,
+.field input {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--ink);
+  width: 100%;
+}
+
+.field select {
+  appearance: none;
+  cursor: pointer;
+}
+
+.form-actions {
+  padding: 14px var(--gutter) 0;
+}
+
+/* --------------------------------------------------------------------- feed */
+
+.compose {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px var(--gutter);
+  border-bottom: 1px solid var(--hair);
+}
+
+.compose input {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  color: var(--ink);
+}
+
+.compose input::placeholder {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.post {
+  padding: 16px var(--gutter);
+  border-bottom: 1px solid var(--hair);
+}
+
+.post-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+.avatar {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--hair);
+  display: grid;
+  place-items: center;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.post-who {
+  font-weight: bold;
+}
+
+.post-when {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.post-text {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.post-photo {
+  position: relative;
+  margin-top: 10px;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.post-photo img {
+  object-fit: cover;
+}
+
+.post-actions {
+  display: flex;
+  gap: 18px;
+  padding-top: 10px;
+}
+
+.post-action {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85em;
+  font-style: italic;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.post-action:hover,
+.post-action[aria-pressed="true"] {
+  color: var(--purple);
+}
+
+/* ------------------------------------------------------------------ account */
+
+.member-card {
+  margin: 0 var(--gutter);
+  border: 1px solid var(--ink);
+  padding: 16px;
+}
+
+.member-name {
+  margin: 0;
+  font: inherit;
+  font-size: 1.4rem;
+}
+
+.member-since {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.member-number {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  padding-top: 14px;
+}
+
+.shortcuts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 20px var(--gutter) 6px;
+  list-style: none;
+  margin: 0;
+}
+
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-style: normal;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+.shortcut-ring {
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+}
+
+.shortcut span {
+  font-size: 0.78em;
+  line-height: 1.15;
+}
+
+.shortcut:hover .shortcut-ring {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ------------------------------------------------------------------ tab bar */
+
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--paper);
+  border-top: 1px solid var(--hair);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--tabbar);
+  text-decoration: none;
+  font-style: normal;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tab[aria-current="page"] {
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------- footer */
+
+.app-foot {
+  padding: 26px var(--gutter) 30px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85em;
+}

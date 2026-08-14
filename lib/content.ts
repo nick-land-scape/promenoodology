@@ -20,6 +20,37 @@ export type Resource = {
   photo: Photo;
 };
 
+/* ------------------------------------------------- the members' app (/app) */
+
+export type ClubEvent = {
+  id: string;
+  /** ISO day, e.g. 2026-08-22. */
+  date: string;
+  time: string;
+  title: string;
+  place: string;
+  spots: number;
+  note: string;
+  photo: Photo | null;
+};
+
+export type NewsItem = {
+  date: string;
+  title: string;
+  text: string;
+};
+
+export type Post = {
+  id: string;
+  author: string;
+  place: string;
+  when: string;
+  likes: number;
+  replies: number;
+  text: string;
+  photo: Photo | null;
+};
+
 export type Project = {
   slug: string;
   /** The short tag used in data/resources.csv to mark this project's photos. */

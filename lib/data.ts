@@ -12,7 +12,7 @@ import { imageSize } from "./image-size";
 const DATA_DIR = path.join(process.cwd(), "data");
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 
-function readRows(file: string): string[][] {
+export function readRows(file: string): string[][] {
   const raw = fs.readFileSync(path.join(DATA_DIR, file), "utf8");
   return raw
     .replace(/^﻿/, "") // strip the byte-order mark Excel likes to add

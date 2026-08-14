@@ -31,6 +31,37 @@ body {
   padding: 0;
 }
 
+/* The space for the scrollbar is always reserved, so locking the page while a
+   photo is open cannot make the layout jump sideways. */
+html {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--purple) rgba(0, 0, 0, 0.05);
+}
+
+/* A plain scrollbar in the site's own colours: no rounding, no shading. */
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--purple);
+  border: 3px solid var(--paper);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 body {
   background: var(--paper);
   color: var(--ink);
@@ -271,6 +302,36 @@ img {
   opacity: 0.65;
 }
 
+/* The secret door: three knocks on the logo open the members' app. The top
+   copy of the logo takes the clicks; the second one stays out of the way. */
+.hero-knock {
+  pointer-events: auto;
+  cursor: default;
+}
+
+/* Invisible until somebody tabs to it, so the app is still reachable without
+   knowing about the knock. */
+.hero-door {
+  position: absolute;
+  top: var(--edge);
+  right: var(--edge);
+  z-index: 25;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-style: normal;
+  text-decoration: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-door:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* Just enough glow to keep the menu and the contact details legible over a
    moving picture — no panel, no box. */
 body:has(.hero) .nav,
@@ -490,36 +551,28 @@ body:has(.hero) .contact {
   text-wrap: balance;
 }
 
-/* The transparent border is there from the start, so nothing shifts when the
-   box appears. */
 .community-label {
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 4px 6px;
-  border: 1px solid transparent;
+}
+
+.community-name {
+  font-weight: bold;
 }
 
 .community-country {
   white-space: nowrap;
+  font-size: calc(1em - 2px);
 }
 
-.community-flag {
-  padding-right: 0.3em;
-  font-style: normal;
-}
-
-/* The name of the person you are pointing at sits in a plain box on top of
-   their photo, so it stays readable. */
+/* The name of the person you are pointing at stays in front of their photo —
+   nothing behind it, just the colour change. */
 .community-item[data-active] {
   position: relative;
   z-index: 6;
   color: var(--purple);
-}
-
-.community-item[data-active] .community-label {
-  background: var(--paper);
-  border-color: currentColor;
 }
 
 .community-item[data-color="orange"] {

@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
+
+/** Knock this many times on the logo to be let into the members' app. */
+const KNOCKS = 3;
+const KNOCK_WINDOW = 1400;
 
 /**
  * The front page: the video square in the middle, the logo multiplied over it.
@@ -13,6 +19,20 @@ import { useCallback, useEffect, useRef } from "react";
 export default function Hero() {
   const stage = useRef<HTMLElement>(null);
   const frame = useRef(0);
+  const knocks = useRef(0);
+  const lastKnock = useRef(0);
+  const router = useRouter();
+
+  /** Three knocks on the logo, and the door to the members' app opens. */
+  const knock = () => {
+    const now = performance.now();
+    knocks.current = now - lastKnock.current > KNOCK_WINDOW ? 1 : knocks.current + 1;
+    lastKnock.current = now;
+    if (knocks.current >= KNOCKS) {
+      knocks.current = 0;
+      router.push("/app");
+    }
+  };
 
   const track = useCallback((clientX: number, clientY: number) => {
     cancelAnimationFrame(frame.current);
@@ -62,12 +82,18 @@ export default function Hero() {
         <source src="/hero.mp4" type="video/mp4" />
       </video>
 
+      {/* Tab once and the way into the members' app shows itself. */}
+      <Link href="/app" className="hero-door">
+        members’ app
+      </Link>
+
       {/* Two multiplied copies: the ink doubles in density over busy parts of
           the picture, while the white of the scan stays invisible. */}
       {[0, 1].map((layer) => (
         <Image
           key={layer}
-          className={layer === 0 ? "hero-logo" : "hero-logo hero-logo-ink"}
+          onClick={layer === 0 ? knock : undefined}
+          className={layer === 0 ? "hero-logo hero-knock" : "hero-logo hero-logo-ink"}
           src="/logo.png"
           alt=""
           aria-hidden="true"

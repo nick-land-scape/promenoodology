@@ -1,6 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Contact from "@/components/Contact";
-import Nav from "@/components/Nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,19 +23,16 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#fffcf6",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <Nav />
-        {children}
-        <Contact />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
