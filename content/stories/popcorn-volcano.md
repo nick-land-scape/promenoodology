@@ -1,12 +1,12 @@
 title: popcorn volcano
 tag: popvulcano
-order: 3
-note: PLACEHOLDER TEXT — replace the paragraphs below with your own words.
+order: 1
+where: Călărași, Romania
+when: August 2022
+with: EASA 1:1
 
-A pot, too much heat, and no lid: the recipe for an evening that everybody remembers and nobody can explain to their colleagues on Monday.
+## Opportunity
+What is a table? And what can a table be? — a 3mm plastic layer separating dirt from food. We used the learnings of our two week exploration to transform the popcorn machine from a closed appliance into the central feature of our workshop presentation and the EASA TV screening.
 
-It worked on the second attempt. The first attempt is documented here too, because failing in front of forty people is a faster way to make friends than succeeding alone.
-
-Children took over halfway through, as they should. The adults were relegated to fetching and were visibly relieved.
-
-We swept up for an hour. It was still warm. Somebody was playing something on a phone through a paper cup and it sounded perfect.
+## Strategy
+Instead of trapping popcorn inside a small glass box, we built an open floor surface to catch the falling kernels. This brought the action down to a human scale and turned a simple snack into an active social gathering.

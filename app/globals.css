@@ -833,11 +833,38 @@ body:has(.hero) .contact {
   max-width: var(--limit);
 }
 
+.story-section {
+  margin: 40px 0 26px;
+}
+
+/* Opportunity, Strategy: a small label rather than a heading that shouts. */
+.story-label {
+  margin: 0 0 8px;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
 .story-text {
   font-size: 1.2rem;
   line-height: 1.45;
-  margin: 40px 0 30px;
+  margin: 0 0 12px;
   text-wrap: pretty;
+}
+
+.story-text:last-child {
+  margin-bottom: 0;
+}
+
+.story-lead {
+  display: block;
+  padding-top: 4px;
+  line-height: 1.4;
+  font-size: 0.95em;
+  max-width: 34em;
 }
 
 .story-figure[data-v="0"] {
@@ -876,13 +903,13 @@ body:has(.hero) .contact {
   rotate: -0.7deg;
 }
 
-.story-text[data-v="0"] {
+.story-section[data-v="0"] {
   grid-column: 1 / span 5;
 }
-.story-text[data-v="1"] {
+.story-section[data-v="1"] {
   grid-column: 7 / span 5;
 }
-.story-text[data-v="2"] {
+.story-section[data-v="2"] {
   grid-column: 3 / span 6;
 }
 
@@ -1319,10 +1346,14 @@ body:has(.hero) .contact {
   }
 
   .story-figure,
-  .story-text {
+  .story-section {
     grid-column: 1 / -1 !important;
     margin-top: 0;
     rotate: none;
+  }
+
+  .story-section {
+    margin: 26px 0 20px;
   }
 
   .story-text {

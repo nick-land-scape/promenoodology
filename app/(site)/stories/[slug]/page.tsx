@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!story) return {};
 
   const description =
-    story.paragraphs[0] ?? [story.title, story.where, story.when].filter(Boolean).join(", ");
+    story.lead || [story.title, story.where, story.when].filter(Boolean).join(", ");
 
   return {
     title: story.title,
@@ -53,11 +53,13 @@ export default async function StoryPage({ params }: Params) {
         </p>
         <h1 className="page-title">{story.title}</h1>
         <p className="story-meta">
-          {[story.where, story.when, credit(story.credits)].filter(Boolean).join(" · ")}
+          {[story.where, story.when, story.with, credit(story.credits)]
+            .filter(Boolean)
+            .join(" · ")}
         </p>
       </header>
 
-      <StoryBody slides={slides} paragraphs={story.paragraphs} />
+      <StoryBody slides={slides} sections={story.sections} />
 
       <Cite
         title={story.title}

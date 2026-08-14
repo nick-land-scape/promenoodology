@@ -33,13 +33,21 @@ export function getHandbook(): Handbook {
     .slice(cursor)
     .join("\n")
     .split(/\n\s*\n/)
-    .map((block) => block.replace(/\s*\n\s*/g, " ").trim())
-    .filter(Boolean)
-    .map((block) =>
-      block.startsWith("##")
-        ? { kind: "heading" as const, text: block.replace(/^#+\s*/, "") }
-        : { kind: "text" as const, text: block },
-    );
+    .filter((block) => block.trim().length > 0)
+    .flatMap((raw) => {
+      // A heading takes its own line; anything after it in the same block is
+      // the paragraph that belongs to it.
+      const block = raw.trim();
+      if (!block.startsWith("##")) {
+        return [{ kind: "text" as const, text: block.replace(/\s*\n\s*/g, " ") }];
+      }
+      const newline = block.indexOf("\n");
+      const heading = (newline === -1 ? block : block.slice(0, newline)).replace(/^#+\s*/, "");
+      const rest = newline === -1 ? "" : block.slice(newline + 1).replace(/\s*\n\s*/g, " ").trim();
+      return rest
+        ? [{ kind: "heading" as const, text: heading }, { kind: "text" as const, text: rest }]
+        : [{ kind: "heading" as const, text: heading }];
+    });
 
   return {
     title: fields.title ?? "the handbook",

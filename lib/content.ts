@@ -73,6 +73,12 @@ export type Donation = {
   photo: Photo | null;
 };
 
+export type Section = {
+  /** "Opportunity", "Strategy", … or null for text before any heading. */
+  heading: string | null;
+  texts: string[];
+};
+
 export type Story = {
   slug: string;
   /** The short tag used in data/resources.csv to mark this story's photos. */
@@ -81,7 +87,12 @@ export type Story = {
   order: number;
   where: string | null;
   when: string | null;
-  paragraphs: string[];
+  /** Who it was made with or within, e.g. "EASA COMMONS". */
+  with: string | null;
+  /** The text, in the sections the text file is written in. */
+  sections: Section[];
+  /** The first paragraph, for page descriptions. */
+  lead: string;
   photos: Resource[];
   credits: string[];
   cover: Photo | null;

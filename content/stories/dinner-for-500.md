@@ -1,12 +1,12 @@
 title: dinner for 500
 tag: dfor500
-order: 2
-note: PLACEHOLDER TEXT — replace the paragraphs below with your own words.
+order: 3
+where: Sheffield, England
+when: August 2023
+with: EASA COMMONS
 
-Five hundred was never a target. It was a joke that nobody took back, and then it was a number of plates, and then it was a logistics problem with very good company.
+## Opportunity
+The EASA kitchen team feeds 500 people daily at the yearly summer assembly. This creates two-hour waiting lines. We understand this as a three-hour window with a captive audience of 500 participants to test new uses of public space.
 
-One long table, assembled out of whatever had legs. Doors, scaffolding boards, two ironing boards nobody claimed afterwards. It was not level and that turned out to be fine.
-
-The cooking started early and never really stopped. People arrived with things that did not obviously go together and left having eaten something they could not name.
-
-Nobody sat where they meant to sit. That was the whole point, and it is the part we would do again tomorrow.
+## Strategy
+We changed the rules of the meal. First, we redirected the crowd to a secret location minutes before dinner. This confusion already split up existing groups during the five minute walk. A spinning wheel then randomly assigned diners to one of three stations, each serving a triple portion of a different dish. Participants had to find two strangers with the matching portions to assemble a complete meal, turning a passive wait into an active social game pushing for interactions.

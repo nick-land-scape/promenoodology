@@ -73,7 +73,7 @@ public/
   logo.png              the logo (front page)
   logo-mark.png         the logo, cropped tight (menu, favicon)
   community/            portraits
-  resources/            project photos
+  resources/            story photos, ~1500px, named after their story
 ```
 
 ## Editing the content
@@ -107,25 +107,31 @@ a blank line, then as much text as you like:
 ```
 title: dinner for 500
 tag: dfor500
-order: 2
-where: Genalguacil, Spain
+order: 3
+where: Sheffield, England
+when: August 2023
+with: EASA COMMONS
 
-We cooked for as long as people kept arriving.
+## Opportunity
+Why it was worth doing.
 
-Every paragraph is separated by a blank line.
+## Strategy
+What we actually did.
 ```
 
 - `title` — shown as the heading, and as the filter button in the archive.
 - `tag` — matches the last column in `data/resources.csv`; that is how the
-  photos find their project.
-- `order` — position in the projects list and in the prev/next navigation.
-- `where` — optional. Leave it out and it is simply not shown.
-- `when` — optional; without it the years come from the photos.
+  photos find their story.
+- `order` — position in the stories list and in the prev/next navigation.
+- `where`, `when`, `with` — optional; left out, they are simply not shown.
+  Without `when`, the years come from the photos.
+- A line starting with `##` opens a section. The section label is set small and
+  in purple; the paragraphs under it are spread through the photographs.
 
-The four story files have **placeholder text** in them, marked with a `note:`
-line. Replace the paragraphs with your own words; the layout spreads them
-through the photographs by itself. `content/handbook.md` works the same way and
-is also placeholder text.
+The seven story texts are the final ones from `00_txt_draft4all.docx`. For
+SOSETH REBOOT the original wording is used rather than the corrected version,
+following the note in the document. `content/handbook.md` works the same way but
+is still placeholder text.
 
 ### The wall and the quotes
 

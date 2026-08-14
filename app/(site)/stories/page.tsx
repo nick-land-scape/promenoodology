@@ -24,15 +24,16 @@ export default function StoriesPage() {
         {stories.map((story) => (
           <li key={story.slug} className="story-card">
             <Link href={`/stories/${story.slug}`}>
-              <span className="story-cover">
-                {story.cover ? (
+              {story.cover ? (
+                <span className="story-cover">
                   <Photo src={story.cover.src} alt="" fill sizes="(max-width: 767px) 45vw, 320px" />
-                ) : null}
-              </span>
+                </span>
+              ) : null}
               <span className="story-name">{story.title}</span>
               <span className="story-meta">
                 {[story.where, story.when, count(story.photos.length)].filter(Boolean).join(" · ")}
               </span>
+              <span className="story-lead">{story.lead}</span>
             </Link>
           </li>
         ))}

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { Photo, Resource, Story } from "./content";
+import type { Photo, Resource, Section, Story } from "./content";
 import { getResources } from "./data";
 
 /**
@@ -13,11 +13,15 @@ import { getResources } from "./data";
  *   title: dinner for 500
  *   tag: dfor500
  *   order: 2
- *   where: Genalguacil, Spain
+ *   where: Sheffield, England
+ *   when: August 2023
+ *   with: EASA COMMONS
  *
- *   We cooked for as long as people kept arriving.
+ *   ## Opportunity
+ *   Why it was worth doing.
  *
- *   The second paragraph.
+ *   ## Strategy
+ *   What we actually did.
  */
 
 const STORIES_DIR = path.join(process.cwd(), "content", "stories");
@@ -69,12 +73,35 @@ function parse(file: string, resources: Resource[]): Story {
     fields[line.slice(0, separator).trim().toLowerCase()] = line.slice(separator + 1).trim();
   }
 
-  const paragraphs = lines
+  const blocks = lines
     .slice(cursor)
     .join("\n")
     .split(/\n\s*\n/)
-    .map((block) => block.replace(/\s*\n\s*/g, " ").trim())
-    .filter((block) => block.length > 0);
+    .filter((block) => block.trim().length > 0);
+
+  /** Paragraph text: line breaks inside a paragraph are just wrapping. */
+  const flatten = (text: string) => text.replace(/\s*\n\s*/g, " ").trim();
+
+  // A line starting with ## opens a new section. The rest of that block is the
+  // section's first paragraph, whether or not a blank line follows the heading.
+  const sections: Section[] = [];
+  const add = (text: string) => {
+    if (!text) return;
+    if (sections.length === 0) sections.push({ heading: null, texts: [] });
+    sections[sections.length - 1].texts.push(text);
+  };
+
+  for (const raw of blocks) {
+    const block = raw.trim();
+    if (!block.startsWith("##")) {
+      add(flatten(block));
+      continue;
+    }
+    const newline = block.indexOf("\n");
+    const heading = (newline === -1 ? block : block.slice(0, newline)).replace(/^#+\s*/, "");
+    sections.push({ heading, texts: [] });
+    if (newline !== -1) add(flatten(block.slice(newline + 1)));
+  }
 
   const tag = fields.tag ?? slug;
   const photos = resources.filter((item) => item.event === tag);
@@ -86,7 +113,9 @@ function parse(file: string, resources: Resource[]): Story {
     order: Number(fields.order) || 99,
     where: fields.where || null,
     when: fields.when || years(photos).join(", ") || null,
-    paragraphs,
+    with: fields.with || null,
+    sections,
+    lead: sections.flatMap((section) => section.texts)[0] ?? "",
     photos,
     credits: unique(photos.map((photo) => photo.credit)),
     cover: cover(photos),
