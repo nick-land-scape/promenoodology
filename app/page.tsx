@@ -44,7 +44,7 @@ export default function Home() {
           width={1600}
           height={1600}
           priority={layer === 0}
-          sizes="(max-width: 767px) 88vmin, min(92vmin, 860px)"
+          sizes="(max-width: 767px) 74vmin, min(62vmin, 560px)"
         />
       ))}
     </main>

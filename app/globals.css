@@ -228,16 +228,21 @@ img {
   background: var(--paper);
 }
 
+/* A square in the middle of the page with paper around it, the way the video
+   sat on the old site — not a full-bleed background. */
 .hero-video,
 .hero-poster {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(76vmin, 680px);
+  height: auto;
+  aspect-ratio: 1;
   object-fit: cover;
   border: 0;
-  /* Held back against the white page, so the multiplied logo stays readable. */
-  opacity: 0.68;
+  /* Held back a little, so the multiplied logo stays readable over it. */
+  opacity: 0.78;
 }
 
 /* No veil over the video: the logo is multiplied straight onto it, so the
@@ -247,7 +252,7 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(92vmin, 860px);
+  width: min(62vmin, 560px);
   height: auto;
   mix-blend-mode: multiply;
   filter: saturate(1.2);
@@ -400,6 +405,9 @@ body:has(.hero) .contact {
   position: absolute;
   top: 0;
   left: 0;
+  /* max-width: none — the container is a zero-width anchor point, so the
+     global img rule would otherwise squash the photo to nothing. */
+  max-width: none;
   width: min(44vw, var(--limit), calc(62vh * var(--ar)));
   height: auto;
   transform: translate(-50%, -50%) rotate(var(--tilt, 0deg));
@@ -504,6 +512,7 @@ body:has(.hero) .contact {
    their own size. --limit (a hard ceiling) and --ar (the aspect ratio, so the
    height cap keeps proportions) are set per photo in Lightbox. */
 .lightbox-frame img {
+  max-width: none;
   width: min(88vw, var(--limit), calc(72vh * var(--ar)));
   height: auto;
 }
@@ -666,8 +675,13 @@ body:has(.hero) .contact {
     gap: 16px;
   }
 
-  .hero-logo {
+  .hero-video,
+  .hero-poster {
     width: 88vmin;
+  }
+
+  .hero-logo {
+    width: 74vmin;
   }
 }
 
@@ -685,9 +699,11 @@ body:has(.hero) .contact {
   }
 }
 
+/* Fade only — animating a transform here would make the page a containing
+   block, and the fixed menu, filters and photo overlay would go with it. */
 .page,
 .page-centred {
-  animation: enter 0.45s ease-out both;
+  animation: fade 0.5s ease-out both;
 }
 
 /* Only the opacity here: the logo needs its own transform for centring. */
