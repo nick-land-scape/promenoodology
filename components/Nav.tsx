@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 import Photo from "./Photo";
-import SessionLink from "./SessionLink";
+import { AdminLink, SessionButton } from "./SessionLink";
 
 /** The four places most people are looking for. */
 const MAIN = [
@@ -68,7 +68,12 @@ export default function Nav() {
             {link.label}
           </Link>
         ))}
-        <SessionLink />
+        <AdminLink />
+      </div>
+
+      {/* Top right on a phone, last line of the menu on a wide screen. */}
+      <div className="nav-session">
+        <SessionButton />
       </div>
     </nav>
   );

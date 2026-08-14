@@ -1,61 +1,56 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { supabaseBrowser } from "@/lib/supabase/browser";
-import { hasSupabase } from "@/lib/supabase/config";
-
-type Who = { signedIn: boolean; admin: boolean };
+import { initials, useSession } from "@/lib/session";
 
 /**
- * The last line of the menu: sign in, or your profile — and for an admin, the
- * way into the back of the house.
+ * Two small pieces of the menu that depend on who is looking.
  *
- * Who you are is worked out in the browser on purpose. Asking on the server
- * would mean reading cookies, and a page that reads cookies has to be built
- * again for every single visitor instead of being served from the cache.
+ * Nothing is drawn until we know — a link that changes under somebody's finger
+ * is worse than one that arrives a moment late.
  */
-export default function SessionLink() {
-  const [who, setWho] = useState<Who | null>(null);
 
-  useEffect(() => {
-    if (!hasSupabase()) return;
-    const supabase = supabaseBrowser();
-    let alive = true;
-
-    const look = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!alive) return;
-      if (!user) return setWho({ signedIn: false, admin: false });
-
-      const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-      if (alive) setWho({ signedIn: true, admin: (data as { role?: string })?.role === "admin" });
-    };
-
-    look();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => look());
-    return () => {
-      alive = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
-
-  // Nothing at all until we know — a link that changes under you is worse than
-  // a link that arrives a moment late.
-  if (!who) return null;
+/** The way into the back of the house. Only an admin ever sees it. */
+export function AdminLink() {
+  const session = useSession();
+  if (!session?.admin) return null;
 
   return (
-    <>
-      {who.admin ? (
-        <Link href="/admin" className="nav-admin">
-          look after the site
-        </Link>
-      ) : null}
-      <Link href={who.signedIn ? "/account" : "/account/sign-in"}>
-        {who.signedIn ? "your profile" : "sign in"}
+    <Link href="/admin" className="nav-admin">
+      look after the site
+    </Link>
+  );
+}
+
+/**
+ * Sign in, or your own face. On a phone this sits in the strip at the top,
+ * on the right; on a wide screen it is the last line of the menu.
+ */
+export function SessionButton() {
+  const session = useSession();
+  if (!session) return null;
+
+  if (!session.signedIn) {
+    return (
+      <Link href="/account/sign-in" className="session-in">
+        sign in
       </Link>
-    </>
+    );
+  }
+
+  return (
+    <Link href="/account" className="session-you" aria-label={`${session.name} — your profile`}>
+      <span className="session-face">
+        {session.photo ? (
+          // Not next/image: it is 34 pixels and changes whenever somebody
+          // uploads a new one, so optimising it would cost more than it saves.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={session.photo} alt="" />
+        ) : (
+          <span aria-hidden="true">{initials(session.name)}</span>
+        )}
+      </span>
+      <span className="session-name">your profile</span>
+    </Link>
   );
 }
