@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description:
     "Everyone who has put something in, one by one. Some with their name, some without.",
   alternates: { canonical: "/donations" },
+  // Not listed in the menu or the sitemap yet, so it should not be indexed
+  // either. Remove this line when the page goes public.
+  robots: { index: false, follow: false },
 };
 
 /* On purpose there is no total anywhere on this page. What matters is who

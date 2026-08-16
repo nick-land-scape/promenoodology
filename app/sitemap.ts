@@ -11,7 +11,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/about",
     "/newsletter",
     "/handbook",
-    "/donations",
   ];
   const stories = (await getStories()).map((story) => `/stories/${story.slug}`);
 

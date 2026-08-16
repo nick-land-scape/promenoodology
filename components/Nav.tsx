@@ -14,11 +14,12 @@ const MAIN = [
   { href: "/about", label: "ABOUT US" },
 ];
 
-/** The two you go to once you are interested. */
-const MORE = [
-  { href: "/handbook", label: "handbook" },
-  { href: "/donations", label: "public bank account" },
-];
+/** The ones you go to once you are interested. */
+const MORE = [{ href: "/handbook", label: "handbook" }];
+
+/* The public bank account is not listed anywhere for now. The page is still
+   there at /donations for anybody given the address; put it back in MORE when
+   it should be public. */
 
 /** Knocks on the mark, and how long you have to make them. */
 const KNOCKS = 3;
