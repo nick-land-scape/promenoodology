@@ -8,6 +8,8 @@ export type Member = {
   first: string;
   last: string;
   country: string;
+  /** Which story they were part of. Added to community.csv later. */
+  project: string;
   color: string | null;
   photo: Photo | null;
 };

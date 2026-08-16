@@ -23,17 +23,20 @@ export function AdminLink() {
 }
 
 /**
- * Sign in, or your own face. On a phone this sits in the strip at the top,
- * on the right; on a wide screen it is the last line of the menu.
+ * The newsletter, or your own face if you happen to be signed in. On a phone
+ * this sits in the strip at the top, on the right; on a wide screen it is the
+ * last line of the menu.
+ *
+ * There is deliberately no sign-in link: the way in is three knocks on the mark
+ * (see Nav).
  */
 export function SessionButton() {
   const session = useSession();
-  if (!session) return null;
 
-  if (!session.signedIn) {
+  if (!session || !session.signedIn) {
     return (
-      <Link href="/account/sign-in" className="session-in">
-        sign in
+      <Link href="/newsletter" className="session-in">
+        newsletter
       </Link>
     );
   }

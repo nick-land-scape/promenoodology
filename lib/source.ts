@@ -257,6 +257,7 @@ export async function getMembers(): Promise<Member[]> {
       first: parts[0] ?? "",
       last: parts.slice(1).join(" "),
       country: row.country ?? "",
+      project: "",
       color: row.colour,
       photo: row.photo_path
         ? { src: mediaUrl(row.photo_path), width: 600, height: 800 }

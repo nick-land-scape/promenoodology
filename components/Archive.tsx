@@ -22,16 +22,13 @@ type Props = {
   years: string[];
 };
 
-type Kind = "all" | "photos" | "quotes";
-
 /**
  * Everything we keep, on one wall: photographs at whatever size and shape they
  * came in, with the things people said in between. Not a grid — the items fall
  * into columns and each one takes a slightly different width, so the eye has to
- * wander. Filters narrow it down by kind, by story and by year.
+ * wander. Filters narrow it down by story and by year.
  */
 export default function Archive({ slides, quotes, stories, years }: Props) {
-  const [kind, setKind] = useState<Kind>("all");
   const [story, setStory] = useState<string | null>(null);
   const [year, setYear] = useState<string | null>(null);
   const [open, setOpen] = useState<number | null>(null);
@@ -39,8 +36,7 @@ export default function Archive({ slides, quotes, stories, years }: Props) {
   const selected = stories.find((item) => item.tag === story);
 
   const photos = slides.filter(
-    (slide) =>
-      (!story || slide.story === story) && (!year || slide.year === year),
+    (slide) => (!story || slide.story === story) && (!year || slide.year === year),
   );
   const said = quotes.filter(
     (quote) =>
@@ -48,31 +44,13 @@ export default function Archive({ slides, quotes, stories, years }: Props) {
   );
 
   // The lightbox steps through the photographs that are actually on the wall.
-  const inLightbox: Slide[] = photos;
-  const items = mix(
-    kind === "quotes" ? [] : photos,
-    kind === "photos" ? [] : said,
-  );
+  const inLightbox = photos;
+  const items = mix(photos, said);
 
   return (
     <>
       <Submenu section="resources">
         <div className="filters">
-          <div className="filter-group">
-            <span className="filter-label">on the wall</span>
-            {(["all", "photos", "quotes"] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                className="text-button"
-                aria-pressed={kind === option}
-                onClick={() => setKind(option)}
-              >
-                {option === "all" ? "everything" : option}
-              </button>
-            ))}
-          </div>
-
           <div className="filter-group">
             <span className="filter-label">story</span>
             <button
@@ -173,6 +151,12 @@ export default function Archive({ slides, quotes, stories, years }: Props) {
           index={open}
           onIndex={setOpen}
           onClose={() => setOpen(null)}
+          storyOf={(slide) => {
+            const found = stories.find(
+              (item) => item.tag === (slide as (typeof photos)[number]).story,
+            );
+            return found ? { title: found.title, slug: found.slug } : null;
+          }}
         />
       ) : null}
     </>

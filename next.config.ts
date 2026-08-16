@@ -26,6 +26,8 @@ const nextConfig: NextConfig = {
       // Projects became stories.
       { source: "/projects", destination: "/stories", permanent: true },
       { source: "/resources/quotes", destination: "/resources", permanent: true },
+      // "become a member" is gone; the newsletter is the way to keep in touch.
+      { source: "/join", destination: "/newsletter", permanent: true },
       { source: "/projects/:slug", destination: "/stories/:slug", permanent: true },
       { source: "/munity", destination: "/community", permanent: true },
       { source: "/munity/index.html", destination: "/community", permanent: true },

@@ -104,3 +104,11 @@ export type ApplicationRow = {
   state: "new" | "talking" | "yes" | "no";
   created_at: string;
 };
+
+export type NewsletterRow = {
+  id: string;
+  email: string;
+  name: string;
+  confirmed: boolean;
+  created_at: string;
+};

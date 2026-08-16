@@ -47,7 +47,8 @@ export default async function HandbookPage() {
         </p>
         <SupportForm />
         <p className="page-note">
-          Already know people who would come? Send them to the <Link href="/join">join page</Link>.
+          Already know people who would come? Send them to the{" "}
+          <Link href="/newsletter">newsletter</Link>, and they will hear about the next one.
         </p>
       </section>
     </main>

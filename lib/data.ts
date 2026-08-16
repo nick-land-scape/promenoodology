@@ -24,11 +24,12 @@ export function readRows(file: string): string[][] {
 
 export function getMembers(): Member[] {
   const [, ...rows] = readRows("community.csv"); // first row is the header
-  return rows.map(([first, last, country, image, special]) => ({
+  return rows.map(([first, last, country, image, special, project]) => ({
     name: [first, last].filter(Boolean).join(" "),
     first: first ?? "",
     last: last ?? "",
     country: country ?? "",
+    project: project ?? "",
     color: special || null,
     photo: photo(`/community/${image}`, image),
   }));

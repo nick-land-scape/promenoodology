@@ -2,19 +2,17 @@
 
 import Photo from "./Photo";
 import Submenu from "./Submenu";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Member } from "@/lib/content";
 
 /** How much larger than the original file a portrait may be drawn. */
 const MAX_SCALE = 2.2;
 
-/** 0 = the photo sits exactly under the cursor, 1 = it stays in the middle. */
-const PULL_TO_CENTRE = 0.42;
-
 const ORDERS = [
-  { key: "last", label: "surname" },
+  { key: "last", label: "name" },
   { key: "first", label: "first name" },
   { key: "country", label: "country" },
+  { key: "project", label: "project" },
 ] as const;
 
 type Order = (typeof ORDERS)[number]["key"];
@@ -23,17 +21,16 @@ type Order = (typeof ORDERS)[number]["key"];
  * The people, in the order you choose.
  *
  * Two ways of showing the same thing. On a wide screen it is a grid of names,
- * and pointing at one brings up that person's photograph, drifting along with
- * the cursor. On a narrow one there is nothing to point with, so the
- * photographs are simply there, each beside its name — nothing hidden.
+ * and pointing at one puts that person's photograph in the middle of the page,
+ * behind the names — so everybody else stays readable, as on the old site. On a
+ * narrow screen there is nothing to point with, so the photographs are simply
+ * there, each beside its name.
  */
 export default function CommunityGrid({ members }: { members: Member[] }) {
   const [order, setOrder] = useState<Order>("last");
   const [active, setActive] = useState<string | null>(null);
   const [preload, setPreload] = useState(false);
   const [narrow, setNarrow] = useState(false);
-  const stage = useRef<HTMLDivElement>(null);
-  const frame = useRef(0);
 
   const sorted = useMemo(() => sortMembers(members, order), [members, order]);
 
@@ -56,26 +53,6 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
     const handle = idle(() => setPreload(true));
     return () => window.cancelIdleCallback?.(handle as number);
   }, [narrow]);
-
-  // Written straight onto the element: this runs on every pointer move, and
-  // React does not need to re-render for it.
-  const place = useCallback((clientX: number, clientY: number) => {
-    cancelAnimationFrame(frame.current);
-    frame.current = requestAnimationFrame(() => {
-      const element = stage.current;
-      if (!element) return;
-      const middleX = window.innerWidth / 2;
-      const middleY = window.innerHeight / 2;
-      element.style.setProperty("--x", `${clientX + (middleX - clientX) * PULL_TO_CENTRE}px`);
-      element.style.setProperty("--y", `${clientY + (middleY - clientY) * PULL_TO_CENTRE}px`);
-      element.style.setProperty(
-        "--tilt",
-        `${(((clientX - middleX) / middleX) * 2.5).toFixed(2)}deg`,
-      );
-    });
-  }, []);
-
-  useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
   const clear = (id: string) => setActive((current) => (current === id ? null : current));
 
@@ -103,7 +80,6 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
       <ul
         className="community-grid"
         data-faces={narrow ? "" : undefined}
-        onPointerMove={narrow ? undefined : (event) => place(event.clientX, event.clientY)}
       >
         {sorted.map((member) => {
           const id = idOf(member);
@@ -114,24 +90,9 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
                 data-color={member.color ?? undefined}
                 data-active={!narrow && active === id ? "" : undefined}
                 tabIndex={narrow ? undefined : 0}
-                onMouseEnter={
-                  narrow
-                    ? undefined
-                    : (event) => {
-                        place(event.clientX, event.clientY);
-                        setActive(id);
-                      }
-                }
+                onMouseEnter={narrow ? undefined : () => setActive(id)}
                 onMouseLeave={narrow ? undefined : () => clear(id)}
-                onFocus={
-                  narrow
-                    ? undefined
-                    : (event) => {
-                        const box = event.currentTarget.getBoundingClientRect();
-                        place(box.left + box.width / 2, box.top + box.height / 2);
-                        setActive(id);
-                      }
-                }
+                onFocus={narrow ? undefined : () => setActive(id)}
                 onBlur={narrow ? undefined : () => clear(id)}
               >
                 {narrow ? (
@@ -154,7 +115,7 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
 
       {/* The floating photograph, for anybody with something to point with. */}
       {narrow ? null : (
-        <div className="portrait" ref={stage} aria-hidden="true">
+        <div className="portrait" aria-hidden="true">
           {sorted.map((member) =>
             member.photo && (preload || active === idOf(member)) ? (
               <Photo
@@ -163,7 +124,7 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
                 alt=""
                 width={member.photo.width}
                 height={member.photo.height}
-                sizes="44vw"
+                sizes="60vh"
                 loading="eager"
                 fetchPriority="low"
                 style={
@@ -191,6 +152,12 @@ function sortMembers(members: Member[], order: Order) {
   return [...members].sort((a, b) => {
     if (order === "first") return by(a.first, b.first) || by(a.last, b.last);
     if (order === "country") return by(a.country, b.country) || by(a.last, b.last);
+    // Anybody without a project yet goes to the end rather than to the top.
+    if (order === "project") {
+      if (!a.project && b.project) return 1;
+      if (a.project && !b.project) return -1;
+      return by(a.project, b.project) || by(a.last, b.last);
+    }
     return by(a.last, b.last) || by(a.first, b.first);
   });
 }

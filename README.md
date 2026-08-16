@@ -28,10 +28,11 @@ for members, not for search engines.
 On a phone the app can be added to the home screen and opens without browser
 furniture (`public/manifest.webmanifest`).
 
-**The secret door.** There is no menu link to the app. On the front page, knock
-three times on the logo — three clicks or taps inside about a second and a half
-— and it opens. (Pressing Tab on the front page also reveals a way in, so the
-app stays reachable with a keyboard or a screen reader.)
+**Two secret doors, both on the mark.** There is no sign-in link anywhere: knock
+three times on the logo in the menu — three clicks inside a second and a half —
+and the sign-in page opens. On the front page the same three knocks on the big
+logo open the members' app. (Pressing Tab on the front page also reveals a way
+in, so the app stays reachable with a keyboard or a screen reader.)
 
 ## Where things are
 
@@ -43,9 +44,9 @@ app/
     stories/            one page per story + the overview (was "projects")
     resources/          the archive: one wall, photographs and quotes mixed
     community/          the grid of names, photo follows the pointer
-    join/               how to become a member
+    newsletter/         a short letter when there is something to come to
     handbook/           how to run your own, and how to ask us for help
-    donations/          the wall — every gift, one by one, no total
+    donations/          the public bank account — every gift, one by one, no total
     about/              what we are about
   app/                  the members' app — its own shell and tab bar
     page.tsx            Home — what is coming up, latest news
@@ -84,9 +85,11 @@ No code needed for any of this. Commit the change and Vercel rebuilds the site.
 
 1. Put their photo in `public/community/` (e.g. `img036.jpg`).
 2. Add a line to `data/community.csv`:
-   `First,Last,Country,img036.jpg,`
+   `First,Last,Country,img036.jpg,,project`
 
-The last column is optional: `orange`, `green` or `blue` colours the name.
+The fifth column is optional: `orange`, `green` or `blue` colours the name. The
+sixth is the story they were part of, and the community page can be sorted by
+it.
 A row without a photo still shows the name.
 
 ### Add photos to a project
@@ -135,7 +138,7 @@ is still placeholder text.
 
 ### The wall and the quotes
 
-`data/donations.csv` is `who,when,amount,note` — leave `who` empty for somebody
+`data/donations.csv` (the public bank account) is `who,when,amount,note` — leave `who` empty for somebody
 who would rather stay anonymous, and the wall shows "someone" instead. There is
 deliberately **no total anywhere on the page**: it is a list of people, not a
 fundraising thermometer. When gifts start arriving automatically this file is

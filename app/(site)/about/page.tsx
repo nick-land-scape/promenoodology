@@ -48,8 +48,8 @@ export default async function AboutPage() {
         ))}
 
         <div className="statement-actions">
-          <Link className="join-primary" href="/join">
-            become a member →
+          <Link className="join-primary" href="/newsletter">
+            hear when something is on →
           </Link>
           <Link className="join-secondary" href="/handbook">
             or put on your own — the handbook →

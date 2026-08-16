@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Fragment } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Fragment, useRef } from "react";
 import Photo from "./Photo";
 import { AdminLink, SessionButton } from "./SessionLink";
 
@@ -14,42 +14,53 @@ const MAIN = [
   { href: "/about", label: "ABOUT US" },
 ];
 
-/** The three you go to once you are interested. */
+/** The two you go to once you are interested. */
 const MORE = [
-  { href: "/join", label: "become a member" },
   { href: "/handbook", label: "handbook" },
-  { href: "/donations", label: "the wall" },
+  { href: "/donations", label: "public bank account" },
 ];
+
+/** Knocks on the mark, and how long you have to make them. */
+const KNOCKS = 3;
+const KNOCK_WINDOW = 1500;
 
 export default function Nav() {
   const pathname = usePathname();
-
+  const router = useRouter();
+  const knocks = useRef(0);
+  const last = useRef(0);
 
   // /stories/dinner-for-500 keeps STORIES marked as the section you are in.
-  const current = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
+  const current = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+  /**
+   * The mark is the way home. Knock on it three times quickly and it is also
+   * the way in — there is no sign-in link anywhere, on purpose. The first click
+   * still goes home; only the third is swallowed. The count survives that
+   * because the menu is part of the layout and never unmounts.
+   */
+  const knock = (event: React.MouseEvent) => {
+    const now = Date.now();
+    knocks.current = now - last.current > KNOCK_WINDOW ? 1 : knocks.current + 1;
+    last.current = now;
+
+    if (knocks.current >= KNOCKS) {
+      knocks.current = 0;
+      event.preventDefault();
+      router.push("/account/sign-in");
+    }
+  };
 
   return (
     <nav className="nav">
-      {/* The mark is the way back to the front page. */}
-      <Link href="/" className="nav-mark" aria-label="promeNOODology — home">
-        <Photo
-          src="/logo-mark.png"
-          alt=""
-          width={600}
-          height={582}
-          priority
-          sizes="74px"
-        />
+      <Link href="/" className="nav-mark" aria-label="promeNOODology — home" onClick={knock}>
+        <Photo src="/logo-mark.png" alt="" width={600} height={582} priority sizes="74px" />
       </Link>
 
       <div className="nav-links">
         {MAIN.map((link) => (
           <Fragment key={link.href}>
-            <Link
-              href={link.href}
-              aria-current={current(link.href) ? "page" : undefined}
-            >
+            <Link href={link.href} aria-current={current(link.href) ? "page" : undefined}>
               {link.label}
             </Link>
             {/* A page with filters of its own puts them in here. */}

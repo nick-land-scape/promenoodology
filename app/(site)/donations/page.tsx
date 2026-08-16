@@ -4,7 +4,7 @@ import Photo from "@/components/Photo";
 import { getDonations } from "@/lib/source";
 
 export const metadata: Metadata = {
-  title: "Donation wall",
+  title: "Public bank account",
   description:
     "Everyone who has put something in, one by one. Some with their name, some without.",
   alternates: { canonical: "/donations" },
@@ -21,11 +21,11 @@ export default async function DonationsPage() {
 
   return (
     <main className="page">
-      <h1 className="page-title">the wall</h1>
+      <h1 className="page-title">public bank account</h1>
       <p className="page-intro">
-        Every gift, one by one, newest first. Some people put their name to it and some would
-        rather not — both are on the wall. We do not show a total: this is not a thermometer, it is
-        a list of people who made something possible.
+        Everything that comes in, one by one, newest first. Some people put their name to it and
+        some would rather not — both are here. We do not show a total: this is not a thermometer,
+        it is a list of people who made something possible.
       </p>
 
       <p className="page-note">
@@ -65,8 +65,8 @@ export default async function DonationsPage() {
         </p>
         <p>
           Write to <a href="mailto:info@promeNOODology.com">info@promeNOODology.com</a> and say
-          whether you would like your name on the wall or not. If you would rather give time than
-          money, the <Link href="/handbook">handbook</Link> is the other way in.
+          whether you would like your name here or not. If you would rather give time than money,
+          the <Link href="/handbook">handbook</Link> is the other way in.
         </p>
       </section>
     </main>

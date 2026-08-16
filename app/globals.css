@@ -257,11 +257,11 @@ img {
 
 /* ------------------------------------------------------------------- contact */
 
-/* A thin sidebar down the right edge: the text is turned a quarter turn, the
-   way it was on the old site's phone layout. */
+/* A thin sidebar down the left edge: the text is turned a quarter turn, the
+   way it was on the old site. */
 .contact {
   position: fixed;
-  right: 6px;
+  left: 6px;
   bottom: var(--edge);
   z-index: 20;
   display: flex;
@@ -286,7 +286,7 @@ img {
 .page {
   padding: var(--edge);
   padding-left: var(--sidebar);
-  padding-right: var(--lane);
+  padding-right: var(--edge);
   padding-bottom: calc(var(--edge) + 40px);
   min-height: 100vh;
 }
@@ -1174,11 +1174,9 @@ body:has(.hero) .contact {
   font-size: calc(1em - 2px);
 }
 
-/* The name of the person you are pointing at stays in front of their photo —
-   nothing behind it, just the colour change. */
+/* The name of the person you are pointing at turns purple; the photograph is
+   already behind the whole list. */
 .community-item[data-active] {
-  position: relative;
-  z-index: 6;
   color: var(--purple);
 }
 
@@ -1197,20 +1195,18 @@ body:has(.hero) .contact {
   color: var(--purple);
 }
 
-/* The portrait that appears while a name is hovered, held or focused.
-   All portraits share one spot; only the active one is visible. The spot
-   follows the cursor — CommunityGrid keeps --x, --y and --tilt up to date. */
+/* The photograph of whoever is being pointed at: in the middle of the page and
+   behind the names, the way the old site did it, so the rest of the list stays
+   readable over it. */
 .portrait {
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
   width: 0;
   height: 0;
-  z-index: 5;
+  z-index: 0;
   pointer-events: none;
   line-height: 0;
-  transform: translate3d(var(--x, 50vw), var(--y, 50vh), 0);
-  transition: transform 0.2s ease-out;
 }
 
 /* --limit (how far past its own size a photo may be stretched) and --ar (its
@@ -1222,10 +1218,15 @@ body:has(.hero) .contact {
   /* max-width: none — the container is a zero-width anchor point, so the
      global img rule would otherwise squash the photo to nothing. */
   max-width: none;
-  width: min(44vw, var(--limit), calc(62vh * var(--ar)));
+  width: min(46vw, var(--limit), calc(64vh * var(--ar)));
   height: auto;
-  transform: translate(-50%, -50%) rotate(var(--tilt, 0deg));
-  transition: transform 0.25s ease-out;
+  transform: translate(-50%, -50%);
+}
+
+/* The names sit above the photograph. */
+.community-grid {
+  position: relative;
+  z-index: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1580,9 +1581,9 @@ body:has(.hero) .contact {
     padding: 7px 14px;
   }
 
-  /* The sidebar stays on the right, just clear of the menu bar. */
+  /* The sidebar stays on the left, just clear of the menu bar. */
   .contact {
-    right: 2px;
+    left: 2px;
     bottom: calc(var(--bar-height) + 14px);
     gap: 12px;
     font-size: 0.85em;
@@ -1594,8 +1595,8 @@ body:has(.hero) .contact {
 
   /* Room down the right for the turned contact details. */
   .page {
-    padding-left: var(--edge);
-    padding-right: 26px;
+    padding-left: 26px;
+    padding-right: var(--edge);
     padding-top: calc(var(--top-bar) + var(--edge));
     min-height: 0;
   }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Photo from "./Photo";
 import { useEffect } from "react";
 import type { Slide } from "@/lib/content";
@@ -9,15 +10,18 @@ type Props = {
   index: number;
   onIndex: (index: number) => void;
   onClose: () => void;
+  /** Which story a photograph belongs to, if any — shown as a way through. */
+  storyOf?: (slide: Slide) => { title: string; slug: string } | null;
 };
 
 /**
  * One photo at a time, with the same plain text controls the rest of the site
  * uses. Arrow keys and Escape work too.
  */
-export default function Lightbox({ slides, index, onIndex, onClose }: Props) {
+export default function Lightbox({ slides, index, onIndex, onClose, storyOf }: Props) {
   const slide = slides[index];
   const many = slides.length > 1;
+  const story = slide && storyOf ? storyOf(slide) : null;
   const step = (by: number) => onIndex((index + by + slides.length) % slides.length);
 
   useEffect(() => {
@@ -70,7 +74,17 @@ export default function Lightbox({ slides, index, onIndex, onClose }: Props) {
           close ×
         </button>
 
-        <figcaption className="lightbox-caption">{slide.caption}</figcaption>
+        <figcaption className="lightbox-caption">
+          {slide.caption}
+          {story ? (
+            <>
+              {slide.caption ? " · " : null}
+              <Link href={`/stories/${story.slug}`} onClick={onClose}>
+                {story.title} →
+              </Link>
+            </>
+          ) : null}
+        </figcaption>
 
         {many ? (
           <div className="lightbox-controls">
