@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import NewsletterForm from "@/components/NewsletterForm";
 import { pageIsVisible } from "@/lib/site-pages";
+import { getPageHead } from "@/lib/source";
 
 export const metadata: Metadata = {
   title: "Newsletter",
@@ -14,14 +15,20 @@ export default async function NewsletterPage() {
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("newsletter"))) notFound();
 
+  const head = await getPageHead("newsletter");
+
   return (
     <main className="page">
       <div className="auth">
-        <h1 className="page-title">keep in touch</h1>
-        <p className="page-intro">
-          A short letter when there is something to come to, and nothing in between. No membership,
-          no fee, and you can ask us to take you off the list at any time.
-        </p>
+        <h1 className="page-title">{head.title || "keep in touch"}</h1>
+        {head.saved ? (
+          head.lead ? <p className="page-intro">{head.lead}</p> : null
+        ) : (
+          <p className="page-intro">
+            A short letter when there is something to come to, and nothing in between. No
+            membership, no fee, and you can ask us to take you off the list at any time.
+          </p>
+        )}
 
         <NewsletterForm />
 

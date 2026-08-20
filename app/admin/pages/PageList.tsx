@@ -12,7 +12,7 @@ export type PageLine = {
   navLabel: string;
   group: "main" | "more" | "none";
   position: number;
-  /** Does this page have words of its own to edit? */
+  /** Every page has an editor now; this says whether it is made of words. */
   hasWords: boolean;
   madeOf: string;
 };
@@ -121,11 +121,9 @@ export default function PageList({ initial }: { initial: PageLine[] }) {
             <span className="admin-row-main" style={{ minWidth: 260 }}>
               <span className="admin-row-name" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 /{line.slug}
-                {line.hasWords ? (
-                  <Link href={`/admin/pages/${line.slug}`} className="admin-word">
-                    open its words →
-                  </Link>
-                ) : null}
+                <Link href={`/admin/pages/${line.slug}`} className="admin-word">
+                  {line.hasWords ? "open its words →" : "open it →"}
+                </Link>
               </span>
               <span className="admin-row-meta">{line.madeOf}</span>
 

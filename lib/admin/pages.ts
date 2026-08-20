@@ -1,12 +1,17 @@
 /**
- * The two pages whose words are edited but whose shape is fixed.
+ * Every page of the site, and what there is to change about it.
  *
- * Neither is a free-form page builder, and neither should become one: the about
- * statement alternates between two voices because that is the design, and the
- * handbook numbers its own headings 01, 02, 03 because that is the design. What
- * can be changed is what they say, in how many parts, and in what order.
+ * All of them have a heading and a line under it. Two of them — the about
+ * statement and the handbook — are also made of words, in blocks whose kind is
+ * part of the design: the statement alternates between two voices because that is
+ * the design, and the handbook numbers its own headings because that is the
+ * design. The rest are made of stories, photographs, quotes and people, and their
+ * own contents are looked after in those sections.
  *
- * Plain data, so the client editor can read the same description the server does.
+ * Neither is a page builder, and neither should become one. What can be changed
+ * is what a page says, in how many parts, and in what order.
+ *
+ * Plain data, so the client editor reads the same description the server does.
  */
 
 export type BlockKind = {
@@ -17,19 +22,55 @@ export type BlockKind = {
 };
 
 export type PageSpec = {
-  slug: "about" | "handbook";
+  slug: string;
   name: string;
   blurb: string;
   /** Where it is on the site. */
   view: string;
-  /** Does the page show the title and lead, or only the blocks? */
+  /** Does the page show its title, and the line under it? */
   usesTitle: boolean;
   usesLead: boolean;
+  /** Is it made of blocks of words, or of something else? */
   kinds: BlockKind[];
   addLabel: string;
+  /** What the page is made of, for the pages that are not made of words. */
+  madeOf?: string;
 };
 
 export const PAGES: PageSpec[] = [
+  {
+    slug: "stories",
+    name: "stories",
+    blurb: "The list of stories: the heading, the line under it, and how wide a card may be.",
+    view: "/stories",
+    usesTitle: true,
+    usesLead: true,
+    kinds: [],
+    addLabel: "",
+    madeOf: "The stories themselves are under Stories.",
+  },
+  {
+    slug: "resources",
+    name: "the archive",
+    blurb: "The wall of photographs and quotes: its heading, and how wide its columns are.",
+    view: "/resources",
+    usesTitle: true,
+    usesLead: true,
+    kinds: [],
+    addLabel: "",
+    madeOf: "What is on the wall is under The archive and Quotes.",
+  },
+  {
+    slug: "community",
+    name: "community",
+    blurb: "The grid of names. Its heading is read out rather than shown.",
+    view: "/community",
+    usesTitle: true,
+    usesLead: true,
+    kinds: [],
+    addLabel: "",
+    madeOf: "Who is on it is under People.",
+  },
   {
     slug: "about",
     name: "about us",
@@ -56,6 +97,28 @@ export const PAGES: PageSpec[] = [
       { value: "heading", label: "heading", hint: "Numbered automatically." },
       { value: "text", label: "paragraph", hint: "The words under it." },
     ],
+  },
+  {
+    slug: "newsletter",
+    name: "newsletter",
+    blurb: "The page with the form on it: its heading and the line under it.",
+    view: "/newsletter",
+    usesTitle: true,
+    usesLead: true,
+    kinds: [],
+    addLabel: "",
+    madeOf: "Who is on the list is under Newsletter.",
+  },
+  {
+    slug: "donations",
+    name: "public bank account",
+    blurb: "The wall of gifts: its heading and the line under it. Still no total, on purpose.",
+    view: "/donations",
+    usesTitle: true,
+    usesLead: true,
+    kinds: [],
+    addLabel: "",
+    madeOf: "The gifts themselves are under The wall.",
   },
 ];
 

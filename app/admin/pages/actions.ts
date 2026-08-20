@@ -2,6 +2,7 @@
 
 import { requireAdminAction } from "@/lib/admin/guard";
 import { pageSpec } from "@/lib/admin/pages";
+import { cleanSettings } from "@/lib/admin/page-settings";
 import { failed, refreshSite, type Saved } from "@/lib/admin/revalidate";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -17,6 +18,7 @@ export async function savePageWords(input: {
   title: string;
   lead: string;
   blocks: { kind: string; text: string }[];
+  settings?: Record<string, unknown>;
 }): Promise<Saved> {
   const admin = await requireAdminAction();
 
@@ -30,10 +32,13 @@ export async function savePageWords(input: {
     .map((block) => ({ kind: block.kind, text: block.text.trim() }))
     .filter((block) => block.text && allowed.has(block.kind));
 
-  if (blocks.length === 0) {
+  // Only the pages that are made of words need any: the stories page is made of
+  // stories, and has a heading and a line under it and nothing else to say.
+  if (spec.kinds.length > 0 && blocks.length === 0) {
     return {
       ok: false,
-      error: "A page with nothing on it would fall back to the original words. Write something, or leave it as it is.",
+      error:
+        "A page with nothing on it would fall back to the original words. Write something, or leave it as it is.",
     };
   }
 
@@ -45,7 +50,13 @@ export async function savePageWords(input: {
       // something has to be there for anybody reading the table by hand.
       title: input.title.trim() || spec.name,
       lead: spec.usesLead ? input.lead.trim() : "",
-      blocks,
+      // Only written for the pages that are made of words. A page that is made
+      // of stories has none, and writing an empty list over what is there would
+      // be a way of losing the handbook by editing the archive.
+      ...(spec.kinds.length > 0 ? { blocks } : {}),
+      // Checked against what this page is allowed to set, and clamped: a number
+      // typed into the wrong box cannot make a column three pixels wide.
+      settings: cleanSettings(spec.slug, input.settings ?? {}),
       updated_by: admin.id,
     },
     { onConflict: "slug" },

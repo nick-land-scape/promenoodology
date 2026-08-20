@@ -2,19 +2,21 @@
 
 import { useState } from "react";
 import type { Section, Slide } from "@/lib/content";
+import { variantFor } from "@/lib/photo-layout";
 import Lightbox from "./Lightbox";
 import Photo from "./Photo";
 
 /** How much larger than the original file a photo may be drawn. */
 const MAX_SCALE = 2.2;
 
-/**
- * Eight layout variants, cycled through in order. Every photo lands on the same
- * twelve columns, but at a different width, a different column and a slightly
- * different height — chaotic to look at, completely predictable underneath,
- * which is what keeps it from turning into a mess.
- */
-const VARIANTS = 8;
+/* Eight layout variants, cycled through in order. Every photo lands on the same
+   twelve columns, but at a different width, a different column and a slightly
+   different height — chaotic to look at, completely predictable underneath,
+   which is what keeps it from turning into a mess.
+
+   A photograph given a layout in /admin borrows one of these eight rather than
+   inventing geometry of its own, so a story with every picture named still looks
+   like a story from this site. See lib/photo-layout. */
 
 type Props = {
   slides: Slide[];
@@ -42,7 +44,11 @@ export default function StoryBody({ slides, sections }: Props) {
               ))}
             </section>
           ) : (
-            <figure key={block.slide.key} className="story-figure" data-v={block.index % VARIANTS}>
+            <figure
+              key={block.slide.key}
+              className="story-figure"
+              data-v={variantFor(block.slide.layout, block.index)}
+            >
               <button
                 type="button"
                 className="story-button"

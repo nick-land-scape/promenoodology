@@ -11,10 +11,13 @@ import {
   Panel,
   Problem,
   SaveBar,
+  Tag,
   Word,
   moved,
 } from "@/components/admin/ui";
-import { saveStory } from "../actions";
+import { LAYOUTS } from "@/lib/photo-layout";
+import type { PhotoLayout } from "@/lib/supabase/rows";
+import { saveStory, saveStoryPhotos } from "../actions";
 
 /**
  * One story: what it was, and the text as it is written.
@@ -29,12 +32,15 @@ type Draft = {
   id: string;
   slug: string;
   title: string;
+  subtitle: string;
   tag: string;
   place: string;
   happened: string;
   made_with: string;
   sections: { heading: string; texts: string[] }[];
   published: boolean;
+  /** Which photograph stands for the story. Null: worked out from the photos. */
+  featured: string | null;
 };
 
 type PhotoLine = {
@@ -43,6 +49,7 @@ type PhotoLine = {
   credit: string;
   year: string;
   published: boolean;
+  layout: PhotoLayout | null;
 };
 
 export default function StoryEditor({
@@ -61,6 +68,38 @@ export default function StoryEditor({
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(kept);
 
+  /* The photographs are arranged here — their order and how each one sits — and
+     kept on their own button. They are rows in the archive rather than parts of
+     the story, so saving the story cannot save them, and pretending otherwise
+     would be a save button that quietly did half its job. */
+  const [order, setOrder] = useState(photos);
+  const [keptOrder, setKeptOrder] = useState(photos);
+  const [dragging, setDragging] = useState<string | null>(null);
+  const photosMoved = JSON.stringify(order) !== JSON.stringify(keptOrder);
+
+  function movePhoto(from: number, to: number) {
+    const next = moved(order, from, to);
+    if (next !== order) setOrder(next);
+  }
+
+  function setLayout(id: string, layout: PhotoLayout | null) {
+    setOrder((list) => list.map((one) => (one.id === id ? { ...one, layout } : one)));
+  }
+
+  function keepPhotos() {
+    setProblem("");
+    start(async () => {
+      const result = await saveStoryPhotos(
+        order.map((photo) => ({ id: photo.id, layout: photo.layout })),
+      );
+      if (!result.ok) setProblem(result.error ?? "The arrangement did not save.");
+      else {
+        setKeptOrder(order);
+        router.refresh();
+      }
+    });
+  }
+
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((old) => ({ ...old, [key]: value }));
     setJustSaved(false);
@@ -77,6 +116,8 @@ export default function StoryEditor({
         id: draft.id,
         slug: draft.slug,
         title: draft.title,
+        subtitle: draft.subtitle,
+        featured_photo_id: draft.featured,
         tag: draft.tag,
         place: draft.place,
         happened: draft.happened,
@@ -128,6 +169,17 @@ export default function StoryEditor({
               placeholder="dinner for 500"
             />
           </Field>
+          <Field
+            label="the hook"
+            hint="One line under the title, above the place: why it was worth doing. Left empty it is simply not there."
+            wide
+          >
+            <input
+              value={draft.subtitle}
+              onChange={(event) => set("subtitle", event.target.value)}
+              placeholder="what makes somebody want to read this"
+            />
+          </Field>
           <Field label="where">
             <input
               value={draft.place}
@@ -163,8 +215,8 @@ export default function StoryEditor({
             label="address"
             hint={
               /^untitled-/.test(draft.slug)
-                ? "Made from the title the first time you save, and then left alone."
-                : "Changing this breaks every link anybody has already shared."
+                ? "Made from the title the first time you save, and then left alone unless you change it here."
+                : "You can change it — but every link anybody has already shared stops working, and there is no redirect."
             }
           >
             <input
@@ -292,39 +344,124 @@ export default function StoryEditor({
 
       <Panel
         name="its photographs"
-        hint={`Everything in the archive tagged “${draft.tag}”, in the order it appears on the page.`}
+        hint={`Everything in the archive tagged “${draft.tag}”, in the order they are read in. Drag a row, or use the arrows.`}
         action={
           <Link href={`/admin/photos?story=${draft.tag}`} className="admin-btn admin-btn-quiet">
-            look after them →
+            add or remove them →
           </Link>
         }
       >
-        {photos.length === 0 ? (
+        {order.length === 0 ? (
           <p className="admin-empty" style={{ padding: "16px 14px" }}>
             None yet. Photographs are added in the archive and given this tag; the story picks them
             up from there.
           </p>
         ) : (
-          <div className="admin-photos" style={{ padding: "12px 14px 16px" }}>
-            {photos.map((photo) => (
-              <figure
-                key={photo.id}
-                className={photo.published ? "admin-photo" : "admin-photo admin-photo-hidden"}
-                style={{ margin: 0 }}
-              >
-                <span className="admin-photo-frame" style={{ cursor: "default" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photo.url} alt="" loading="lazy" />
-                </span>
-                <figcaption className="admin-photo-foot">
-                  <span className="admin-row-meta" style={{ margin: 0 }}>
-                    {[photo.credit, photo.year].filter(Boolean).join(", ") || "no credit"}
+          <>
+            <ul className="admin-rows" style={{ border: 0, margin: "0 14px 12px" }}>
+              {order.map((photo, index) => (
+                <li
+                  key={photo.id}
+                  draggable
+                  onDragStart={() => setDragging(photo.id)}
+                  onDragEnd={() => setDragging(null)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    if (dragging) {
+                      const from = order.findIndex((one) => one.id === dragging);
+                      if (from !== -1) movePhoto(from, index);
+                    }
+                    setDragging(null);
+                  }}
+                  className={[
+                    "admin-row",
+                    dragging === photo.id ? "admin-row-dragging" : "",
+                    photo.published ? "" : "admin-row-hidden",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  style={{ flexWrap: "wrap" }}
+                >
+                  <span className="admin-row-index">{index + 1}</span>
+
+                  <span className="admin-thumb" style={{ width: 68, height: 50 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photo.url} alt="" loading="lazy" />
                   </span>
-                  {photo.published ? null : <span className="admin-tag admin-tag-warn">hidden</span>}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+
+                  <span className="admin-row-main" style={{ minWidth: 180 }}>
+                    <span className="admin-row-meta" style={{ marginTop: 4 }}>
+                      {[photo.credit, photo.year].filter(Boolean).join(", ") || "no credit"}
+                    </span>
+                    {!photo.published ? <Tag tone="warn">hidden</Tag> : null}
+                  </span>
+
+                  <span className="admin-row-side" style={{ gap: 6 }}>
+                    {/* How it sits on the page. "let the page decide" is the
+                        automatic cycle, and the right answer almost always. */}
+                    <button
+                      type="button"
+                      className="admin-flag"
+                      aria-pressed={photo.layout === null}
+                      onClick={() => setLayout(photo.id, null)}
+                      title="The automatic layout, which never lines up and never breaks"
+                    >
+                      auto
+                    </button>
+                    {LAYOUTS.map((choice) => (
+                      <button
+                        key={choice.value}
+                        type="button"
+                        className="admin-flag"
+                        aria-pressed={photo.layout === choice.value}
+                        onClick={() => setLayout(photo.id, choice.value)}
+                        title={choice.hint}
+                      >
+                        {choice.label}
+                      </button>
+                    ))}
+
+                    <Move index={index} total={order.length} onMove={movePhoto} />
+
+                    <button
+                      type="button"
+                      className="admin-flag"
+                      aria-pressed={draft.featured === photo.id}
+                      onClick={() =>
+                        set("featured", draft.featured === photo.id ? null : photo.id)
+                      }
+                      title="The one that stands for this story in the list and in a link preview"
+                    >
+                      cover
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="admin-save" style={{ position: "static", margin: "0 14px 12px" }}>
+              <button
+                type="button"
+                className="admin-btn"
+                onClick={keepPhotos}
+                disabled={pending || !photosMoved}
+              >
+                {pending ? "saving…" : "keep this arrangement"}
+              </button>
+              {photosMoved ? (
+                <span className="admin-note" style={{ margin: 0 }}>
+                  the order and the layouts are kept on their own — the cover is kept with the story
+                </span>
+              ) : (
+                <span className="admin-note" style={{ margin: 0 }}>
+                  {draft.featured
+                    ? "one of them is the cover"
+                    : "no cover chosen — the widest one is used"}
+                </span>
+              )}
+            </div>
+          </>
         )}
       </Panel>
 

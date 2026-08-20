@@ -22,12 +22,15 @@ export type StoryInput = {
   id: string;
   slug: string;
   title: string;
+  subtitle: string;
   tag: string;
   place: string;
   happened: string;
   made_with: string;
   sections: StorySection[];
   published: boolean;
+  /** Which photograph stands for the story. Null: worked out from the photos. */
+  featured_photo_id: string | null;
 };
 
 /** A blank story, opened straight away so there is somewhere to type. */
@@ -120,6 +123,8 @@ export async function saveStory(input: StoryInput): Promise<Saved & { slug?: str
       slug,
       title,
       tag,
+      subtitle: input.subtitle.trim() || null,
+      featured_photo_id: input.featured_photo_id,
       place: input.place.trim() || null,
       happened: input.happened.trim() || null,
       made_with: input.made_with.trim() || null,
@@ -190,6 +195,56 @@ export async function deleteStory(id: string): Promise<Saved> {
   if (story?.tag) {
     await supabase.from("photos").update({ story_tag: null }).eq("story_tag", story.tag);
     await supabase.from("quotes").update({ story_tag: null }).eq("story_tag", story.tag);
+  }
+
+  refreshSite();
+  return { ok: true };
+}
+
+/**
+ * The order the photographs are read in, and how each one sits.
+ *
+ * Both at once, because they are one decision: moving a photograph and saying it
+ * should be wide are the same act of arranging a page, and two save buttons for
+ * that would be two chances to lose half of it.
+ *
+ * Only this story's photographs are touched, and they are dealt the places they
+ * already occupied between them — so arranging one story does not shuffle the
+ * archive around it.
+ */
+export async function saveStoryPhotos(
+  photos: { id: string; layout: string | null }[],
+): Promise<Saved> {
+  await requireAdminAction();
+  const supabase = await supabaseServer();
+
+  const ids = photos.map((photo) => photo.id);
+  if (ids.length === 0) return { ok: true };
+
+  const { data: current } = await supabase
+    .from("photos")
+    .select("id, position")
+    .in("id", ids)
+    .returns<{ id: string; position: number }[]>();
+
+  if (!current || current.length !== ids.length) {
+    return { ok: false, error: "Some of those photographs are no longer there. Reload the page." };
+  }
+
+  const places = current.map((photo) => photo.position).sort((a, b) => a - b);
+  const named = new Set(["wide", "narrow", "left", "right", "tall"]);
+
+  for (const [index, photo] of photos.entries()) {
+    const { error } = await supabase
+      .from("photos")
+      .update({
+        position: places[index],
+        // Anything not one of the named layouts means "let the page decide",
+        // which is the right answer almost always.
+        layout: photo.layout && named.has(photo.layout) ? photo.layout : null,
+      })
+      .eq("id", photo.id);
+    if (error) return failed(error);
   }
 
   refreshSite();

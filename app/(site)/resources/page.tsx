@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Archive, { type StoryFilter } from "@/components/Archive";
-import { getFilters, getQuotes, getResources, getStories } from "@/lib/source";
+import { getFilters, getPageHead, getQuotes, getResources, getStories } from "@/lib/source";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -18,10 +18,11 @@ export default async function ResourcesPage() {
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("resources"))) notFound();
 
-  const [resources, quotes, stories] = await Promise.all([
+  const [resources, quotes, stories, head] = await Promise.all([
     getResources(),
     getQuotes(),
     getStories(),
+    getPageHead("resources"),
   ]);
 
   const slides = resources.map((item) => ({
@@ -32,28 +33,36 @@ export default async function ResourcesPage() {
     year: item.year,
   }));
 
-  // Only offer a filter for stories that actually have something in the archive.
-  const kept = new Set([
-    ...resources.map((item) => item.event),
-    ...quotes.map((quote) => quote.story),
-  ]);
-  const storyFilters: StoryFilter[] = stories
-    .filter((story) => kept.has(story.tag))
-    .map((story) => ({ tag: story.tag, title: story.title, slug: story.slug }));
+  // Not filters any more — only so an opened photograph can offer the story it
+  // belongs to.
+  const storyLinks: StoryFilter[] = stories.map((story) => ({
+    tag: story.tag,
+    title: story.title,
+    slug: story.slug,
+  }));
 
+  // Newest first: an archive is read backwards from now, not forwards from
+  // whenever it started.
   const years = [
     ...new Set([...getFilters(resources).years, ...quotes.map((quote) => quote.year)]),
   ]
     .filter(Boolean)
-    .sort();
+    .sort()
+    .reverse();
 
   return (
     <main className="page">
-      <h1 className="page-title">the archive</h1>
-      <p className="page-intro">
-        Photographs and things people said, mixed together and left at the size they came in.
-      </p>
-      <Archive slides={slides} quotes={quotes} stories={storyFilters} years={years} />
+      <h1 className="page-title">{head.title || "the archive"}</h1>
+      {head.saved ? (
+        head.lead ? <p className="page-intro">{head.lead}</p> : null
+      ) : (
+        <p className="page-intro">
+          Photographs and things people said, mixed together and left at the size they came in.
+        </p>
+      )}
+      <div style={{ "--brick": `${head.settings.columnWidth}px` } as React.CSSProperties}>
+        <Archive slides={slides} quotes={quotes} stories={storyLinks} years={years} />
+      </div>
     </main>
   );
 }

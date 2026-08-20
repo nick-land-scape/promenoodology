@@ -198,7 +198,10 @@ body:has(.admin) {
   flex: 1;
   min-width: 0;
   margin-left: var(--admin-side);
-  padding: 0 var(--edge) 90px;
+  /* Twice the edge on the right, for the same reason as the site's own pages:
+     the menu holds the left, so one edge on the right reads as a page sliding
+     off rather than as a column. The phone rule below puts it back. */
+  padding: 0 calc(var(--edge) * 2) 90px var(--edge);
 }
 
 .admin-head {
@@ -771,6 +774,24 @@ body:has(.admin) {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Which one this is in the order. On the paper rather than in it, so a dark
+   photograph cannot swallow it. */
+.admin-photo-index {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 22px;
+  padding: 2px 5px;
+  background: var(--paper);
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-quiet);
 }
 
 .admin-photo-hidden .admin-photo-frame img {

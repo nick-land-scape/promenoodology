@@ -10,6 +10,8 @@ export type StoryRow = {
   id: string;
   slug: string;
   title: string;
+  /** One line under the title: why it was worth doing. Optional. */
+  subtitle: string | null;
   tag: string;
   position: number;
   place: string | null;
@@ -18,6 +20,8 @@ export type StoryRow = {
   sections: { heading: string | null; texts: string[] }[];
   published: boolean;
   updated_at: string;
+  /** Which photograph stands for the story. Null: worked out from the photos. */
+  featured_photo_id: string | null;
 };
 
 export type PhotoRow = {
@@ -30,7 +34,14 @@ export type PhotoRow = {
   story_tag: string | null;
   position: number;
   published: boolean;
+  /** Who took it, when they have an account here. The name stays either way. */
+  credit_profile_id: string | null;
+  /** How it sits on a story page. Null: the automatic cycle decides. */
+  layout: PhotoLayout | null;
 };
+
+/** The named ways a photograph can be asked to sit. See lib/photo-layout. */
+export type PhotoLayout = "wide" | "narrow" | "left" | "right" | "tall";
 
 export type QuoteRow = {
   id: string;
@@ -49,6 +60,12 @@ export type PageRow = {
   lead: string;
   blocks: { kind: string; text: string }[];
   updated_at: string;
+  visible: boolean;
+  nav_label: string | null;
+  nav_group: string | null;
+  nav_position: number | null;
+  /** The few knobs a page may set. See lib/admin/page-settings. */
+  settings: Record<string, unknown>;
 };
 
 export type EventRow = {
@@ -109,6 +126,10 @@ export type NewsletterRow = {
   id: string;
   email: string;
   name: string;
+  /** Said yes a second time, from inside their own inbox. */
   confirmed: boolean;
+  confirmed_at: string | null;
+  /** What the link in the confirmation email carries. Never shown anywhere. */
+  token: string;
   created_at: string;
 };

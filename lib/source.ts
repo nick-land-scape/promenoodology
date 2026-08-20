@@ -14,6 +14,7 @@ import * as appFiles from "./app-data";
 import * as files from "./data";
 import { getHandbook as handbookFromFile } from "./handbook";
 import * as fileStories from "./stories";
+import { type PageSettings, settingsFor } from "./admin/page-settings";
 import { hasSupabase, mediaUrl } from "./supabase/config";
 import { supabasePublic } from "./supabase/public";
 import type {
@@ -46,19 +47,27 @@ export async function getStories(): Promise<Story[]> {
   if (!hasSupabase()) return fileStories.getStories();
 
   const supabase = supabasePublic();
-  const [{ data: rows }, photos] = await Promise.all([
+  const [{ data: rows }, photos, chosen] = await Promise.all([
     supabase.from("stories").select("*").eq("published", true).order("position").returns<StoryRow[]>(),
     getResources(),
+    coverPaths(),
   ]);
   if (!rows?.length) return fileStories.getStories();
 
   return rows.map((row) => {
     const mine = photos.filter((photo) => photo.event === row.tag);
     const sections = (row.sections ?? []) as Section[];
+
+    // A chosen cover wins; failing that the widest one, which is a decent guess
+    // and no more than that.
+    const picked = row.featured_photo_id ? chosen.get(row.featured_photo_id) : undefined;
+    const found = picked ? mine.find((photo) => photo.file === picked) : undefined;
+
     return {
       slug: row.slug,
       tag: row.tag,
       title: row.title,
+      subtitle: row.subtitle ?? "",
       order: row.position,
       where: row.place,
       when: row.happened || years(mine).join(", ") || null,
@@ -67,7 +76,7 @@ export async function getStories(): Promise<Story[]> {
       lead: sections.flatMap((section) => section.texts)[0] ?? "",
       photos: mine,
       credits: unique(mine.map((photo) => photo.credit)),
-      cover: cover(mine),
+      cover: found?.photo ?? cover(mine),
     };
   });
 }
@@ -93,20 +102,27 @@ export async function getResources(): Promise<Resource[]> {
   if (!hasSupabase()) return files.getResources();
 
   const supabase = supabasePublic();
-  const { data } = await supabase
-    .from("photos")
-    .select("*")
-    .eq("published", true)
-    .order("position")
-    .returns<PhotoRow[]>();
+  const [{ data }, names] = await Promise.all([
+    supabase
+      .from("photos")
+      .select("*")
+      .eq("published", true)
+      .order("position")
+      .returns<PhotoRow[]>(),
+    photographerNames(),
+  ]);
   if (!data?.length) return files.getResources();
 
   return data.map((row) => ({
     file: row.path,
-    credit: row.credit ?? "",
+    // Somebody who has an account is credited by the name on it, so correcting
+    // your own name on your profile corrects it under every photograph you took.
+    // The typed one stays for everybody else.
+    credit: (row.credit_profile_id ? names.get(row.credit_profile_id) : "") || row.credit || "",
     year: row.year ?? "",
     event: row.story_tag,
     photo: { src: mediaUrl(row.path), width: row.width, height: row.height },
+    layout: row.layout ?? null,
   }));
 }
 
@@ -191,6 +207,58 @@ const ABOUT: { title: string; lead: string; blocks: PageBlock[] } = {
     },
   ],
 };
+
+/**
+ * The top of any page: its heading, the line under it, and the few knobs it is
+ * allowed to set.
+ *
+ * Separate from getPage below because most pages have no words of their own —
+ * the stories page is made of stories, the archive of photographs — but every
+ * page has a heading and a line under it, and those were sitting in the page
+ * files where nobody without a code editor could reach them.
+ *
+ * Anything not saved comes back empty, and the page keeps the words it shipped
+ * with. One thing worth knowing: a line typed here is plain text, so a lead that
+ * has a link in it today loses the link the first time somebody edits it. That is
+ * the price of the field, and it is the right way round — the words matter more
+ * than the link, and the link is still in the sentence next to it.
+ */
+export async function getPageHead(slug: string): Promise<{
+  title: string;
+  lead: string;
+  settings: PageSettings;
+  /**
+   * Has anybody ever saved this page?
+   *
+   * It is the difference between "no line yet" and "no line, thank you". Without
+   * it an emptied lead fell back to the words in the code, and there was no way
+   * to take a line off a page at all — the field looked like it worked and
+   * quietly refused.
+   */
+  saved: boolean;
+}> {
+  const empty = { title: "", lead: "", settings: settingsFor(slug, {}), saved: false };
+  if (!hasSupabase()) return empty;
+
+  try {
+    const { data } = await supabasePublic()
+      .from("pages")
+      .select("title, lead, settings")
+      .eq("slug", slug)
+      .maybeSingle<Pick<PageRow, "title" | "lead" | "settings">>();
+    if (!data) return empty;
+
+    return {
+      title: data.title ?? "",
+      lead: data.lead ?? "",
+      settings: settingsFor(slug, data.settings),
+      saved: true,
+    };
+  } catch {
+    // Before migration 0005 there is no settings column and the select fails.
+    return empty;
+  }
+}
 
 export async function getPage(slug: string): Promise<{
   title: string;
@@ -301,6 +369,26 @@ export async function getMembers(): Promise<Member[]> {
 }
 
 /* ---------------------------------------------------------------- helpers */
+
+/** id → the path of the photograph, for resolving a story's chosen cover. */
+async function coverPaths() {
+  if (!hasSupabase()) return new Map<string, string>();
+  const { data } = await supabasePublic()
+    .from("photos")
+    .select("id, path")
+    .returns<{ id: string; path: string }[]>();
+  return new Map((data ?? []).map((row) => [row.id, row.path]));
+}
+
+/** id → name, for photographs credited to somebody with an account. */
+async function photographerNames() {
+  if (!hasSupabase()) return new Map<string, string>();
+  const { data } = await supabasePublic()
+    .from("profiles")
+    .select("id, name")
+    .returns<{ id: string; name: string }[]>();
+  return new Map((data ?? []).filter((row) => row.name).map((row) => [row.id, row.name]));
+}
 
 /** name (lower case) -> portrait, so quotes and the wall can show a face. */
 async function portraits() {
