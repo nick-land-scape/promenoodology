@@ -22,7 +22,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!story) return {};
 
   const description =
-    story.lead || [story.title, story.where, story.when].filter(Boolean).join(", ");
+    story.subtitle ||
+    story.lead ||
+    [story.title, story.where, story.when].filter(Boolean).join(", ");
 
   return {
     title: story.title,
@@ -47,6 +49,7 @@ export default async function StoryPage({ params }: Params) {
     key: item.file,
     photo: item.photo,
     caption: [item.credit, item.year].filter(Boolean).join(", "),
+    layout: item.layout,
   }));
 
   return (
@@ -56,6 +59,7 @@ export default async function StoryPage({ params }: Params) {
           <Link href="/stories">stories</Link>
         </p>
         <h1 className="page-title">{story.title}</h1>
+        {story.subtitle ? <p className="story-hook">{story.subtitle}</p> : null}
         <p className="story-meta">
           {[story.where, story.when, story.with, credit(story.credits)]
             .filter(Boolean)

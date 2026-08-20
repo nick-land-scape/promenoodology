@@ -40,7 +40,17 @@ export function getResources(): Resource[] {
     .map(([file, credit, year, event]) => {
       const image = photo(`/resources/${file}`, file);
       if (!image) return null;
-      return { file, credit: credit ?? "", year: year ?? "", event: event || null, photo: image };
+      // The files know nothing about layouts — that is a decision made in the
+      // back of the house, so from here it is always "let the page decide".
+      const row: Resource = {
+        file,
+        credit: credit ?? "",
+        year: year ?? "",
+        event: event || null,
+        photo: image,
+        layout: null,
+      };
+      return row;
     })
     .filter((row): row is Resource => row !== null);
 }

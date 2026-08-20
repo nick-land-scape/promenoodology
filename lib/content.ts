@@ -1,5 +1,7 @@
 /** Shared types. Safe to import from client components. */
 
+import type { PhotoLayout } from "./supabase/rows";
+
 export type Photo = { src: string; width: number; height: number };
 
 export type Member = {
@@ -16,10 +18,13 @@ export type Member = {
 
 export type Resource = {
   file: string;
+  /** Who took it, as it should read — a member's own name, or the typed one. */
   credit: string;
   year: string;
   event: string | null;
   photo: Photo;
+  /** How it should sit on a story page. Null: the automatic cycle decides. */
+  layout: PhotoLayout | null;
 };
 
 /* ------------------------------------------------- the members' app (/app) */
@@ -80,6 +85,7 @@ export type Slide = {
   key: string;
   photo: Photo;
   caption: string;
+  layout?: PhotoLayout | null;
 };
 
 export type Section = {
@@ -93,6 +99,8 @@ export type Story = {
   /** The short tag used in data/resources.csv to mark this story's photos. */
   tag: string;
   title: string;
+  /** One line under the title: why it was worth doing. Empty is fine. */
+  subtitle: string;
   order: number;
   where: string | null;
   when: string | null;

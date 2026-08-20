@@ -8,7 +8,11 @@ export default async function PagesPage() {
   await requireAdmin();
 
   const site = await getSitePages();
-  const words = new Set<string>(PAGES.map((spec) => spec.slug));
+  // The two that are made of words. Every page has an editor either way — a
+  // heading, the line under it, and whatever that page may decide about itself.
+  const words = new Set<string>(
+    PAGES.filter((spec) => spec.kinds.length > 0).map((spec) => spec.slug),
+  );
 
   // What each page is made of, said in words — because "the archive" being
   // uneditable here is not a gap, it is that the archive is its photographs.
@@ -36,8 +40,9 @@ export default async function PagesPage() {
     <Head title="pages" view="/">
       <p className="admin-intro">
         Every page of the website: whether it is on the site at all, what the menu calls it, and
-        which of the two groups it sits in. Two of them — about us and the handbook — also have
-        words you can edit.
+        which of the two groups it sits in. Open one to change its heading, the line under it, and
+        the few things that page decides for itself. About us and the handbook are also made of
+        words, and those are in there too.
       </p>
       <p className="admin-note">
         A page that is off is off for everybody: out of the menu, out of the sitemap, and a

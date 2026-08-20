@@ -110,6 +110,8 @@ function parse(file: string, resources: Resource[]): Story {
     slug,
     tag,
     title: fields.title ?? slug.replace(/-/g, " "),
+    // `subtitle:` in the text file's header, if it is there.
+    subtitle: fields.subtitle ?? "",
     order: Number(fields.order) || 99,
     where: fields.where || null,
     when: fields.when || years(photos).join(", ") || null,

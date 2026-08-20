@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Photo from "@/components/Photo";
-import { getDonations } from "@/lib/source";
+import { getDonations, getPageHead } from "@/lib/source";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -25,16 +25,20 @@ export default async function DonationsPage() {
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("donations"))) notFound();
 
-  const donations = await getDonations();
+  const [donations, head] = await Promise.all([getDonations(), getPageHead("donations")]);
 
   return (
     <main className="page">
-      <h1 className="page-title">public bank account</h1>
-      <p className="page-intro">
-        Everything that comes in, one by one, newest first. Some people put their name to it and
-        some would rather not — both are here. We do not show a total: this is not a thermometer,
-        it is a list of people who made something possible.
-      </p>
+      <h1 className="page-title">{head.title || "public bank account"}</h1>
+      {head.saved ? (
+        head.lead ? <p className="page-intro">{head.lead}</p> : null
+      ) : (
+        <p className="page-intro">
+          Everything that comes in, one by one, newest first. Some people put their name to it and
+          some would rather not — both are here. We do not show a total: this is not a thermometer,
+          it is a list of people who made something possible.
+        </p>
+      )}
 
       <p className="page-note">
         Soon this will fill up by itself as gifts come in. Until then it is kept by hand.

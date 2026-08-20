@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import Photo from "@/components/Photo";
-import { getStories } from "@/lib/source";
 import { pageIsVisible } from "@/lib/site-pages";
+import { getPageHead, getStories } from "@/lib/source";
 
 export const metadata: Metadata = {
   title: "Stories",
@@ -18,17 +18,30 @@ export default async function StoriesPage() {
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("stories"))) notFound();
 
-  const stories = await getStories();
+  const [stories, head] = await Promise.all([getStories(), getPageHead("stories")]);
 
   return (
     <main className="page">
-      <h1 className="page-title">stories</h1>
-      <p className="page-intro">
-        What we did, who was there and what we would do differently. Take any of it and do your own
-        version — the <Link href="/handbook">handbook</Link> tells you how.
-      </p>
+      <h1 className="page-title">{head.title || "stories"}</h1>
 
-      <ul className="story-list">
+      {/* The words the site shipped with are still here, and still have their
+          link in them; the first edit in /admin replaces them with plain text. */}
+      {head.saved ? (
+        head.lead ? (
+          <p className="page-intro">{head.lead}</p>
+        ) : null
+      ) : (
+        <p className="page-intro">
+          What we did, who was there and what we would do differently. Take any of it and do your
+          own version — the <Link href="/handbook">handbook</Link> tells you how.
+        </p>
+      )}
+
+      <ul
+        className="story-list"
+        // How narrow a card may get before the row gives one up, set in /admin.
+        style={{ "--card": `${head.settings.columnWidth}px` } as React.CSSProperties}
+      >
         {stories.map((story) => (
           <li key={story.slug} className="story-card">
             <Link href={`/stories/${story.slug}`}>
@@ -38,8 +51,15 @@ export default async function StoriesPage() {
                 </span>
               ) : null}
               <span className="story-name">{story.title}</span>
+              {story.subtitle ? <span className="story-hook">{story.subtitle}</span> : null}
               <span className="story-meta">
-                {[story.where, story.when, count(story.photos.length)].filter(Boolean).join(" · ")}
+                {[
+                  story.where,
+                  story.when,
+                  head.settings.showPhotoCount ? count(story.photos.length) : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </span>
               <span className="story-lead">{story.lead}</span>
             </Link>

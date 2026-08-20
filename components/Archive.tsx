@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Quote, Slide } from "@/lib/content";
 import Lightbox from "./Lightbox";
 import Photo from "./Photo";
@@ -13,11 +12,13 @@ const PHOTOS_PER_QUOTE = 7;
 /** How many width-and-tilt variants the wall cycles through. */
 const VARIANTS = 9;
 
+/** A story, for the link out of an opened photograph — not for a filter. */
 export type StoryFilter = { tag: string; title: string; slug: string };
 
 type Props = {
   slides: (Slide & { story: string | null; year: string })[];
   quotes: Quote[];
+  /** Only so an opened photograph can offer the story it belongs to. */
   stories: StoryFilter[];
   years: string[];
 };
@@ -26,22 +27,25 @@ type Props = {
  * Everything we keep, on one wall: photographs at whatever size and shape they
  * came in, with the things people said in between. Not a grid — the items fall
  * into columns and each one takes a slightly different width, so the eye has to
- * wander. Filters narrow it down by story and by year.
+ * wander.
+ *
+ * Two ways in, and neither of them is a table of contents. Shuffle, for the
+ * wandering this wall is for; and a year, for looking something up. There used to
+ * be a filter per story as well, which turned the archive into an index of the
+ * stories page — and the stories page is already better at being that.
  */
 export default function Archive({ slides, quotes, stories, years }: Props) {
-  const [story, setStory] = useState<string | null>(null);
   const [year, setYear] = useState<string | null>(null);
+  const [shuffle, setShuffle] = useState(0);
   const [open, setOpen] = useState<number | null>(null);
 
-  const selected = stories.find((item) => item.tag === story);
+  const chosen = slides.filter((slide) => !year || slide.year === year);
+  const said = quotes.filter((quote) => !year || quote.year === year);
 
-  const photos = slides.filter(
-    (slide) => (!story || slide.story === story) && (!year || slide.year === year),
-  );
-  const said = quotes.filter(
-    (quote) =>
-      (!story || quote.story === story) && (!year || quote.year === year),
-  );
+  /* Shuffled from a number that only changes when somebody asks. The first
+     render is the natural order, on the server and in the browser alike, so
+     nothing jumps as the page arrives. */
+  const photos = useMemo(() => (shuffle === 0 ? chosen : shuffled(chosen, shuffle)), [chosen, shuffle]);
 
   // The lightbox steps through the photographs that are actually on the wall.
   const inLightbox = photos;
@@ -52,50 +56,38 @@ export default function Archive({ slides, quotes, stories, years }: Props) {
       <Submenu section="resources">
         <div className="filters">
           <div className="filter-group">
-            <span className="filter-label">story</span>
             <button
               type="button"
               className="text-button"
-              aria-pressed={story === null}
-              onClick={() => setStory(null)}
+              onClick={() => setShuffle((n) => n + 1)}
             >
-              all
+              random
             </button>
-            {stories.map((item) => (
+            {shuffle > 0 ? (
               <button
-                key={item.tag}
                 type="button"
                 className="text-button"
-                aria-pressed={story === item.tag}
-                onClick={() => setStory(item.tag)}
+                aria-pressed
+                onClick={() => setShuffle(0)}
               >
-                {item.title}
+                as it was
               </button>
-            ))}
+            ) : null}
           </div>
 
           <div className="filter-group">
-            <span className="filter-label">year</span>
             {years.map((value) => (
               <button
                 key={value}
                 type="button"
                 className="text-button"
                 aria-pressed={year === value}
-                onClick={() =>
-                  setYear((current) => (current === value ? null : value))
-                }
+                onClick={() => setYear((current) => (current === value ? null : value))}
               >
                 {value}
               </button>
             ))}
           </div>
-
-          {selected ? (
-            <Link className="filter-link" href={`/stories/${selected.slug}`}>
-              read {selected.title} →
-            </Link>
-          ) : null}
         </div>
       </Submenu>
 
@@ -153,7 +145,7 @@ export default function Archive({ slides, quotes, stories, years }: Props) {
           onClose={() => setOpen(null)}
           storyOf={(slide) => {
             const found = stories.find(
-              (item) => item.tag === (slide as (typeof photos)[number]).story,
+              (item: StoryFilter) => item.tag === (slide as (typeof photos)[number]).story,
             );
             return found ? { title: found.title, slug: found.slug } : null;
           }}
@@ -184,4 +176,20 @@ function mix(photos: Slide[], quotes: Quote[]): Item[] {
   }
 
   return items;
+}
+
+/**
+ * A shuffle that is the same every time for the same number, so the wall does
+ * not rearrange itself under somebody's scroll on every re-render. Not
+ * Math.random: this has to give the same answer twice.
+ */
+function shuffled<T>(items: T[], seed: number): T[] {
+  const out = [...items];
+  let n = seed * 2654435761;
+  for (let i = out.length - 1; i > 0; i--) {
+    n = (n * 1103515245 + 12345) & 0x7fffffff;
+    const j = n % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
 }

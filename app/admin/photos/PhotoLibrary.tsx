@@ -275,6 +275,12 @@ export default function PhotoLibrary({
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={item.url} alt="" loading="lazy" />
+                {/* Its place in the order, so dragging has something to check
+                    itself against — a grid of pictures gives you no other way of
+                    telling the third from the fourth. */}
+                <span className="admin-photo-index" aria-hidden="true">
+                  {index + 1}
+                </span>
               </button>
 
               <figcaption className="admin-photo-body">
