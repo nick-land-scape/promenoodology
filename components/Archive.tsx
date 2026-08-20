@@ -54,13 +54,11 @@ export default function Archive({ slides, quotes, stories, years, seed }: Props)
   const chosen = slides.filter((slide) => !year || slide.year === year);
   const said = quotes.filter((quote) => !year || quote.year === year);
 
-  /* Shuffled from a number that only changes when somebody asks. Zero is the
-     one number that means "as it was", so it is the way back rather than a
-     shuffle of its own. */
-  const photos = useMemo(
-    () => (shuffle === 0 ? chosen : shuffled(chosen, shuffle)),
-    [chosen, shuffle],
-  );
+  /* Always shuffled, from a number that only changes when somebody asks.
+     There is no way back to the order they were uploaded in, because that was
+     never an order anybody chose — it is the order the files happened to arrive
+     in, which is not a thought about a wall. */
+  const photos = useMemo(() => shuffled(chosen, shuffle), [chosen, shuffle]);
 
   // The lightbox steps through the photographs that are actually on the wall.
   const inLightbox = photos;
@@ -71,21 +69,14 @@ export default function Archive({ slides, quotes, stories, years, seed }: Props)
       <Submenu section="archive">
         <div className="filters">
           <div className="filter-group">
+            {/* An action, not a state — so no aria-pressed and nothing to
+                switch back to. */}
             <button
               type="button"
               className="text-button"
-              aria-pressed={shuffle > 0}
-              onClick={() => setShuffle((n) => (n === 0 ? seed : n + 1))}
+              onClick={() => setShuffle((n) => n + 1)}
             >
-              {shuffle > 0 ? "shuffle again" : "random"}
-            </button>
-            <button
-              type="button"
-              className="text-button"
-              aria-pressed={shuffle === 0}
-              onClick={() => setShuffle(0)}
-            >
-              as it was
+              random
             </button>
           </div>
 
