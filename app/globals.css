@@ -764,6 +764,102 @@ img {
   font-size: 0.95em;
 }
 
+/* ------------------------------------------------------- the code from the email
+
+   One box per character. They are set in the menu's typeface rather than Times:
+   a code is read a character at a time, and Helvetica's digits are the ones that
+   cannot be mistaken for each other. */
+
+.code-row {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.code-row legend {
+  padding: 0;
+  margin: 0 0 8px;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f6a63;
+}
+
+.code-boxes {
+  display: flex;
+  gap: 8px;
+}
+
+.code-box {
+  flex: 1 1 0;
+  min-width: 0;
+  /* Squares. The aspect ratio keeps them square as the row narrows, rather than
+     turning into slots. */
+  aspect-ratio: 1;
+  border: 1px solid var(--ink);
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--ink);
+  /* iOS zooms the page for anything under 16px; this is well over it. */
+  -moz-appearance: textfield;
+}
+
+.code-box::-webkit-outer-spin-button,
+.code-box::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* The box you are in is the one thing on the page worth looking at. */
+.code-box:focus {
+  outline: 0;
+  border-color: var(--purple);
+  box-shadow: inset 0 0 0 1px var(--purple);
+}
+
+/* Asking for another one: a sentence, not a second button competing with the
+   first. */
+.auth-again {
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95em;
+  color: #6f6a63;
+  line-height: 1.45;
+}
+
+.auth-inline {
+  display: inline;
+}
+
+.auth-again .text-button {
+  font-size: 1em;
+  color: var(--purple);
+}
+
+.auth-again .text-button:hover {
+  color: var(--ink);
+}
+
+@media screen and (max-width: 767px) {
+  .code-boxes {
+    gap: 6px;
+  }
+
+  .code-box {
+    font-size: 1.25rem;
+  }
+}
+
 .auth-out {
   margin-top: 34px;
   padding-top: 16px;
