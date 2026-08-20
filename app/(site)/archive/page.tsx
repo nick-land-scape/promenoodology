@@ -5,7 +5,7 @@ import { getFilters, getPageHead, getQuotes, getResources, getStories } from "@/
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
-  title: "Resources",
+  title: "The archive",
   description:
     "Everything we keep: photographs at whatever size they came in, and the things people said, on one wall.",
   alternates: { canonical: "/archive" },

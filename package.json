@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "keys": "node scripts/local-keys.mjs",
+    "emails": "node scripts/email-templates.mjs",
+    "import": "node scripts/import.mjs",
+    "import:community": "node scripts/import-community.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

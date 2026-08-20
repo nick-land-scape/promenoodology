@@ -204,17 +204,34 @@ and runs on a laptop with no keys.
 
 **Setting it up**
 
-1. Copy `.env.example` to `.env.local` and paste the two keys from
-   Supabase → Project Settings → API Keys. Which variables also belong in Vercel
-   is written next to each one.
+1. `npm run keys` writes this project's keys into `.env.local`. It needs a
+   Supabase personal access token in `SUPABASE_ACCESS_TOKEN` or `SUPABASE_PAT` —
+   the second is what the MCP server already expects, so on a machine set up for
+   that there is nothing to do. Failing that, `.env.example` says which keys to
+   copy from the dashboard and which of them also belong in Vercel.
 2. Run the files in `supabase/migrations/` in order, in the SQL editor. They make
    the tables, decide who may read and write what, and create the `media` bucket
    for photographs.
-3. `node scripts/import.mjs` moves everything in the files into the database,
-   photographs included (`--no-media` to skip the uploads). Safe to run twice:
-   rows are keyed on something stable, so a second run updates.
-4. Make somebody an admin: they sign in once, then in the SQL editor
-   `update profiles set role = 'admin' where id = '<their user id>';`
+3. `npm run import` moves the stories, photographs and quotes from the files into
+   the database (`-- --no-media` to skip the uploads). `npm run import:community`
+   does the same for a community spreadsheet and a folder of portraits:
+
+   ```bash
+   npm run import:community -- ~/Downloads/community.xlsx ~/Downloads/images --dry
+   ```
+
+   Both are safe to run twice — rows are keyed on something stable, so a second
+   run updates rather than duplicating. `--dry` needs no keys at all: it reads the
+   spreadsheet, matches the pictures and tells you what it would do.
+4. `npm run emails` puts the two sign-in emails in place; `-- --check` says what
+   is up there now. See `supabase/email-templates/README.md`.
+5. Make somebody an admin: they sign in once, then in the SQL editor
+   `update profiles set role = 'admin' where user_id = '<their user id>';`
+
+   Everything above is run with `npm run` rather than `node scripts/…` for one
+   reason: npm finds the project root by itself, from anywhere inside the
+   project. `node scripts/…` only works from the root, which is a thing to
+   remember at exactly the moment nobody is thinking about it.
 
 **Who may do what.** Row level security is on for every table. The public reads
 anything marked published; only an admin writes. Members can read the feed and
