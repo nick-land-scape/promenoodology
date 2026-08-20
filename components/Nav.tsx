@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { Fragment, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { Fragment } from "react";
+import { useKnock } from "@/lib/knock";
 import Photo from "./Photo";
 import { AdminLink, SessionButton } from "./SessionLink";
 
@@ -21,36 +22,19 @@ const MORE = [{ href: "/handbook", label: "handbook" }];
    there at /donations for anybody given the address; put it back in MORE when
    it should be public. */
 
-/** Knocks on the mark, and how long you have to make them. */
-const KNOCKS = 3;
-const KNOCK_WINDOW = 1500;
-
 export default function Nav() {
   const pathname = usePathname();
-  const router = useRouter();
-  const knocks = useRef(0);
-  const last = useRef(0);
-
-  // /stories/dinner-for-500 keeps STORIES marked as the section you are in.
-  const current = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   /**
    * The mark is the way home. Knock on it three times quickly and it is also
    * the way in — there is no sign-in link anywhere, on purpose. The first click
    * still goes home; only the third is swallowed. The count survives that
-   * because the menu is part of the layout and never unmounts.
+   * because the menu is part of the layout and never unmounts. See lib/knock.
    */
-  const knock = (event: React.MouseEvent) => {
-    const now = Date.now();
-    knocks.current = now - last.current > KNOCK_WINDOW ? 1 : knocks.current + 1;
-    last.current = now;
+  const knock = useKnock();
 
-    if (knocks.current >= KNOCKS) {
-      knocks.current = 0;
-      event.preventDefault();
-      router.push("/account/sign-in");
-    }
-  };
+  // /stories/dinner-for-500 keeps STORIES marked as the section you are in.
+  const current = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <nav className="nav">

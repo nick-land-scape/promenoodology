@@ -34,6 +34,29 @@ and the sign-in page opens. On the front page the same three knocks on the big
 logo open the members' app. (Pressing Tab on the front page also reveals a way
 in, so the app stays reachable with a keyboard or a screen reader.)
 
+## Before it opens
+
+Until the launch moment, every address answers with the holding page: the mark,
+a clock counting down, and the two ways to reach us. The address itself is left
+alone — a link handed round this week is the link that works on the night.
+
+Anybody signed in sees the real site instead. That is how to look it over before
+the doors open: three knocks on the mark takes you to the sign-in page, which
+stays reachable while everything else is closed, and from then on you are simply
+on the site.
+
+The moment lives in `lib/launch.ts` and can be moved with `NEXT_PUBLIC_LAUNCH_AT`
+(see `.env.example`). Write the offset into it, so it means the same instant
+wherever it is read. Anything that is not a date — `off` — opens the site, so a
+typo cannot close it. Working locally, put `NEXT_PUBLIC_LAUNCH_AT=off` in
+`.env.local`, or you will be met by the clock.
+
+Nothing has to be undone afterwards. The gate is in `proxy.ts` and simply stops
+applying, and because the holding page is the one saying "do not index", search
+engines are told to stay away at every address while it is closed and nowhere
+once it is open — there is no blanket rule left in `robots.txt` to remember to
+remove.
+
 ## Where things are
 
 ```
@@ -48,6 +71,7 @@ app/
     handbook/           how to run your own, and how to ask us for help
     donations/          the public bank account — every gift, one by one, no total
     about/              what we are about
+  holding/              the clock, until the site opens
   app/                  the members' app — its own shell and tab bar
     page.tsx            Home — what is coming up, latest news
     book/               Book — ask for a place, spaces, a whole evening

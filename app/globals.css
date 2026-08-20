@@ -1862,3 +1862,141 @@ body:has(.hero) .contact {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ------------------------------------------------------------- holding page
+   Everything the site answers with until it opens: the mark, a clock, and the
+   two ways to reach us. Its own small world — the menu and the contact lane
+   are not on this page, so nothing here has to make room for them. */
+
+.holding {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  padding: calc(var(--edge) + env(safe-area-inset-top)) var(--edge)
+    calc(var(--edge) + env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+/* Painted, not drawn: multiplied onto the paper, the same as on the front page. */
+.holding-mark {
+  width: min(52vmin, 420px);
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
+.holding-line {
+  margin: 0;
+  font-size: clamp(1.15rem, 3.2vw, 1.6rem);
+  font-style: italic;
+}
+
+.holding-count {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: clamp(16px, 5vw, 44px);
+  margin: 0;
+}
+
+/* Until the clock has run once there is nothing honest to show — but the space
+   is still taken, so the page does not shift when the numbers arrive. */
+.holding-count[data-ready="no"] {
+  visibility: hidden;
+}
+
+.holding-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.holding-number {
+  font-size: clamp(2.6rem, 12vw, 5.5rem);
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.holding-label {
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* The club's three colours, in order, so the row reads as ours. */
+.holding-unit:nth-child(1) .holding-label {
+  color: var(--purple);
+}
+
+.holding-unit:nth-child(2) .holding-label {
+  color: var(--blue);
+}
+
+.holding-unit:nth-child(3) .holding-label {
+  color: var(--pink);
+}
+
+.holding-unit:nth-child(4) .holding-label {
+  color: var(--purple);
+}
+
+.holding-when {
+  margin: 0;
+  font-size: clamp(1rem, 2.6vw, 1.2rem);
+}
+
+.holding-zone {
+  display: block;
+  margin-top: 6px;
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 0.9em;
+}
+
+.holding-done {
+  margin: 0;
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  font-style: italic;
+}
+
+.holding-again {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-style: normal;
+  color: var(--purple);
+}
+
+.holding-contact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 20px;
+  margin-top: 10px;
+  font-style: normal;
+  font-size: 0.95rem;
+}
+
+.holding a:hover {
+  color: var(--purple);
+}
+
+@media (max-width: 420px) {
+  .holding {
+    gap: 26px;
+  }
+
+  .holding-count {
+    gap: 14px;
+  }
+}
