@@ -25,8 +25,14 @@ import { supabaseServer } from "@/lib/supabase/server";
 
 export type Result = { error?: string; message?: string };
 
-/** Where the link in the email lands. */
-const landing = `${SITE_URL}/account`;
+/**
+ * Where the link in the email lands.
+ *
+ * Not /account: a link carries a token, and something has to trade it for a
+ * session before the page can ask who is signed in. That is what /account/confirm
+ * is for — see the note at the top of it.
+ */
+const landing = `${SITE_URL}/account/confirm`;
 
 async function remember(email: string) {
   const jar = await cookies();
@@ -177,9 +183,12 @@ function friendly(message: string) {
   if (text.includes("rate limit") || text.includes("too many") || text.includes("security purposes")) {
     return "That is a lot of codes in a short time. Give it a minute and ask again.";
   }
-  if (text.includes("expired")) return "That code has expired. Ask for a new one below.";
-  if (text.includes("invalid") || text.includes("incorrect")) {
-    return "That code does not match. Check the email, or ask for a new one below.";
+  // Supabase says "Token has expired or is invalid" for both, and will not tell
+  // us which — so neither do we, rather than guessing wrong. It read "expired"
+  // for a while, which sent people looking for a newer email when the real
+  // trouble was that the row of boxes was two characters too short.
+  if (text.includes("expired") || text.includes("invalid") || text.includes("incorrect")) {
+    return "That code is wrong, or it has been used already. Ask for a new one below.";
   }
   return message;
 }
