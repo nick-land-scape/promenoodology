@@ -79,7 +79,15 @@ export const SECTIONS: Section[] = [
   {
     href: "/admin/people",
     label: "people",
-    blurb: "The community list: names, countries, who is shown, who may look after the site.",
+    blurb: "Everybody: the community page and the accounts, one list. Write somebody down, or invite them.",
+    icon: "people",
+    group: "people",
+    view: "/community",
+  },
+  {
+    href: "/admin/associations",
+    label: "partners",
+    blurb: "The people we do this with who are not people: a name and a logo.",
     icon: "people",
     group: "people",
     view: "/community",

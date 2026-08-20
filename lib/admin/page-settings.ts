@@ -91,14 +91,13 @@ export const PAGE_SETTINGS: Record<string, Setting[]> = {
 
   community: [
     {
-      key: "columnWidth",
+      key: "columns",
       kind: "number",
-      label: "narrowest a name may be",
-      hint: "The grid fits as many names per row as this allows.",
-      fallback: 108,
-      min: 80,
-      max: 260,
-      unit: "px",
+      label: "how many names across",
+      hint: "A count rather than a width, because that is the thing anybody looking at the page has an opinion about. On a phone it is two whatever this says — there is no room to argue.",
+      fallback: 6,
+      min: 2,
+      max: 12,
     },
   ],
 };

@@ -10,15 +10,18 @@ export default async function PeoplePage() {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, name, country, role, listed, photo_path, colour, joined_on")
-    .order("joined_on")
+    .select("id, user_id, email, name, country, role, listed, listed_by_admin, photo_path, colour, joined_on")
+    .order("name")
     .returns<
       {
         id: string;
+        user_id: string | null;
+        email: string | null;
         name: string;
         country: string;
         role: "member" | "admin";
         listed: boolean;
+        listed_by_admin: boolean | null;
         photo_path: string | null;
         colour: string | null;
         joined_on: string;
@@ -27,10 +30,13 @@ export default async function PeoplePage() {
 
   const people: Person[] = (data ?? []).map((row) => ({
     id: row.id,
+    email: row.email ?? "",
+    hasAccount: row.user_id !== null,
     name: row.name ?? "",
     country: row.country ?? "",
     role: row.role,
     listed: row.listed,
+    listedByAdmin: row.listed_by_admin,
     colour: row.colour,
     photo: row.photo_path,
     photoUrl: row.photo_path ? mediaUrl(row.photo_path) : null,
@@ -41,13 +47,15 @@ export default async function PeoplePage() {
   return (
     <Head title="people" view="/community">
       <p className="admin-intro">
-        Everybody with an account, oldest first. Most of this they can change themselves; a portrait
-        and who else may look after the site are the two things they cannot.
+        Everybody, in alphabetical order — the community page and the list of accounts are one list.
+        Most of them have never signed in to anything, and do not need to: being on the wall was
+        never meant to require a login.
       </p>
       <p className="admin-note">
-        People appear here when they sign in for the first time. Until then the community page reads
-        <code> data/community.csv</code>, so nobody who was on the old list disappears in the
-        meantime — but they cannot be edited from here either.
+        Somebody written down here is on the community page. Somebody invited is also sent a way in —
+        and when they use it, their account joins the person already here rather than making a second
+        one. There is no public way to join any more: an account starts with an invitation from this
+        page.
       </p>
       <PeopleList initial={people} />
     </Head>

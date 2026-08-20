@@ -1260,8 +1260,10 @@ body:has(.hero) .contact {
 
 .community-grid {
   display: grid;
-  /* --name comes from the page, set in /admin. 108px is what shipped. */
-  grid-template-columns: repeat(auto-fill, minmax(var(--name, 108px), 1fr));
+  /* How many names across, set in /admin. A count rather than a width: it is the
+     thing somebody looking at the page has an opinion about. The phone rule
+     further down overrules it — there, two is all that fits. */
+  grid-template-columns: repeat(var(--columns, 6), minmax(0, 1fr));
   gap: 10px;
   margin: 0;
   padding: 0;
@@ -2125,5 +2127,70 @@ body:has(.hero) .contact {
 
   .holding-count {
     gap: 14px;
+  }
+}
+
+/* ---------------------------------------------------------------- partners
+
+   The organisations we did things with, under the names. Provisional: they are
+   here because they belong on this page, and a quiet row of logos assumes the
+   least about how that should eventually look. */
+
+.partners {
+  margin-top: 54px;
+  padding-top: 18px;
+  border-top: 1px solid var(--hairline);
+}
+
+.partners-label {
+  margin: 0 0 14px;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: #6f6a63;
+}
+
+.partners-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 26px 34px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A logo is drawn to a height and keeps its own shape — they arrive in every
+   proportion there is, and cropping somebody's mark is not ours to do. */
+.partners-row img {
+  height: 34px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+  /* Most of these arrive as black on white; multiply drops the white out onto
+     the paper, the same trick the logo in the menu uses. */
+  mix-blend-mode: multiply;
+}
+
+.partners-row a {
+  display: block;
+  line-height: 0;
+  font-style: normal;
+}
+
+.partners-name {
+  font-size: 1.05rem;
+  font-style: italic;
+}
+
+@media screen and (max-width: 767px) {
+  .partners-row {
+    gap: 18px 22px;
+  }
+
+  .partners-row img {
+    height: 26px;
   }
 }

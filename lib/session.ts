@@ -34,7 +34,8 @@ async function look() {
     const { data } = await supabase
       .from("profiles")
       .select("name, role, photo_path")
-      .eq("id", user.id)
+      // Their account, not their id: see the note in lib/admin/guard.
+      .eq("user_id", user.id)
       .single();
     const profile = data as { name?: string; role?: string; photo_path?: string | null } | null;
     known = {

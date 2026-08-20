@@ -34,7 +34,10 @@ export const currentAdmin = cache(async (): Promise<Admin | null> => {
     const { data } = await supabase
       .from("profiles")
       .select("id, name, role")
-      .eq("id", user.id)
+      // A profile is a PERSON now, and the account they sign in with is
+      // user_id. These used to be the same number; looking one up by the other
+      // finds nobody, which reads as "you are not an admin".
+      .eq("user_id", user.id)
       .single<{ id: string; name: string; role: "member" | "admin" }>();
 
     if (data?.role !== "admin") return null;
