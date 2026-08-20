@@ -1,0 +1,1203 @@
+/* The back of the house.
+ *
+ * One stylesheet, like the front of the house, and made of the same things:
+ * paper rather than white, hairlines rather than shadows, no rounded corners
+ * except on a face, Times for anything that is read and Helvetica in small
+ * capitals for anything that is a label. Purple means "this one".
+ *
+ * It sits on top of globals.css rather than replacing it, so the colours and
+ * the two typefaces are the site's own — change them there and the back of the
+ * house follows.
+ */
+
+:root {
+  --admin-side: 210px;
+  --admin-quiet: #6f6a63;
+  --admin-faint: #a09a92;
+  --admin-tint: rgba(139, 63, 255, 0.06);
+}
+
+/* globals.css keeps room at the bottom of every phone page for the site's menu
+   bar. There is no menu bar back here. */
+body:has(.admin) {
+  padding-bottom: 0;
+}
+
+.admin {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+}
+
+/* ------------------------------------------------------------------ the menu */
+
+.admin-side {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  width: var(--admin-side);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 0 18px 20px;
+  border-right: 1px solid var(--hairline);
+  background: var(--paper);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.admin-side::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-mark {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  font-style: normal;
+}
+
+.admin-mark img {
+  width: 34px;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
+.admin-mark span {
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: var(--admin-quiet);
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.admin-group-label {
+  margin: 0 0 5px;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+}
+
+.admin-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px 5px 0;
+  font-style: normal;
+  text-decoration: none;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.admin-link svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: var(--admin-faint);
+}
+
+.admin-link:hover {
+  color: var(--purple);
+}
+
+.admin-link:hover svg {
+  color: var(--purple);
+}
+
+.admin-link[aria-current="page"] {
+  color: var(--purple);
+}
+
+.admin-link[aria-current="page"] svg {
+  color: var(--purple);
+}
+
+/* An unanswered request or a story still hidden gets a count next to it. */
+.admin-count {
+  margin-left: auto;
+  min-width: 18px;
+  padding: 1px 5px;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--paper);
+  background: var(--purple);
+}
+
+.admin-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.92em;
+}
+
+.admin-foot a,
+.admin-foot button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1em;
+  color: var(--admin-quiet);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.admin-foot a:hover,
+.admin-foot button:hover {
+  color: var(--purple);
+}
+
+/* Without a size an inline svg takes the whole column. */
+.admin-foot svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+}
+
+.admin-who {
+  margin: 0;
+  font-size: 0.85em;
+  font-style: italic;
+  color: var(--admin-faint);
+}
+
+/* ----------------------------------------------------------------- the page */
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--admin-side);
+  padding: 0 var(--edge) 90px;
+}
+
+.admin-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 22px 0 12px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.admin-title {
+  font: inherit;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.admin-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-back {
+  display: inline-block;
+  margin-bottom: 4px;
+  font-size: 0.9em;
+}
+
+.admin-body {
+  padding-top: 20px;
+  max-width: 60rem;
+}
+
+.admin-intro {
+  max-width: 40rem;
+  margin: 0 0 22px;
+  line-height: 1.45;
+}
+
+.admin-note {
+  max-width: 40rem;
+  margin: 0 0 16px;
+  font-style: italic;
+  font-size: 0.95em;
+  color: var(--admin-quiet);
+}
+
+.admin-error {
+  margin: 0 0 14px;
+  padding: 9px 12px;
+  border: 1px solid var(--pink);
+  color: var(--pink);
+  line-height: 1.4;
+}
+
+.admin-ok {
+  color: var(--purple);
+  font-style: italic;
+}
+
+.admin-empty {
+  padding: 26px 0;
+  font-style: italic;
+  color: var(--admin-faint);
+}
+
+/* --------------------------------------------------------------- the numbers */
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  border: 1px solid var(--ink);
+  margin-bottom: 26px;
+}
+
+.admin-stat {
+  padding: 12px 14px 13px;
+  border-left: 1px solid var(--hairline);
+  text-decoration: none;
+  font-style: normal;
+}
+
+.admin-stat:first-child {
+  border-left: 0;
+}
+
+.admin-stat:hover {
+  background: var(--admin-tint);
+}
+
+.admin-stat b {
+  display: block;
+  font-size: 1.9rem;
+  font-weight: normal;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-stat span {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+}
+
+.admin-stat em {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85em;
+  color: var(--admin-faint);
+}
+
+/* ------------------------------------------------------------------ the cards */
+
+.admin-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0;
+  border: 1px solid var(--ink);
+}
+
+.admin-card {
+  display: block;
+  padding: 15px 16px 17px;
+  border-top: 1px solid var(--hairline);
+  border-left: 1px solid var(--hairline);
+  text-decoration: none;
+  font-style: normal;
+}
+
+.admin-card:hover {
+  background: var(--admin-tint);
+}
+
+.admin-card-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+}
+
+.admin-card-name svg {
+  width: 16px;
+  height: 16px;
+  color: var(--purple);
+}
+
+.admin-card p {
+  margin: 5px 0 0;
+  font-size: 0.95em;
+  line-height: 1.4;
+  color: var(--admin-quiet);
+}
+
+/* ----------------------------------------------------------------- the panels */
+
+.admin-panel {
+  border: 1px solid var(--ink);
+  margin-bottom: 22px;
+}
+
+.admin-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--hairline);
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.admin-panel-name {
+  margin: 0;
+  font: inherit;
+  font-size: 1.15rem;
+}
+
+.admin-panel-hint {
+  margin: 3px 0 0;
+  font-size: 0.9em;
+  font-style: italic;
+  color: var(--admin-quiet);
+}
+
+.admin-panel-body {
+  padding: 4px 0;
+}
+
+/* ------------------------------------------------------------------- fields */
+
+/* Fields sit in a grid of cells divided by hairlines — the same idea as the
+   support form on the handbook page, so the two halves of the site feel like
+   one piece of work. */
+.admin-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 14px 11px;
+  border-top: 1px solid var(--hairline);
+  border-left: 1px solid var(--hairline);
+  min-width: 0;
+}
+
+.admin-fields > .admin-field:first-child {
+  border-left: 0;
+}
+
+.admin-field-wide {
+  grid-column: 1 / -1;
+  border-left: 0;
+}
+
+.admin-field > span {
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+  /* In a narrow cell a long label has to wrap, not run into its neighbour. */
+  overflow-wrap: anywhere;
+}
+
+.admin-field > em {
+  font-size: 0.85em;
+  color: var(--admin-faint);
+  line-height: 1.35;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-field select {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  color: var(--ink);
+  width: 100%;
+  min-width: 0;
+  resize: vertical;
+}
+
+.admin-field input::placeholder,
+.admin-field textarea::placeholder {
+  color: var(--admin-faint);
+  font-style: italic;
+}
+
+.admin-field select {
+  cursor: pointer;
+}
+
+/* A field that is only a line, outside a grid. */
+.admin-line {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 0 0;
+}
+
+/* ------------------------------------------------------------------ buttons */
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--ink);
+  background: none;
+  padding: 9px 15px;
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-style: normal;
+  text-decoration: none;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.admin-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.admin-btn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.admin-btn[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.admin-btn[disabled]:hover {
+  background: none;
+  color: var(--ink);
+}
+
+.admin-btn-quiet {
+  border-color: var(--hairline);
+  padding: 7px 12px;
+  font-size: 0.6rem;
+  color: var(--admin-quiet);
+}
+
+.admin-btn-danger:hover {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--paper);
+}
+
+/* A word you can press: used for hidden/shown, move up, remove. */
+.admin-word {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.92em;
+  font-style: italic;
+  color: var(--admin-quiet);
+  cursor: pointer;
+  text-align: left;
+}
+
+.admin-word:hover {
+  color: var(--purple);
+}
+
+.admin-word-danger:hover {
+  color: var(--pink);
+}
+
+.admin-word[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Shown or hidden — the one switch in the whole back of the house. */
+.admin-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--hairline);
+  background: none;
+  padding: 4px 9px;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+  cursor: pointer;
+}
+
+.admin-flag::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--admin-faint);
+}
+
+.admin-flag[aria-pressed="true"] {
+  color: var(--purple);
+  border-color: var(--purple);
+}
+
+.admin-flag[aria-pressed="true"]::before {
+  background: var(--purple);
+}
+
+/* ------------------------------------------------------------------- the rows */
+
+.admin-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--ink);
+}
+
+.admin-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 14px;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-rows > .admin-row:first-child {
+  border-top: 0;
+}
+
+.admin-row-dragging {
+  background: var(--admin-tint);
+}
+
+.admin-row-hidden .admin-row-name {
+  color: var(--admin-faint);
+}
+
+.admin-row-index {
+  flex: none;
+  width: 20px;
+  padding-top: 3px;
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-faint);
+  cursor: grab;
+}
+
+.admin-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-row-name {
+  display: block;
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.admin-row-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.9em;
+  color: var(--admin-quiet);
+}
+
+.admin-row-meta a {
+  color: inherit;
+}
+
+.admin-row-side {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+.admin-move {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.admin-move button {
+  border: 0;
+  background: none;
+  padding: 0;
+  line-height: 1;
+  color: var(--admin-faint);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.admin-move button:hover {
+  color: var(--purple);
+}
+
+.admin-move button[disabled] {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.admin-thumb {
+  flex: none;
+  width: 54px;
+  height: 54px;
+  border: 1px solid var(--hairline);
+  background: rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--admin-faint);
+}
+
+.admin-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-thumb-round {
+  border-radius: 999px;
+}
+
+/* A small word in a box: a story tag, a state, a role. */
+.admin-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border: 1px solid var(--hairline);
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+  white-space: nowrap;
+}
+
+.admin-tag-on {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.admin-tag-warn {
+  border-color: var(--pink);
+  color: var(--pink);
+}
+
+/* ------------------------------------------------------------ the photographs */
+
+.admin-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
+  gap: 14px;
+}
+
+.admin-photo {
+  border: 1px solid var(--hairline);
+}
+
+.admin-photo-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 0;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.04);
+  cursor: zoom-in;
+  overflow: hidden;
+}
+
+.admin-photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-photo-hidden .admin-photo-frame img {
+  opacity: 0.4;
+}
+
+.admin-photo-body {
+  padding: 2px 0 0;
+}
+
+.admin-photo-body .admin-field {
+  border-left: 0;
+}
+
+/* A card is narrower than a page, so its fields pair up only where they fit. */
+.admin-photo-body .admin-fields {
+  grid-template-columns: repeat(auto-fit, minmax(94px, 1fr));
+}
+
+.admin-photo-body .admin-field + .admin-field {
+  border-left: 1px solid var(--hairline);
+}
+
+.admin-photo-body .admin-field-wide {
+  border-left: 0;
+}
+
+.admin-photo-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px 9px;
+  border-top: 1px solid var(--hairline);
+}
+
+/* Dragging files over the window. */
+.admin-drop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  background: rgba(255, 252, 246, 0.94);
+  pointer-events: none;
+  text-align: center;
+}
+
+.admin-drop p {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.admin-drop em {
+  font-size: 0.95rem;
+  color: var(--admin-quiet);
+}
+
+/* How far an upload has got. */
+.admin-progress {
+  height: 3px;
+  background: var(--hairline);
+  margin: 8px 0 0;
+  overflow: hidden;
+}
+
+.admin-progress span {
+  display: block;
+  height: 100%;
+  background: var(--purple);
+  transition: width 0.2s ease;
+}
+
+/* Looking at one photograph properly. */
+.admin-look {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 30px;
+  background: rgba(0, 0, 0, 0.86);
+  border: 0;
+  cursor: zoom-out;
+}
+
+.admin-look img {
+  max-width: 100%;
+  max-height: 84vh;
+  object-fit: contain;
+}
+
+/* ------------------------------------------------------------ choosing one */
+
+.admin-pick {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.admin-pick-box {
+  width: 100%;
+  max-width: 46rem;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+}
+
+.admin-pick-head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.admin-pick-head h2 {
+  margin: 0;
+  font: inherit;
+  font-size: 1.15rem;
+}
+
+.admin-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  padding: 12px 14px 16px;
+}
+
+.admin-pick-grid button {
+  border: 1px solid var(--hairline);
+  background: none;
+  padding: 0;
+  aspect-ratio: 1;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.admin-pick-grid button:hover {
+  border-color: var(--purple);
+}
+
+.admin-pick-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------------------------------------------------------- the saving strip */
+
+.admin-save {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding: 13px 0;
+  background: var(--paper);
+  border-top: 1px solid var(--ink);
+}
+
+/* ---------------------------------------------------------- writing sections */
+
+/* A story's text: sections, each with a heading and paragraphs under it. */
+.admin-section {
+  border: 1px solid var(--hairline);
+  margin: 12px 14px;
+}
+
+.admin-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--hairline);
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.admin-section-head input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.admin-section-head input::placeholder {
+  color: var(--admin-faint);
+  letter-spacing: 0.06em;
+}
+
+.admin-para {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 12px;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-section > .admin-para:first-of-type {
+  border-top: 0;
+}
+
+.admin-para textarea {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: var(--ink);
+  resize: vertical;
+}
+
+.admin-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 14px 14px;
+  border: 1px dashed var(--admin-faint);
+  background: none;
+  padding: 7px 12px;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+  cursor: pointer;
+}
+
+.admin-add:hover {
+  border-style: solid;
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.admin-add-inline {
+  margin: 9px 12px 12px;
+}
+
+/* ------------------------------------------------------------------- a table */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--ink);
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ink);
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: top;
+  line-height: 1.4;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-table-quiet {
+  color: var(--admin-quiet);
+  font-size: 0.92em;
+}
+
+/* -------------------------------------------------------------------- mobile */
+
+@media screen and (max-width: 900px) {
+  .admin {
+    display: block;
+  }
+
+  /* The menu stops being a column and becomes a header that wraps: the mark and
+     the way out on the first line, every section on the lines under it. It
+     wraps rather than scrolling sideways — the same as the site's own menu on a
+     phone, and nothing can be pushed out of reach. */
+  .admin-side {
+    position: static;
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    padding: 12px var(--edge) 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--hairline);
+    overflow: visible;
+  }
+
+  .admin-mark {
+    flex: none;
+  }
+
+  .admin-mark span {
+    display: none;
+  }
+
+  /* First line, hard right. */
+  .admin-foot {
+    order: 1;
+    flex: none;
+    margin: 0 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 0;
+    border-top: 0;
+  }
+
+  .admin-who {
+    display: none;
+  }
+
+  .admin-foot a span,
+  .admin-foot button span {
+    display: none;
+  }
+
+  /* Everything else on its own lines underneath. */
+  .admin-nav {
+    order: 2;
+    flex-basis: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 16px;
+  }
+
+  .admin-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 14px;
+  }
+
+  .admin-group-label {
+    display: none;
+  }
+
+  .admin-link {
+    padding: 0;
+    font-size: 0.95rem;
+  }
+
+  .admin-link svg {
+    display: none;
+  }
+
+  .admin-main {
+    margin-left: 0;
+    padding: 0 var(--edge) 60px;
+  }
+
+  /* The header scrolls away with the page; only the section's own title sticks. */
+  .admin-head {
+    top: 0;
+    padding-top: 16px;
+  }
+
+  .admin-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-field {
+    border-left: 0 !important;
+  }
+
+  .admin-stats,
+  .admin-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stat {
+    border-left: 0;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .admin-stat:first-child {
+    border-top: 0;
+  }
+
+  .admin-card {
+    border-left: 0;
+  }
+
+  .admin-row {
+    flex-wrap: wrap;
+  }
+
+  .admin-row-side {
+    justify-content: flex-start;
+  }
+}

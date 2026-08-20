@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import NewsletterForm from "@/components/NewsletterForm";
+import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
   title: "Newsletter",
@@ -8,7 +10,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/newsletter" },
 };
 
-export default function NewsletterPage() {
+export default async function NewsletterPage() {
+  // Turned off in /admin means gone from here too, not just out of the menu.
+  if (!(await pageIsVisible("newsletter"))) notFound();
+
   return (
     <main className="page">
       <div className="auth">

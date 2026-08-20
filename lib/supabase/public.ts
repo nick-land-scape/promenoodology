@@ -9,7 +9,7 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
  * Queries say what they return with `.returns<Row[]>()`; this only stops the
  * client from insisting it knows nothing about any table at all.
  */
-type Loose = {
+export type Loose = {
   public: {
     Tables: {
       [table: string]: {

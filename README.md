@@ -29,8 +29,9 @@ On a phone the app can be added to the home screen and opens without browser
 furniture (`public/manifest.webmanifest`).
 
 **Two secret doors, both on the mark.** There is no sign-in link anywhere: knock
-three times on the logo in the menu — three clicks inside a second and a half —
-and the sign-in page opens. On the front page the same three knocks on the big
+three times on the logo in the menu — three quick clicks — and the sign-in page
+opens. Going home waits a moment so the second and third knocks land on the
+page the first one did. On the front page the same three knocks on the big
 logo open the members' app. (Pressing Tab on the front page also reveals a way
 in, so the app stays reachable with a keyboard or a screen reader.)
 
@@ -78,6 +79,8 @@ app/
     connect/            Connect — the feed and who is around
     account/            Account — membership, bookings, settings
     app.css             the app's stylesheet
+  admin/                looking after the site — its own shell and stylesheet
+    admin.css           the back of the house, in the same colours
   globals.css           the website's stylesheet, one file on purpose
 components/             nav, contact and the interactive bits
 components/app/         the app's shell, tab bar, feed and booking form
@@ -91,7 +94,9 @@ data/
   quotes.csv            things people said
   donations.csv         the wall
   posts.csv             the connect feed (app)
-lib/                    reads the files above at build time
+lib/                    reads the content, from the database or the files
+lib/admin/              who may look after the site, and what there is to change
+components/admin/       the back of the house: its menu, fields and uploader
 public/
   hero.mp4              the front page video
   hero-poster.jpg       first frame, shown until the video is ready
@@ -193,28 +198,67 @@ working, waiting for a decision about what should sit behind it.
 
 ## The backend (Supabase)
 
-The site still reads its content from the files in `/data` and `/content`. The
-database is being put in behind it; until the keys are set, everything falls back
-to the files, so nothing breaks either way.
+The site reads its content from the database, and falls back to the files in
+`/data` and `/content` whenever there is no database to ask — so it still builds
+and runs on a laptop with no keys.
 
 **Setting it up**
 
 1. Copy `.env.example` to `.env.local` and paste the two keys from
    Supabase → Project Settings → API Keys. Which variables also belong in Vercel
    is written next to each one.
-2. Run `supabase/migrations/0001_init.sql` in the Supabase SQL editor. It makes
-   the tables, decides who may read and write what, and creates the `media`
-   bucket for photographs.
-3. `node scripts/import.mjs` moves everything currently in the files into the
-   database, photographs included (`--no-media` to skip the uploads). It is safe
-   to run twice: rows are keyed on something stable, so a second run updates.
-4. Make yourself an admin: sign in once, then in the SQL editor
-   `update profiles set role = 'admin' where id = '<your user id>';`
+2. Run the files in `supabase/migrations/` in order, in the SQL editor. They make
+   the tables, decide who may read and write what, and create the `media` bucket
+   for photographs.
+3. `node scripts/import.mjs` moves everything in the files into the database,
+   photographs included (`--no-media` to skip the uploads). Safe to run twice:
+   rows are keyed on something stable, so a second run updates.
+4. Make somebody an admin: they sign in once, then in the SQL editor
+   `update profiles set role = 'admin' where id = '<their user id>';`
 
 **Who may do what.** Row level security is on for every table. The public reads
 anything marked published; only an admin writes. Members can read the feed and
-write their own posts and bookings. Applications from the handbook page can be
-written by anybody and read only by admins.
+write their own posts and bookings. Requests from the handbook page can be
+written by anybody and read only by an admin.
+
+## Looking after the site (/admin)
+
+Everything the site is made of can be changed at `/admin`, without touching the
+code. It is not a page builder: the design is in the stylesheet and stays there.
+What you can change is what the site says, which photographs it shows, and which
+pages exist at all.
+
+There is no separate login. `/admin` is the site's own sign-in plus one thing:
+`profiles.role = 'admin'`. Signed in as an admin, the menu grows a quiet purple
+line — *look after the site*. Anybody else is sent back to their own profile, and
+the database refuses the writes as well, through the same policies that protect
+everything else.
+
+| Section | What it looks after |
+|---|---|
+| **stories** | One story each: the words in the sections they are written in, where and when it happened, and the tag its photographs answer to. Drag to reorder — the order is also the one the arrows at the foot of a story follow. |
+| **the archive** | Every photograph: who took it, the year, which story it belongs to. Drop files anywhere on the page to add them. |
+| **quotes** | The things people said, and which story each was said about. |
+| **pages** | Which pages are on the site at all, what the menu calls them and in what order — and the words on the two that have any, *about us* and *the handbook*. |
+| **the wall** | The public bank account, gift by gift. Still no total, on purpose. |
+| **what's on** / **news** | The members' app: the evenings, and the short notes on its front screen. A new evening starts hidden. |
+| **people** | The community list: names, countries, portraits, who is shown, and who else may look after the site. |
+| **requests** | Anybody asking for a hand with something of their own, from the handbook page. |
+| **newsletter** | Who wants to hear when there is something to come to, and all the addresses in one box to paste into the *bcc* line. |
+
+**Turning a page off** means off: out of the menu, out of `sitemap.xml`, and a
+"this page took a different walk" at its own address — for everybody, signed in
+or not. To read a page over before it opens, open its words in **pages** rather
+than turning it on.
+
+**Photographs** are shrunk to 1800px in the browser, re-saved, renamed to
+something random and put straight into the bucket. Nothing passes through a
+function on the way, so there is no request-size limit to run into, and the
+camera's notes — the model, the time, sometimes the coordinates — are left
+behind in the process.
+
+**Nothing waits.** Every page of the site keeps a copy for a minute; each save
+throws all of those away, so a change is on the site by the time you look.
 
 ## Design notes
 

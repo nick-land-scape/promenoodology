@@ -14,7 +14,15 @@ export const CODE_LENGTH = 6;
 const EMPTY: Result = {};
 
 export function SignInForm() {
-  const [withCode, setWithCode] = useState(false);
+  /**
+   * The code in an email is the way in, and the password is the exception.
+   *
+   * That order matters: the accounts that look after the site have no password
+   * at all — there is nothing on them to guess and nothing to leak — so leading
+   * with a password field would meet them with "that email and password do not
+   * match" and no hint as to why. Anybody who does have one can still say so.
+   */
+  const [withCode, setWithCode] = useState(true);
 
   return (
     <>
@@ -22,7 +30,7 @@ export function SignInForm() {
 
       <p className="auth-switch">
         <button type="button" className="text-button" onClick={() => setWithCode(!withCode)}>
-          {withCode ? "use a password instead" : "send me a code instead"}
+          {withCode ? "I have a password" : "send me a code instead"}
         </button>
       </p>
 

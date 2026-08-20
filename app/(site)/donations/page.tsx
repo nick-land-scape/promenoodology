@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import Photo from "@/components/Photo";
 import { getDonations } from "@/lib/source";
+import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
   title: "Public bank account",
@@ -20,6 +22,9 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function DonationsPage() {
+  // Turned off in /admin means gone from here too, not just out of the menu.
+  if (!(await pageIsVisible("donations"))) notFound();
+
   const donations = await getDonations();
 
   return (

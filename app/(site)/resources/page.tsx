@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Archive, { type StoryFilter } from "@/components/Archive";
 import { getFilters, getQuotes, getResources, getStories } from "@/lib/source";
+import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
   title: "Resources",
@@ -13,6 +15,9 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function ResourcesPage() {
+  // Turned off in /admin means gone from here too, not just out of the menu.
+  if (!(await pageIsVisible("resources"))) notFound();
+
   const [resources, quotes, stories] = await Promise.all([
     getResources(),
     getQuotes(),

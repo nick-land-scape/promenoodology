@@ -639,6 +639,11 @@ img {
 .support-send {
   display: inline-block;
   margin: 18px 0 12px;
+  /* It is a submit button now rather than a mail link, so the browser's own
+     grey box and pointer have to be taken off it explicitly. */
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
   font-family: var(--sans);
   font-size: 0.72rem;
   font-weight: 700;
@@ -656,6 +661,16 @@ img {
 .support-send:hover {
   background: var(--ink);
   color: var(--paper);
+}
+
+.support-send[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.support-send[disabled]:hover {
+  background: none;
+  color: var(--ink);
 }
 
 /* ------------------------------------------------------------ signing in */
