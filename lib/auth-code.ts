@@ -2,15 +2,20 @@
  * How many characters the code in the email has.
  *
  * Supabase decides this, in Authentication → Providers → Email → "Email OTP
- * Length" (six by default). Everything that draws or checks a code reads it from
- * here, so if it is changed there it is changed in one place here — and the row
- * of boxes on the code page has exactly as many boxes as there are characters to
- * type, which is the whole point of them.
+ * Length". This project is set to eight — not the six Supabase ships with, and
+ * not something to guess at: a row of six boxes quietly cut the last two
+ * characters off an eight-character code, sent the stump, and was told the code
+ * had expired. Which it had not.
+ *
+ * Everything that draws or checks a code reads the number from here, so the row
+ * of boxes always has exactly as many boxes as there are characters to type —
+ * which is the whole point of them. If it is changed in the dashboard, change it
+ * here in the same breath.
  *
  * The codes Supabase sends are digits only, which is why the boxes ask for a
  * number pad on a phone.
  */
-export const CODE_LENGTH = 6;
+export const CODE_LENGTH = 8;
 
 /** The name of the cookie that remembers whose code we are waiting for. */
 export const CODE_COOKIE = "promenood-signin";
