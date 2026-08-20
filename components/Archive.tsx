@@ -68,7 +68,7 @@ export default function Archive({ slides, quotes, stories, years, seed }: Props)
 
   return (
     <>
-      <Submenu section="resources">
+      <Submenu section="archive">
         <div className="filters">
           <div className="filter-group">
             <button

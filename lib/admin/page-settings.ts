@@ -76,7 +76,7 @@ export const PAGE_SETTINGS: Record<string, Setting[]> = {
     },
   ],
 
-  resources: [
+  archive: [
     {
       key: "columnWidth",
       kind: "number",

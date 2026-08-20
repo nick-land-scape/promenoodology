@@ -18,7 +18,7 @@ export default async function PagesPage() {
   // uneditable here is not a gap, it is that the archive is its photographs.
   const madeOf: Record<string, string> = {
     stories: "made of the stories",
-    resources: "made of the photographs and quotes",
+    archive: "made of the photographs and quotes",
     community: "made of the people",
     newsletter: "a form — the words are in the code",
     donations: "made of the wall",

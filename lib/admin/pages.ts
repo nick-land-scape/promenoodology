@@ -50,10 +50,10 @@ export const PAGES: PageSpec[] = [
     madeOf: "The stories themselves are under Stories.",
   },
   {
-    slug: "resources",
+    slug: "archive",
     name: "the archive",
     blurb: "The wall of photographs and quotes: its heading, and how wide its columns are.",
-    view: "/resources",
+    view: "/archive",
     usesTitle: true,
     usesLead: true,
     kinds: [],

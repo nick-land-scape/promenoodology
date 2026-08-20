@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const pages = [
     "/",
-    ...["stories", "resources", "community", "about", "newsletter", "handbook"]
+    ...["stories", "archive", "community", "about", "newsletter", "handbook"]
       .filter(on)
       .map((slug) => `/${slug}`),
   ];

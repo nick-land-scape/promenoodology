@@ -52,6 +52,20 @@ function readEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (DRY) return { url: url ?? "http://dry.run", key: key ?? "dry-run" };
+
+  // A key with an ellipsis in it is the example from the instructions, pasted.
+  // It fails on every single upload, and the failures are the last thing you
+  // see rather than the first — so it is caught here instead.
+  if (key && (key.includes("\u2026") || key.includes("...") || key.length < 40)) {
+    console.error(
+      "That does not look like a real key:\n" +
+        `  SUPABASE_SERVICE_ROLE_KEY=${key.slice(0, 14)}…\n\n` +
+        "Supabase → Project Settings → API Keys → service_role → Reveal, then copy\n" +
+        "the whole thing. Edit the last line of .env.local rather than adding another.",
+    );
+    process.exit(1);
+  }
+
   if (!url || !key) {
     console.error(
       "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local.\n" +
@@ -170,8 +184,27 @@ let added = 0;
 let updated = 0;
 let uploaded = 0;
 
-for (const person of people) {
+/**
+ * Before the loop: one cheap authenticated question, so a key that will fail on
+ * all sixty-four fails once, now, with a sentence.
+ */
+if (!DRY) {
+  const { error } = await db.from("profiles").select("id").limit(1);
+  if (error) {
+    console.error(
+      `The database would not answer: ${error.message}\n\n` +
+        "Almost always the key. Supabase → Project Settings → API Keys →\n" +
+        "service_role → Reveal, and check the last line of .env.local.",
+    );
+    process.exit(1);
+  }
+}
+
+for (const [nth, person] of people.entries()) {
   const name = [person.first, person.last].filter(Boolean).join(" ");
+  // Sixty-four uploads is a slow minute. Silence for a whole minute is
+  // indistinguishable from being stuck, so it says where it is.
+  if (!DRY) process.stdout.write(`  ${String(nth + 1).padStart(2)}/${people.length}  ${name}`);
 
   /* ---- the portrait ---- */
   let photoPath = null;
@@ -222,15 +255,28 @@ for (const person of people) {
     continue;
   }
 
+  let said = "";
   if (existing) {
     const { error } = await db.from("profiles").update(values).eq("id", existing.id);
-    if (error) problems.push(`${name}: ${error.message}`);
-    else updated += 1;
+    if (error) {
+      problems.push(`${name}: ${error.message}`);
+      said = "failed";
+    } else {
+      updated += 1;
+      said = "updated";
+    }
   } else {
     const { error } = await db.from("profiles").insert(values);
-    if (error) problems.push(`${name}: ${error.message}`);
-    else added += 1;
+    if (error) {
+      problems.push(`${name}: ${error.message}`);
+      said = "failed";
+    } else {
+      added += 1;
+      said = "added";
+    }
   }
+
+  process.stdout.write(`  —  ${said}${photoPath ? " with a portrait" : ", no portrait"}\n`);
 }
 
 console.log("");

@@ -35,7 +35,7 @@ export const SECTIONS: Section[] = [
     blurb: "Every photograph: who took it, which year, which story it belongs to.",
     icon: "photos",
     group: "site",
-    view: "/resources",
+    view: "/archive",
   },
   {
     href: "/admin/quotes",
@@ -43,7 +43,7 @@ export const SECTIONS: Section[] = [
     blurb: "The things people said, and where they sit in the archive.",
     icon: "quote",
     group: "site",
-    view: "/resources",
+    view: "/archive",
   },
   {
     href: "/admin/pages",

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Resources",
   description:
     "Everything we keep: photographs at whatever size they came in, and the things people said, on one wall.",
-  alternates: { canonical: "/resources" },
+  alternates: { canonical: "/archive" },
 };
 
 // A page may serve a cached copy for a minute before asking the database again.
@@ -16,13 +16,13 @@ export const revalidate = 60;
 
 export default async function ResourcesPage() {
   // Turned off in /admin means gone from here too, not just out of the menu.
-  if (!(await pageIsVisible("resources"))) notFound();
+  if (!(await pageIsVisible("archive"))) notFound();
 
   const [resources, quotes, stories, head] = await Promise.all([
     getResources(),
     getQuotes(),
     getStories(),
-    getPageHead("resources"),
+    getPageHead("archive"),
   ]);
 
   const slides = resources.map((item) => ({

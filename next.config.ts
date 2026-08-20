@@ -25,7 +25,10 @@ const nextConfig: NextConfig = {
       { source: "/index.html", destination: "/", permanent: true },
       // Projects became stories.
       { source: "/projects", destination: "/stories", permanent: true },
-      { source: "/resources/quotes", destination: "/resources", permanent: true },
+      // The archive was at /resources until it was called what it is. Both of
+      // these outlive the rename, because a link somebody kept is a promise.
+      { source: "/resources", destination: "/archive", permanent: true },
+      { source: "/resources/quotes", destination: "/archive", permanent: true },
       // "become a member" is gone; the newsletter is the way to keep in touch.
       { source: "/join", destination: "/newsletter", permanent: true },
       { source: "/projects/:slug", destination: "/stories/:slug", permanent: true },
@@ -33,8 +36,8 @@ const nextConfig: NextConfig = {
       { source: "/munity/index.html", destination: "/community", permanent: true },
       { source: "/munity/explained", destination: "/about", permanent: true },
       { source: "/munity/explained/index.html", destination: "/about", permanent: true },
-      { source: "/munity/resources", destination: "/resources", permanent: true },
-      { source: "/munity/resources/index.html", destination: "/resources", permanent: true },
+      { source: "/munity/resources", destination: "/archive", permanent: true },
+      { source: "/munity/resources/index.html", destination: "/archive", permanent: true },
     ];
   },
   async headers() {
