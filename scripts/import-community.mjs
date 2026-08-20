@@ -123,6 +123,28 @@ function readSheet(file) {
   return rows;
 }
 
+/**
+ * Mends a name that was saved as UTF-8 and then read back as Latin-1.
+ *
+ * "Majoberová" is in the spreadsheet as "MajoberovÃ¡" — the two bytes of the á
+ * read as two separate Western European characters. Whatever wrote the file did
+ * it; the sheet is the source of truth and the source of truth is wrong.
+ *
+ * So it is mended here rather than by hand, because by hand it would come back
+ * the next time the sheet is exported. Only when the giveaway sequences are
+ * present and the round trip produces something valid — a name is not worth
+ * guessing at.
+ */
+function mend(text) {
+  if (!/[ÃÂ]|â€/.test(text)) return text;
+  try {
+    const again = Buffer.from(text, "latin1").toString("utf8");
+    return again.includes("\uFFFD") ? text : again;
+  } catch {
+    return text;
+  }
+}
+
 /* ------------------------------------------------------------- the pictures */
 
 /**
@@ -168,9 +190,9 @@ console.log("columns:", Object.values(header).join(", "));
 
 const people = body
   .map((row) => ({
-    first: row.A ?? "",
-    last: row.B ?? "",
-    country: row.C ?? "",
+    first: mend(row.A ?? ""),
+    last: mend(row.B ?? ""),
+    country: mend(row.C ?? ""),
     image: row.D ?? "",
     colour: (row.E ?? "").toLowerCase(),
   }))

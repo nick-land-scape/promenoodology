@@ -19,6 +19,24 @@ export type Setting =
   | { key: string; kind: "toggle"; label: string; hint?: string; fallback: boolean }
   | {
       key: string;
+      kind: "choice";
+      label: string;
+      hint?: string;
+      fallback: string;
+      options: { value: string; label: string; hint?: string }[];
+    }
+  | {
+      key: string;
+      /** A picture, uploaded here and kept as a path in the bucket. */
+      kind: "image";
+      label: string;
+      hint?: string;
+      fallback: "";
+      /** Where in the bucket the uploads go. */
+      folder: string;
+    }
+  | {
+      key: string;
       kind: "number";
       label: string;
       hint?: string;
@@ -29,6 +47,85 @@ export type Setting =
     }
   | { key: string; kind: "text"; label: string; hint?: string; fallback: string }
   | { key: string; kind: "lines"; label: string; hint?: string; fallback: string };
+
+/**
+ * A picture behind the words, and the handful of dials that make one usable.
+ *
+ * This is the one place the line about design living in the stylesheet is
+ * deliberately crossed, and it is worth saying why: nobody can choose an opacity
+ * for a photograph they have not seen. Which picture, how far back it sits, how
+ * it is turned and how much of the window it fills are judgements about a
+ * specific image, and they cannot be made anywhere but in front of it.
+ *
+ * Spread into a page's list to give that page a background. `background` empty
+ * means there is none, and every dial below it is then irrelevant rather than
+ * wrong.
+ */
+const BACKGROUND: Setting[] = [
+  {
+    key: "background",
+    kind: "image",
+    label: "a picture behind the words",
+    hint: "Left empty there is none, and the rest of this panel does nothing.",
+    fallback: "",
+    folder: "backgrounds",
+  },
+  {
+    key: "backgroundOpacity",
+    kind: "number",
+    label: "how strong it is",
+    hint: "Per cent. Low is usually right: it is behind words that have to stay readable.",
+    fallback: 18,
+    min: 2,
+    max: 100,
+    unit: "%",
+  },
+  {
+    key: "backgroundBlend",
+    kind: "choice",
+    label: "how it meets the paper",
+    hint: "Multiply keeps the paper's warmth and drops the picture's white out of it — the same trick the logo in the menu uses.",
+    fallback: "multiply",
+    options: [
+      { value: "multiply", label: "multiply", hint: "White disappears; the ink darkens the paper." },
+      { value: "normal", label: "flat", hint: "Just the picture, faded." },
+      { value: "screen", label: "screen", hint: "Black disappears; the picture lightens the paper." },
+      { value: "overlay", label: "overlay", hint: "Contrast both ways. Strong." },
+      { value: "luminosity", label: "grey", hint: "The picture's light, the paper's colour." },
+    ],
+  },
+  {
+    key: "backgroundFit",
+    kind: "choice",
+    label: "how much of the window",
+    fallback: "cover",
+    options: [
+      { value: "cover", label: "fills it", hint: "Cropped to fill the window. Nothing empty, some of it lost." },
+      { value: "contain", label: "all of it", hint: "The whole picture, as large as fits. Paper around it." },
+      { value: "width", label: "a width you set", hint: "Its own shape, at the size below." },
+    ],
+  },
+  {
+    key: "backgroundWidth",
+    kind: "number",
+    label: "that width",
+    hint: "Per cent of the window. Only used when the setting above is “a width you set”.",
+    fallback: 100,
+    min: 10,
+    max: 300,
+    unit: "%",
+  },
+  {
+    key: "backgroundRotate",
+    kind: "number",
+    label: "turned by",
+    hint: "Degrees, in fifteens. A turned picture leaves the corners of the window empty unless it is also made bigger.",
+    fallback: 0,
+    min: -180,
+    max: 180,
+    unit: "°",
+  },
+];
 
 /** slug → what that page may set. A page with nothing here sets nothing. */
 export const PAGE_SETTINGS: Record<string, Setting[]> = {
@@ -51,6 +148,8 @@ export const PAGE_SETTINGS: Record<string, Setting[]> = {
       unit: "px",
     },
   ],
+
+  about: [...BACKGROUND],
 
   handbook: [
     {
@@ -125,6 +224,17 @@ export function settingsFor(slug: string, saved: unknown): PageSettings {
           : setting.fallback;
       continue;
     }
+    if (setting.kind === "choice") {
+      const allowed = setting.options.some((option) => option.value === value);
+      out[setting.key] = allowed ? String(value) : setting.fallback;
+      continue;
+    }
+    if (setting.kind === "image") {
+      // A picture is the one text field where empty means empty: there is no
+      // shipped background to fall back to, and "none" is a real answer.
+      out[setting.key] = typeof value === "string" ? value : "";
+      continue;
+    }
     // An emptied text field means "put the original back", not "show nothing":
     // there is no way to say the latter, and every way to say it by accident.
     out[setting.key] =
@@ -146,6 +256,15 @@ export function cleanSettings(slug: string, incoming: unknown): PageSettings {
 
     if (setting.kind === "toggle") {
       out[setting.key] = Boolean(value);
+    } else if (setting.kind === "choice") {
+      if (setting.options.some((option) => option.value === value)) {
+        out[setting.key] = String(value);
+      }
+    } else if (setting.kind === "image") {
+      // Only somewhere in our own bucket, and only a path — never a URL typed
+      // in from elsewhere, which would be a way of putting anything on the page.
+      const path = String(value ?? "");
+      out[setting.key] = /^[a-z0-9/_-]+\.[a-z]{3,4}$/i.test(path) ? path : "";
     } else if (setting.kind === "number") {
       const number = Math.round(Number(value));
       if (Number.isFinite(number)) {
