@@ -1260,8 +1260,10 @@ body:has(.hero) .contact {
 
 .community-grid {
   display: grid;
-  /* --name comes from the page, set in /admin. 108px is what shipped. */
-  grid-template-columns: repeat(auto-fill, minmax(var(--name, 108px), 1fr));
+  /* How many names across, set in /admin. A count rather than a width: it is the
+     thing somebody looking at the page has an opinion about. The phone rule
+     further down overrules it — there, two is all that fits. */
+  grid-template-columns: repeat(var(--columns, 6), minmax(0, 1fr));
   gap: 10px;
   margin: 0;
   padding: 0;
@@ -2125,5 +2127,131 @@ body:has(.hero) .contact {
 
   .holding-count {
     gap: 14px;
+  }
+}
+
+/* ---------------------------------------------------------------- partners
+
+   The organisations we did things with, under the names. Provisional: they are
+   here because they belong on this page, and a quiet row of logos assumes the
+   least about how that should eventually look. */
+
+.partners {
+  margin-top: 54px;
+  padding-top: 18px;
+  border-top: 1px solid var(--hairline);
+}
+
+.partners-label {
+  margin: 0 0 14px;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: #6f6a63;
+}
+
+.partners-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 26px 34px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A logo is drawn to a height and keeps its own shape — they arrive in every
+   proportion there is, and cropping somebody's mark is not ours to do. */
+.partners-row img {
+  height: 34px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+  /* Most of these arrive as black on white; multiply drops the white out onto
+     the paper, the same trick the logo in the menu uses. */
+  mix-blend-mode: multiply;
+}
+
+.partners-row a {
+  display: block;
+  line-height: 0;
+  font-style: normal;
+}
+
+.partners-name {
+  font-size: 1.05rem;
+  font-style: italic;
+}
+
+@media screen and (max-width: 767px) {
+  .partners-row {
+    gap: 18px 22px;
+  }
+
+  .partners-row img {
+    height: 26px;
+  }
+}
+
+/* ------------------------------------------------- a picture behind the words
+
+   Fixed, and behind everything on the page. Every dial comes from /admin — see
+   BACKGROUND in lib/admin/page-settings for why these and not others.
+
+   It is an <img> with mix-blend-mode rather than a CSS background, because
+   blending needs the paper underneath: multiply drops the white out of a scan
+   onto the paper, which is what makes a photograph belong to this site instead
+   of sitting on top of it. */
+
+.page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.page-bg img {
+  opacity: var(--bg-opacity, 0.18);
+  mix-blend-mode: var(--bg-blend, multiply);
+  rotate: var(--bg-rotate, 0deg);
+  /* Turning a picture leaves the window's corners empty; the size dial is how
+     that gets solved, so it is not solved here behind anybody's back. */
+}
+
+.page-bg[data-fit="cover"] img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.page-bg[data-fit="contain"] img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.page-bg[data-fit="width"] img {
+  width: var(--bg-width, 100%);
+  height: auto;
+  max-width: none;
+}
+
+/* The words sit above it. Without this they share a stacking context with the
+   picture and the blend mode swallows them. */
+.page > *:not(.page-bg) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Nothing here moves, but a rotated photograph behind text is a lot to ask of
+     some eyes — so it is set straight. */
+  .page-bg img {
+    rotate: none;
   }
 }

@@ -55,7 +55,7 @@ export default async function PhotosPage({
   }));
 
   return (
-    <Head title="the archive" view="/resources">
+    <Head title="the archive" view="/archive">
       <p className="admin-intro">
         Photographs keep the shape they arrived in — the wall is not a grid — so there is nothing to
         crop and nothing to line up. What matters is who took each one, the year, and which story it

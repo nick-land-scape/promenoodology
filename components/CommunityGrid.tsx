@@ -8,11 +8,16 @@ import type { Member } from "@/lib/content";
 /** How much larger than the original file a portrait may be drawn. */
 const MAX_SCALE = 2.2;
 
+/* Two orders, both of them the same thing asked differently: by surname, which
+   is how a list of people is normally kept, or by first name, which is how you
+   actually think of somebody.
+
+   Country and project used to be here too. They sorted a page nobody reads in
+   order — the grid is for finding a face, and grouping sixty-four names by
+   thirty countries made thirty lists of two. */
 const ORDERS = [
   { key: "last", label: "name" },
   { key: "first", label: "first name" },
-  { key: "country", label: "country" },
-  { key: "project", label: "project" },
 ] as const;
 
 type Order = (typeof ORDERS)[number]["key"];
@@ -61,7 +66,6 @@ export default function CommunityGrid({ members }: { members: Member[] }) {
       <Submenu section="community">
         <div className="filters">
           <div className="filter-group">
-            <span className="filter-label">sort by</span>
             {ORDERS.map((option) => (
               <button
                 key={option.key}
@@ -149,15 +153,9 @@ function idOf(member: Member) {
 
 function sortMembers(members: Member[], order: Order) {
   const by = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" });
-  return [...members].sort((a, b) => {
-    if (order === "first") return by(a.first, b.first) || by(a.last, b.last);
-    if (order === "country") return by(a.country, b.country) || by(a.last, b.last);
-    // Anybody without a project yet goes to the end rather than to the top.
-    if (order === "project") {
-      if (!a.project && b.project) return 1;
-      if (a.project && !b.project) return -1;
-      return by(a.project, b.project) || by(a.last, b.last);
-    }
-    return by(a.last, b.last) || by(a.first, b.first);
-  });
+  return [...members].sort((a, b) =>
+    order === "first"
+      ? by(a.first, b.first) || by(a.last, b.last)
+      : by(a.last, b.last) || by(a.first, b.first),
+  );
 }

@@ -3,16 +3,22 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import Uploader from "@/components/admin/Uploader";
-import { Empty, Field, Flag, Problem, SaveBar, Tag, Word, pretty } from "@/components/admin/ui";
+import { Button, Empty, Field, Flag, Icon, Panel, Problem, SaveBar, Tag, Word, pretty } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
-import { savePeople, setPortrait } from "./actions";
+import { addPerson, invitePerson, savePeople, setPortrait } from "./actions";
 
 export type Person = {
   id: string;
+  /** Their login, or the invitation waiting for them, or nothing yet. */
+  email: string;
+  hasAccount: boolean;
   name: string;
   country: string;
   role: "member" | "admin";
+  /** Their own answer to being on the community page. */
   listed: boolean;
+  /** An admin's answer, which wins. Null: whatever they said. */
+  listedByAdmin: boolean | null;
   colour: string | null;
   photo: string | null;
   photoUrl: string | null;
@@ -59,10 +65,63 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
         was.country !== person.country ||
         was.colour !== person.colour ||
         was.listed !== person.listed ||
+        was.listedByAdmin !== person.listedByAdmin ||
         was.role !== person.role
       );
     });
   }, [people, kept]);
+
+  /* Writing somebody down, and inviting somebody, are the same form with one
+     more field — so it is one form, and the address is what decides. */
+  const [newName, setNewName] = useState("");
+  const [newCountry, setNewCountry] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [said, setSaid] = useState("");
+
+  function add() {
+    setProblem("");
+    setSaid("");
+    const name = newName.trim();
+    const email = newEmail.trim();
+
+    start(async () => {
+      const result = email
+        ? await invitePerson({ id: null, name, email })
+        : await addPerson({ name, country: newCountry });
+
+      if (!result.ok) {
+        setProblem(result.error ?? "That did not work.");
+        return;
+      }
+      setSaid(
+        email
+          ? `${name} is on the community page, and a way in is on its way to ${email}.`
+          : `${name} is on the community page. No account, and none needed.`,
+      );
+      setNewName("");
+      setNewCountry("");
+      setNewEmail("");
+      router.refresh();
+    });
+  }
+
+  function invite(person: Person) {
+    const email = (
+      prompt(`An address to invite ${person.name} at:`, person.email) ?? ""
+    ).trim();
+    if (!email) return;
+
+    setProblem("");
+    setSaid("");
+    start(async () => {
+      const result = await invitePerson({ id: person.id, name: person.name, email });
+      if (!result.ok) setProblem(result.error ?? "That did not work.");
+      else {
+        setSaid(`A way in is on its way to ${email}.`);
+        router.refresh();
+      }
+    });
+  }
 
   function edit(id: string, patch: Partial<Person>) {
     setPeople((list) => list.map((person) => (person.id === id ? { ...person, ...patch } : person)));
@@ -79,6 +138,7 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
           country: person.country,
           colour: person.colour,
           listed: person.listed,
+          listed_by_admin: person.listedByAdmin,
           role: person.role,
         })),
       );
@@ -115,6 +175,50 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
   return (
     <>
       <Problem>{problem}</Problem>
+
+      {said ? <p className="admin-ok" style={{ display: "block", marginBottom: 14 }}>{said}</p> : null}
+
+      <Panel
+        name="somebody new"
+        hint="A name is enough. Add an address as well and they are also sent a way in — that is the only way an account gets made now."
+      >
+        <div className="admin-fields">
+          <Field label="name">
+            <input
+              value={newName}
+              onChange={(event) => setNewName(event.target.value)}
+              placeholder="first and last"
+            />
+          </Field>
+          <Field label="from" hint="Optional.">
+            <input
+              value={newCountry}
+              onChange={(event) => setNewCountry(event.target.value)}
+              placeholder="a country"
+            />
+          </Field>
+          <Field
+            label="email"
+            hint="Leave it empty for somebody who only belongs on the page."
+          >
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(event) => setNewEmail(event.target.value)}
+              placeholder="only if they should be able to sign in"
+            />
+          </Field>
+          <div className="admin-field">
+            <span>add</span>
+            <span style={{ paddingTop: 2 }}>
+              <Button onClick={add} disabled={pending || !newName.trim()}>
+                <Icon name="plus" />
+                {newEmail.trim() ? "add and invite" : "write them down"}
+              </Button>
+            </span>
+          </div>
+        </div>
+      </Panel>
 
       <ul className="admin-rows">
         {people.map((person) => (
@@ -171,18 +275,65 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
               </span>
 
               <span className="admin-row-meta" style={{ marginTop: 6 }}>
-                since {pretty(person.joined)}
-                {person.isMe ? " — this is you" : ""}
+                {person.email ? (
+                  <a href={`mailto:${person.email}`}>{person.email}</a>
+                ) : (
+                  "no address — on the page only"
+                )}
+                {" · since "}
+                {pretty(person.joined)}
+                {person.isMe ? " · this is you" : ""}
               </span>
             </span>
 
             <span className="admin-row-side" style={{ flexDirection: "column", alignItems: "flex-end", gap: 7 }}>
-              {person.isMe ? <Tag tone="on">you</Tag> : null}
-              <Flag
-                on={person.listed}
-                onChange={(next) => edit(person.id, { listed: next })}
-                labels={["on the community page", "not on the page"]}
-              />
+              <span style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                {person.isMe ? <Tag tone="on">you</Tag> : null}
+                {person.hasAccount ? (
+                  <Tag tone="on">can sign in</Tag>
+                ) : person.email ? (
+                  <Tag>invited</Tag>
+                ) : (
+                  <Tag>no account</Tag>
+                )}
+              </span>
+
+              {/* Three states, not two. "Up to them" is a different answer from
+                  "forced to the same thing they chose", and only one of the two
+                  should survive them changing their mind. */}
+              <span style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  className="admin-flag"
+                  aria-pressed={person.listedByAdmin === null}
+                  onClick={() => edit(person.id, { listedByAdmin: null })}
+                  title={
+                    person.listed
+                      ? "They chose to be on the page"
+                      : "They chose not to be on the page"
+                  }
+                >
+                  up to them ({person.listed ? "shown" : "hidden"})
+                </button>
+                <button
+                  type="button"
+                  className="admin-flag"
+                  aria-pressed={person.listedByAdmin === true}
+                  onClick={() => edit(person.id, { listedByAdmin: true })}
+                  title="On the community page whatever they said"
+                >
+                  always shown
+                </button>
+                <button
+                  type="button"
+                  className="admin-flag"
+                  aria-pressed={person.listedByAdmin === false}
+                  onClick={() => edit(person.id, { listedByAdmin: false })}
+                  title="Off the community page whatever they said"
+                >
+                  always hidden
+                </button>
+              </span>
               <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
                 <Uploader
                   folder={`profiles/${person.id}`}
@@ -195,6 +346,11 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                     no portrait
                   </Word>
                 ) : null}
+                {person.hasAccount ? null : (
+                  <Word onClick={() => invite(person)} disabled={pending}>
+                    {person.email ? "send the invitation again" : "invite them"}
+                  </Word>
+                )}
               </span>
             </span>
           </li>
@@ -214,9 +370,15 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
       </SaveBar>
 
       <p className="admin-note" style={{ marginTop: 18 }}>
-        There is no way to delete somebody from here on purpose: a profile is what their posts and
+        There is no way to delete somebody from here on purpose: a person is what their posts and
         bookings hang off. Taking them off the community page leaves everything intact and can be
         undone.
+      </p>
+      <p className="admin-note">
+        One thing worth being straight about: the invitation goes out through the same public key the
+        site uses, so it is this page that only offers it to admins, not the database. A real lock
+        means turning signups off in Supabase and giving the site a service-role key — see the note
+        in <code>.env.example</code>.
       </p>
     </>
   );

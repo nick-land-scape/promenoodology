@@ -345,14 +345,18 @@ export async function getMembers(): Promise<Member[]> {
   if (!hasSupabase()) return files.getMembers();
 
   const supabase = supabasePublic();
+  // Not filtered here: whether somebody is shown is "they said yes, unless an
+  // admin said otherwise", which is two columns and one question. The policy on
+  // the table asks it as well, so a row that should not be seen is not returned
+  // even if this ever forgot to.
   const { data } = await supabase
     .from("profiles")
-    .select("name, country, photo_path, colour")
-    .eq("listed", true)
+    .select("name, country, photo_path, colour, listed, listed_by_admin")
     .returns<ProfileRow[]>();
-  if (!data?.length) return files.getMembers();
+  const shown = (data ?? []).filter((row) => row.listed_by_admin ?? row.listed);
+  if (!shown.length) return files.getMembers();
 
-  return data.map((row) => {
+  return shown.map((row) => {
     const parts = (row.name ?? "").split(" ");
     return {
       name: row.name ?? "",
@@ -366,6 +370,38 @@ export async function getMembers(): Promise<Member[]> {
         : null,
     };
   });
+}
+
+/* ------------------------------------------------------------------ partners */
+
+/** A partner as the community page shows one. */
+export type Partner = { id: string; name: string; url: string | null; logo: Photo | null };
+
+export async function getPartners(): Promise<Partner[]> {
+  if (!hasSupabase()) return [];
+
+  try {
+    const { data } = await supabasePublic()
+      .from("associations")
+      .select("id, name, url, logo_path")
+      .eq("published", true)
+      .order("position")
+      .returns<{ id: string; name: string; url: string | null; logo_path: string | null }[]>();
+
+    return (data ?? [])
+      .filter((row) => row.name)
+      .map((row) => ({
+        id: row.id,
+        name: row.name,
+        url: row.url,
+        // The size is nominal: a logo is drawn to a height and keeps its shape,
+        // and nobody measures one on the way in.
+        logo: row.logo_path ? { src: mediaUrl(row.logo_path), width: 400, height: 200 } : null,
+      }));
+  } catch {
+    // Before migration 0006 there is no such table.
+    return [];
+  }
 }
 
 /* ---------------------------------------------------------------- helpers */

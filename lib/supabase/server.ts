@@ -43,7 +43,8 @@ export async function currentProfile() {
   const { data } = await supabase
     .from("profiles")
     .select("id, name, role, country, photo_path")
-    .eq("id", user.id)
+    // Their account, not their id — see lib/admin/guard.
+    .eq("user_id", user.id)
     .single();
 
   return data ? { ...data, email: user.email ?? "" } : null;

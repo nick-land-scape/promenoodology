@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPage } from "@/lib/source";
+import PageBackground from "@/components/PageBackground";
+import { getPage, getPageHead } from "@/lib/source";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -20,11 +21,12 @@ export default async function AboutPage() {
 
   // Whatever the back of the house has saved, or the statement the site shipped
   // with — getPage falls back to it, so this is never empty.
-  const page = await getPage("about");
+  const [page, head] = await Promise.all([getPage("about"), getPageHead("about")]);
   const statement = page?.blocks ?? [];
 
   return (
     <main className="page">
+      <PageBackground settings={head.settings} />
       <h1 className="visually-hidden">About us</h1>
 
       <div className="statement">

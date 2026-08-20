@@ -21,7 +21,7 @@ export default async function AccountPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("user_id", user.id)
     .single<ProfileRow>();
 
   return (

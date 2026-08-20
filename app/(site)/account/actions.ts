@@ -109,35 +109,24 @@ export async function verifyCode(_state: Result, form: FormData): Promise<Result
 }
 
 /**
- * Joining. Same gesture as signing in, with a name attached: the code creates
- * the account when it is typed, so there is no password to choose and no
- * half-made account left behind by somebody who never came back.
+ * Joining, which is closed.
+ *
+ * An account now starts with an invitation from /admin → people. This is left
+ * here rather than deleted because the form that called it may still be open in
+ * somebody's tab, and a button that quietly does nothing is worse than one that
+ * says why.
+ *
+ * Worth being straight about the limit: this is the app declining, not the
+ * database. The same public key could still be used to sign somebody up directly
+ * against Supabase. Closing that properly means turning signups off in the
+ * Supabase dashboard and giving the invitation on the admin page a service-role
+ * key of its own — see the note in .env.example.
  */
-export async function join(_state: Result, form: FormData): Promise<Result> {
-  const name = String(form.get("name") ?? "").trim();
-  const email = String(form.get("email") ?? "")
-    .trim()
-    .toLowerCase();
-  const country = String(form.get("country") ?? "").trim();
-
-  if (!name) return { error: "We would like to know what to call you." };
-  if (!email.includes("@")) return { error: "That does not look like an email address." };
-
-  const supabase = await supabaseServer();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      shouldCreateUser: true,
-      emailRedirectTo: landing,
-      // Carried to the profile by the trigger on auth.users, so the name is
-      // there the moment the account is.
-      data: { name, country },
-    },
-  });
-  if (error) return { error: friendly(error.message) };
-
-  await remember(email);
-  redirect("/account/code");
+export async function join(_state: Result, _form: FormData): Promise<Result> {
+  return {
+    error:
+      "Accounts are closed at the moment — they start with an invitation from us. Put your address on the newsletter and we will be in touch.",
+  };
 }
 
 export async function signOut() {
@@ -162,7 +151,7 @@ export async function saveProfile(_state: Result, form: FormData): Promise<Resul
       country: String(form.get("country") ?? "").trim(),
       listed: form.get("listed") === "on",
     })
-    .eq("id", user.id);
+    .eq("user_id", user.id);
 
   if (error) return { error: error.message };
 

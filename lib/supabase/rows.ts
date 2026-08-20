@@ -100,13 +100,29 @@ export type DonationRow = {
 
 export type ProfileRow = {
   id: string;
+  /** The account they sign in with, or null for somebody who never has. */
+  user_id: string | null;
+  /** Where to write to them: their login, or the invitation waiting for them. */
+  email: string | null;
   name: string;
   country: string;
   role: "member" | "admin";
+  /** Their own answer to being on the community page. */
   listed: boolean;
+  /** An admin's answer, which wins. Null: whatever they said. */
+  listed_by_admin: boolean | null;
   photo_path: string | null;
   colour: string | null;
   joined_on: string;
+};
+
+export type AssociationRow = {
+  id: string;
+  name: string;
+  url: string | null;
+  logo_path: string | null;
+  position: number;
+  published: boolean;
 };
 
 export type ApplicationRow = {

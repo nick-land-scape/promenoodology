@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Resources",
   description:
     "Everything we keep: photographs at whatever size they came in, and the things people said, on one wall.",
-  alternates: { canonical: "/resources" },
+  alternates: { canonical: "/archive" },
 };
 
 // A page may serve a cached copy for a minute before asking the database again.
@@ -16,13 +16,13 @@ export const revalidate = 60;
 
 export default async function ResourcesPage() {
   // Turned off in /admin means gone from here too, not just out of the menu.
-  if (!(await pageIsVisible("resources"))) notFound();
+  if (!(await pageIsVisible("archive"))) notFound();
 
   const [resources, quotes, stories, head] = await Promise.all([
     getResources(),
     getQuotes(),
     getStories(),
-    getPageHead("resources"),
+    getPageHead("archive"),
   ]);
 
   const slides = resources.map((item) => ({
@@ -61,7 +61,16 @@ export default async function ResourcesPage() {
         </p>
       )}
       <div style={{ "--brick": `${head.settings.columnWidth}px` } as React.CSSProperties}>
-        <Archive slides={slides} quotes={quotes} stories={storyLinks} years={years} />
+        <Archive
+          slides={slides}
+          quotes={quotes}
+          stories={storyLinks}
+          years={years}
+          // Worked out here so the server and the browser shuffle the same way
+          // on the first paint. The page keeps its copy for a minute, so the
+          // order changes about that often.
+          seed={1 + Math.floor(Math.random() * 100000)}
+        />
       </div>
     </main>
   );

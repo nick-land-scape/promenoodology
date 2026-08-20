@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 /**
  * The small pieces the back of the house is built out of.
  *
@@ -268,4 +270,151 @@ export function pretty(iso: string) {
 /** Today, as the date inputs want it. */
 export function today() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/* ------------------------------------------------------- putting things in order
+
+   Everything in here that a visitor sees in order — stories, photographs, the
+   parts of a page, the partners — is arranged the same three ways: dragged,
+   nudged with the arrows, or told a number. One place for all three, because
+   five copies of it drifted into five subtly different behaviours.
+
+   Two things about dragging that are easy to get wrong, and were:
+
+   Safari and Firefox refuse a drop unless dragstart put something on the
+   dataTransfer. Chrome does not care, which is exactly why this went unnoticed —
+   it worked on the machine it was written on.
+
+   An <img> is draggable on its own, natively, and hijacks the drag with its own
+   payload: you end up dragging the picture rather than the row it sits in. Every
+   image inside something draggable needs draggable={false}. */
+
+export function useDragOrder<T extends { id: string }>(
+  items: T[],
+  onMove: (from: number, to: number) => void,
+) {
+  const [dragging, setDragging] = useState<string | null>(null);
+
+  /**
+   * The row: where something can be dropped, but not where a drag starts.
+   *
+   * That split is not tidiness. Most of these rows have a text field in them, and
+   * on a draggable element you cannot select text with the mouse — the drag wins
+   * the gesture. So the row accepts, and only the handle offers.
+   */
+  function dropProps(_item: T, index: number) {
+    return {
+      onDragOver: (event: React.DragEvent) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+      },
+      onDrop: (event: React.DragEvent) => {
+        event.preventDefault();
+        // The state is the quick answer; the dataTransfer is the one that
+        // survives a drag that began somewhere else.
+        const id = dragging ?? event.dataTransfer.getData("text/plain");
+        const from = items.findIndex((one) => one.id === id);
+        if (from !== -1 && from !== index) onMove(from, index);
+        setDragging(null);
+      },
+    };
+  }
+
+  /** The handle: the only thing a drag may start from. */
+  function handleProps(item: T) {
+    return {
+      draggable: true,
+      onDragStart: (event: React.DragEvent) => {
+        event.dataTransfer.setData("text/plain", item.id);
+        event.dataTransfer.effectAllowed = "move";
+        setDragging(item.id);
+      },
+      onDragEnd: () => setDragging(null),
+    };
+  }
+
+  return { dropProps, handleProps, dragging };
+}
+
+/** The thing you take hold of. Small, and the only way a drag begins. */
+export function Grip(props: React.HTMLAttributes<HTMLSpanElement>) {
+  return (
+    <span
+      {...props}
+      className="admin-grip"
+      role="button"
+      tabIndex={-1}
+      aria-label="Drag to reorder"
+      title="Drag to reorder"
+    >
+      <svg viewBox="0 0 10 16" fill="currentColor" aria-hidden="true">
+        <circle cx="2.5" cy="3" r="1.2" />
+        <circle cx="7.5" cy="3" r="1.2" />
+        <circle cx="2.5" cy="8" r="1.2" />
+        <circle cx="7.5" cy="8" r="1.2" />
+        <circle cx="2.5" cy="13" r="1.2" />
+        <circle cx="7.5" cy="13" r="1.2" />
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * The number, which is also the way to move something a long way.
+ *
+ * Sixty-four photographs is a lot of dragging and a very long way for an arrow.
+ * Typing 3 into the fortieth one puts it third — which is how anybody would
+ * describe what they wanted anyway.
+ */
+export function Place({
+  index,
+  total,
+  onMove,
+}: {
+  index: number;
+  total: number;
+  onMove: (from: number, to: number) => void;
+}) {
+  const [typed, setTyped] = useState<string | null>(null);
+
+  function commit() {
+    const wanted = typed?.trim();
+    setTyped(null);
+    // Nothing typed, or the field emptied and left: that is not "put it first".
+    // Number("") is 0, which is finite, which sent it to the top of the list —
+    // so the emptiness is checked before the arithmetic, not after it.
+    if (!wanted) return;
+
+    const asked = Number(wanted);
+    if (!Number.isFinite(asked)) return;
+
+    const to = Math.min(total, Math.max(1, Math.round(asked))) - 1;
+    if (to !== index) onMove(index, to);
+  }
+
+  return (
+    <input
+      className="admin-place"
+      value={typed ?? String(index + 1)}
+      inputMode="numeric"
+      aria-label={`Number ${index + 1} of ${total} — type another to move it there`}
+      title="Type a number to move it there"
+      onChange={(event) => setTyped(event.target.value.replace(/\D/g, ""))}
+      onBlur={commit}
+      onKeyDown={(event) => {
+        // Enter commits here rather than blurring and letting onBlur do it. One
+        // hop instead of two: the round trip through the browser's focus
+        // handling was a step that could quietly not happen.
+        if (event.key === "Enter" || event.key === "NumpadEnter") {
+          event.preventDefault();
+          commit();
+          event.currentTarget.blur();
+        }
+        if (event.key === "Escape") {
+          setTyped(null);
+          event.currentTarget.blur();
+        }
+      }}
+    />
+  );
 }

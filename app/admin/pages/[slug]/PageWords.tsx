@@ -6,15 +6,20 @@ import {
   Field,
   Fields,
   Flag,
+  Grip,
   Move,
   Panel,
+  Place,
   Problem,
   SaveBar,
   Word,
   moved,
+  useDragOrder,
 } from "@/components/admin/ui";
 import type { PageSpec } from "@/lib/admin/pages";
 import { PAGE_SETTINGS, type PageSettings } from "@/lib/admin/page-settings";
+import Uploader from "@/components/admin/Uploader";
+import { mediaUrl } from "@/lib/supabase/config";
 import { savePageWords } from "../actions";
 
 /**
@@ -48,6 +53,18 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
   }
 
   const setBlocks = (blocks: Block[]) => set("blocks", blocks);
+
+  function moveBlock(from: number, to: number) {
+    const next = moved(draft.blocks, from, to);
+    if (next !== draft.blocks) setBlocks(next);
+  }
+
+  /* The blocks are dragged, nudged or told a number, like every other list in
+     here. They have no id of their own — a block is only its kind and its words —
+     so their place in the list stands in for one. That is enough: it is only
+     needed for the length of one drag. */
+  const draggable = draft.blocks.map((block, index) => ({ ...block, id: String(index) }));
+  const { dropProps, handleProps, dragging } = useDragOrder(draggable, moveBlock);
 
   function setKnob(key: string, value: string | number | boolean) {
     setDraft((old) => ({ ...old, settings: { ...old.settings, [key]: value } }));
@@ -134,6 +151,66 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
                 );
               }
 
+              if (knob.kind === "choice") {
+                return (
+                  <div className="admin-field" key={knob.key}>
+                    <span>{knob.label}</span>
+                    <span style={{ display: "flex", gap: 6, flexWrap: "wrap", paddingTop: 3 }}>
+                      {knob.options.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className="admin-flag"
+                          aria-pressed={value === option.value}
+                          title={option.hint}
+                          onClick={() => setKnob(knob.key, option.value)}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </span>
+                    <em>
+                      {knob.options.find((option) => option.value === value)?.hint ?? knob.hint}
+                    </em>
+                  </div>
+                );
+              }
+
+              if (knob.kind === "image") {
+                const path = String(value ?? "");
+                return (
+                  <div className="admin-field admin-field-wide" key={knob.key}>
+                    <span>{knob.label}</span>
+                    <span style={{ display: "flex", gap: 12, alignItems: "flex-start", paddingTop: 4 }}>
+                      <span className="admin-thumb" style={{ width: 96, height: 68 }}>
+                        {path ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={mediaUrl(path)} alt="" draggable={false} />
+                        ) : (
+                          "none"
+                        )}
+                      </span>
+                      <span style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+                        <Uploader
+                          folder={knob.folder}
+                          many={false}
+                          label={path ? "another picture" : "a picture"}
+                          onDone={(uploaded) => setKnob(knob.key, uploaded.path)}
+                        />
+                        {path ? (
+                          <Word danger onClick={() => setKnob(knob.key, "")}>
+                            take it away
+                          </Word>
+                        ) : null}
+                        <em style={{ fontSize: "0.85em", color: "var(--admin-faint)" }}>
+                          {knob.hint}
+                        </em>
+                      </span>
+                    </span>
+                  </div>
+                );
+              }
+
               if (knob.kind === "number") {
                 return (
                   <Field
@@ -184,12 +261,15 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
           hint={spec.kinds.map((kind) => `${kind.label} — ${kind.hint}`).join("  ·  ")}
         >
           {draft.blocks.map((block, index) => (
-            <div className="admin-section" key={index}>
+            <div
+              className={`admin-section${dragging === String(index) ? " admin-row-dragging" : ""}`}
+              key={index}
+              {...dropProps(draggable[index], index)}
+            >
               <header className="admin-section-head">
                 <span style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
-                  <span className="admin-row-index" style={{ cursor: "default" }} aria-hidden="true">
-                    {index + 1}
-                  </span>
+                  <Grip {...handleProps(draggable[index])} />
+                  <Place index={index} total={draft.blocks.length} onMove={moveBlock} />
                   {spec.kinds.map((kind) => (
                     <button
                       key={kind.value}
@@ -211,11 +291,7 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
                     <span className="admin-tag admin-tag-on">{numberOf(index)}</span>
                   ) : null}
                 </span>
-                <Move
-                  index={index}
-                  total={draft.blocks.length}
-                  onMove={(from, to) => setBlocks(moved(draft.blocks, from, to))}
-                />
+                <Move index={index} total={draft.blocks.length} onMove={moveBlock} />
                 <Word
                   danger
                   onClick={() => setBlocks(draft.blocks.filter((_, i) => i !== index))}

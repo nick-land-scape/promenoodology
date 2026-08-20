@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { join, type Result, sendCode } from "@/app/(site)/account/actions";
+import { type Result, sendCode } from "@/app/(site)/account/actions";
 
 /**
  * The two ways in, and neither of them has a password.
@@ -42,41 +42,12 @@ export function SignInForm() {
         </button>
       </form>
 
+      {/* No "join us": accounts start with an invitation from /admin → people. */}
       <p className="auth-switch">
-        No account yet? <Link href="/account/register">Join us</Link>.
+        No account? They start with an invitation from us — the{" "}
+        <Link href="/newsletter">newsletter</Link> is the way to hear from us in the meantime.
       </p>
     </>
-  );
-}
-
-export function RegisterForm() {
-  const [state, action, sending] = useActionState(join, EMPTY);
-
-  return (
-    <form action={action} className="auth-form">
-      <label>
-        <span>your name</span>
-        <input name="name" autoComplete="name" required placeholder="how you want to be listed" />
-      </label>
-      <label>
-        <span>where you are from</span>
-        <input name="country" autoComplete="country-name" placeholder="optional" />
-      </label>
-      <label>
-        <span>email</span>
-        <input name="email" type="email" autoComplete="email" inputMode="email" required />
-      </label>
-      <Says state={state} />
-      <button type="submit" className="join-primary" disabled={sending}>
-        {sending ? "sending…" : "send me a code →"}
-      </button>
-      <p className="page-note" style={{ margin: 0 }}>
-        No password to choose. We send a code, you type it in, and that is the account made.
-      </p>
-      <p className="auth-switch">
-        Already have an account? <Link href="/account/sign-in">Sign in</Link>.
-      </p>
-    </form>
   );
 }
 

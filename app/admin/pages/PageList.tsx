@@ -3,7 +3,18 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { Field, Flag, Move, Problem, SaveBar, Tag, moved } from "@/components/admin/ui";
+import {
+  Field,
+  Flag,
+  Grip,
+  Move,
+  Place,
+  Problem,
+  SaveBar,
+  Tag,
+  moved,
+  useDragOrder,
+} from "@/components/admin/ui";
 import { savePageList } from "./actions";
 
 export type PageLine = {
@@ -36,7 +47,6 @@ export default function PageList({ initial }: { initial: PageLine[] }) {
   const [kept, setKept] = useState(initial);
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
-  const [dragging, setDragging] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
   const dirty = useMemo(() => JSON.stringify(lines) !== JSON.stringify(kept), [lines, kept]);
@@ -53,6 +63,11 @@ export default function PageList({ initial }: { initial: PageLine[] }) {
     setLines(next.map((line, index) => ({ ...line, position: index + 1 })));
     setJustSaved(false);
   }
+
+  /* A page is keyed by its slug rather than an id, so the hook is handed the
+     one it does have. */
+  const draggable = useMemo(() => lines.map((line) => ({ ...line, id: line.slug })), [lines]);
+  const { dropProps, handleProps, dragging } = useDragOrder(draggable, move);
 
   function save() {
     setProblem("");
@@ -93,18 +108,7 @@ export default function PageList({ initial }: { initial: PageLine[] }) {
         {lines.map((line, index) => (
           <li
             key={line.slug}
-            draggable
-            onDragStart={() => setDragging(line.slug)}
-            onDragEnd={() => setDragging(null)}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => {
-              event.preventDefault();
-              if (dragging) {
-                const from = lines.findIndex((one) => one.slug === dragging);
-                if (from !== -1) move(from, index);
-              }
-              setDragging(null);
-            }}
+            {...dropProps(draggable[index], index)}
             className={[
               "admin-row",
               dragging === line.slug ? "admin-row-dragging" : "",
@@ -114,13 +118,17 @@ export default function PageList({ initial }: { initial: PageLine[] }) {
               .join(" ")}
             style={{ flexWrap: "wrap" }}
           >
-            <span className="admin-row-index" aria-hidden="true">
-              {index + 1}
-            </span>
+            <Grip {...handleProps(draggable[index])} />
+                  <Place index={index} total={lines.length} onMove={move} />
 
             <span className="admin-row-main" style={{ minWidth: 260 }}>
               <span className="admin-row-name" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                /{line.slug}
+                {/* The address, and it is not a field: a page's address is the
+                    folder it lives in, so moving one means moving code. A
+                    story's address IS editable — that is in the story itself. */}
+                <span title="A page's address is fixed. A story's is editable, in the story.">
+                  /{line.slug}
+                </span>
                 <Link href={`/admin/pages/${line.slug}`} className="admin-word">
                   {line.hasWords ? "open its words →" : "open it →"}
                 </Link>

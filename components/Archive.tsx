@@ -21,6 +21,16 @@ type Props = {
   /** Only so an opened photograph can offer the story it belongs to. */
   stories: StoryFilter[];
   years: string[];
+  /**
+   * What the wall is shuffled by when it arrives.
+   *
+   * It comes from the page rather than from here, because the server and the
+   * browser have to draw the same wall on the first paint or React throws the
+   * whole thing away and does it again. The page holds its copy for a minute, so
+   * the order changes about that often — which is as random as a wall needs to
+   * be, and steadier than one that rearranges itself under a scroll.
+   */
+  seed: number;
 };
 
 /**
@@ -34,18 +44,23 @@ type Props = {
  * be a filter per story as well, which turned the archive into an index of the
  * stories page — and the stories page is already better at being that.
  */
-export default function Archive({ slides, quotes, stories, years }: Props) {
+export default function Archive({ slides, quotes, stories, years, seed }: Props) {
   const [year, setYear] = useState<string | null>(null);
-  const [shuffle, setShuffle] = useState(0);
+  // Shuffled to begin with: the wall is for wandering, and the order the
+  // photographs were uploaded in is not a thought anybody had.
+  const [shuffle, setShuffle] = useState(seed);
   const [open, setOpen] = useState<number | null>(null);
 
   const chosen = slides.filter((slide) => !year || slide.year === year);
   const said = quotes.filter((quote) => !year || quote.year === year);
 
-  /* Shuffled from a number that only changes when somebody asks. The first
-     render is the natural order, on the server and in the browser alike, so
-     nothing jumps as the page arrives. */
-  const photos = useMemo(() => (shuffle === 0 ? chosen : shuffled(chosen, shuffle)), [chosen, shuffle]);
+  /* Shuffled from a number that only changes when somebody asks. Zero is the
+     one number that means "as it was", so it is the way back rather than a
+     shuffle of its own. */
+  const photos = useMemo(
+    () => (shuffle === 0 ? chosen : shuffled(chosen, shuffle)),
+    [chosen, shuffle],
+  );
 
   // The lightbox steps through the photographs that are actually on the wall.
   const inLightbox = photos;
@@ -53,26 +68,25 @@ export default function Archive({ slides, quotes, stories, years }: Props) {
 
   return (
     <>
-      <Submenu section="resources">
+      <Submenu section="archive">
         <div className="filters">
           <div className="filter-group">
             <button
               type="button"
               className="text-button"
-              onClick={() => setShuffle((n) => n + 1)}
+              aria-pressed={shuffle > 0}
+              onClick={() => setShuffle((n) => (n === 0 ? seed : n + 1))}
             >
-              random
+              {shuffle > 0 ? "shuffle again" : "random"}
             </button>
-            {shuffle > 0 ? (
-              <button
-                type="button"
-                className="text-button"
-                aria-pressed
-                onClick={() => setShuffle(0)}
-              >
-                as it was
-              </button>
-            ) : null}
+            <button
+              type="button"
+              className="text-button"
+              aria-pressed={shuffle === 0}
+              onClick={() => setShuffle(0)}
+            >
+              as it was
+            </button>
           </div>
 
           <div className="filter-group">

@@ -27,7 +27,7 @@ export type SitePage = {
 /** The menu as it was before there was anywhere to change it. */
 const SHIPPED: SitePage[] = [
   { slug: "stories", navLabel: "STORIES", group: "main", position: 1, visible: true },
-  { slug: "resources", navLabel: "RESOURCES", group: "main", position: 2, visible: true },
+  { slug: "archive", navLabel: "ARCHIVE", group: "main", position: 2, visible: true },
   { slug: "community", navLabel: "COMMUNITY", group: "main", position: 3, visible: true },
   { slug: "about", navLabel: "ABOUT US", group: "main", position: 4, visible: true },
   { slug: "handbook", navLabel: "handbook", group: "more", position: 5, visible: true },

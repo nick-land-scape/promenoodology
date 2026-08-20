@@ -4,7 +4,19 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { Look } from "@/components/admin/Pick";
 import Uploader from "@/components/admin/Uploader";
-import { Empty, Field, Flag, Move, Problem, SaveBar, Word, moved } from "@/components/admin/ui";
+import {
+  Empty,
+  Field,
+  Flag,
+  Grip,
+  Move,
+  Place,
+  Problem,
+  SaveBar,
+  Word,
+  moved,
+  useDragOrder,
+} from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
 import { addPhoto, deletePhoto, reorderPhotos, savePhotos } from "./actions";
 
@@ -50,7 +62,6 @@ export default function PhotoLibrary({
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
   const [reordered, setReordered] = useState(false);
-  const [dragging, setDragging] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
   /* What new uploads are given, so a batch does not have to be typed twice. */
@@ -117,6 +128,9 @@ export default function PhotoLibrary({
     setReordered(true);
     setProblem("");
   }
+
+  /* Dragged, nudged, or told a number — all three go through the same move. */
+  const { dropProps, handleProps, dragging } = useDragOrder(shown, move);
 
   function keepOrder() {
     setProblem("");
@@ -246,18 +260,7 @@ export default function PhotoLibrary({
           {shown.map((item, index) => (
             <figure
               key={item.id}
-              draggable
-              onDragStart={() => setDragging(item.id)}
-              onDragEnd={() => setDragging(null)}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={(event) => {
-                event.preventDefault();
-                if (dragging) {
-                  const from = shown.findIndex((one) => one.id === dragging);
-                  if (from !== -1) move(from, index);
-                }
-                setDragging(null);
-              }}
+              {...dropProps(item, index)}
               className={[
                 "admin-photo",
                 item.published ? "" : "admin-photo-hidden",
@@ -274,13 +277,7 @@ export default function PhotoLibrary({
                 aria-label="Look at it properly"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.url} alt="" loading="lazy" />
-                {/* Its place in the order, so dragging has something to check
-                    itself against — a grid of pictures gives you no other way of
-                    telling the third from the fourth. */}
-                <span className="admin-photo-index" aria-hidden="true">
-                  {index + 1}
-                </span>
+                <img src={item.url} alt="" loading="lazy" draggable={false} />
               </button>
 
               <figcaption className="admin-photo-body">
@@ -316,7 +313,11 @@ export default function PhotoLibrary({
                 </div>
 
                 <div className="admin-photo-foot">
-                  <Flag on={item.published} onChange={(next) => edit(item.id, { published: next })} />
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Grip {...handleProps(item)} />
+                  <Place index={index} total={shown.length} onMove={move} />
+                    <Flag on={item.published} onChange={(next) => edit(item.id, { published: next })} />
+                  </span>
                   <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <Move index={index} total={shown.length} onMove={move} />
                     <Word danger onClick={() => remove(item)} disabled={pending}>
