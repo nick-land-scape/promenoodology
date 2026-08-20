@@ -161,6 +161,37 @@ export async function getDonations(): Promise<Donation[]> {
 
 export type PageBlock = { kind: string; text: string };
 
+/**
+ * The about statement as the site shipped with it, before there was anywhere to
+ * edit it. It lives here rather than in the page so that both the page and the
+ * back of the house get the same words from the same place — otherwise editing
+ * the statement would start from a blank screen.
+ *
+ * Alternating voices: `loud` is set large, `quiet` is the aside underneath.
+ */
+const ABOUT: { title: string; lead: string; blocks: PageBlock[] } = {
+  title: "about us",
+  lead: "",
+  blocks: [
+    {
+      kind: "loud",
+      text: "promeNOODology empowers local communities to build social and environmental resilience through active engagement and negotiation with their immediate surroundings.",
+    },
+    {
+      kind: "quiet",
+      text: "We encourage people to participate in the transformation of their local environments, fostering a culture where failure is seen as a learning opportunity and interdependencies are embraced within a resource-rich ecosystem.",
+    },
+    {
+      kind: "loud",
+      text: "promeNOODology offers accessible and repeatable experiences designed to disrupt the ordinary.",
+    },
+    {
+      kind: "quiet",
+      text: "Together, we create enjoyable scenarios that highlight individual dependencies and collective resources, promoting a sense of community and shared purpose.",
+    },
+  ],
+};
+
 export async function getPage(slug: string): Promise<{
   title: string;
   lead: string;
@@ -173,7 +204,9 @@ export async function getPage(slug: string): Promise<{
       .select("*")
       .eq("slug", slug)
       .maybeSingle<PageRow>();
-    if (data) {
+    // A row with no blocks in it is a page somebody emptied by accident, not a
+    // decision to show nothing: fall through to what the site shipped with.
+    if (data && (data.blocks ?? []).length > 0) {
       return { title: data.title, lead: data.lead, blocks: (data.blocks ?? []) as PageBlock[] };
     }
   }
@@ -182,6 +215,7 @@ export async function getPage(slug: string): Promise<{
     const handbook = handbookFromFile();
     return { title: handbook.title, lead: handbook.lead, blocks: handbook.blocks };
   }
+  if (slug === "about") return ABOUT;
   return null;
 }
 

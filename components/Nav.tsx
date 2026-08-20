@@ -7,31 +7,26 @@ import { useKnock } from "@/lib/knock";
 import Photo from "./Photo";
 import { AdminLink, SessionButton } from "./SessionLink";
 
-/** The four places most people are looking for. */
-const MAIN = [
-  { href: "/stories", label: "STORIES" },
-  { href: "/resources", label: "RESOURCES" },
-  { href: "/community", label: "COMMUNITY" },
-  { href: "/about", label: "ABOUT US" },
-];
+export type NavLink = { href: string; label: string };
 
-/** The ones you go to once you are interested. */
-const MORE = [{ href: "/handbook", label: "handbook" }];
-
-/* The public bank account is not listed anywhere for now. The page is still
-   there at /donations for anybody given the address; put it back in MORE when
-   it should be public. */
-
-export default function Nav() {
+export default function Nav({
+  main,
+  more,
+}: {
+  /** The bold links. Which pages these are is set in the back of the house. */
+  main: NavLink[];
+  /** The quieter second group underneath. */
+  more: NavLink[];
+}) {
   const pathname = usePathname();
 
   /**
-   * The mark is the way home. Knock on it three times quickly and it is also
-   * the way in — there is no sign-in link anywhere, on purpose. The first click
-   * still goes home; only the third is swallowed. The count survives that
-   * because the menu is part of the layout and never unmounts. See lib/knock.
+   * The mark is the way home. Knock on it three times quickly and it is also the
+   * way in — there is no sign-in link anywhere, on purpose. See lib/knock: going
+   * home waits a moment, so the second and third knocks land on the same page as
+   * the first.
    */
-  const knock = useKnock();
+  const knock = useKnock("/account/sign-in", "/");
 
   // /stories/dinner-for-500 keeps STORIES marked as the section you are in.
   const current = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -43,7 +38,7 @@ export default function Nav() {
       </Link>
 
       <div className="nav-links">
-        {MAIN.map((link) => (
+        {main.map((link) => (
           <Fragment key={link.href}>
             <Link href={link.href} aria-current={current(link.href) ? "page" : undefined}>
               {link.label}
@@ -55,7 +50,7 @@ export default function Nav() {
       </div>
 
       <div className="nav-more">
-        {MORE.map((link) => (
+        {more.map((link) => (
           <Link
             key={link.href}
             href={link.href}

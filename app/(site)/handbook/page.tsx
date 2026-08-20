@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import SupportForm from "@/components/SupportForm";
 import { getPage } from "@/lib/source";
+import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
   title: "Handbook",
@@ -14,6 +16,9 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function HandbookPage() {
+  // Turned off in /admin means gone from here too, not just out of the menu.
+  if (!(await pageIsVisible("handbook"))) notFound();
+
   const handbook = (await getPage("handbook"))!;
 
   return (

@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
+import type { Loose } from "./public";
 
 /**
  * A Supabase client for server components, server actions and route handlers.
@@ -10,7 +11,9 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
 export async function supabaseServer() {
   const store = await cookies();
 
-  return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  // The same loose schema the cookie-less client uses, so a table can be
+  // written to without a generated type for every column.
+  return createServerClient<Loose>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return store.getAll();

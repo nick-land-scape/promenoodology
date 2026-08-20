@@ -1,0 +1,109 @@
+import { cache } from "react";
+import { hasSupabase } from "./supabase/config";
+import { supabasePublic } from "./supabase/public";
+
+/**
+ * Which pages the site has, whether each one is shown, and what the menu calls
+ * it.
+ *
+ * A page that is turned off is off everywhere: out of the menu, out of the
+ * sitemap, and gone from its own address. That is deliberate — a page reachable
+ * by anybody who kept the link is not hidden, it is just unlisted.
+ *
+ * Like everything else the site reads, this falls back to what the site shipped
+ * with when there is no database: every page shown, in the order the menu was
+ * written in by hand.
+ */
+
+export type SitePage = {
+  slug: string;
+  /** The words in the menu, or null for a page that is not listed. */
+  navLabel: string | null;
+  group: "main" | "more" | "none";
+  position: number;
+  visible: boolean;
+};
+
+/** The menu as it was before there was anywhere to change it. */
+const SHIPPED: SitePage[] = [
+  { slug: "stories", navLabel: "STORIES", group: "main", position: 1, visible: true },
+  { slug: "resources", navLabel: "RESOURCES", group: "main", position: 2, visible: true },
+  { slug: "community", navLabel: "COMMUNITY", group: "main", position: 3, visible: true },
+  { slug: "about", navLabel: "ABOUT US", group: "main", position: 4, visible: true },
+  { slug: "handbook", navLabel: "handbook", group: "more", position: 5, visible: true },
+  /* Two pages that are not in the menu. The newsletter has its own place — the
+     last line of the menu is the session link, which reads "newsletter" until
+     you are signed in and becomes your own face after; putting it in a group as
+     well listed it twice. The public bank account has never been listed at all:
+     only people given the address find it. */
+  { slug: "newsletter", navLabel: null, group: "none", position: 6, visible: true },
+  { slug: "donations", navLabel: null, group: "none", position: 7, visible: true },
+];
+
+type Row = {
+  slug: string;
+  nav_label: string | null;
+  nav_group: string | null;
+  nav_position: number | null;
+  visible: boolean | null;
+};
+
+/* Asked once per request however many things want to know — a page asks whether
+   it is shown, and the menu in the layout asks for the whole list. */
+export const getSitePages = cache(async (): Promise<SitePage[]> => {
+  if (!hasSupabase()) return SHIPPED;
+
+  try {
+    const { data } = await supabasePublic()
+      .from("pages")
+      .select("slug, nav_label, nav_group, nav_position, visible")
+      .order("nav_position")
+      .returns<Row[]>();
+
+    // Before migration 0004 these columns do not exist and the select fails, so
+    // an empty answer covers both "no rows yet" and "the database has not caught
+    // up" — either way the menu the site shipped with is the right answer.
+    if (!data?.length) return SHIPPED;
+
+    return data.map((row) => ({
+      slug: row.slug,
+      navLabel: row.nav_label,
+      group: (row.nav_group === "main" || row.nav_group === "more" ? row.nav_group : "none"),
+      position: row.nav_position ?? 99,
+      visible: row.visible !== false,
+    }));
+  } catch {
+    return SHIPPED;
+  }
+});
+
+/**
+ * Is this page on the site? Used by the pages themselves, so a turned-off page
+ * is a 404 rather than something you can still reach with the old link.
+ *
+ * A page nobody has written a row for counts as shown: forgetting to add a row
+ * should not take a page off the site.
+ */
+export async function pageIsVisible(slug: string): Promise<boolean> {
+  const pages = await getSitePages();
+  const page = pages.find((one) => one.slug === slug);
+  return page ? page.visible : true;
+}
+
+/** The two menu groups, in order, with only what is actually shown. */
+export async function getMenu(): Promise<{
+  main: { href: string; label: string }[];
+  more: { href: string; label: string }[];
+}> {
+  const pages = await getSitePages();
+  const listed = pages
+    .filter((page) => page.visible && page.navLabel)
+    .sort((a, b) => a.position - b.position);
+
+  const pick = (group: "main" | "more") =>
+    listed
+      .filter((page) => page.group === group)
+      .map((page) => ({ href: `/${page.slug}`, label: page.navLabel as string }));
+
+  return { main: pick("main"), more: pick("more") };
+}

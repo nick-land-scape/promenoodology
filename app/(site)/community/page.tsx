@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import CommunityGrid from "@/components/CommunityGrid";
 import { getMembers } from "@/lib/source";
+import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
   title: "Community",
@@ -12,6 +14,9 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function CommunityPage() {
+  // Turned off in /admin means gone from here too, not just out of the menu.
+  if (!(await pageIsVisible("community"))) notFound();
+
   const members = await getMembers();
 
   return (

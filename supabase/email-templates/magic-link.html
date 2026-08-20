@@ -1,0 +1,75 @@
+<!--
+  Authentication → Emails → "Magic Link"
+  Subject: Your code for promeNOODology
+
+  Sent when somebody who already has an account asks to be let in.
+
+  The code comes first and the link second, on purpose: the code works in every
+  mail client, on a phone you are already holding, and in the browser you are
+  already signed in to — a link opens whichever browser the mail app prefers,
+  which is not always the one you were in.
+
+  Times and Helvetica, no web fonts: both are on every machine that will ever
+  open this, so it arrives looking like the site rather than looking like a
+  loading state. Everything is inline and table-based because that is the only
+  HTML mail clients agree on.
+-->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fffcf6;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:36px 16px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:440px;">
+
+        <tr>
+          <td style="padding-bottom:26px;">
+            <span style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:1.6px;text-transform:uppercase;color:#8b3fff;">promeNOODology</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="font-family:Times,'Times New Roman',Georgia,serif;font-size:30px;line-height:1.1;color:#000000;padding-bottom:10px;">
+            here is your code
+          </td>
+        </tr>
+
+        <tr>
+          <td style="font-family:Times,'Times New Roman',Georgia,serif;font-size:17px;line-height:1.45;color:#000000;padding-bottom:24px;">
+            Type it into the page you left open. It is good for one hour, and for
+            one visit.
+          </td>
+        </tr>
+
+        <!-- The code. Spaced out because it is going to be read one character at
+             a time and copied by hand. -->
+        <tr>
+          <td align="center" style="border:1px solid #000000;padding:20px 12px;">
+            <span style="font-family:Helvetica,Arial,sans-serif;font-size:34px;font-weight:bold;letter-spacing:10px;color:#000000;">{{ .Token }}</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="font-family:Times,'Times New Roman',Georgia,serif;font-size:16px;line-height:1.45;color:#000000;padding-top:24px;">
+            Or, if you would rather not type anything:
+            <a href="{{ .ConfirmationURL }}" style="color:#8b3fff;font-style:italic;">let me straight in</a>.
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:28px;border-top:1px solid rgba(0,0,0,0.12);">
+            <p style="font-family:Times,'Times New Roman',Georgia,serif;font-size:14px;line-height:1.45;color:#6f6a63;font-style:italic;margin:0;">
+              If this was not you, nothing has happened — somebody typed your
+              address and this code lets them no further. There is no password on
+              your account to change.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:22px;">
+            <a href="mailto:info@promeNOODology.com" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:1.2px;text-transform:uppercase;color:#e82687;text-decoration:none;">info@promeNOODology.com</a>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>

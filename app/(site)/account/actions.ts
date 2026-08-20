@@ -1,94 +1,143 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { CODE_COOKIE, CODE_COOKIE_MAX_AGE, tidyCode } from "@/lib/auth-code";
 import { SITE_URL } from "@/lib/site";
 import { supabaseServer } from "@/lib/supabase/server";
 
 /**
  * Signing in, joining, and editing your own profile.
  *
- * Each action returns a message rather than throwing, so the form can say what
- * went wrong in plain language instead of showing an error page.
+ * There are no passwords. You give an address, we send a code and a link to it,
+ * and either one lets you in — so there is nothing to remember, nothing to
+ * reset, and nothing on any account worth stealing.
+ *
+ * Which address we are waiting on is kept in a short-lived cookie rather than
+ * in the address bar: the code page needs to know whose code it is checking, and
+ * somebody's email address has no business being in a URL, a browser history or
+ * a server log.
+ *
+ * Each action answers with a message rather than throwing, so the form can say
+ * what went wrong in plain language instead of showing an error page.
  */
 
 export type Result = { error?: string; message?: string };
 
-export async function signIn(_state: Result, form: FormData): Promise<Result> {
-  const email = String(form.get("email") ?? "").trim();
-  const password = String(form.get("password") ?? "");
-  if (!email || !password) return { error: "Both fields, please." };
+/** Where the link in the email lands. */
+const landing = `${SITE_URL}/account`;
 
-  const supabase = await supabaseServer();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: friendly(error.message) };
-
-  revalidatePath("/", "layout");
-  redirect("/account");
-}
-
-export async function register(_state: Result, form: FormData): Promise<Result> {
-  const name = String(form.get("name") ?? "").trim();
-  const email = String(form.get("email") ?? "").trim();
-  const password = String(form.get("password") ?? "");
-  const country = String(form.get("country") ?? "").trim();
-
-  if (!name) return { error: "We would like to know what to call you." };
-  if (password.length < 8) return { error: "Eight characters or more, please." };
-
-  const supabase = await supabaseServer();
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { data: { name }, emailRedirectTo: `${SITE_URL}/account` },
+async function remember(email: string) {
+  const jar = await cookies();
+  jar.set(CODE_COOKIE, email, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: CODE_COOKIE_MAX_AGE,
   });
-  if (error) return { error: friendly(error.message) };
-
-  // With confirmation switched on there is no session yet: the person has to
-  // click the link in the email first.
-  if (!data.session) {
-    return { message: `Almost there — we sent a link to ${email}. Open it and you are in.` };
-  }
-
-  if (country && data.user) {
-    await supabase.from("profiles").update({ country }).eq("id", data.user.id);
-  }
-
-  revalidatePath("/", "layout");
-  redirect("/account");
 }
 
-/** Sends a one-time code (or a link, depending on the email template). */
+async function whoseCode() {
+  const jar = await cookies();
+  return jar.get(CODE_COOKIE)?.value ?? "";
+}
+
+async function forget() {
+  const jar = await cookies();
+  jar.delete(CODE_COOKIE);
+}
+
+/**
+ * Ask for a code. Existing accounts only — an address nobody has used before is
+ * turned away here rather than quietly becoming an account.
+ */
 export async function sendCode(_state: Result, form: FormData): Promise<Result> {
-  const email = String(form.get("email") ?? "").trim();
-  if (!email) return { error: "Your email address, please." };
+  const email = String(form.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  if (!email.includes("@")) return { error: "Your email address, please." };
 
   const supabase = await supabaseServer();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser: false, emailRedirectTo: `${SITE_URL}/account` },
+    options: { shouldCreateUser: false, emailRedirectTo: landing },
   });
   if (error) return { error: friendly(error.message) };
 
-  return { message: `Sent. Look for a mail from us at ${email}.` };
+  await remember(email);
+  redirect("/account/code");
+}
+
+/** Another one, from the code page, for whoever closed the email by mistake. */
+export async function resendCode(): Promise<void> {
+  const email = await whoseCode();
+  if (!email) redirect("/account/sign-in");
+
+  const supabase = await supabaseServer();
+  await supabase.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: false, emailRedirectTo: landing },
+  });
+
+  // Nothing is said about whether it worked: the page below already says an
+  // email is on its way, and a second, louder claim would only invite doubt.
+  redirect("/account/code?again=1");
 }
 
 export async function verifyCode(_state: Result, form: FormData): Promise<Result> {
-  const email = String(form.get("email") ?? "").trim();
-  const token = String(form.get("token") ?? "").replace(/\s/g, "");
+  const email = await whoseCode();
+  if (!email) return { error: "That took a while. Start again with your address." };
+
+  const token = tidyCode(String(form.get("token") ?? ""));
   if (!token) return { error: "The code from the email, please." };
 
   const supabase = await supabaseServer();
   const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
   if (error) return { error: friendly(error.message) };
 
+  await forget();
   revalidatePath("/", "layout");
   redirect("/account");
+}
+
+/**
+ * Joining. Same gesture as signing in, with a name attached: the code creates
+ * the account when it is typed, so there is no password to choose and no
+ * half-made account left behind by somebody who never came back.
+ */
+export async function join(_state: Result, form: FormData): Promise<Result> {
+  const name = String(form.get("name") ?? "").trim();
+  const email = String(form.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const country = String(form.get("country") ?? "").trim();
+
+  if (!name) return { error: "We would like to know what to call you." };
+  if (!email.includes("@")) return { error: "That does not look like an email address." };
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true,
+      emailRedirectTo: landing,
+      // Carried to the profile by the trigger on auth.users, so the name is
+      // there the moment the account is.
+      data: { name, country },
+    },
+  });
+  if (error) return { error: friendly(error.message) };
+
+  await remember(email);
+  redirect("/account/code");
 }
 
 export async function signOut() {
   const supabase = await supabaseServer();
   await supabase.auth.signOut();
+  await forget();
   revalidatePath("/", "layout");
   redirect("/");
 }
@@ -119,19 +168,18 @@ export async function saveProfile(_state: Result, form: FormData): Promise<Resul
 /** Supabase speaks in error codes; people do not. */
 function friendly(message: string) {
   const text = message.toLowerCase();
-  if (text.includes("invalid login credentials")) return "That email and password do not match.";
-  if (text.includes("email not confirmed")) {
-    return "This address has not been confirmed yet — the link is in your inbox.";
+  if (text.includes("signups not allowed")) {
+    return "There is no account with that address yet. Join us instead — it takes one more line.";
   }
   if (text.includes("user already registered")) {
     return "There is already an account with this address. Sign in instead.";
   }
-  if (text.includes("signups not allowed")) return "New accounts are closed at the moment.";
-  if (text.includes("rate limit") || text.includes("too many")) {
-    return "Too many attempts for now. Try again in a few minutes.";
+  if (text.includes("rate limit") || text.includes("too many") || text.includes("security purposes")) {
+    return "That is a lot of codes in a short time. Give it a minute and ask again.";
   }
-  if (text.includes("expired") || text.includes("invalid")) {
-    return "That code is wrong or too old. Ask for a new one.";
+  if (text.includes("expired")) return "That code has expired. Ask for a new one below.";
+  if (text.includes("invalid") || text.includes("incorrect")) {
+    return "That code does not match. Check the email, or ask for a new one below.";
   }
   return message;
 }

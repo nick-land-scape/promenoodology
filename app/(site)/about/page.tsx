@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPage } from "@/lib/source";
+import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
   title: "About us",
@@ -9,32 +11,17 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 };
 
-/** Used until the database has a page of its own; the shape is the same. */
-const STATEMENT = [
-  {
-    kind: "loud",
-    text: "promeNOODology empowers local communities to build social and environmental resilience through active engagement and negotiation with their immediate surroundings.",
-  },
-  {
-    kind: "quiet",
-    text: "We encourage people to participate in the transformation of their local environments, fostering a culture where failure is seen as a learning opportunity and interdependencies are embraced within a resource-rich ecosystem.",
-  },
-  {
-    kind: "loud",
-    text: "promeNOODology offers accessible and repeatable experiences designed to disrupt the ordinary.",
-  },
-  {
-    kind: "quiet",
-    text: "Together, we create enjoyable scenarios that highlight individual dependencies and collective resources, promoting a sense of community and shared purpose.",
-  },
-];
-
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
 
 export default async function AboutPage() {
+  // Turned off in /admin means gone from here too, not just out of the menu.
+  if (!(await pageIsVisible("about"))) notFound();
+
+  // Whatever the back of the house has saved, or the statement the site shipped
+  // with — getPage falls back to it, so this is never empty.
   const page = await getPage("about");
-  const statement = page?.blocks.length ? page.blocks : STATEMENT;
+  const statement = page?.blocks ?? [];
 
   return (
     <main className="page">
