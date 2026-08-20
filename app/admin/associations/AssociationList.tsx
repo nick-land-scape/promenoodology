@@ -8,12 +8,15 @@ import {
   Empty,
   Field,
   Flag,
+  Grip,
   Icon,
   Move,
+  Place,
   Problem,
   SaveBar,
   Word,
   moved,
+  useDragOrder,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
 import {
@@ -45,7 +48,6 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
   const [rows, setRows] = useState(initial);
   const [kept, setKept] = useState(initial);
   const [order, setOrder] = useState(false);
-  const [dragging, setDragging] = useState<string | null>(null);
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
   const [pending, start] = useTransition();
@@ -66,6 +68,8 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
     setRows(next);
     setOrder(true);
   }
+
+  const { dropProps, handleProps, dragging } = useDragOrder(rows, move);
 
   function save() {
     setProblem("");
@@ -175,18 +179,7 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
           {rows.map((row, index) => (
             <li
               key={row.id}
-              draggable
-              onDragStart={() => setDragging(row.id)}
-              onDragEnd={() => setDragging(null)}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={(event) => {
-                event.preventDefault();
-                if (dragging) {
-                  const from = rows.findIndex((one) => one.id === dragging);
-                  if (from !== -1) move(from, index);
-                }
-                setDragging(null);
-              }}
+              {...dropProps(row, index)}
               className={[
                 "admin-row",
                 dragging === row.id ? "admin-row-dragging" : "",
@@ -196,12 +189,13 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
                 .join(" ")}
               style={{ flexWrap: "wrap" }}
             >
-              <span className="admin-row-index">{index + 1}</span>
+              <Grip {...handleProps(row)} />
+                  <Place index={index} total={rows.length} onMove={move} />
 
               <span className="admin-thumb" style={{ width: 74, height: 54 }}>
                 {row.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={row.logoUrl} alt="" style={{ objectFit: "contain" }} />
+                  <img src={row.logoUrl} alt="" draggable={false} style={{ objectFit: "contain" }} />
                 ) : (
                   "no logo"
                 )}

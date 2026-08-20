@@ -7,13 +7,16 @@ import {
   Field,
   Fields,
   Flag,
+  Grip,
   Move,
   Panel,
+  Place,
   Problem,
   SaveBar,
   Tag,
   Word,
   moved,
+  useDragOrder,
 } from "@/components/admin/ui";
 import { LAYOUTS } from "@/lib/photo-layout";
 import type { PhotoLayout } from "@/lib/supabase/rows";
@@ -74,13 +77,14 @@ export default function StoryEditor({
      would be a save button that quietly did half its job. */
   const [order, setOrder] = useState(photos);
   const [keptOrder, setKeptOrder] = useState(photos);
-  const [dragging, setDragging] = useState<string | null>(null);
   const photosMoved = JSON.stringify(order) !== JSON.stringify(keptOrder);
 
   function movePhoto(from: number, to: number) {
     const next = moved(order, from, to);
     if (next !== order) setOrder(next);
   }
+
+  const { dropProps, handleProps, dragging } = useDragOrder(order, movePhoto);
 
   function setLayout(id: string, layout: PhotoLayout | null) {
     setOrder((list) => list.map((one) => (one.id === id ? { ...one, layout } : one)));
@@ -362,18 +366,7 @@ export default function StoryEditor({
               {order.map((photo, index) => (
                 <li
                   key={photo.id}
-                  draggable
-                  onDragStart={() => setDragging(photo.id)}
-                  onDragEnd={() => setDragging(null)}
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={(event) => {
-                    event.preventDefault();
-                    if (dragging) {
-                      const from = order.findIndex((one) => one.id === dragging);
-                      if (from !== -1) movePhoto(from, index);
-                    }
-                    setDragging(null);
-                  }}
+                  {...dropProps(photo, index)}
                   className={[
                     "admin-row",
                     dragging === photo.id ? "admin-row-dragging" : "",
@@ -383,11 +376,12 @@ export default function StoryEditor({
                     .join(" ")}
                   style={{ flexWrap: "wrap" }}
                 >
-                  <span className="admin-row-index">{index + 1}</span>
+                  <Grip {...handleProps(photo)} />
+                  <Place index={index} total={order.length} onMove={movePhoto} />
 
                   <span className="admin-thumb" style={{ width: 68, height: 50 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.url} alt="" loading="lazy" />
+                    <img src={photo.url} alt="" loading="lazy" draggable={false} />
                   </span>
 
                   <span className="admin-row-main" style={{ minWidth: 180 }}>

@@ -3,7 +3,18 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Empty, Flag, Move, Problem, Tag, Word, moved } from "@/components/admin/ui";
+import {
+  Empty,
+  Flag,
+  Grip,
+  Move,
+  Place,
+  Problem,
+  Tag,
+  Word,
+  moved,
+  useDragOrder,
+} from "@/components/admin/ui";
 import { deleteStory, reorderStories, showStory } from "./actions";
 
 export type StoryRow = {
@@ -26,7 +37,6 @@ export type StoryRow = {
 export default function StoriesList({ initial }: { initial: StoryRow[] }) {
   const router = useRouter();
   const [rows, setRows] = useState(initial);
-  const [dragging, setDragging] = useState<number | null>(null);
   const [reordered, setReordered] = useState(false);
   const [problem, setProblem] = useState("");
   const [pending, start] = useTransition();
@@ -38,6 +48,8 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
     setReordered(true);
     setProblem("");
   }
+
+  const { dropProps, handleProps, dragging } = useDragOrder(rows, move);
 
   function keepOrder() {
     setProblem("");
@@ -112,26 +124,17 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
         {rows.map((row, index) => (
           <li
             key={row.id}
-            draggable
-            onDragStart={() => setDragging(index)}
-            onDragEnd={() => setDragging(null)}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => {
-              event.preventDefault();
-              if (dragging !== null) move(dragging, index);
-              setDragging(null);
-            }}
+            {...dropProps(row, index)}
             className={[
               "admin-row",
-              dragging === index ? "admin-row-dragging" : "",
+              dragging === row.id ? "admin-row-dragging" : "",
               row.published ? "" : "admin-row-hidden",
             ]
               .filter(Boolean)
               .join(" ")}
           >
-            <span className="admin-row-index" aria-hidden="true">
-              {index + 1}
-            </span>
+            <Grip {...handleProps(row)} />
+                  <Place index={index} total={rows.length} onMove={move} />
 
             <span className="admin-row-main">
               <Link href={`/admin/stories/${row.slug}`} className="admin-row-name" style={{ fontStyle: "normal" }}>

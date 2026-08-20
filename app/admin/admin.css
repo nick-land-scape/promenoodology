@@ -1222,3 +1222,59 @@ body:has(.admin) {
     justify-content: flex-start;
   }
 }
+
+/* The number, which is also an input: type another and the thing moves there. */
+.admin-place {
+  width: 26px;
+  flex: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--admin-faint);
+  cursor: text;
+}
+
+.admin-place:hover {
+  border-bottom-color: var(--hairline);
+  color: var(--admin-quiet);
+}
+
+.admin-place:focus {
+  outline: 0;
+  border-bottom-color: var(--purple);
+  color: var(--purple);
+}
+
+/* What is being dragged, wherever it is. */
+[aria-grabbed="true"] {
+  background: var(--admin-tint);
+}
+
+/* The handle. The only thing a drag starts from, because a row you can drag is a
+   row whose text fields you cannot select with the mouse. */
+.admin-grip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 1px;
+  color: var(--admin-faint);
+  cursor: grab;
+}
+
+.admin-grip:active {
+  cursor: grabbing;
+}
+
+.admin-grip:hover {
+  color: var(--purple);
+}
+
+.admin-grip svg {
+  width: 9px;
+  height: 15px;
+}

@@ -61,7 +61,16 @@ export default async function ResourcesPage() {
         </p>
       )}
       <div style={{ "--brick": `${head.settings.columnWidth}px` } as React.CSSProperties}>
-        <Archive slides={slides} quotes={quotes} stories={storyLinks} years={years} />
+        <Archive
+          slides={slides}
+          quotes={quotes}
+          stories={storyLinks}
+          years={years}
+          // Worked out here so the server and the browser shuffle the same way
+          // on the first paint. The page keeps its copy for a minute, so the
+          // order changes about that often.
+          seed={1 + Math.floor(Math.random() * 100000)}
+        />
       </div>
     </main>
   );
