@@ -7,13 +7,15 @@ import Thumb from "@/components/admin/Thumb";
 import VideoUploader from "@/components/admin/VideoUploader";
 import {
   Bin,
-  Empty,
   Field,
+  Fields,
   Flag,
   Grip,
+  Panel,
   Place,
   Problem,
   SaveBar,
+  Tag,
   moved,
   useDragOrder,
   useUnsaved,
@@ -30,6 +32,16 @@ export type Film = {
   bytes: number | null;
   published: boolean;
 };
+
+/**
+ * The film the site was built with.
+ *
+ * Shown rather than described. "No films yet, so the front page is showing the
+ * one that came with the site" is a true sentence and a useless one: the whole
+ * question anybody has on this page is *which film is on the front page*, and the
+ * answer was a paragraph where a picture belongs.
+ */
+const BUILT_IN = { src: "/hero.mp4", poster: "/hero-poster.jpg" };
 
 /** 4.2 MB, 12 seconds — the two numbers anybody judges a film by. */
 function weight(film: Film) {
@@ -163,11 +175,42 @@ export default function Films({ initial }: { initial: Film[] }) {
         </div>
       ) : null}
 
-      {rows.length === 0 ? (
-        <Empty>
-          No films of your own yet, so the front page is showing the one that came with the site.
-        </Empty>
-      ) : (
+      {showing === 0 ? (
+        <Panel
+          name="what is playing now"
+          hint="The film the site was built with. It plays whenever none of your own are on, and it cannot be deleted from here — it is part of the site rather than something in the archive."
+        >
+          <div className="admin-film-built">
+            <span className="admin-film">
+              {playing === "built-in" ? (
+                <video src={BUILT_IN.src} autoPlay muted loop playsInline />
+              ) : (
+                <button type="button" onClick={() => setPlaying("built-in")} title="Play it">
+                  {/* Not next/image: one fixed file in /public at one size.
+                      eslint-disable-next-line @next/next/no-img-element */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={BUILT_IN.poster} alt="" />
+                  <em>play it</em>
+                </button>
+              )}
+            </span>
+            <div>
+              <Tag tone="on">on the front page</Tag>
+              <p className="admin-panel-hint">
+                {rows.length === 0
+                  ? "Add a film and it takes over. Add several and every visitor gets one of them."
+                  : "None of your own are on, so this is the one people see."}
+              </p>
+            </div>
+          </div>
+        </Panel>
+      ) : null}
+
+      {rows.length === 0 ? null : (
+        <Panel
+          name="your films"
+          hint="Drag to reorder them. The order is only the order they are listed in — it does not make one more likely than another."
+        >
         <ul className="admin-rows">
           {rows.map((row, index) => (
             <li
@@ -206,7 +249,7 @@ export default function Films({ initial }: { initial: Film[] }) {
               </span>
 
               <span className="admin-row-main" style={{ minWidth: 220 }}>
-                <span className="admin-fields">
+                <Fields>
                   <Field label="what to call it" hint="Only here. The front page shows no words.">
                     <input
                       value={row.called}
@@ -214,7 +257,7 @@ export default function Films({ initial }: { initial: Film[] }) {
                       placeholder="the kitchen, 2024"
                     />
                   </Field>
-                </span>
+                </Fields>
                 <span className="admin-row-note">{weight(row)}</span>
               </span>
 
@@ -236,6 +279,7 @@ export default function Films({ initial }: { initial: Film[] }) {
             </li>
           ))}
         </ul>
+        </Panel>
       )}
 
       {rows.length > 0 ? (

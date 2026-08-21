@@ -102,7 +102,11 @@ body:has(.admin) {
   flex-direction: column;
   gap: 18px;
   padding: 22px 0 18px 20px;
-  border-right: 1px solid var(--hairline);
+  /* No rule down the right-hand side.
+     There was one, and the lists in here are boxes with a hard black edge — so
+     the menu's hairline and the box's border stood twenty-five pixels apart,
+     doing the same job twice, and the second one looked like the first one had
+     gone wrong. The space between the two columns says it on its own. */
   background: var(--paper);
   overflow-y: auto;
   scrollbar-width: none;
@@ -479,12 +483,27 @@ body:has(.admin) {
 
 /* ------------------------------------------------------------------- fields */
 
-/* Fields sit in a grid of cells divided by hairlines — the same idea as the
-   support form on the handbook page, so the two halves of the site feel like
-   one piece of work. */
+/* Fields sit in a table of cells divided by hairlines — the same idea as the
+   support form on the handbook page, so the two halves of the site feel like one
+   piece of work.
+ *
+ * Wrapping flex rather than a grid, and for one reason: a grid of five cells in
+ * four columns leaves a hole, and a hole is a missing rule. The cell above it has
+ * nothing underneath to draw a line against, so the table looks unfinished at
+ * exactly the place somebody is reading — reported as "since has no border
+ * bottom", and it was true of every screen where the fields did not happen to
+ * divide evenly into the columns the window allowed.
+ *
+ * A wrapping flex line stretches its own contents to fill itself, so the last
+ * line is as full as every other one and there is no hole to leave a rule out of.
+ * The cost is that cells no longer line up column-for-column between lines, which
+ * is a thing nobody was reading anyway: each line is its own row of facts.
+ *
+ * Anything that needs real columns — the people, with a portrait beside their
+ * fields — says `display: grid` for itself and lays them out properly. */
 .admin-fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .admin-field {
@@ -495,6 +514,9 @@ body:has(.admin) {
   border-top: 1px solid var(--hairline);
   border-left: 1px solid var(--hairline);
   min-width: 0;
+  /* Room for about thirty characters before it would rather have a line of its
+     own — the same number the grid's minmax() used to ask for. */
+  flex: 1 1 230px;
 }
 
 .admin-fields > .admin-field:first-child {
@@ -503,6 +525,7 @@ body:has(.admin) {
 
 .admin-field-wide {
   grid-column: 1 / -1;
+  flex-basis: 100%;
   border-left: 0;
 }
 
@@ -775,7 +798,9 @@ body:has(.admin) {
   align-items: flex-start;
   gap: 12px;
   padding: 11px 14px;
-  border-top: 1px solid var(--hairline);
+  /* Heavier than the hairlines between the fields inside a row: the eye has to
+     be able to tell where one person ends and the next begins. */
+  border-top: 1px solid var(--rule);
 }
 
 .admin-rows > .admin-row:first-child {
@@ -1012,8 +1037,8 @@ html.admin-dragging * {
 }
 
 /* A card is narrower than a page, so its fields pair up only where they fit. */
-.admin-photo-body .admin-fields {
-  grid-template-columns: repeat(auto-fit, minmax(94px, 1fr));
+.admin-photo-body .admin-fields > .admin-field {
+  flex-basis: 94px;
 }
 
 .admin-photo-body .admin-field + .admin-field {
@@ -1572,8 +1597,17 @@ html.admin-dragging * {
     grid-template-columns: 1fr;
   }
 
-  .admin-field {
-    border-left: 0 !important;
+
+  /* One to a line, so there is nothing to the left of anything to be divided
+     from. Said this way round — the container, not the cell — so a table that
+     keeps more than one column down here (the people, who have a portrait beside
+     their fields) can say so and be heard. It was
+     `.admin-field { border-left: 0 !important }`, which took the vertical rules
+     out of that grid too and left two columns of fields with nothing between
+     them. */
+  .admin-fields > .admin-field {
+    flex-basis: 100%;
+    border-left: 0;
   }
 
   .admin-stats,
@@ -2034,7 +2068,7 @@ html.admin-dragging * {
    digits before it needs thinking about again. */
 .admin-person-no {
   flex: none;
-  width: 26px;
+  width: 28px;
   padding-top: 12px;
   font-size: 0.85em;
   font-variant-numeric: tabular-nums;
@@ -2049,14 +2083,35 @@ html.admin-dragging * {
   flex-direction: column;
 }
 
-/* Across, not wrapped: name, where from, the colour, since when, and whether
-   they can get in here. The name gets the room the others do not need. */
+/* Across, not wrapped: the portrait, then name, where from, the colour, since
+   when, and whether they can get in here. The name gets the room the others do
+   not need, and the portrait gets exactly as much as the picture is wide.
+
+   The portrait being a column here rather than a thing standing beside the grid
+   is what makes every field a cell in column two or later — so each one draws
+   its own left-hand rule, and the holes and stray lines that come of exempting
+   "the first one" go away by construction. */
 .admin-person-fields {
   display: grid;
   /* Measured rather than guessed: a date control needs about 110px before it
      starts hiding its own year, and a two-letter select needs almost nothing. */
-  grid-template-columns: 1.35fr 0.95fr 0.8fr 1.15fr 1fr;
+  grid-template-columns: auto 1.35fr 0.95fr 0.8fr 1.15fr 1fr;
   border-top: 0;
+}
+
+.admin-person-fields > .admin-field {
+  border-left: 1px solid var(--hairline);
+}
+
+/* The picture's own cell: no label above it, so it is packed rather than
+   stretched, and the padding is the cell's rather than the button's. */
+.admin-field-face {
+  padding: 10px 12px 11px;
+  justify-content: flex-start;
+}
+
+.admin-person-fields > .admin-field-face {
+  border-left: 0;
 }
 
 .admin-field input[type="date"] {
@@ -2172,23 +2227,54 @@ html.admin-dragging * {
 }
 
 @media screen and (max-width: 900px) {
+  /* The portrait keeps its column; the fields fold into two.
+     The last one is given the whole of its line, because a row of cells with a
+     gap at the end of it is a row with a missing rule — the cell above the gap
+     has nothing under it to draw a line against. */
   .admin-person-fields {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: auto 1fr 1fr;
   }
 
-  /* The number and the portrait keep the top line; the fields go under them
-     rather than into a 140px column beside them. */
-  .admin-person {
-    flex-wrap: wrap;
+  /* The picture holds its column all the way down, so every field lands in a
+     column beside it and the two columns of fields fill each line exactly.
+
+     A number of rows rather than `1 / -1`, and it has to be: there are no
+     explicit rows in this grid, and `-1` counts the last explicit line — which
+     is line 2, so it would span one row and let the fields wrap underneath the
+     picture. Five fields in two columns is three lines. */
+  .admin-person-fields > .admin-field-face {
+    grid-row: 1 / span 3;
   }
 
-  .admin-person-body {
-    flex-basis: 100%;
+  .admin-person-fields > .admin-field:last-child {
+    grid-column: span 2;
   }
 
+  /* Nothing wraps: the tick, the fields and the number stay on one line, which
+     is what keeps the number in the top right corner. It used to wrap here, and
+     the number — being last, so that it lands in that corner — dropped to a
+     line of its own at the bottom left. */
   .admin-person-foot {
     padding-left: 0;
     padding-right: 0;
+  }
+}
+
+/* On a phone: the portrait and one field beside it. One column of fields cannot
+   leave a gap at the end of a line, so the last one takes its place in the
+   queue like the others. */
+@media screen and (max-width: 700px) {
+  .admin-person-fields {
+    grid-template-columns: auto 1fr;
+  }
+
+  /* One field to a line, so five lines beside the picture. */
+  .admin-person-fields > .admin-field-face {
+    grid-row: 1 / span 5;
+  }
+
+  .admin-person-fields > .admin-field:last-child {
+    grid-column: auto;
   }
 }
 
@@ -2865,9 +2951,10 @@ html.admin-dragging * {
 
 /* Who was there and which partners: one row of two, because they are the same
    question asked twice and reading them across is how you spot who is missing.
-   The grid's own auto-fit would give them a column each only by accident. */
+   A wrapping line puts two of them side by side and stretches them to fill it,
+   which is what this used to have to ask for. */
 .admin-fields > .admin-field:has(.admin-many) {
-  grid-column: span 1;
+  flex-basis: 40%;
 }
 
 /* A fact where a control would be, so the row keeps its shape. */
@@ -2924,9 +3011,13 @@ html.admin-dragging * {
 }
 
 /* Two fields that belong together, side by side however narrow the row is.
-   auto-fit gives up below its minimum and stacks; this does not. */
+   Wrapping gives up below the basis and stacks them; this does not. */
 .admin-fields-pair {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  flex-wrap: nowrap;
+}
+
+.admin-fields-pair > .admin-field {
+  flex: 1 1 0;
 }
 
 /* No rule over the top of them. A field draws one so that fields stacked in a
@@ -3858,6 +3949,19 @@ html.admin-dragging * {
 .admin-film button:hover em,
 .admin-film button:focus-visible em {
   opacity: 1;
+}
+
+/* What is playing now: the picture, and a word or two beside it. */
+.admin-film-built {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 12px 14px;
+}
+
+.admin-film-built .admin-panel-hint {
+  margin-top: 6px;
+  max-width: 34rem;
 }
 
 /* The two numbers under the name: how long it runs, and what it weighs. */

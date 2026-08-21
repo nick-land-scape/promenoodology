@@ -322,46 +322,49 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
       <ul className="admin-rows">
         {people.map((person, index) => (
           <li key={person.id} className="admin-row admin-person">
-            {/* Their own number, given once and never changed — not their place
-                in this list, which moves every time somebody is added. */}
-            <span className="admin-person-no" title="Their member number">
-              {person.number ?? "—"}
-            </span>
-
+            {/* Choosing comes first, on the left, where the eye starts and
+                where every other list of things you can tick puts it. */}
             <Tick
               on={pick.has(person.id)}
               onChoose={(range) => pick.toggle(person.id, range)}
               label={`Choose ${person.name || "this person"}`}
             />
 
-            {/* The portrait is its own button. It was a round thumbnail beside a
-                button that said "another portrait" — a circle where the page
-                shows a portrait, and a second control doing what clicking the
-                picture obviously ought to do. */}
-            <Uploader
-              folder={`profiles/${person.id}`}
-              many={false}
-              trigger={(open, working) => (
-                <button
-                  type="button"
-                  className="admin-portrait"
-                  onClick={open}
-                  disabled={working}
-                  title={person.photoUrl ? "Choose another portrait" : "Add a portrait"}
-                >
-                  {person.photoUrl ? (
-                    <Thumb src={person.photoUrl} width={0} height={0} sizes="64px" />
-                  ) : (
-                    <span className="admin-portrait-none">{initials(person.name)}</span>
-                  )}
-                  <em>{working ? "…" : person.photoUrl ? "replace" : "add one"}</em>
-                </button>
-              )}
-              onDone={async (uploaded) => portrait(person, uploaded.path)}
-            />
-
             <span className="admin-person-body">
               <span className="admin-fields admin-person-fields">
+                {/* The portrait is a column of the same table the fields are in,
+                    not a picture floating above them: it lines up with the
+                    labels, and the rules around it close on all four sides like
+                    every other cell.
+
+                    It is its own button, too. It was a round thumbnail beside a
+                    button that said "another portrait" — a circle where the page
+                    shows a portrait, and a second control doing what clicking the
+                    picture obviously ought to do. */}
+                <span className="admin-field admin-field-face">
+                  <Uploader
+                    folder={`profiles/${person.id}`}
+                    many={false}
+                    trigger={(open, working) => (
+                      <button
+                        type="button"
+                        className="admin-portrait"
+                        onClick={open}
+                        disabled={working}
+                        title={person.photoUrl ? "Choose another portrait" : "Add a portrait"}
+                      >
+                        {person.photoUrl ? (
+                          <Thumb src={person.photoUrl} width={0} height={0} sizes="64px" />
+                        ) : (
+                          <span className="admin-portrait-none">{initials(person.name)}</span>
+                        )}
+                        <em>{working ? "…" : person.photoUrl ? "replace" : "add one"}</em>
+                      </button>
+                    )}
+                    onDone={async (uploaded) => portrait(person, uploaded.path)}
+                  />
+                </span>
+
                 <Field label="name">
                   <input
                     value={person.name}
@@ -446,7 +449,7 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                 <span className="admin-person-does">
                   {person.photo ? (
                     <Word danger onClick={() => portrait(person, null)} disabled={pending}>
-                      no portrait
+                      take the portrait off
                     </Word>
                   ) : null}
 
@@ -476,6 +479,14 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                   </span>
                 </span>
               </span>
+            </span>
+
+            {/* Their own number, given once and never changed — not their place
+                in this list, which moves every time somebody is added. Last in
+                the row, so it sits in the top right corner of the person rather
+                than in the gutter where the ticks are. */}
+            <span className="admin-person-no" title="Their member number">
+              {person.number ?? "—"}
             </span>
           </li>
         ))}

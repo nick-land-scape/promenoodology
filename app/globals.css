@@ -8,6 +8,12 @@
   /* Paper rather than screen-white: warmer, and kinder to the photographs. */
   --paper: #fffcf6;
   --hairline: rgba(0, 0, 0, 0.12);
+  /* A heavier rule, for the line between two of a thing.
+     A hairline does for the cells inside one row — but when a row is itself full
+     of hairlines, the line that separates one person from the next reads as one
+     more cell border, and a list of people looks like a spreadsheet with no
+     rows. This is the line that means "a different one starts here". */
+  --rule: rgba(0, 0, 0, 0.34);
   /* For anything said quietly: a hint under a field, a label beside a link. */
   --quiet: #6f6a63;
   /* A breath of ink on the paper: the back of a tag, a stripe on a table. These
@@ -1783,6 +1789,7 @@ body:has(.hero) .contact {
   --ink: #f2ece1;
   --paper: #14120f;
   --hairline: rgba(242, 236, 225, 0.16);
+  --rule: rgba(242, 236, 225, 0.42);
   --quiet: #a9a196;
   --wash: rgba(242, 236, 225, 0.06);
   --wash-soft: rgba(242, 236, 225, 0.035);

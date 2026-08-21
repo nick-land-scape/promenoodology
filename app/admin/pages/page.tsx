@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Head from "@/components/admin/Head";
 import { requireAdmin } from "@/lib/admin/guard";
 import { PAGES } from "@/lib/admin/pages";
@@ -39,6 +40,45 @@ export default async function PagesPage() {
         &ldquo;this page took a different walk&rdquo; at its own address. To read one over before it
         opens, use its edit page → rather than turning it on.
       </p>
+      {/*
+       * The front page, above the list and not in it.
+       *
+       * It is a page and it belongs here — it was a menu item of its own for an
+       * afternoon, which put the film behind the logo in the same list as the
+       * archive and the newsletter. But it is not one of the rows below either:
+       * there is nothing to call it in the menu, nowhere to move it to, and no
+       * turning it off. So it is named, and it has the same two doors as
+       * everything else.
+       */}
+      <div className="admin-panel">
+        <div className="admin-panel-head">
+          <div>
+            <h2 className="admin-panel-name">the front page</h2>
+            <p className="admin-panel-hint">
+              The film behind the logo. Add more than one and every visitor gets one of them.
+            </p>
+          </div>
+          <span className="admin-doors">
+            <Link
+              href="/admin/pages/home"
+              className="admin-btn"
+              title="The film behind the logo: swap it, or add more and let the page pick"
+            >
+              edit page →
+            </Link>
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="admin-btn"
+              title="Opens the front page itself, in a new tab"
+            >
+              view ↗
+            </a>
+          </span>
+        </div>
+      </div>
+
       <PageList initial={lines} />
     </Head>
   );

@@ -61,15 +61,6 @@ export const SECTIONS: Section[] = [
   },
 
   {
-    href: "/admin/home",
-    label: "the front page",
-    blurb: "The film behind the logo. One, or several and the page picks.",
-    icon: "film",
-    group: "content",
-    view: "/",
-  },
-
-  {
     href: "/admin/photos",
     label: "archive",
     blurb: "Every photograph: who took it, which year, which story it belongs to.",
@@ -108,7 +99,7 @@ export const SECTIONS: Section[] = [
     href: "/admin/associations",
     label: "partners",
     blurb: "The people we do this with who are not people: a name and a logo.",
-    icon: "people",
+    icon: "partners",
     group: "community",
     view: "/community",
   },

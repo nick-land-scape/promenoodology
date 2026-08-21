@@ -28,7 +28,11 @@ export default async function FrontPage() {
   }));
 
   return (
-    <Head title="the front page" action={<BinLink table="hero_videos" />}>
+    <Head
+      title="the front page"
+      back={{ href: "/admin/pages", label: "pages" }}
+      action={<BinLink table="hero_videos" />}
+    >
       <p className="admin-intro">
         The film behind the logo. Add more than one and every visitor gets one of them — picked in
         their own browser, so the page itself is still the same page for everybody.
