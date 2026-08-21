@@ -33,10 +33,11 @@ export default async function EditStoryPage({
     { data: people },
     { data: partners },
   ] = await Promise.all([
+      // The whole archive, once: this story's own photographs come out of it
+      // below, and so does the list the "add photographs" dialog offers.
       supabase
         .from("photos")
-        .select("id, path, credit, credit_profile_id, year, published, layout, width, height")
-        .eq("story_tag", story.tag)
+        .select("id, path, credit, credit_profile_id, year, published, layout, width, height, story_tag")
         .order("position")
         .returns<
           {
@@ -49,6 +50,7 @@ export default async function EditStoryPage({
             layout: string | null;
             width: number;
             height: number;
+            story_tag: string | null;
           }[]
         >(),
       supabase
@@ -130,7 +132,7 @@ export default async function EditStoryPage({
             layout: (block.layout ?? null) as PhotoLayout | null,
           })),
         }}
-        photos={(photos ?? []).map((photo) => ({
+        photos={(photos ?? []).filter((photo) => photo.story_tag === story.tag).map((photo) => ({
           id: photo.id,
           url: mediaUrl(photo.path),
           credit:
@@ -154,6 +156,24 @@ export default async function EditStoryPage({
           label: one.name || "unnamed partner",
           image: one.logo_path ? mediaUrl(one.logo_path) : undefined,
         }))}
+        archive={(photos ?? []).map((photo) => ({
+          value: photo.id,
+          label:
+            [
+              (photo.credit_profile_id ? named.get(photo.credit_profile_id) : "") || photo.credit,
+              photo.year,
+            ]
+              .filter(Boolean)
+              .join(", ") || "no credit",
+          image: mediaUrl(photo.path),
+          width: photo.width,
+          height: photo.height,
+          inStory: photo.story_tag === story.tag,
+        }))}
+        years={[...new Set((photos ?? []).map((photo) => photo.year).filter(Boolean))]
+          .sort()
+          .reverse()
+          .map((year) => ({ value: year, label: year }))}
       />
     </Head>
   );

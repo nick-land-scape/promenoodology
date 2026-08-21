@@ -25,6 +25,7 @@ export default function Thumb({
   className,
   fit,
   priority,
+  eager,
 }: {
   src: string;
   /** The file's real size, so the aspect ratio is right before it loads. */
@@ -37,6 +38,16 @@ export default function Thumb({
   /** Logos are contained, everything else is cropped to fill. */
   fit?: "contain";
   priority?: boolean;
+  /**
+   * Load it now rather than when it scrolls into view.
+   *
+   * For a picture in a dialog. Lazy loading decides by asking whether the
+   * element is near the viewport, and inside an overlay that has just appeared
+   * the answer comes back "no" and is never asked again — which is how a grid of
+   * sixty thumbnails stayed grey for ever. Measured: the same URL injected by
+   * hand loaded instantly.
+   */
+  eager?: boolean;
 }) {
   const [loaded, setLoaded] = useState(false);
 
@@ -54,6 +65,7 @@ export default function Thumb({
       sizes={sizes}
       quality={72}
       priority={priority}
+      loading={eager ? "eager" : undefined}
       draggable={false}
       data-loaded={loaded ? "" : undefined}
       className={["admin-thumbnail", fit === "contain" ? "admin-thumbnail-contain" : "", className]

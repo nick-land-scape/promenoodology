@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Picker, { type Choice } from "@/components/admin/Picker";
 import Thumb from "@/components/admin/Thumb";
-import { Bin, Grip, Icon, Place, moved, useDragOrder } from "@/components/admin/ui";
+import { Bin, Grip, Icon, Place, Word, moved, useDragOrder } from "@/components/admin/ui";
 import { LAYOUTS } from "@/lib/photo-layout";
 import type { PhotoLayout } from "@/lib/supabase/rows";
 
@@ -56,6 +56,8 @@ export default function StoryPage({
   photos,
   cover,
   onCover,
+  onUnlink,
+  onDelete,
 }: {
   blocks: Block[];
   onChange: (next: Block[]) => void;
@@ -63,6 +65,10 @@ export default function StoryPage({
   photos: (Choice & { width: number; height: number })[];
   cover: string | null;
   onCover: (id: string | null) => void;
+  /** Take a photograph out of the story but leave it in the archive. */
+  onUnlink: (photoId: string) => void;
+  /** Destroy it: the row and the file. */
+  onDelete: (photoId: string) => void;
 }) {
   const [adding, setAdding] = useState(false);
 
@@ -197,6 +203,30 @@ export default function StoryPage({
                           cover
                         </button>
                       </span>
+
+                      {/* Three different acts, and they are genuinely different:
+                          the bin on the right takes the block off the page and
+                          leaves the photograph in the story; unlinking takes it
+                          out of the story and leaves it in the archive; deleting
+                          destroys it everywhere. Naming them the same would be
+                          the kindest-looking way to lose a photograph. */}
+                      {block.photoId ? (
+                        <span className="admin-block-fate">
+                          <Word
+                            onClick={() => onUnlink(block.photoId as string)}
+                            title="Out of this story, still in the archive"
+                          >
+                            unlink it
+                          </Word>
+                          <Word
+                            danger
+                            onClick={() => onDelete(block.photoId as string)}
+                            title="Gone from the archive and from the bucket"
+                          >
+                            delete the photograph
+                          </Word>
+                        </span>
+                      ) : null}
                     </span>
                   </span>
                 ) : null}

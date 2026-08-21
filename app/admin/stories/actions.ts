@@ -258,6 +258,39 @@ export async function saveStoryPage(storyId: string, blocks: BlockInput[]): Prom
   return { ok: true };
 }
 
+/**
+ * Put photographs from the archive into a story, or take one out again.
+ *
+ * A photograph belongs to a story by its tag — that is how the archive filters
+ * and how the story finds its own — so joining one is writing the tag, and
+ * unlinking is clearing it. Neither touches the file: a photograph taken out of
+ * a story is still in the archive, which is the whole difference between
+ * unlinking and deleting, and the reason both are offered.
+ */
+export async function tagPhotos(tag: string, ids: string[]): Promise<Saved> {
+  await requireAdminAction();
+  const supabase = await supabaseServer();
+
+  if (!tag || ids.length === 0) return { ok: true };
+
+  const { error } = await supabase.from("photos").update({ story_tag: tag }).in("id", ids);
+  if (error) return failed(error);
+
+  refreshSite();
+  return { ok: true };
+}
+
+export async function untagPhoto(id: string): Promise<Saved> {
+  await requireAdminAction();
+  const supabase = await supabaseServer();
+
+  const { error } = await supabase.from("photos").update({ story_tag: null }).eq("id", id);
+  if (error) return failed(error);
+
+  refreshSite();
+  return { ok: true };
+}
+
 /** The order the stories are read in, top to bottom. */
 export async function reorderStories(ids: string[]): Promise<Saved> {
   await requireAdminAction();
