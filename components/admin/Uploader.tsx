@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { type Uploaded, uploadPhoto } from "@/lib/admin/upload";
+import { ACCEPTS, type Uploaded, uploadPhoto } from "@/lib/admin/upload";
 import { Icon } from "./ui";
 
 /**
@@ -85,8 +85,12 @@ export default function Uploader({
   }
 
   function take(files: FileList | File[] | null) {
+    // HEIC arrives with an empty type on some machines, so the name has to be
+    // allowed to speak for it.
     const pictures = Array.from(files ?? []).filter(
-      (file) => file.type.startsWith("image/") || /\.(jpe?g|png|webp|avif)$/i.test(file.name),
+      (file) =>
+        file.type.startsWith("image/") ||
+        /\.(jpe?g|png|webp|avif|heic|heif|gif|svg)$/i.test(file.name),
     );
     if (pictures.length === 0) return;
 
@@ -149,7 +153,7 @@ export default function Uploader({
       <input
         ref={input}
         type="file"
-        accept="image/*"
+        accept={ACCEPTS}
         multiple={many}
         hidden
         onChange={(event) => take(event.target.files)}

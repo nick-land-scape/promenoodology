@@ -1,33 +1,48 @@
 "use client";
 
+import imageCompression from "browser-image-compression";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 /**
- * Putting a photograph in the bucket, from the browser.
+ * Putting a picture in the bucket, from the browser.
  *
  * It does not go through a function on the way: the storage policy already says
  * only an admin may write to the bucket, and the browser is where the picture
- * already is. That also sidesteps the platform's limit on how big a request
- * body may be, which a photograph straight off a phone runs into on its own.
+ * already is. That also sidesteps the platform's limit on how big a request body
+ * may be, which a photograph straight off a phone runs into on its own.
  *
- * Every picture is shrunk and re-encoded here first. The site never shows one
- * bigger than about 1200px, so keeping a 12-megapixel original would cost
- * everybody who ever looks at the page and gain nobody. The name is thrown away
- * too — "IMG_4471.HEIC" says where somebody was and what they use.
+ * What arrives is not always what a browser can read. Four kinds of file, handled
+ * four ways:
  *
- * Every step has a deadline. Not defensiveness for its own sake: canvas.toBlob
- * takes a callback and is under no obligation to call it, and when it did not,
- * the uploader sat on "shrinking and putting it away" for ever. A step that
- * cannot finish has to be able to say so — silence is the one outcome nobody can
- * act on.
+ * HEIC and HEIF — what an iPhone saves by default. Safari can decode them and
+ * Chrome and Firefox cannot, so they were simply refused, on the machines most
+ * likely to be uploading. heic2any decodes them, and it is loaded only when one
+ * actually turns up: it is two and a half megabytes of WebAssembly, and nobody
+ * uploading a JPEG should pay for it.
+ *
+ * SVG — a drawing, not a photograph. Shrinking a vector to 1800 pixels is
+ * throwing away the only thing that makes it a vector, so it goes up as it is.
+ *
+ * GIF — may be animated, and a canvas keeps only the first frame. Left alone.
+ *
+ * Everything else a browser can decode goes through browser-image-compression,
+ * which does in a web worker what this file used to do by hand, and does more of
+ * it: it turns the picture by its EXIF orientation before dropping the EXIF, and
+ * it walks the quality down until the file is actually under the size asked for
+ * rather than hoping one pass was enough.
+ *
+ * Every step has a deadline. A library can hang as easily as hand-written code,
+ * and silence is the one outcome nobody can act on.
  */
 
+/** No bigger than the site ever draws one. */
 const MAX_EDGE = 1800;
-/** Small enough already, and no bigger than we serve: leave it alone. */
+/** What a photograph on this site should weigh, at most. */
+const MAX_MB = 0.6;
+/** Small enough already: leave it alone rather than re-encoding for nothing. */
 const KEEP = 400_000;
 
-/** How long any one step may take before it is called a failure. */
-const DEADLINE = 45_000;
+const DEADLINE = 60_000;
 
 export type Uploaded = {
   path: string;
@@ -36,8 +51,6 @@ export type Uploaded = {
   bytes: number;
 };
 
-// PromiseLike rather than Promise: what Supabase's upload() returns is a
-// thenable, not a real promise, and a Promise<T> parameter cannot see through it.
 function withDeadline<T>(work: PromiseLike<T>, what: string, ms = DEADLINE): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(
@@ -57,108 +70,123 @@ function withDeadline<T>(work: PromiseLike<T>, what: string, ms = DEADLINE): Pro
   });
 }
 
-/** One attempt at re-encoding the canvas. Resolves to null rather than hanging. */
-function encode(canvas: HTMLCanvasElement, type: string): Promise<Blob | null> {
-  return withDeadline(
-    new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.86)),
-    `Re-saving the picture as ${type.replace("image/", "")}`,
-    15_000,
-  ).catch(() => null);
+const looksLike = (file: File, ...kinds: string[]) =>
+  kinds.some(
+    (kind) =>
+      file.type === `image/${kind}` ||
+      new RegExp(`\\.${kind}$`, "i").test(file.name) ||
+      (kind === "jpeg" && /\.jpg$/i.test(file.name)),
+  );
+
+/** Anything at all that this can make into a picture. */
+export const ACCEPTS = "image/*,.heic,.heif,.avif";
+
+/** What an iPhone saves, made into something every browser can read. */
+async function fromHeic(file: File): Promise<File> {
+  // Loaded here and nowhere else: two and a half megabytes of WebAssembly that
+  // only somebody uploading an iPhone photograph should ever fetch.
+  const { default: heic2any } = await import("heic2any");
+
+  const converted = await withDeadline(
+    heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 }) as Promise<Blob | Blob[]>,
+    "Reading the iPhone photograph",
+  );
+  const blob = Array.isArray(converted) ? converted[0] : converted;
+  return new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.jpg`, { type: "image/jpeg" });
 }
 
-async function shrink(file: File): Promise<{ blob: Blob; width: number; height: number }> {
-  const bitmap = await withDeadline(
-    createImageBitmap(file, { imageOrientation: "from-image" }),
-    "Reading the picture",
-  ).catch(() => {
-    throw new Error(
-      `This browser could not read ${file.name}. HEIC from an iPhone is the usual reason — ` +
-        "export it as JPEG and try again.",
-    );
-  });
-
-  // Read before closing. A closed ImageBitmap reports a width and height of
-  // zero, and this used to be read after the close on one of the paths below —
-  // which wrote a picture into the database as nought by nought.
-  const was = { width: bitmap.width, height: bitmap.height };
-  const longest = Math.max(was.width, was.height);
-
-  if (file.size <= KEEP && longest <= MAX_EDGE) {
+/** How big it turned out. Asked once, of the file that is actually going up. */
+async function measure(file: File): Promise<{ width: number; height: number }> {
+  try {
+    const bitmap = await withDeadline(createImageBitmap(file), "Measuring the picture", 20_000);
+    const size = { width: bitmap.width, height: bitmap.height };
     bitmap.close();
-    return { blob: file, ...was };
+    return size;
+  } catch {
+    // An SVG has no pixel size worth recording, and nothing on the site needs
+    // one: the shapes it is drawn into give it its size.
+    return { width: 0, height: 0 };
   }
-
-  const scale = Math.min(1, MAX_EDGE / longest);
-  const width = Math.max(1, Math.round(was.width * scale));
-  const height = Math.max(1, Math.round(was.height * scale));
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext("2d");
-  if (!context) {
-    bitmap.close();
-    throw new Error("This browser cannot resize pictures.");
-  }
-  context.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
-
-  // Drawing it into a canvas also drops the EXIF block, which is where the
-  // camera, the time and sometimes the coordinates were.
-  //
-  // webp first because it is much the smallest, then jpeg for anything that
-  // cannot encode it. If neither answers, the original goes up untouched: a
-  // large picture on the page is a worse outcome than a small one and a far
-  // better one than no picture and no explanation.
-  const blob = (await encode(canvas, "image/webp")) ?? (await encode(canvas, "image/jpeg"));
-
-  if (!blob) return { blob: file, ...was };
-
-  // A browser that cannot encode webp hands back a PNG, which can be larger
-  // than the JPEG that came in. Keep whichever is smaller.
-  if (blob.size >= file.size && longest <= MAX_EDGE * 1.4) {
-    return { blob: file, ...was };
-  }
-  return { blob, width, height };
 }
 
-function extensionOf(type: string, fallback: string) {
+const extensionOf = (type: string, name: string) => {
   if (type === "image/webp") return "webp";
   if (type === "image/png") return "png";
   if (type === "image/jpeg") return "jpg";
-  return fallback;
-}
+  if (type === "image/svg+xml") return "svg";
+  if (type === "image/gif") return "gif";
+  if (type === "image/avif") return "avif";
+  return name.split(".").pop()?.toLowerCase() || "jpg";
+};
 
 /**
  * Shrink one picture and put it in the bucket under `folder`.
  *
- * The name is random, so uploading the same photograph twice makes two files
- * rather than quietly replacing one that something else is already pointing at.
+ * The name is thrown away and replaced with a random one — "IMG_4471.HEIC" says
+ * where somebody was and what they use — and so is the EXIF block, which says it
+ * more precisely.
  */
 export async function uploadPhoto(file: File, folder: string): Promise<Uploaded> {
-  if (!file.type.startsWith("image/") && !/\.(jpe?g|png|webp|avif)$/i.test(file.name)) {
-    throw new Error(`${file.name} is not a picture.`);
+  let ready = file;
+
+  if (looksLike(file, "heic", "heif")) {
+    ready = await fromHeic(file);
+  } else if (looksLike(file, "svg+xml", "svg")) {
+    // A vector, left as one.
+  } else if (looksLike(file, "gif")) {
+    // May be animated; a canvas would keep the first frame and throw the rest.
+  } else if (!file.type.startsWith("image/")) {
+    throw new Error(
+      `${file.name} is not a picture — this takes photographs and drawings, not ${
+        file.type || "files of that kind"
+      }.`,
+    );
   }
 
-  const { blob, width, height } = await shrink(file);
-  const type = blob.type || "image/jpeg";
-  const path = `${folder}/${crypto.randomUUID()}.${extensionOf(type, "jpg")}`;
+  const untouched = looksLike(ready, "svg+xml", "svg", "gif") || ready.size <= KEEP;
+
+  if (!untouched) {
+    ready = await withDeadline(
+      imageCompression(ready, {
+        maxWidthOrHeight: MAX_EDGE,
+        maxSizeMB: MAX_MB,
+        useWebWorker: true,
+        // webp for the size; the library falls back where it cannot encode it.
+        fileType: "image/webp",
+        initialQuality: 0.86,
+        // The EXIF block is where the camera, the time and sometimes the
+        // coordinates are. It is not kept.
+        preserveExif: false,
+      }),
+      "Shrinking the picture",
+    ).catch((error: unknown) => {
+      // A picture that will not compress still belongs on the page. Its own
+      // bytes are a worse outcome than a small file and a much better one than
+      // no picture and an explanation nobody asked for.
+      console.warn("Falling back to the original file:", error);
+      return ready;
+    });
+  }
+
+  const { width, height } = await measure(ready);
+  const type = ready.type || file.type || "image/jpeg";
+  const path = `${folder}/${crypto.randomUUID()}.${extensionOf(type, ready.name)}`;
 
   // Said out loud, because what upload() hands back is a thenable whose type
   // does not survive the generic above.
   const { error } = await withDeadline<{ error: { message: string } | null }>(
-    supabaseBrowser().storage.from("media").upload(path, blob, {
+    supabaseBrowser().storage.from("media").upload(path, ready, {
       contentType: type,
       upsert: false,
     }),
     "The upload",
-    90_000,
+    120_000,
   );
 
   if (error) {
     // The one that actually happens: a session that has gone stale, so the
     // storage policy sees somebody who is not an admin.
-    const stale = /jwt|unauthor|denied|policy/i.test(error.message);
+    const stale = /jwt|unauthor|denied|policy|row-level/i.test(error.message);
     throw new Error(
       stale
         ? `${file.name} was refused — reload the page and sign in again.`
@@ -166,5 +194,5 @@ export async function uploadPhoto(file: File, folder: string): Promise<Uploaded>
     );
   }
 
-  return { path, width, height, bytes: blob.size };
+  return { path, width, height, bytes: ready.size };
 }

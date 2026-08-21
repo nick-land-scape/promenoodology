@@ -18,7 +18,11 @@ export default function SubscriberList({ initial }: { initial: NewsletterRow[] }
   const [copying, setCopying] = useState(false);
   const [pending, start] = useTransition();
 
-  const addresses = rows.map((row) => row.email).join(", ");
+  /* Only the confirmed ones. Writing to an address that never answered the
+     confirmation is the exact thing the second step exists to prevent, so the
+     button that hands you a list to paste cannot be the way round it. */
+  const confirmed = rows.filter((row) => row.confirmed);
+  const addresses = confirmed.map((row) => row.email).join(", ");
 
   function remove(row: NewsletterRow) {
     if (!confirm(`Take ${row.email} off the list?`)) return;
@@ -52,8 +56,8 @@ export default function SubscriberList({ initial }: { initial: NewsletterRow[] }
       <Problem>{problem}</Problem>
 
       <p style={{ display: "flex", alignItems: "center", gap: 14, margin: "0 0 18px" }}>
-        <button type="button" className="admin-btn" onClick={copy}>
-          copy all {rows.length} addresses
+        <button type="button" className="admin-btn" onClick={copy} disabled={confirmed.length === 0}>
+          copy the {confirmed.length} confirmed
         </button>
         {copying ? <span className="admin-ok">copied ✓</span> : null}
       </p>
@@ -63,6 +67,7 @@ export default function SubscriberList({ initial }: { initial: NewsletterRow[] }
           <tr>
             <th>address</th>
             <th>name</th>
+            <th>said yes twice</th>
             <th>since</th>
             <th />
           </tr>
@@ -74,6 +79,15 @@ export default function SubscriberList({ initial }: { initial: NewsletterRow[] }
                 <a href={`mailto:${row.email}`}>{row.email}</a>
               </td>
               <td className="admin-table-quiet">{row.name || "—"}</td>
+              <td>
+                {row.confirmed ? (
+                  <span className="admin-tag admin-tag-on">
+                    {row.confirmed_at ? pretty(row.confirmed_at.slice(0, 10)) : "yes"}
+                  </span>
+                ) : (
+                  <span className="admin-tag admin-tag-warn">waiting</span>
+                )}
+              </td>
               <td className="admin-table-quiet">{pretty(row.created_at.slice(0, 10))}</td>
               <td>
                 <Word danger onClick={() => remove(row)} disabled={pending}>
@@ -90,8 +104,10 @@ export default function SubscriberList({ initial }: { initial: NewsletterRow[] }
           <div>
             <h2 className="admin-panel-name">all of them, to paste somewhere</h2>
             <p className="admin-panel-hint">
-              Put these in the <em>bcc</em> line, never the <em>to</em> line — otherwise everybody on
-              the list gets everybody else&rsquo;s address.
+              Only the ones who answered the confirmation — {rows.length - confirmed.length} have
+              not, and writing to those is what the second step is there to prevent. Put these in
+              the <em>bcc</em> line, never the <em>to</em> line, or everybody on the list gets
+              everybody else&rsquo;s address.
             </p>
           </div>
         </header>
