@@ -2625,3 +2625,16 @@ body:has(.hero) .edit-this {
   object-fit: contain;
   mix-blend-mode: var(--print);
 }
+
+/* The one note held at the top of the app's front screen says why it is there. */
+.row-pinned {
+  margin-left: 8px;
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--purple);
+  vertical-align: middle;
+}

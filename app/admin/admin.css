@@ -558,17 +558,33 @@ body:has(.admin) {
 
 /* ------------------------------------------------------------------ buttons */
 
+/*
+ * A button, and every one of them exactly as tall as every other.
+ *
+ * They were not. Measured: "edit page →" came out 32px and "view ↗" 35px, on
+ * identical padding and font size — because line-height was "normal", which
+ * means "as tall as this particular text needs", and a diagonal arrow reaches
+ * three pixels further than a straight one. An icon does the same thing by a
+ * different amount.
+ *
+ * So the line box is pinned to the em and a floor is set under the whole button.
+ * 34px clears the tallest thing any of them holds, which is a 13px glyph, so a
+ * button is 34px whatever is written in it — an arrow, a word, a bin, nothing.
+ */
 .admin-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
+  min-height: 34px;
   border: 1px solid var(--ink);
   background: none;
-  padding: 9px 15px;
+  padding: 0 15px;
   font-family: var(--sans);
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.07em;
+  line-height: 1;
   text-transform: uppercase;
   font-style: normal;
   text-decoration: none;
@@ -601,8 +617,9 @@ body:has(.admin) {
 
 .admin-btn-quiet {
   border-color: var(--hairline);
-  padding: 7px 12px;
-  font-size: 0.6rem;
+  /* Quieter, not smaller: a shorter button beside a taller one reads as an
+     afterthought rather than as the other half of a choice. */
+  padding: 0 12px;
   color: var(--admin-quiet);
 }
 
@@ -717,9 +734,13 @@ body:has(.admin) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  /* Shorter than a button on purpose — it is a state, not an action — but a
+     fixed height of its own, for the same reason. */
+  min-height: 26px;
   border: 1px solid var(--hairline);
   background: none;
-  padding: 4px 9px;
+  padding: 0 9px;
+  line-height: 1;
   font-family: var(--sans);
   font-size: 0.55rem;
   font-weight: 700;
@@ -2934,4 +2955,141 @@ html.admin-dragging * {
   opacity: 0.5;
   transform: rotate(-0.6deg) scale(0.99);
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.13);
+}
+
+/* A field's name, with a fact about it hard right on the same line. */
+.admin-field-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-field-label em {
+  font-family: var(--serif);
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  font-style: italic;
+  color: var(--admin-faint);
+}
+
+/*
+ * The night palette, shown against night.
+ *
+ * A dark colour judged on paper is a colour judged in the wrong place: the whole
+ * reason dark needs its own five is that a hue behaves differently on ink. So
+ * this panel is the ground it is about, and its own tokens are turned over for
+ * the length of it — which is also the shortest possible proof that they work.
+ */
+.admin-panel-night {
+  --ink: #f2ece1;
+  --paper: #14120f;
+  --hairline: rgba(242, 236, 225, 0.16);
+  --wash: rgba(242, 236, 225, 0.06);
+  --wash-soft: rgba(242, 236, 225, 0.035);
+  --admin-quiet: #a9a196;
+  --admin-faint: #7d766c;
+  background: var(--paper);
+  color: var(--ink);
+  border-color: rgba(242, 236, 225, 0.24);
+}
+
+.admin-panel-night .admin-panel-name,
+.admin-panel-night code {
+  color: var(--ink);
+}
+
+/* ------------------------------------------------- the head of a list's row */
+
+/*
+ * The name, the picture, and what you can do — one line, and the name is an
+ * input rather than a heading with an input hidden further down the card.
+ */
+.admin-rowhead {
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-rowhead-photo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.admin-rowhead-name {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+/* Set like the heading it replaced, so the row still reads as a thing with a
+   name at the top rather than as a form. */
+.admin-rowhead-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.admin-rowhead-input::placeholder {
+  color: var(--admin-faint);
+  font-style: italic;
+}
+
+.admin-rowhead-input:hover {
+  border-bottom-color: var(--hairline);
+}
+
+.admin-rowhead-input:focus {
+  outline: 0;
+  border-bottom-color: var(--purple);
+}
+
+.admin-rowhead-does {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  margin-left: auto;
+}
+
+/* Smaller than a partner's logo box: this one sits in a row's header rather
+   than being the row. */
+.admin-rowhead-photo .admin-logo {
+  width: 66px;
+  height: 46px;
+  margin-top: 0;
+}
+
+/* A stretch: two native controls and an arrow between them, reading as one
+   field. The browser's own date and time pickers, because a phone gets a wheel
+   and a laptop a calendar and everybody the format their machine is set to. */
+.admin-range {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.admin-range input {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-range > span {
+  flex: none;
+  color: var(--admin-faint);
+  font-size: 0.9em;
+}
+
+/* A field holding two controls needs two columns of the grid. */
+.admin-field-two {
+  grid-column: span 2;
 }

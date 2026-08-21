@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Empty, Problem, Word, pretty } from "@/components/admin/ui";
+import InHead from "@/components/admin/InHead";
+import { Bin, Empty, Problem, pretty } from "@/components/admin/ui";
 import type { NewsletterRow } from "@/lib/supabase/rows";
 import { removeSubscriber } from "./actions";
 
@@ -55,12 +56,18 @@ export default function SubscriberList({ initial }: { initial: NewsletterRow[] }
     <>
       <Problem>{problem}</Problem>
 
-      <p style={{ display: "flex", alignItems: "center", gap: 14, margin: "0 0 18px" }}>
+      {/* This section's one action, beside its title like every other. */}
+      <InHead>
         <button type="button" className="admin-btn" onClick={copy} disabled={confirmed.length === 0}>
           copy the {confirmed.length} confirmed
         </button>
-        {copying ? <span className="admin-ok">copied ✓</span> : null}
-      </p>
+      </InHead>
+
+      {copying ? (
+        <p className="admin-ok" style={{ display: "block", margin: "0 0 16px" }}>
+          {confirmed.length} addresses copied ✓
+        </p>
+      ) : null}
 
       <table className="admin-table">
         <thead>
@@ -90,9 +97,7 @@ export default function SubscriberList({ initial }: { initial: NewsletterRow[] }
               </td>
               <td className="admin-table-quiet">{pretty(row.created_at.slice(0, 10))}</td>
               <td>
-                <Word danger onClick={() => remove(row)} disabled={pending}>
-                  take off
-                </Word>
+                <Bin what={`${row.email} from the list`} onClick={() => remove(row)} disabled={pending} />
               </td>
             </tr>
           ))}

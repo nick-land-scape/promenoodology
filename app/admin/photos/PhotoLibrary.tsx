@@ -345,7 +345,14 @@ export default function PhotoLibrary({
       {/* which story, and what a new batch is given */}
       <div className="admin-panel">
         <div className="admin-fields">
-          <Field label="showing" hint={`${shown.length} of ${items.length} photographs`}>
+          <Field
+            label="showing"
+            aside={
+              shown.length === items.length
+                ? `all ${items.length}`
+                : `${shown.length} of ${items.length}`
+            }
+          >
             <Picker
               value={story}
               onChange={setStory}
@@ -376,13 +383,12 @@ export default function PhotoLibrary({
               search
               label="Who took the next ones"
             />
-            {person ? null : (
-              <input
-                value={credit}
-                onChange={(event) => setCredit(event.target.value)}
-                placeholder="or a name"
-              />
-            )}
+            {/* No box to type a name into. Everybody who takes photographs for
+                this site is in the community, and a typed name is a credit that
+                does not follow them when they change it — the picker is the
+                answer, and offering a worse one beside it only invites it. A
+                name already typed on an old photograph is still shown and still
+                editable on that card. */}
           </Field>
           <Field label="and from">
             <Picker

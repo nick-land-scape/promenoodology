@@ -139,11 +139,16 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
             <Place index={index} total={rows.length} onMove={move} />
 
             <span className="admin-row-main">
-              {/* Not a link any more: "edit story →" is beside it, and a title
-                  that also went there was the same door twice. */}
-              <span className="admin-row-name" style={{ fontStyle: "normal" }}>
+              {/* The name is a link into the story as well as the button being
+                  one. Two ways to the same place, and that is fine here: a list
+                  of names is a thing people click the names of. */}
+              <Link
+                href={`/admin/stories/${row.slug}`}
+                className="admin-row-name"
+                style={{ fontStyle: "normal" }}
+              >
                 {row.title || "Untitled"}
-              </span>
+              </Link>
               <span className="admin-row-meta">
                 {[row.place, row.happened].filter(Boolean).join(" · ") || "no place or date yet"}
                 {" — "}

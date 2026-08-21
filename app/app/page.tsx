@@ -37,8 +37,16 @@ export default async function AppHome() {
             <li key={item.date + item.title}>
               <div className="row">
                 <span className="row-body">
-                  <span className="row-title">{item.title}</span>
-                  <span className="row-meta">{shortDate(item.date)}</span>
+                  <span className="row-title">
+                    {item.title}
+                    {/* The one held at the top says why it is there. */}
+                    {item.pinned ? <em className="row-pinned">kept at the top</em> : null}
+                  </span>
+                  <span className="row-meta">
+                    {[shortDate(item.date), item.by.length > 0 ? said(item.by) : null]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
                   <p className="post-text" style={{ paddingTop: 4 }}>
                     {item.text}
                   </p>
@@ -62,4 +70,10 @@ export default async function AppHome() {
 
     </>
   );
+}
+
+/** "by Nick", "by Nick and Gabriel", "by Nick, Gabriel and Carla". */
+function said(names: string[]): string {
+  if (names.length === 1) return `by ${names[0]}`;
+  return `by ${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }

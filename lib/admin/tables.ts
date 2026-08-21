@@ -10,8 +10,32 @@
 
 export type Column = {
   key: string;
+  /** For a "dates" or "times" column: which column holds the other end. */
+  until?: string;
   label: string;
-  kind: "text" | "long" | "date" | "number" | "choice" | "story" | "photo";
+  kind:
+    | "text"
+    | "long"
+    | "date"
+    | "time"
+    | "number"
+    | "choice"
+    | "story"
+    | "photo"
+    /** Several people out of the community. Stored as an array of their ids. */
+    | "people"
+    /** Several partners, the same way. */
+    | "partners"
+    /**
+     * A stretch of days, or a stretch of hours, in one field.
+     *
+     * Two columns behind one label: "the day it starts" and "and the day it
+     * ends" as separate fields read as two unrelated questions, and put the
+     * end of something a whole row away from its beginning. The second column
+     * is named in `until`.
+     */
+    | "dates"
+    | "times";
   hint?: string;
   placeholder?: string;
   /** Take the whole width of the row rather than sitting in the grid. */
@@ -28,11 +52,24 @@ export type TableSpec = {
   order: { column: string; ascending: boolean };
   columns: Column[];
   /** What a new row starts out as. */
-  blank: Record<string, string | number | null>;
-  /** Which column stands as the row's name in the list. */
+  blank: Record<string, string | number | boolean | null | string[]>;
+  /**
+   * Which column stands as the row's name.
+   *
+   * It is drawn as the heading of the row *and* edited there — it used to be
+   * both a heading and, separately, a field further down the grid, which read as
+   * a name you could not change with a name you could hidden underneath it.
+   */
   title: string;
   /** Does this table have a shown/hidden switch? */
   publishable: boolean;
+  /**
+   * The column that holds "this one first", if the table has one.
+   *
+   * Exactly one row may have it. Which is not a database constraint but a rule
+   * the save enforces — see rows-actions.
+   */
+  pinned?: string;
   /**
    * Is a brand-new row on the site straight away?
    *
@@ -74,15 +111,24 @@ export const TABLES: Record<TableName, TableSpec> = {
 
   news: {
     table: "news",
-    one: "a note",
+    // "add news", because that is what the section is called. "Add a note" had
+    // people looking for notes.
+    one: "news",
     order: { column: "published_on", ascending: false },
     title: "title",
     publishable: true,
     startsShown: true,
-    blank: { published_on: "", title: "", text: "" },
+    pinned: "pinned",
+    blank: { published_on: "", title: "", text: "", authors: [], pinned: false },
     columns: [
       { key: "title", label: "title", kind: "text", placeholder: "one line" },
       { key: "published_on", label: "dated", kind: "date" },
+      {
+        key: "authors",
+        label: "written by",
+        kind: "people",
+        hint: "From the community, so a name corrected there is corrected here.",
+      },
       {
         key: "text",
         label: "the note",
@@ -123,25 +169,46 @@ export const TABLES: Record<TableName, TableSpec> = {
 
   events: {
     table: "events",
-    one: "an evening",
+    one: "an event",
     order: { column: "happens_on", ascending: true },
     title: "title",
     publishable: true,
     startsShown: false,
     blank: {
       happens_on: "",
+      ends_on: null,
       starts_at: "",
+      ends_at: "",
       title: "",
       place: "",
       spots: 0,
       note: "",
       photo_path: null,
+      partners: [],
     },
     columns: [
       { key: "title", label: "what it is", kind: "text", placeholder: "soup and a walk" },
-      { key: "happens_on", label: "which day", kind: "date" },
-      { key: "starts_at", label: "from", kind: "text", placeholder: "18:30" },
+      {
+        key: "happens_on",
+        until: "ends_on",
+        label: "which days",
+        kind: "dates",
+        hint: "Leave the second empty for something that starts and ends on one day.",
+      },
+      {
+        key: "starts_at",
+        until: "ends_at",
+        label: "and between",
+        kind: "times",
+        hint: "Leave the second empty if it just ends.",
+      },
       { key: "place", label: "where", kind: "text", placeholder: "the yard, Burngreave" },
+      {
+        key: "partners",
+        label: "with",
+        kind: "partners",
+        hint: "Whoever it is being put on with.",
+      },
       {
         key: "spots",
         label: "places",
@@ -168,6 +235,21 @@ export const TABLES: Record<TableName, TableSpec> = {
 /** Every column a browser is allowed to write for this table. */
 export function writableColumns(table: TableName): string[] {
   const spec = TABLES[table];
-  const keys = spec.columns.map((column) => column.key);
+  const keys = spec.columns.flatMap((column) =>
+    // A pair is one field and two columns; the second one is just as writable.
+    column.until ? [column.key, column.until] : [column.key],
+  );
+  if (spec.pinned) keys.push(spec.pinned);
   return spec.publishable ? [...keys, "published"] : keys;
+}
+
+/** What kind a column is, including the second half of a pair. */
+export function kindOf(table: TableName, key: string): Column["kind"] | "boolean" | undefined {
+  const spec = TABLES[table];
+  if (spec.pinned === key) return "boolean";
+  const own = spec.columns.find((column) => column.key === key);
+  if (own) return own.kind;
+  const pair = spec.columns.find((column) => column.until === key);
+  // The far end of a pair behaves exactly like the near end.
+  return pair ? (pair.kind === "dates" ? "date" : "time") : undefined;
 }

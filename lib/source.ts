@@ -369,14 +369,28 @@ export async function getNews(): Promise<NewsItem[]> {
   if (!hasSupabase()) return appFiles.getNews();
 
   const supabase = supabasePublic();
-  const { data } = await supabase
-    .from("news")
-    .select("*")
-    .eq("published", true)
-    .order("published_on", { ascending: false })
-    .returns<NewsRow[]>();
+  const [{ data }, names] = await Promise.all([
+    supabase
+      .from("news")
+      .select("*")
+      // The pinned one first, then the newest. At most one is pinned, which the
+      // save enforces.
+      .order("pinned", { ascending: false })
+      .order("published_on", { ascending: false })
+      .returns<(NewsRow & { authors?: string[] | null; pinned?: boolean })[]>(),
+    photographerNames(),
+  ]);
 
-  return (data ?? []).map((row) => ({ date: row.published_on, title: row.title, text: row.text ?? "" }));
+  return (data ?? []).map((row) => ({
+    date: row.published_on,
+    title: row.title,
+    text: row.text ?? "",
+    /* Names looked up now rather than stored. The authors are ids in an array
+       with no foreign key behind them, so one that no longer answers is simply
+       dropped — a deleted person leaves the byline rather than a hole in it. */
+    by: (row.authors ?? []).map((id) => names.get(id)).filter((one): one is string => Boolean(one)),
+    pinned: row.pinned === true,
+  }));
 }
 
 /** The feed is still examples: nobody can post until members can sign in. */

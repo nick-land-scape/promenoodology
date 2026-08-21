@@ -2,7 +2,7 @@
 
 import { requireAdminAction } from "@/lib/admin/guard";
 import { failed, refreshSite, type Saved } from "@/lib/admin/revalidate";
-import { TABLES, type TableName, writableColumns } from "@/lib/admin/tables";
+import { kindOf, TABLES, type TableName, writableColumns } from "@/lib/admin/tables";
 import { supabaseServer } from "@/lib/supabase/server";
 
 /**
@@ -16,7 +16,7 @@ import { supabaseServer } from "@/lib/supabase/server";
  * than turned into a database error somebody has to read.
  */
 
-export type RowValues = Record<string, string | number | boolean | null>;
+export type RowValues = Record<string, string | number | boolean | null | string[]>;
 
 function known(table: string): TableName {
   if (table in TABLES) return table as TableName;
@@ -30,15 +30,31 @@ function clean(table: TableName, values: RowValues): RowValues {
 
   for (const [key, value] of Object.entries(values)) {
     if (!allowed.has(key)) continue;
-    const column = TABLES[table].columns.find((one) => one.key === key);
+    const kind = kindOf(table, key);
+    const column = { kind } as { kind: ReturnType<typeof kindOf> };
 
+    if (kind === "boolean") {
+      out[key] = value === true;
+      continue;
+    }
     // A date input hands back "" when it is cleared, which is not a date.
-    if (column?.kind === "date") {
+    if (column?.kind === "date" || column?.kind === "dates") {
       out[key] = typeof value === "string" && value ? value : null;
       continue;
     }
     if (column?.kind === "number") {
       out[key] = Number(value) || 0;
+      continue;
+    }
+    /* A list of people: only what is actually a list of ids, and nothing that
+       is not — this is a public endpoint, and an array is the one shape here
+       that can carry more than one bad value at a time. */
+    if (column?.kind === "people" || column?.kind === "partners") {
+      const ids = Array.isArray(value) ? value : [];
+      out[key] = ids
+        .filter((one): one is string => typeof one === "string")
+        .filter((one) => /^[0-9a-f-]{36}$/i.test(one))
+        .slice(0, 20);
       continue;
     }
     // A story or a picture is either chosen or it is nothing.
@@ -106,6 +122,29 @@ export async function saveRows(
   await requireAdminAction();
   const name = known(table);
   const supabase = await supabaseServer();
+
+  /*
+   * At most one row pinned, held here rather than by a unique index.
+   *
+   * An index would refuse the moment two rows were true, and that moment has to
+   * exist when rows are written one at a time. Clearing every other row first, in
+   * this same call, means there is never a second one to refuse — and if the
+   * clear fails, nothing after it runs.
+   */
+  const pin = TABLES[name].pinned;
+  if (pin) {
+    const beingPinned = rows.find((row) => row[pin] === true);
+    if (beingPinned) {
+      // Said out loud, because the column name is only known at run time and
+      // the generated types cannot see that it is a boolean.
+      const clearing: Record<string, boolean> = { [pin]: false };
+      const { error } = await supabase
+        .from(name)
+        .update(clearing as never)
+        .neq("id", beingPinned.id);
+      if (error) return failed(error);
+    }
+  }
 
   for (const row of rows) {
     const { id, ...rest } = row;
