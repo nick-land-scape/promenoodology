@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import Picker from "@/components/admin/Picker";
 import { Field, Problem, SaveBar, Word, useUnsaved } from "@/components/admin/ui";
-import { COLOURS, FONTS, type Theme } from "@/lib/theme";
+import { COLOURS, DARK_COLOURS, FONTS, type Theme } from "@/lib/theme";
 import { saveTheme } from "./actions";
 
 /**
@@ -19,6 +19,65 @@ import { saveTheme } from "./actions";
  * can picture, and this is the one page where being wrong is visible on every
  * other page at once.
  */
+/**
+ * One panel of colours.
+ *
+ * Written once and used twice: the day palette and the night one are the same
+ * question asked of two grounds, and two copies of this markup would have drifted
+ * apart by the second change. The swatches sit on the ground they are for, so a
+ * night colour is judged against night rather than against paper.
+ */
+function Paints({
+  name,
+  hint,
+  colours,
+  draft,
+  onSet,
+  dark,
+}: {
+  name: string;
+  hint: string;
+  colours: typeof COLOURS;
+  draft: Theme;
+  onSet: (patch: Partial<Theme>) => void;
+  dark?: boolean;
+}) {
+  return (
+    <div className={dark ? "admin-panel admin-panel-night" : "admin-panel"}>
+      <header className="admin-panel-head">
+        <div>
+          <h2 className="admin-panel-name">{name}</h2>
+          <p className="admin-panel-hint">{hint}</p>
+        </div>
+      </header>
+      <div className="admin-fields">
+        {colours.map((colour) => {
+          const value = draft[colour.key] || colour.drawn;
+          const asDrawn = !draft[colour.key];
+          return (
+            <Field key={colour.key} label={colour.label} hint={colour.note}>
+              <span className="admin-theme-colour">
+                <input
+                  type="color"
+                  value={value}
+                  aria-label={`The ${colour.label} the site is drawn with`}
+                  onChange={(event) => onSet({ [colour.key]: event.target.value } as Partial<Theme>)}
+                />
+                <code>{asDrawn ? `${colour.drawn} — as drawn` : value}</code>
+                {asDrawn ? null : (
+                  <Word onClick={() => onSet({ [colour.key]: "" } as Partial<Theme>)}>
+                    put it back
+                  </Word>
+                )}
+              </span>
+            </Field>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function ThemeEditor({ initial }: { initial: Theme }) {
   const router = useRouter();
   const [draft, setDraft] = useState(initial);
@@ -100,40 +159,26 @@ export default function ThemeEditor({ initial }: { initial: Theme }) {
         </div>
       </div>
 
-      <div className="admin-panel">
-        <header className="admin-panel-head">
-          <div>
-            <h2 className="admin-panel-name">the five colours</h2>
-            <p className="admin-panel-hint">
-              These are the light ones. Dark has a palette of its own — a warm paper so photographs
-              do not look like windows, and the accents lifted until they can be read rather than
-              merely seen — and it follows these rather than being typed again.
-            </p>
-          </div>
-        </header>
-        <div className="admin-fields">
-          {COLOURS.map((colour) => {
-            const value = draft[colour.key] || colour.drawn;
-            const asDrawn = !draft[colour.key];
-            return (
-              <Field key={colour.key} label={colour.label} hint={colour.note}>
-                <span className="admin-theme-colour">
-                  <input
-                    type="color"
-                    value={value}
-                    aria-label={`The ${colour.label} the site is drawn with`}
-                    onChange={(event) => set({ [colour.key]: event.target.value } as Partial<Theme>)}
-                  />
-                  <code>{asDrawn ? `${colour.drawn} — as drawn` : value}</code>
-                  {asDrawn ? null : (
-                    <Word onClick={() => set({ [colour.key]: "" } as Partial<Theme>)}>put it back</Word>
-                  )}
-                </span>
-              </Field>
-            );
-          })}
-        </div>
-      </div>
+      {/* The same five twice, because the site has two palettes and neither is
+          a translation of the other: a colour that reads on paper does not
+          necessarily read on ink, which is the whole reason dark had a palette
+          of its own in the first place. */}
+      <Paints
+        name="the five colours"
+        hint="What the site is printed in by day. Every one of them can be put back."
+        colours={COLOURS}
+        draft={draft}
+        onSet={set}
+      />
+
+      <Paints
+        name="and the same five at night"
+        hint="For whoever has asked for dark paper. Left alone, these are a considered inversion of the ones above — a warm paper so photographs do not look like windows, and the accents lifted until they can be read rather than merely seen."
+        colours={DARK_COLOURS}
+        draft={draft}
+        onSet={set}
+        dark
+      />
 
       <SaveBar
         onSave={save}

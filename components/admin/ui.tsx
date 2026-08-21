@@ -68,15 +68,23 @@ export function Icon({ name }: { name: string }) {
 type FieldProps = {
   label: string;
   hint?: string;
+  /** A fact about the field, set beside its name rather than under it. */
+  aside?: string;
   wide?: boolean;
   children: React.ReactNode;
 };
 
 /** A labelled cell in a grid of fields. */
-export function Field({ label, hint, wide, children }: FieldProps) {
+export function Field({ label, hint, aside, wide, children }: FieldProps) {
   return (
     <label className={wide ? "admin-field admin-field-wide" : "admin-field"}>
-      <span>{label}</span>
+      {/* `aside` rides on the label's line, hard right: a count is a fact about
+          the field, not an instruction under it, and under the control it read
+          as a hint about what to type. */}
+      <span className={aside ? "admin-field-label" : undefined}>
+        {label}
+        {aside ? <em>{aside}</em> : null}
+      </span>
       {children}
       {hint ? <em>{hint}</em> : null}
     </label>

@@ -1,5 +1,6 @@
 "use client";
 
+import InHead from "./InHead";
 import Dropdown from "./Picker";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -223,12 +224,15 @@ export default function RowsEditor({
     <>
       <Problem>{problem}</Problem>
 
-      <p style={{ margin: "0 0 18px" }}>
+      {/* Beside the page's title, where every other section's one action is.
+          It sat above the list, which put the way to make something in the
+          same place as the first of the things already made. */}
+      <InHead>
         <button type="button" className="admin-btn" onClick={add} disabled={pending}>
           <Icon name="plus" />
           add {spec.one}
         </button>
-      </p>
+      </InHead>
 
       {rows.length === 0 ? (
         <Empty>Nothing here yet.</Empty>

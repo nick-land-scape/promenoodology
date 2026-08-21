@@ -47,6 +47,11 @@ export async function saveTheme(theme: Theme): Promise<Saved> {
       purple: colour(theme.purple),
       blue: colour(theme.blue),
       pink: colour(theme.pink),
+      dark_ink: colour(theme.dark_ink),
+      dark_paper: colour(theme.dark_paper),
+      dark_purple: colour(theme.dark_purple),
+      dark_blue: colour(theme.dark_blue),
+      dark_pink: colour(theme.dark_pink),
       updated_at: new Date().toISOString(),
     })
     .eq("id", true);
