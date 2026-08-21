@@ -149,9 +149,10 @@ img {
   flex-direction: column;
   gap: 10px;
   align-items: flex-start;
-  /* With a submenu open the menu can get tall; it scrolls rather than spilling
-     off the screen. */
-  max-height: calc(100vh - var(--edge) * 2 - var(--bar-top));
+  /* The full height of the window, so the last line of the menu can sit at the
+     foot of it rather than trailing after the links — the same shape the back of
+     the house has. With a submenu open it scrolls rather than spilling off. */
+  height: calc(100vh - var(--edge) * 2 - var(--bar-top));
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -217,8 +218,13 @@ img {
    wherever you actually were. */
 
 /* Sign in, or your own face. */
+/* Your own face, at the bottom of the menu. It used to follow the quieter links
+   immediately, which put it in the middle of the page on a short menu and made
+   it read as one more link rather than as who you are. */
 .nav-session {
   display: flex;
+  margin-top: auto;
+  padding-top: 14px;
 }
 
 .session-in {
