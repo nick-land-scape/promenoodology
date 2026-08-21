@@ -1954,8 +1954,19 @@ html.admin-bar {
     --admin-bar: 32px;
   }
 
+  /*
+   * On a phone it stops floating.
+   *
+   * There is no corner to float in: the menu holds the bottom, the contact
+   * details now run across above it, and a button hovering over either covers
+   * something somebody is reading — it was sitting on the end of the email
+   * address. In the flow, right-aligned under the footer, it covers nothing. And
+   * it is open, because a phone has no hover to open it with.
+   */
   .dark-switch {
-    bottom: calc(var(--bar-height) + 12px);
+    position: static;
+    max-width: none;
+    margin: 14px var(--edge) 0 auto;
   }
 
   .admin-bar-who {

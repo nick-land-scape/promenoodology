@@ -1260,6 +1260,35 @@ html.admin-dragging * {
     display: block;
   }
 
+  /* The menu is a header rather than a column here, so it is in the flow and
+     the strip along the top has to be made room for rather than moved past. */
+  .admin-side {
+    margin-top: var(--admin-top);
+  }
+
+  /* Nothing is pinned under the strip, so the sticky header sits at the top of
+     the scroll rather than 36px down it. */
+  .admin-head {
+    top: 0;
+  }
+
+  .admin-main {
+    padding-top: 0;
+  }
+
+  /* On a phone the greeting is the first thing to go: the two ways out are what
+     the strip is for. */
+  .admin-top-who {
+    display: none;
+  }
+
+  .admin-top-link:first-of-type {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
+    margin-right: auto;
+  }
+
   /* The menu stops being a column and becomes a header that wraps: the mark and
      the way out on the first line, every section on the lines under it. It
      wraps rather than scrolling sideways — the same as the site's own menu on a
@@ -1948,6 +1977,21 @@ html.admin-dragging * {
 @media screen and (max-width: 900px) {
   .admin-person-fields {
     grid-template-columns: 1fr 1fr;
+  }
+
+  /* The number and the portrait keep the top line; the fields go under them
+     rather than into a 140px column beside them. */
+  .admin-person {
+    flex-wrap: wrap;
+  }
+
+  .admin-person-body {
+    flex-basis: 100%;
+  }
+
+  .admin-person-foot {
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
