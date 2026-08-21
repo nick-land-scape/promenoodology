@@ -210,6 +210,54 @@ export async function saveStory(input: StoryInput): Promise<Saved & { slug?: str
   return { ok: true, slug };
 }
 
+export type BlockInput = {
+  kind: "heading" | "text" | "photo" | "space";
+  words: string;
+  photo_id: string | null;
+  layout: string | null;
+};
+
+/**
+ * The page, as somebody arranged it.
+ *
+ * Cleared and rewritten rather than compared block by block. A story is twenty
+ * or thirty blocks, working out which of them moved is more code than saying
+ * what the answer is now, and every one of them would have to carry an id
+ * through the editor for no other reason. The two statements are one call, so a
+ * failure to write leaves the delete unfinished — which is why the delete is
+ * second, and the insert is checked first.
+ */
+export async function saveStoryPage(storyId: string, blocks: BlockInput[]): Promise<Saved> {
+  await requireAdminAction();
+  const supabase = await supabaseServer();
+
+  const LAYOUTS = new Set(["wide", "narrow", "left", "right", "tall"]);
+
+  const rows = blocks
+    .map((block, at) => ({
+      story_id: storyId,
+      position: at + 1,
+      kind: block.kind,
+      words: block.kind === "heading" || block.kind === "text" ? block.words.trim() : "",
+      photo_id: block.kind === "photo" ? block.photo_id : null,
+      layout: block.kind === "photo" && block.layout && LAYOUTS.has(block.layout) ? block.layout : null,
+    }))
+    // A block with nothing in it is a block somebody started and left; it should
+    // not reach the page, and it should not be saved either.
+    .filter((row) => row.kind === "space" || (row.kind === "photo" ? row.photo_id : row.words));
+
+  const { error: cleared } = await supabase.from("story_blocks").delete().eq("story_id", storyId);
+  if (cleared) return failed(cleared);
+
+  if (rows.length > 0) {
+    const { error } = await supabase.from("story_blocks").insert(rows);
+    if (error) return failed(error);
+  }
+
+  refreshSite();
+  return { ok: true };
+}
+
 /** The order the stories are read in, top to bottom. */
 export async function reorderStories(ids: string[]): Promise<Saved> {
   await requireAdminAction();

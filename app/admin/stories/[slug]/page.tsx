@@ -25,8 +25,14 @@ export default async function EditStoryPage({
 
   // Its photographs, in the order they will be read in — so the editor is where
   // the page gets arranged rather than only where its words get typed.
-  const [{ data: photos }, { data: theirs }, { data: made }, { data: people }, { data: partners }] =
-    await Promise.all([
+  const [
+    { data: photos },
+    { data: built },
+    { data: theirs },
+    { data: made },
+    { data: people },
+    { data: partners },
+  ] = await Promise.all([
       supabase
         .from("photos")
         .select("id, path, credit, credit_profile_id, year, published, layout, width, height")
@@ -43,6 +49,21 @@ export default async function EditStoryPage({
             layout: string | null;
             width: number;
             height: number;
+          }[]
+        >(),
+      supabase
+        .from("story_blocks")
+        .select("id, position, kind, words, photo_id, layout")
+        .eq("story_id", story.id)
+        .order("position")
+        .returns<
+          {
+            id: string;
+            position: number;
+            kind: "heading" | "text" | "photo" | "space";
+            words: string;
+            photo_id: string | null;
+            layout: string | null;
           }[]
         >(),
       supabase
@@ -98,6 +119,16 @@ export default async function EditStoryPage({
           topics: story.topics ?? [],
           people: (theirs ?? []).map((one) => one.profile_id),
           partners: (made ?? []).map((one) => one.association_id),
+          /* The page as it stands. A story with none has never been arranged by
+             hand and is still drawn by the old rule — see StoryBody — so this
+             opens empty rather than pretending to be the page. */
+          page: (built ?? []).map((block) => ({
+            id: block.id,
+            kind: block.kind,
+            words: block.words ?? "",
+            photoId: block.photo_id,
+            layout: (block.layout ?? null) as PhotoLayout | null,
+          })),
         }}
         photos={(photos ?? []).map((photo) => ({
           id: photo.id,

@@ -45,7 +45,16 @@ export type Column = {
      * moment. Two controls side by side asked it as two questions. `time` names
      * the column that holds the hour.
      */
-    | "when";
+    | "when"
+    /**
+     * The story an evening became, by its id.
+     *
+     * Not the "story" kind, which writes a *tag* into story_tag so photographs
+     * and quotes can find their story. This is a real reference to a row, and it
+     * is the only place the two halves of the same thing are joined: an evening
+     * is what is going to happen, a story is what happened.
+     */
+    | "storyref";
   hint?: string;
   placeholder?: string;
   /** Take the whole width of the row rather than sitting in the grid. */
@@ -195,6 +204,7 @@ export const TABLES: Record<TableName, TableSpec> = {
       note: "",
       photo_path: null,
       partners: [],
+      story_id: null,
     },
     columns: [
       { key: "title", label: "what it is", kind: "text", placeholder: "soup and a walk" },
@@ -231,6 +241,12 @@ export const TABLES: Record<TableName, TableSpec> = {
         label: "picture",
         kind: "photo",
         hint: "From the archive. Shown at the top of the evening in the app.",
+      },
+      {
+        key: "story_id",
+        label: "what came of it",
+        kind: "storyref",
+        hint: "The story written about it afterwards, if there is one.",
       },
     ],
   },

@@ -47,7 +47,8 @@ export async function getStories(): Promise<Story[]> {
   if (!hasSupabase()) return fileStories.getStories();
 
   const supabase = supabasePublic();
-  const [{ data: rows }, photos, chosen, { data: theirs }, { data: made }] = await Promise.all([
+  const [{ data: rows }, photos, chosen, { data: theirs }, { data: built }, { data: made }] =
+    await Promise.all([
     supabase.from("stories").select("*").eq("published", true).order("position").returns<StoryRow[]>(),
     getResources(),
     coverPaths(),
@@ -62,6 +63,20 @@ export async function getStories(): Promise<Story[]> {
         { story_id: string; position: number; profiles: { name: string; photo_path: string | null } | null }[]
       >(),
     supabase
+      .from("story_blocks")
+      .select("story_id, position, kind, words, photo_id, layout")
+      .order("position")
+      .returns<
+        {
+          story_id: string;
+          position: number;
+          kind: "heading" | "text" | "photo" | "space";
+          words: string;
+          photo_id: string | null;
+          layout: string | null;
+        }[]
+      >(),
+    supabase
       .from("story_partners")
       .select("story_id, position, associations(name, logo_path, url, published)")
       .order("position")
@@ -74,6 +89,16 @@ export async function getStories(): Promise<Story[]> {
       >(),
   ]);
   if (!rows?.length) return fileStories.getStories();
+
+  /* id → the photograph itself, for the blocks. coverPaths already holds every
+     id and its path, and `photos` holds everything about a path, so the two
+     together are the lookup and there is no third query. */
+  const byPath = new Map(photos.map((photo) => [photo.file, photo]));
+  const byId = new Map(
+    [...chosen.entries()]
+      .map(([id, path]) => [id, byPath.get(path)] as const)
+      .filter((pair): pair is [string, NonNullable<(typeof pair)[1]>] => Boolean(pair[1])),
+  );
 
   return rows.map((row) => {
     const mine = photos.filter((photo) => photo.event === row.tag);
@@ -98,6 +123,29 @@ export async function getStories(): Promise<Story[]> {
       photos: mine,
       credits: unique(mine.map((photo) => photo.credit)),
       cover: found?.photo ?? cover(mine),
+      /* Built by hand where anybody has built it: the blocks are the page, in
+         the order they are in. A story with none is left to the old rule, which
+         is what every story looked like before there was a builder. */
+      blocks: (built ?? [])
+        .filter((block) => block.story_id === row.id)
+        .map((block) => {
+          if (block.kind === "photo") {
+            const found = block.photo_id ? byId.get(block.photo_id) : undefined;
+            if (!found) return null;
+            return {
+              kind: "photo" as const,
+              photo: found.photo,
+              caption: [found.credit, found.year].filter(Boolean).join(", "),
+              // The block's own layout wins over the photograph's, because a
+              // photograph placed by hand was placed at a size on purpose.
+              layout: ((block.layout ?? found.layout) as Resource["layout"]) ?? null,
+            };
+          }
+          if (block.kind === "space") return { kind: "space" as const };
+          if (!block.words.trim()) return null;
+          return { kind: block.kind, words: block.words };
+        })
+        .filter((block): block is NonNullable<typeof block> => block !== null),
       topics: (row as StoryRow & { topics?: string[] | null }).topics ?? [],
       who: (theirs ?? [])
         .filter((one) => one.story_id === row.id && one.profiles)

@@ -120,8 +120,11 @@ function parse(file: string, resources: Resource[]): Story {
     lead: sections.flatMap((section) => section.texts)[0] ?? "",
     photos,
     credits: unique(photos.map((photo) => photo.credit)),
-    // The files know nothing about tags, who was there or partners: those live
-    // only in the database, and a copy of the site without one simply has none.
+    // The files know nothing about tags, who was there, partners or a
+    // hand-built arrangement: those live only in the database, and a copy of the
+    // site without one is read the old way — which still works, and is the
+    // reason nothing had to be converted before the builder could ship.
+    blocks: [],
     topics: [],
     who: [],
     partners: [],

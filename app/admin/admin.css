@@ -3287,3 +3287,196 @@ html.admin-dragging * {
 .admin-when-clear:hover {
   color: var(--pink);
 }
+
+/* ------------------------------------------------------------ building a page */
+
+/*
+ * One column, and it is the page in order.
+ *
+ * Each kind of block is set the way it will be read — a heading small and purple,
+ * a paragraph in Times at the size of the story — so the column looks like the
+ * page it is rather than like a form about the page.
+ */
+.admin-blocks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-blocks > .admin-block:first-child {
+  border-top: 0;
+}
+
+.admin-block-hold {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding-top: 3px;
+}
+
+.admin-block-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-block-does {
+  flex: none;
+}
+
+/* A heading, set as the page sets it. */
+.admin-block-heading {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.admin-block-heading::placeholder {
+  color: var(--admin-faint);
+  letter-spacing: 0.1em;
+}
+
+.admin-block-heading:hover {
+  border-bottom-color: var(--hairline);
+}
+
+.admin-block-heading:focus {
+  outline: 0;
+  border-bottom-color: var(--purple);
+}
+
+/* A paragraph, set as the page sets it. */
+.admin-block-text {
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--ink);
+  resize: vertical;
+}
+
+.admin-block-text:focus {
+  outline: 0;
+}
+
+.admin-block-gap {
+  display: block;
+  padding: 10px 0;
+  border-top: 1px dashed var(--hairline);
+  border-bottom: 1px dashed var(--hairline);
+  font-size: 0.88em;
+  font-style: italic;
+  color: var(--admin-faint);
+  text-align: center;
+}
+
+.admin-block-photo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.admin-block-frame {
+  flex: none;
+  width: 84px;
+  height: 60px;
+  overflow: hidden;
+  background: var(--wash);
+  border: 1px solid var(--hairline);
+}
+
+.admin-block-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-block-none {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+}
+
+.admin-block-says {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.admin-block-how {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+/* Adding: one word until it is pressed, then the four things a page is made of. */
+.admin-build-add {
+  padding: 12px 14px;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-build-kinds {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-build-kinds button:not(.admin-word) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--hairline);
+  background: none;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--admin-quiet);
+  cursor: pointer;
+}
+
+.admin-build-kinds button:not(.admin-word) svg {
+  width: 14px;
+  height: 14px;
+}
+
+.admin-build-kinds button:not(.admin-word):hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}

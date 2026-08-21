@@ -36,6 +36,7 @@ export default function RowsEditor({
   coming = {},
   people = [],
   partners = [],
+  told = [],
   fresh,
 }: {
   table: TableName;
@@ -50,6 +51,8 @@ export default function RowsEditor({
   people?: Choice[];
   /** For a "with" column. */
   partners?: Choice[];
+  /** For a "what came of it" column: the stories, by id. */
+  told?: { id: string; title: string }[];
   /** Values a new row starts with, over the table's own blanks. */
   fresh?: RowValues;
 }) {
@@ -262,6 +265,19 @@ export default function RowsEditor({
             label: option.label,
           }))}
           empty={null}
+          label={column.label}
+        />
+      );
+    }
+
+    if (column.kind === "storyref") {
+      return (
+        <Dropdown
+          value={String(value ?? "")}
+          onChange={(next) => edit(row.id, column.key, next || null)}
+          options={told.map((one) => ({ value: one.id, label: one.title }))}
+          empty="nothing written yet"
+          search={told.length > 8}
           label={column.label}
         />
       );
