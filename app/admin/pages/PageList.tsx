@@ -13,6 +13,7 @@ import {
   SaveBar,
   Tag,
   moved,
+  useUnsaved,
   useDragOrder,
 } from "@/components/admin/ui";
 import { savePageList } from "./actions";
@@ -25,7 +26,6 @@ export type PageLine = {
   position: number;
   /** Every page has an editor now; this says whether it is made of words. */
   hasWords: boolean;
-  madeOf: string;
 };
 
 const GROUPS = [
@@ -73,28 +73,18 @@ function PageRow({
       <Place index={index} total={total} onMove={onMove} />
 
       <span className="admin-row-main" style={{ minWidth: 260 }}>
-        <span className="admin-row-name">
-          {/* The address, and it is not a field: a page's address is the folder
-              it lives in, so moving one means moving code. A story's address IS
-              editable — that is in the story itself. */}
-          <span title="A page's address is fixed. A story's is editable, in the story.">
-            /{line.slug}
-          </span>
-        </span>
-        <span className="admin-row-meta">{line.madeOf}</span>
-
-        {/* The two menu questions side by side: what it is called and which
-            part it sits in are one decision asked twice, and the grid's
-            auto-fit was stacking them because the row is narrow. */}
-        <span className="admin-fields admin-fields-pair" style={{ marginTop: 6 }}>
-          <Field
-            label="in the menu as"
-            hint="Empty means it is not listed — the page is still there."
-          >
+        {/*
+         * What the menu calls it, first — that is the name anybody thinks of a
+         * page by, and it used to be the third thing on the row, under an
+         * address nobody types. The two menu questions sit side by side because
+         * they are one decision asked twice.
+         */}
+        <span className="admin-fields admin-fields-pair">
+          <Field label="in the menu as">
             <input
               value={line.navLabel}
               onChange={(event) => onEdit(line.slug, { navLabel: event.target.value })}
-              placeholder="not listed"
+              placeholder={line.slug}
             />
           </Field>
           <Field label="which part of the menu">
@@ -106,6 +96,17 @@ function PageRow({
               label="Which part of the menu"
             />
           </Field>
+        </span>
+
+        {/* The address, small, because it is a fact rather than a decision: a
+            page's address is the folder it lives in, so changing one means
+            moving code. A story's address is different — that is in the story,
+            and not editable either, for the sake of the links people keep. */}
+        <span
+          className="admin-slug"
+          title="A page's address is where its folder is, so it is not something this screen can change."
+        >
+          /{line.slug}
         </span>
       </span>
 
@@ -226,6 +227,9 @@ export default function PageList({ initial }: { initial: PageLine[] }) {
   const [pending, start] = useTransition();
 
   const dirty = useMemo(() => JSON.stringify(lines) !== JSON.stringify(kept), [lines, kept]);
+
+  /* A word before anybody walks away from this. */
+  useUnsaved(dirty, "changes to the menu");
 
   function edit(slug: string, patch: Partial<PageLine>) {
     setLines((list) => list.map((line) => (line.slug === slug ? { ...line, ...patch } : line)));

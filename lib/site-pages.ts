@@ -96,14 +96,29 @@ export async function getMenu(): Promise<{
   more: { href: string; label: string }[];
 }> {
   const pages = await getSitePages();
+
+  /*
+   * Which group a page is in is the answer, and the only answer.
+   *
+   * It used to also depend on the label not being empty, which made two ways to
+   * say the same thing and one of them silent: a page put in the bold links with
+   * its name left blank simply was not in the menu, and nothing anywhere said
+   * why. Now an empty name falls back to the address, so a page in a group is
+   * always in the menu, even if it is wearing its own slug until somebody names
+   * it properly.
+   */
   const listed = pages
-    .filter((page) => page.visible && page.navLabel)
+    .filter((page) => page.visible && page.group !== "none")
     .sort((a, b) => a.position - b.position);
 
   const pick = (group: "main" | "more") =>
     listed
       .filter((page) => page.group === group)
-      .map((page) => ({ href: `/${page.slug}`, label: page.navLabel as string }));
+      .map((page) => ({
+        href: `/${page.slug}`,
+        // The bold ones are set in capitals on the site; the quieter ones are not.
+        label: page.navLabel?.trim() || (group === "main" ? page.slug.toUpperCase() : page.slug),
+      }));
 
   return { main: pick("main"), more: pick("more") };
 }

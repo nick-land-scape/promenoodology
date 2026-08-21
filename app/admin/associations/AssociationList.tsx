@@ -18,6 +18,7 @@ import {
   SaveBar,
   Word,
   moved,
+  useUnsaved,
   useDragOrder,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
@@ -58,6 +59,9 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
     () => JSON.stringify(rows.map(text)) !== JSON.stringify(kept.map(text)),
     [rows, kept],
   );
+
+  /* A word before anybody walks away from this. */
+  useUnsaved(changed || order, "changes to the partners");
 
   function edit(id: string, patch: Partial<Partner>) {
     setRows((list) => list.map((row) => (row.id === id ? { ...row, ...patch } : row)));

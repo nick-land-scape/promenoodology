@@ -16,16 +16,6 @@ export default async function PagesPage() {
 
   // What each page is made of, said in words — because "the archive" being
   // uneditable here is not a gap, it is that the archive is its photographs.
-  const madeOf: Record<string, string> = {
-    stories: "made of the stories",
-    archive: "made of the photographs and quotes",
-    community: "made of the people",
-    newsletter: "a form — the words are in the code",
-    donations: "made of the wall",
-    about: "words you can edit",
-    handbook: "words you can edit",
-  };
-
   const lines: PageLine[] = site.map((page) => ({
     slug: page.slug,
     visible: page.visible,
@@ -33,7 +23,6 @@ export default async function PagesPage() {
     group: page.group,
     position: page.position,
     hasWords: words.has(page.slug),
-    madeOf: madeOf[page.slug] ?? "",
   }));
 
   return (
