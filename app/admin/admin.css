@@ -3480,3 +3480,180 @@ html.admin-dragging * {
   border-color: var(--purple);
   color: var(--purple);
 }
+
+/* ------------------------------------------------- adding to a story's page */
+
+.admin-add-photos {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: var(--edge);
+}
+
+.admin-add-away {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+
+.admin-add-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(48rem, 100%);
+  max-height: 100%;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  overflow-y: auto;
+}
+
+.admin-add-sheet > header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 14px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* Two ways in, and which one you are on is the only thing in ink. */
+.admin-add-tabs {
+  display: flex;
+  gap: 16px;
+}
+
+.admin-add-tabs button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+  cursor: pointer;
+}
+
+.admin-add-tabs button[aria-selected="true"] {
+  color: var(--purple);
+  box-shadow: inset 0 -2px 0 var(--purple);
+  padding-bottom: 4px;
+}
+
+.admin-add-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  padding: 14px;
+}
+
+.admin-add-one {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  background: var(--wash);
+  cursor: pointer;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+}
+
+.admin-add-one img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* The tick is drawn rather than pressed: the tile is the control. */
+.admin-add-tick {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  font-size: 0.8rem;
+  line-height: 1;
+  color: var(--purple);
+}
+
+.admin-add-picked .admin-add-tick {
+  border-color: var(--purple);
+  box-shadow: inset 0 0 0 1px var(--purple);
+}
+
+.admin-add-picked {
+  border-color: var(--purple);
+  box-shadow: inset 0 0 0 2px var(--purple);
+}
+
+.admin-add-sheet > footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--paper);
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-add-drop {
+  padding: 16px 14px 20px;
+}
+
+/* What can become of a photograph on a page: off the page, out of the story, or
+   gone. Three acts, named apart. */
+.admin-block-fate {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.9em;
+}
+
+/* The box that narrows the archive down before it is drawn. */
+.admin-add-find {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.admin-add-find svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--admin-faint);
+}
+
+.admin-add-find input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.admin-add-find input::placeholder {
+  color: var(--admin-faint);
+  font-style: italic;
+}

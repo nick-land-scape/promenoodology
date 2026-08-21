@@ -29,7 +29,9 @@ import {
 } from "@/components/admin/ui";
 import { LAYOUTS } from "@/lib/photo-layout";
 import type { PhotoLayout } from "@/lib/supabase/rows";
-import { saveStory, saveStoryPage, saveStoryPhotos } from "../actions";
+import { saveStory, saveStoryPage, saveStoryPhotos, tagPhotos, untagPhoto } from "../actions";
+import { addPhoto, deletePhoto } from "@/app/admin/photos/actions";
+import AddPhotos, { type Addable } from "@/components/admin/AddPhotos";
 import StoryPage, { type Block, blankBlock } from "./StoryPage";
 
 /**
@@ -80,12 +82,17 @@ export default function StoryEditor({
   photos,
   everybody,
   organisations,
+  archive,
+  years,
 }: {
   story: Draft;
   photos: PhotoLine[];
   /** Everybody who could have been there. */
   everybody: Choice[];
   organisations: Choice[];
+  /** The whole archive, for the dialog that adds to this story. */
+  archive: Addable[];
+  years: Choice[];
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(story);
@@ -120,6 +127,49 @@ export default function StoryEditor({
   /* Looking at one properly, and seeing the whole thing as a reader would. */
   const [looking, setLooking] = useState<number | null>(null);
   const [preview, setPreview] = useState(false);
+  const [adding, setAdding] = useState(false);
+
+  /*
+   * A photograph on a page can meet three different ends, and they are not the
+   * same act: off the page (the block goes, it stays in the story), out of the
+   * story (the tag goes, it stays in the archive), or gone (the row and the file
+   * go). Naming them alike would be the kindest-looking way to lose one.
+   */
+  function unlink(photoId: string) {
+    if (!confirm("Take this photograph out of the story? It stays in the archive.")) return;
+    setProblem("");
+    start(async () => {
+      const result = await untagPhoto(photoId);
+      if (!result.ok) {
+        setProblem(result.error ?? "It would not come out.");
+        return;
+      }
+      setPage((list) => list.filter((block) => block.photoId !== photoId));
+      setKeptPage((list) => list.filter((block) => block.photoId !== photoId));
+      setOrder((list) => list.filter((one) => one.id !== photoId));
+      setKeptOrder((list) => list.filter((one) => one.id !== photoId));
+      router.refresh();
+    });
+  }
+
+  function destroy(photoId: string) {
+    if (!confirm("Delete this photograph for good? The file goes too, and there is no undo.")) {
+      return;
+    }
+    setProblem("");
+    start(async () => {
+      const result = await deletePhoto(photoId);
+      if (!result.ok) {
+        setProblem(result.error ?? "It would not delete.");
+        return;
+      }
+      setPage((list) => list.filter((block) => block.photoId !== photoId));
+      setKeptPage((list) => list.filter((block) => block.photoId !== photoId));
+      setOrder((list) => list.filter((one) => one.id !== photoId));
+      setKeptOrder((list) => list.filter((one) => one.id !== photoId));
+      router.refresh();
+    });
+  }
 
   /* A word before anybody walks away from this. */
   useUnsaved(dirty || photosMoved || pageMoved, "changes to this story");
@@ -344,9 +394,10 @@ export default function StoryEditor({
         name="the page"
         hint="Every part of it in the order a reader gets it. Drag a block, or type a number."
         action={
-          <Link href={`/admin/photos?story=${draft.tag}`} className="admin-btn">
-            add or remove them →
-          </Link>
+          <Button onClick={() => setAdding(true)}>
+            <Icon name="plus" />
+            add photographs
+          </Button>
         }
       >
         <StoryPage
@@ -362,6 +413,8 @@ export default function StoryEditor({
           }))}
           cover={draft.featured}
           onCover={(id) => set("featured", id)}
+          onUnlink={unlink}
+          onDelete={destroy}
         />
       </Panel>
 
@@ -380,6 +433,45 @@ export default function StoryEditor({
       </SaveBar>
       {/* The whole story's photographs, so the arrows walk it in the order a
           reader will see it. */}
+      {adding ? (
+        <AddPhotos
+          photos={archive}
+          people={everybody}
+          years={years}
+          onFromArchive={async (ids) => {
+            const result = await tagPhotos(draft.tag, ids);
+            if (!result.ok) return result.error ?? "They would not join the story.";
+            // On the page as well as in the story: adding a photograph to a
+            // story and not putting it anywhere would be a photograph nobody
+            // can find.
+            setPage((list) => [
+              ...list,
+              ...ids.map((id) => ({ ...blankBlock("photo"), photoId: id })),
+            ]);
+            router.refresh();
+            return null;
+          }}
+          onUploaded={async (uploaded, credit) => {
+            const written = await addPhoto({
+              path: uploaded.path,
+              width: uploaded.width,
+              height: uploaded.height,
+              credit: credit.person ? (everybody.find((one) => one.value === credit.person)?.label ?? "") : "",
+              credit_profile_id: credit.person,
+              year: credit.year,
+              story_tag: draft.tag,
+            });
+            if (!written.ok || !written.id) {
+              setProblem(written.error ?? "It went up but was not written down.");
+              return;
+            }
+            setPage((list) => [...list, { ...blankBlock("photo"), photoId: written.id as string }]);
+            router.refresh();
+          }}
+          onClose={() => setAdding(false)}
+        />
+      ) : null}
+
       {looking !== null ? (
         <Look
           items={order.map((one) => ({
