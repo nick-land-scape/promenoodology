@@ -120,6 +120,13 @@ export const SECTIONS: Section[] = [
   },
 
   {
+    href: "/admin/changes",
+    label: "what changed",
+    blurb: "Who changed what, and when. Written by the database, not by these pages.",
+    icon: "news",
+    group: "settings",
+  },
+  {
     href: "/admin/bin",
     label: "the bin",
     blurb: "Everything deleted in the last thirty days, and the day each one goes for good.",

@@ -30,6 +30,10 @@ export type Binned = {
 export default function TheBin({ binned, only }: { binned: Binned[]; only: string }) {
   const router = useRouter();
   const [rows, setRows] = useState(binned);
+  /* Which section is being looked at. State rather than the address, so pressing
+     one is instant — the link from a section's heading sets the first value and
+     then this takes over. */
+  const [showing, setShowing] = useState(only);
   const [problem, setProblem] = useState("");
   const [said, setSaid] = useState("");
   const [pending, start] = useTransition();
@@ -37,10 +41,22 @@ export default function TheBin({ binned, only }: { binned: Binned[]; only: strin
   const shown = useMemo(
     () =>
       rows
-        .filter((row) => (only ? row.table === only : true))
+        .filter((row) => (showing ? row.table === showing : true))
         .sort((a, b) => daysLeft(a.deletedAt) - daysLeft(b.deletedAt)),
-    [rows, only],
+    [rows, showing],
   );
+
+  /* What is actually in the bin, to filter by. Only sections with something in
+     them are offered: a filter that can only ever return nothing is a button
+     that lies about there being something behind it. */
+  const kinds = useMemo(() => {
+    const counted = new Map<string, { section: string; count: number }>();
+    for (const row of rows) {
+      const had = counted.get(row.table);
+      counted.set(row.table, { section: row.section, count: (had?.count ?? 0) + 1 });
+    }
+    return [...counted.entries()].sort((a, b) => a[1].section.localeCompare(b[1].section));
+  }, [rows]);
 
   const sections = useMemo(() => {
     const out = new Map<string, Binned[]>();
@@ -124,11 +140,26 @@ export default function TheBin({ binned, only }: { binned: Binned[]; only: strin
         </p>
       ) : null}
 
-      {only ? (
-        <p className="admin-note" style={{ marginBottom: 14 }}>
-          Showing what was deleted from one section.{" "}
-          <Link href="/admin/bin">show everything in the bin →</Link>
-        </p>
+      {kinds.length > 1 ? (
+        <div className="admin-sift" role="group" aria-label="Which section to show">
+          <button
+            type="button"
+            aria-pressed={showing === ""}
+            onClick={() => setShowing("")}
+          >
+            everything <em>{rows.length}</em>
+          </button>
+          {kinds.map(([table, { section, count }]) => (
+            <button
+              key={table}
+              type="button"
+              aria-pressed={showing === table}
+              onClick={() => setShowing(showing === table ? "" : table)}
+            >
+              {section} <em>{count}</em>
+            </button>
+          ))}
+        </div>
       ) : null}
 
       {overdue > 0 ? (
@@ -144,6 +175,10 @@ export default function TheBin({ binned, only }: { binned: Binned[]; only: strin
             </Button>
           </div>
         </div>
+      ) : null}
+
+      {shown.length === 0 ? (
+        <Empty>Nothing from that section is in the bin.</Empty>
       ) : null}
 
       {sections.map(([section, things]) => (
