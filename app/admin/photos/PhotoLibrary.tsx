@@ -2,20 +2,21 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import InHead from "@/components/admin/InHead";
 import { Look } from "@/components/admin/Pick";
+import Picker, { type Choice } from "@/components/admin/Picker";
 import Uploader from "@/components/admin/Uploader";
 import {
+  Bin,
   Chosen,
   Empty,
   Field,
   Flag,
   Grip,
-  Move,
   Place,
   Problem,
   SaveBar,
   Tick,
-  Word,
   moved,
   useChosen,
   useDragOrder,
@@ -42,11 +43,39 @@ export type PhotoItem = {
 };
 
 export type StoryOption = { tag: string; title: string };
-export type PersonOption = { id: string; name: string };
+export type PersonOption = { id: string; name: string; country: string; photo: string | null };
 
 /** Two tags that are not stories: everything, and everything with no story. */
 const ALL = "";
 const LOOSE = "—";
+
+/**
+ * The years on offer.
+ *
+ * A text box let anybody write 20226, and nobody found out until the archive
+ * grew a filter for it. The list runs from next year back to the year before the
+ * oldest photograph, so it never needs touching again — and anything already in
+ * the archive is included whatever it says, because a year that is there is a
+ * year you must be able to pick again.
+ */
+function yearsFor(items: PhotoItem[]): Choice[] {
+  const counted = new Map<string, number>();
+  for (const item of items) {
+    if (item.year) counted.set(item.year, (counted.get(item.year) ?? 0) + 1);
+  }
+
+  const now = new Date().getFullYear();
+  const oldest = Math.min(now, ...[...counted.keys()].map(Number).filter(Number.isFinite));
+
+  const range: string[] = [];
+  for (let year = now + 1; year >= oldest; year -= 1) range.push(String(year));
+  for (const year of counted.keys()) if (!range.includes(year)) range.push(year);
+
+  return range.map((year) => {
+    const held = counted.get(year);
+    return { value: year, label: year, note: held ? `${held}` : undefined };
+  });
+}
 
 /**
  * The archive.
@@ -104,6 +133,20 @@ export default function PhotoLibrary({
 
   const named = useMemo(() => new Map(people.map((one) => [one.id, one.name])), [people]);
 
+  /* The same two lists everywhere on this page: in each card, and in the bar
+     that changes forty cards at once. */
+  const faces: Choice[] = useMemo(
+    () =>
+      people.map((one) => ({
+        value: one.id,
+        label: one.name,
+        note: one.country || undefined,
+        image: one.photo ?? undefined,
+      })),
+    [people],
+  );
+  const years = useMemo(() => yearsFor(items), [items]);
+
   /*
    * Naming the photographer.
    *
@@ -144,8 +187,8 @@ export default function PhotoLibrary({
     });
   }
 
-  /* Dragging and the arrows reorder what is on screen; the rest of the archive
-     keeps its places. */
+  /* Dragging, or a typed number, reorders what is on screen; the rest of the
+     archive keeps its places. */
   function move(from: number, to: number) {
     const next = moved(shown, from, to);
     if (next === shown) return;
@@ -160,13 +203,26 @@ export default function PhotoLibrary({
     setProblem("");
   }
 
-  /* Dragged, nudged, or told a number — all three go through the same move. */
-  const { dropProps, handleProps, dragging } = useDragOrder(shown, move);
+  /* Dragged or told a number — both go through the same move. */
+  const { dropProps, handleProps, stateOf } = useDragOrder(shown, move);
 
   /* Choosing several. Nothing here writes: an action changes every chosen row in
      this page's state, and the save button below writes them, so a change to
      forty photographs is as reviewable as a change to one. */
   const pick = useChosen(shown);
+
+  /* What the whole selection already says, so the bar shows a state rather than
+     offering blank fields: where they agree it says so, where they do not it
+     says nothing and the first pick decides for all of them. */
+  const picked = pick.picked();
+  const agreed = <K extends keyof PhotoItem>(key: K): PhotoItem[K] | "" => {
+    if (picked.length === 0) return "";
+    const first = picked[0][key];
+    return picked.every((one) => one[key] === first) ? first : ("" as PhotoItem[K]);
+  };
+  const theirPerson = (agreed("person") as string | null) ?? "";
+  const theirYear = agreed("year") as string;
+  const allChosenShown = picked.length > 0 && picked.every((one) => one.published);
 
   function applyToChosen(patch: Partial<PhotoItem>) {
     setItems((list) => list.map((item) => (pick.has(item.id) ? { ...item, ...patch } : item)));
@@ -249,25 +305,22 @@ export default function PhotoLibrary({
             </select>
           </Field>
           <Field
-            label="photographer"
+            label="new ones are by"
             hint="Given to whatever you add next — not to what is already here."
           >
-            <select
+            <Picker
               value={person}
-              onChange={(event) => {
-                setPerson(event.target.value);
+              onChange={(next) => {
+                setPerson(next);
                 // The name comes along, so the credit reads properly even
                 // before anything looks up the person.
-                setCredit(named.get(event.target.value) ?? "");
+                setCredit(named.get(next) ?? "");
               }}
-            >
-              <option value="">a name, by hand</option>
-              {people.map((one) => (
-                <option key={one.id} value={one.id}>
-                  {one.name}
-                </option>
-              ))}
-            </select>
+              options={faces}
+              empty="a name, by hand"
+              search
+              label="Who took the next ones"
+            />
             {person ? null : (
               <input
                 value={credit}
@@ -276,17 +329,19 @@ export default function PhotoLibrary({
               />
             )}
           </Field>
-          <Field label="year" hint="Same — for new ones only.">
-            <input
+          <Field label="and from" hint="Same — for new ones only.">
+            <Picker
               value={year}
-              onChange={(event) => setYear(event.target.value)}
-              placeholder="2026"
-              inputMode="numeric"
+              onChange={setYear}
+              options={years}
+              empty="no year"
+              label="Which year the next ones are from"
             />
           </Field>
-          <div className="admin-field">
-            <span>add</span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+          {/* Drawn beside the page's title, where the one thing that *makes* a
+              photograph belongs — it used to sit down here among the fields that
+              say which photographs you are looking at. */}
+          <InHead>
               <Uploader
                 folder="resources"
                 watchWindow
@@ -321,12 +376,7 @@ export default function PhotoLibrary({
                   setKept((list) => [...list, fresh]);
                 }}
               />
-            </div>
-            <em>
-              Dropped anywhere on this page works too. Each one is shrunk to 1800px, re-saved and
-              renamed, and the camera&rsquo;s notes are left behind.
-            </em>
-          </div>
+          </InHead>
         </div>
       </div>
 
@@ -343,83 +393,66 @@ export default function PhotoLibrary({
 
       {pick.count > 0 ? (
         <Chosen count={pick.count} what="photographs" onAll={pick.all} onNone={pick.none}>
-          <label>
-            story
-            <select
-              defaultValue=""
-              onChange={(event) => {
-                applyToChosen({ story: event.target.value || null });
-                event.currentTarget.value = "";
-              }}
-            >
-              <option value="" disabled>
-                give them one
+          {/* No written labels on these three, so the row fits on one line: a
+              story title, a face with a name and a four-figure year each say
+              what they are without being told. The names are still there for
+              anybody listening rather than looking. */}
+          <select
+            defaultValue=""
+            aria-label="Give them all a story"
+            onChange={(event) => {
+              applyToChosen({ story: event.target.value || null });
+              event.currentTarget.value = "";
+            }}
+          >
+            <option value="" disabled>
+              a story
+            </option>
+            <option value="">no story — loose</option>
+            {stories.map((one) => (
+              <option key={one.tag} value={one.tag}>
+                {one.title}
               </option>
-              <option value="">no story — loose</option>
-              {stories.map((one) => (
-                <option key={one.tag} value={one.tag}>
-                  {one.title}
-                </option>
-              ))}
-            </select>
-          </label>
+            ))}
+          </select>
 
-          <label>
-            photo by
-            <select
-              defaultValue=""
-              onChange={(event) => {
-                const name = named.get(event.target.value);
-                if (name) applyToChosen({ person: event.target.value, credit: name });
-                event.currentTarget.value = "";
-              }}
-            >
-              <option value="" disabled>
-                one of us
-              </option>
-              {people.map((one) => (
-                <option key={one.id} value={one.id}>
-                  {one.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Picker
+            value={theirPerson}
+            onChange={(next) => {
+              const name = named.get(next);
+              applyToChosen({ person: next || null, credit: name ?? "" });
+            }}
+            options={faces}
+            empty="one of us"
+            search
+            label="Who took these"
+          />
 
-          <label>
-            or a name
-            <input
-              placeholder="then Enter"
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") return;
-                event.preventDefault();
-                // Typed by hand means not one of us: the link goes with it,
-                // otherwise the site would keep printing the old person.
-                applyToChosen({ credit: event.currentTarget.value.trim(), person: null });
-                event.currentTarget.value = "";
-              }}
+          <span className="admin-picker-narrow">
+            <Picker
+              value={theirYear}
+              onChange={(next) => applyToChosen({ year: next })}
+              options={years}
+              empty="a year"
+              label="Which year these are from"
             />
-          </label>
+          </span>
 
-          <label>
-            year
-            <input
-              inputMode="numeric"
-              placeholder="then Enter"
-              style={{ minWidth: "4rem" }}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") return;
-                event.preventDefault();
-                applyToChosen({ year: event.currentTarget.value.trim() });
-                event.currentTarget.value = "";
-              }}
-            />
-          </label>
+          {/* One switch, the same one as on a card, reading the state of the
+              whole selection: two words side by side made you read which of
+              them you had pressed. Mixed counts as hidden, so one press shows
+              the lot. */}
+          <Flag
+            on={allChosenShown}
+            onChange={(next) => applyToChosen({ published: next })}
+            labels={["shown", "hidden"]}
+          />
 
-          <Word onClick={() => applyToChosen({ published: true })}>show them</Word>
-          <Word onClick={() => applyToChosen({ published: false })}>hide them</Word>
-          <Word danger onClick={removeChosen} disabled={pending}>
-            delete them
-          </Word>
+          <Bin
+            what={`these ${pick.count} photographs`}
+            onClick={removeChosen}
+            disabled={pending}
+          />
         </Chosen>
       ) : null}
 
@@ -438,7 +471,7 @@ export default function PhotoLibrary({
               className={[
                 "admin-photo",
                 item.published ? "" : "admin-photo-hidden",
-                dragging === item.id ? "admin-row-dragging" : "",
+                stateOf(item),
               ]
                 .filter(Boolean)
                 .join(" ")}
@@ -467,20 +500,18 @@ export default function PhotoLibrary({
                   {/* Wide, because a name in a 90px box is a name you cannot
                       read: "Álvaro Smoolenaars García" needs the row. */}
                   <Field label="photo by" wide>
-                    <select
+                    <Picker
                       value={item.person ?? ""}
-                      onChange={(event) => {
-                        if (event.target.value) credited(item.id, event.target.value);
+                      onChange={(next) => {
+                        if (next) credited(item.id, next);
                         else edit(item.id, { person: null });
                       }}
-                    >
-                      <option value="">a name, by hand</option>
-                      {people.map((one) => (
-                        <option key={one.id} value={one.id}>
-                          {one.name}
-                        </option>
-                      ))}
-                    </select>
+                      options={faces}
+                      empty="a name, by hand"
+                      search
+                      wide
+                      label="Who took this one"
+                    />
                     {/* Only where nobody is picked, so the two cannot disagree
                         on screen about who took the photograph. */}
                     {item.person ? null : (
@@ -492,11 +523,12 @@ export default function PhotoLibrary({
                     )}
                   </Field>
                   <Field label="year">
-                    <input
+                    <Picker
                       value={item.year}
-                      onChange={(event) => edit(item.id, { year: event.target.value })}
-                      placeholder="—"
-                      inputMode="numeric"
+                      onChange={(next) => edit(item.id, { year: next })}
+                      options={years}
+                      empty="no year"
+                      label="Which year this is from"
                     />
                   </Field>
                   <Field label="story" wide>
@@ -514,17 +546,19 @@ export default function PhotoLibrary({
                   </Field>
                 </div>
 
+                {/* Left: where it sits, and how to move it. Right: what it is
+                    and whether it stays. */}
                 <div className="admin-photo-foot">
                   <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <Grip {...handleProps(item)} />
-                  <Place index={index} total={shown.length} onMove={move} />
-                    <Flag on={item.published} onChange={(next) => edit(item.id, { published: next })} />
+                    <Place index={index} total={shown.length} onMove={move} />
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Move index={index} total={shown.length} onMove={move} />
-                    <Word danger onClick={() => remove(item)} disabled={pending}>
-                      delete
-                    </Word>
+                    <Flag
+                      on={item.published}
+                      onChange={(next) => edit(item.id, { published: next })}
+                    />
+                    <Bin what="this photograph" onClick={() => remove(item)} disabled={pending} />
                   </span>
                 </div>
               </figcaption>

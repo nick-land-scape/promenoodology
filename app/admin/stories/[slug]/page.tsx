@@ -45,7 +45,6 @@ export default async function EditStoryPage({
     <Head
       title={story.title || "Untitled"}
       back={{ href: "/admin/stories", label: "stories" }}
-      view={story.published ? `/stories/${story.slug}` : undefined}
     >
       <StoryEditor
         story={{

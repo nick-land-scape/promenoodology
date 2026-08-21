@@ -8,6 +8,8 @@
   /* Paper rather than screen-white: warmer, and kinder to the photographs. */
   --paper: #fffcf6;
   --hairline: rgba(0, 0, 0, 0.12);
+  /* For anything said quietly: a hint under a field, a label beside a link. */
+  --quiet: #6f6a63;
 
   --serif: Times, "Times New Roman", Georgia, serif;
   --sans: Gotham, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -1621,14 +1623,14 @@ body:has(.hero) .contact {
 /* ------------------------------------------------- the admin's own top line */
 
 /*
- * Ink, where the rest of the site is paper.
+ * Paper, like the rest of the site, and told apart by one purple line.
  *
- * That is the whole design idea: this strip is not part of the website, it is
- * the door into the back of it, and it should be impossible to mistake for
- * content. So it is the one dark thing on the page, with a purple hairline
- * along the bottom, and it sets the greeting in Times and the two ways in in
- * Helvetica capitals — the same division of labour the site uses everywhere,
- * words in Times, labels in Helvetica.
+ * It began as ink — the one dark thing on the page — and that was too loud: it
+ * is furniture, on every page, above the work. What it needs is to be a
+ * different *plane* rather than a different colour, so it is the same paper with
+ * a purple rule under it, and the greeting is set in Times against the two ways
+ * in in Helvetica capitals — words in Times, labels in Helvetica, as everywhere
+ * else here.
  */
 html.admin-bar {
   --admin-bar: 36px;
@@ -1644,7 +1646,7 @@ html.admin-bar {
   display: flex;
   align-items: center;
   padding: 0 var(--edge);
-  background: var(--ink);
+  background: var(--paper);
   /* Not a border: a border would count in the height and shift the number
      everything else is offset by. */
   box-shadow: inset 0 -2px 0 var(--purple);
@@ -1655,7 +1657,7 @@ html.admin-bar {
   font-size: 0.95rem;
   font-style: italic;
   line-height: 1;
-  color: rgba(255, 252, 246, 0.6);
+  color: var(--quiet);
   margin-right: auto;
   white-space: nowrap;
   overflow: hidden;
@@ -1670,24 +1672,23 @@ html.admin-bar {
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
-  color: rgba(255, 252, 246, 0.6);
+  color: var(--quiet);
   text-decoration: none;
   padding: 12px 0 12px 16px;
   margin-left: 16px;
-  border-left: 1px solid rgba(255, 252, 246, 0.16);
+  border-left: 1px solid var(--hairline);
   transition: color 0.15s ease;
 }
 
 /* The way into the page you are actually looking at is the one you want nine
-   times out of ten, so it is the bright one. */
+   times out of ten, so it is the one set in ink. */
 .admin-bar-here {
-  color: var(--paper);
+  color: var(--ink);
 }
 
 .admin-bar-link:hover,
 .admin-bar-link:focus-visible {
-  /* Lighter than the site's purple, which is too dark to read on ink. */
-  color: #b98cff;
+  color: var(--purple);
 }
 
 /* -------------------------------------------------------------------- mobile */

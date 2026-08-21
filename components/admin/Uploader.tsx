@@ -185,11 +185,13 @@ export default function Uploader({
         </p>
       ) : null}
 
+      {/* The whole window, the moment a file crosses it. Dropping worked before
+          this and said nothing until it had, so nobody trusted it. */}
       {hovering ? (
         <div className="admin-drop">
-          <div>
-            <p>drop them here</p>
-            <em>they are shrunk, stripped of the camera&rsquo;s notes and renamed</em>
+          <div className="admin-drop-frame">
+            <p>drop it like it&rsquo;s hot</p>
+            <em>shrunk, renamed, and the camera&rsquo;s notes left behind</em>
           </div>
         </div>
       ) : null}

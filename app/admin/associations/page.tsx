@@ -25,7 +25,7 @@ export default async function AssociationsPage() {
   }));
 
   return (
-    <Head title="partners" view="/community">
+    <Head title="partners">
       <p className="admin-intro">
         The people we do this with who are not people: schools, festivals, councils, the association
         that lent us a kitchen. A name and a logo, because that is how an organisation is recognised.

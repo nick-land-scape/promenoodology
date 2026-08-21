@@ -49,7 +49,6 @@ export default async function StoriesPage() {
   return (
     <Head
       title="stories"
-      view="/stories"
       action={
         <form action={createStory}>
           <button type="submit" className="admin-btn">

@@ -84,7 +84,6 @@ export default async function AdminHome() {
   return (
     <Head
       title="looking after the site"
-      view="/"
       action={
         <Link href="/admin/stories" className="admin-btn">
           <Icon name="plus" />

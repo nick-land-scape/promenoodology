@@ -21,7 +21,7 @@ export default async function QuotesPage() {
   ]);
 
   return (
-    <Head title="quotes" view="/archive">
+    <Head title="quotes">
       <p className="admin-intro">
         The things people said. On the archive wall they are the pauses between the photographs, so a
         long one is fine and a short one is better. If the name matches somebody on the community

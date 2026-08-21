@@ -37,7 +37,7 @@ export default async function PagesPage() {
   }));
 
   return (
-    <Head title="pages" view="/">
+    <Head title="pages">
       <p className="admin-intro">
         Every page of the website: whether it is on the site at all, what the menu calls it, and
         which of the two groups it sits in. Open one to change its heading, the line under it, and

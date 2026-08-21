@@ -45,7 +45,7 @@ export default async function PeoplePage() {
   }));
 
   return (
-    <Head title="people" view="/community">
+    <Head title="people">
       <p className="admin-intro">
         Everybody, in alphabetical order — the community page and the list of accounts are one list.
         Most of them have never signed in to anything, and do not need to: being on the wall was

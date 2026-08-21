@@ -98,6 +98,23 @@ export async function getNeighbours(slug: string) {
 
 /* ------------------------------------------------------- photos and quotes */
 
+/*
+ * An empty table is an answer.
+ *
+ * Every one of these used to fall back to the files in /data when the query came
+ * back with nothing, and that made deletion impossible to finish: emptying the
+ * quotes in the back of the house brought back the seven that ship with the
+ * repository, and they could not be deleted either, because they were never
+ * rows. Reported as "we deleted all quotes but they are still in the archive",
+ * and that is exactly what it was.
+ *
+ * The files are for a copy of the site with no database at all — which is the
+ * check at the top of each of these functions, and is the only case they were
+ * ever meant for. Once there are keys, the database is the truth, including when
+ * its answer is "none".
+ */
+
+
 export async function getResources(): Promise<Resource[]> {
   if (!hasSupabase()) return files.getResources();
 
@@ -111,9 +128,8 @@ export async function getResources(): Promise<Resource[]> {
       .returns<PhotoRow[]>(),
     photographerNames(),
   ]);
-  if (!data?.length) return files.getResources();
 
-  return data.map((row) => ({
+  return (data ?? []).map((row) => ({
     file: row.path,
     // Somebody who has an account is credited by the name on it, so correcting
     // your own name on your profile corrects it under every photograph you took.
@@ -136,10 +152,9 @@ export async function getQuotes(): Promise<Quote[]> {
     .eq("published", true)
     .order("created_at")
     .returns<QuoteRow[]>();
-  if (!data?.length) return files.getQuotes();
 
   const faces = await portraits();
-  return data.map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     who: row.who ?? "",
     where: row.place ?? "",
@@ -160,10 +175,9 @@ export async function getDonations(): Promise<Donation[]> {
     .eq("published", true)
     .order("given_on", { ascending: false })
     .returns<DonationRow[]>();
-  if (!data?.length) return files.getDonations();
 
   const faces = await portraits();
-  return data.map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     who: row.who ?? "",
     when: row.given_on,
@@ -299,9 +313,8 @@ export async function getEvents(): Promise<ClubEvent[]> {
     .eq("published", true)
     .order("happens_on")
     .returns<EventRow[]>();
-  if (!data?.length) return appFiles.getEvents();
 
-  return data.map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     date: row.happens_on,
     time: row.starts_at ?? "",
@@ -325,9 +338,8 @@ export async function getNews(): Promise<NewsItem[]> {
     .eq("published", true)
     .order("published_on", { ascending: false })
     .returns<NewsRow[]>();
-  if (!data?.length) return appFiles.getNews();
 
-  return data.map((row) => ({ date: row.published_on, title: row.title, text: row.text ?? "" }));
+  return (data ?? []).map((row) => ({ date: row.published_on, title: row.title, text: row.text ?? "" }));
 }
 
 /** The feed is still examples: nobody can post until members can sign in. */
@@ -354,7 +366,6 @@ export async function getMembers(): Promise<Member[]> {
     .select("name, country, photo_path, colour, listed, listed_by_admin")
     .returns<ProfileRow[]>();
   const shown = (data ?? []).filter((row) => row.listed_by_admin ?? row.listed);
-  if (!shown.length) return files.getMembers();
 
   return shown.map((row) => {
     const parts = (row.name ?? "").split(" ");

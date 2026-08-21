@@ -22,7 +22,7 @@ export default async function EditPagePage({
   const [page, head] = await Promise.all([getPage(spec.slug), getPageHead(spec.slug)]);
 
   return (
-    <Head title={spec.name} back={{ href: "/admin/pages", label: "pages" }} view={spec.view}>
+    <Head title={spec.name} back={{ href: "/admin/pages", label: "pages" }}>
       <p className="admin-intro">{spec.blurb}</p>
       <PageWords
         spec={spec}

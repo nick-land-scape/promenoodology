@@ -44,9 +44,9 @@ export default async function PhotosPage({
     // community page — somebody hidden there still took photographs.
     supabase
       .from("profiles")
-      .select("id, name")
+      .select("id, name, country, photo_path")
       .order("name")
-      .returns<{ id: string; name: string }[]>(),
+      .returns<{ id: string; name: string; country: string | null; photo_path: string | null }[]>(),
   ]);
 
   const items: PhotoItem[] = (photos ?? []).map((photo) => ({
@@ -70,10 +70,14 @@ export default async function PhotosPage({
   const persons: PersonOption[] = (people ?? []).map((one) => ({
     id: one.id,
     name: one.name,
+    country: one.country ?? "",
+    // The portrait, so a name in a list of sixty-six is a face you recognise
+    // rather than a string you hope is the right one.
+    photo: one.photo_path ? mediaUrl(one.photo_path) : null,
   }));
 
   return (
-    <Head title="the archive" view="/archive">
+    <Head title="the archive">
       <p className="admin-intro">
         Photographs keep the shape they arrived in — the wall is not a grid — so there is nothing to
         crop and nothing to line up. What matters is who took each one, the year, and which story it
