@@ -2010,3 +2010,57 @@ html.admin-dragging * {
 .admin-logo:focus-visible em {
   opacity: 1;
 }
+
+/* ---------------------------------------------------------------- the theme */
+
+/* Set in the typefaces being chosen: the only honest way to choose one. */
+.admin-theme-taste {
+  padding: 16px 14px 18px;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-theme-taste p {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+  line-height: 1.35;
+  max-width: 34rem;
+}
+
+.admin-theme-taste span {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+}
+
+.admin-theme-colour {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+/* The browser's own colour well, with its chrome taken off. */
+.admin-theme-colour input[type="color"] {
+  width: 34px;
+  height: 24px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  background: none;
+  cursor: pointer;
+}
+
+.admin-theme-colour input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.admin-theme-colour input[type="color"]::-webkit-color-swatch {
+  border: 0;
+}
+
+.admin-theme-colour code {
+  font-size: 0.78rem;
+  color: var(--admin-quiet);
+}

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { SITE_URL } from "@/lib/site";
+import { getTheme, themeAsCss } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -48,7 +49,11 @@ try {
 } catch (e) { document.documentElement.dataset.theme = "light"; }
 `.trim();
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Two typefaces and five colours, or nothing at all if nobody has changed any
+  // of them — which is the ordinary case and costs one empty string.
+  const look = themeAsCss(await getTheme());
+
   return (
     // The script below sets data-theme before React arrives, so the attribute it
     // finds is not the one the server sent. That is the intended sequence rather
@@ -59,6 +64,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: rememberTheThing }}
         />
+        {/* After globals.css, so it wins; and only what has been changed, so the
+            site keeps the look it was drawn with until somebody says otherwise. */}
+        {look ? (
+          // eslint-disable-next-line react/no-danger
+          <style dangerouslySetInnerHTML={{ __html: look }} />
+        ) : null}
       </head>
       <body>{children}</body>
     </html>
