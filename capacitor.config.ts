@@ -57,10 +57,23 @@ const config: CapacitorConfig = {
 
   plugins: {
     SplashScreen: {
-      /* Held until the WebView says it has something to show, then faded. The
-         film-and-logo curtain inside the app takes over from here, so the two
-         are the same picture and the join is invisible. */
-      launchAutoHide: false,
+      /* It hides itself, and that is not the elegant option — it is the safe one.
+       *
+       * The elegant version holds the launch screen until the app's own film
+       * curtain is drawn and hides it from JavaScript, so the join is invisible.
+       * Tried, and the app opened on a launch screen that never left: the whole
+       * thing had loaded and was running behind it, keyboard and all, waiting for
+       * a call that never arrived. A native curtain that depends on web code to
+       * lift is a white screen one deploy away, and no amount of elegance is
+       * worth that. The JavaScript call is still there and still lifts it early
+       * when it works; this is what happens when it does not.
+       *
+       * The gap it leaves is a fifth of a second of paper — the same paper the
+       * launch screen and the curtain behind it are painted in, so there is
+       * nothing to see. */
+      launchAutoHide: true,
+      launchShowDuration: 1200,
+      launchFadeOutDuration: 300,
       backgroundColor: "#fffcf6",
       showSpinner: false,
       androidScaleType: "CENTER_CROP",
