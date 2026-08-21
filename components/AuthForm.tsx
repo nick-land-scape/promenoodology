@@ -18,12 +18,15 @@ import { type Result, sendCode } from "@/app/(site)/account/actions";
 
 const EMPTY: Result = {};
 
-export function SignInForm() {
+export function SignInForm({ back }: { back?: string }) {
   const [state, action, sending] = useActionState(sendCode, EMPTY);
 
   return (
     <>
       <form action={action} className="auth-form">
+        {/* Where they were when they knocked, so signing in puts them back
+            rather than parking them on a form about themselves. */}
+        {back ? <input type="hidden" name="back" value={back} /> : null}
         <label>
           <span>email</span>
           <input

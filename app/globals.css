@@ -26,9 +26,9 @@
 
   --edge: 25px;
   --sidebar: 250px;
-  /* The admin's top line, and nought for everybody else. Every fixed thing
+  /* The signed-in top line, and nought for everybody else. Every fixed thing
      along the top of the window adds this, so one number moves them all. */
-  --admin-bar: 0px;
+  --bar-top: 0px;
   /* The contact details get their own narrow lane down the right edge, so
      nothing else has to make room for them. */
   --lane: 40px;
@@ -142,7 +142,7 @@ img {
 
 .nav {
   position: fixed;
-  top: calc(var(--edge) + var(--admin-bar));
+  top: calc(var(--edge) + var(--bar-top));
   left: var(--edge);
   z-index: 20;
   display: flex;
@@ -151,7 +151,7 @@ img {
   align-items: flex-start;
   /* With a submenu open the menu can get tall; it scrolls rather than spilling
      off the screen. */
-  max-height: calc(100vh - var(--edge) * 2 - var(--admin-bar));
+  max-height: calc(100vh - var(--edge) * 2 - var(--bar-top));
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -307,7 +307,7 @@ img {
      rule below puts it back to one edge, where there is no room to spare. */
   padding-right: calc(var(--edge) * 2);
   padding-bottom: calc(var(--edge) + 40px);
-  padding-top: calc(var(--edge) + var(--admin-bar));
+  padding-top: calc(var(--edge) + var(--bar-top));
   min-height: 100vh;
 }
 
@@ -1737,7 +1737,7 @@ body:has(.hero) .contact {
   border-color: var(--ink);
 }
 
-/* ------------------------------------------------- the admin's own top line */
+/* ------------------------------------------------ the signed-in top line */
 
 /*
  * Paper, like the rest of the site, and told apart by one purple line.
@@ -1749,17 +1749,17 @@ body:has(.hero) .contact {
  * in in Helvetica capitals — words in Times, labels in Helvetica, as everywhere
  * else here.
  */
-html.admin-bar {
-  --admin-bar: 36px;
+html.has-top-bar {
+  --bar-top: 36px;
 }
 
-.admin-bar-strip {
+.top-bar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 60;
-  height: var(--admin-bar);
+  height: var(--bar-top);
   display: flex;
   align-items: center;
   padding: 0 var(--edge);
@@ -1769,7 +1769,7 @@ html.admin-bar {
   box-shadow: inset 0 -2px 0 var(--purple);
 }
 
-.admin-bar-who {
+.top-bar-who {
   font-family: var(--serif);
   font-size: 0.95rem;
   font-style: italic;
@@ -1781,7 +1781,7 @@ html.admin-bar {
   text-overflow: ellipsis;
 }
 
-.admin-bar-link {
+.top-bar-link {
   font-family: var(--sans);
   font-size: 0.6rem;
   font-weight: 700;
@@ -1799,12 +1799,12 @@ html.admin-bar {
 
 /* The way into the page you are actually looking at is the one you want nine
    times out of ten, so it is the one set in ink. */
-.admin-bar-here {
+.top-bar-here {
   color: var(--ink);
 }
 
-.admin-bar-link:hover,
-.admin-bar-link:focus-visible {
+.top-bar-link:hover,
+.top-bar-link:focus-visible {
   color: var(--purple);
 }
 
@@ -1840,7 +1840,7 @@ html.admin-bar {
   .nav::before {
     content: "";
     position: fixed;
-    top: var(--admin-bar);
+    top: var(--bar-top);
     left: 0;
     right: 0;
     height: var(--top-bar);
@@ -1850,7 +1850,7 @@ html.admin-bar {
 
   .nav-mark {
     position: fixed;
-    top: calc(7px + var(--admin-bar));
+    top: calc(7px + var(--bar-top));
     left: var(--edge);
     z-index: 21;
     width: 38px;
@@ -1882,7 +1882,7 @@ html.admin-bar {
   /* Out of the bottom bar, up into the strip at the top, on the right. */
   .nav-session {
     position: fixed;
-    top: calc(9px + var(--admin-bar));
+    top: calc(9px + var(--bar-top));
     right: var(--edge);
     z-index: 21;
     align-items: center;
@@ -1942,7 +1942,7 @@ html.admin-bar {
   .page {
     padding-left: var(--edge);
     padding-right: var(--edge);
-    padding-top: calc(var(--top-bar) + var(--edge) + var(--admin-bar));
+    padding-top: calc(var(--top-bar) + var(--edge) + var(--bar-top));
     min-height: 0;
   }
 
@@ -1950,8 +1950,8 @@ html.admin-bar {
     padding-bottom: 0;
   }
 
-  html.admin-bar {
-    --admin-bar: 32px;
+  html.has-top-bar {
+    --bar-top: 32px;
   }
 
   /*
@@ -1969,11 +1969,11 @@ html.admin-bar {
     margin: 14px var(--edge) 0 auto;
   }
 
-  .admin-bar-who {
+  .top-bar-who {
     font-size: 0.85rem;
   }
 
-  .admin-bar-link {
+  .top-bar-link {
     font-size: 0.55rem;
     letter-spacing: 0.1em;
     padding-left: 11px;
@@ -1982,11 +1982,11 @@ html.admin-bar {
 
   /* Two links and a greeting will not fit across a phone. The greeting is the
      one that can go: it is the least useful thing on the strip. */
-  .admin-bar-strip:has(.admin-bar-here) .admin-bar-who {
+  .top-bar:has(.top-bar-here) .top-bar-who {
     display: none;
   }
 
-  .admin-bar-strip:has(.admin-bar-here) .admin-bar-here {
+  .top-bar:has(.top-bar-here) .top-bar-here {
     margin-right: auto;
     border-left: 0;
     padding-left: 0;

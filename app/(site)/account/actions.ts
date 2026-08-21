@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { CODE_COOKIE, CODE_COOKIE_MAX_AGE, tidyCode } from "@/lib/auth-code";
+import {
+  BACK_COOKIE,
+  CODE_COOKIE,
+  CODE_COOKIE_MAX_AGE,
+  onlyAPath,
+  tidyCode,
+} from "@/lib/auth-code";
 import { SITE_URL } from "@/lib/site";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -34,15 +40,17 @@ export type Result = { error?: string; message?: string };
  */
 const landing = `${SITE_URL}/account/confirm`;
 
-async function remember(email: string) {
+async function remember(email: string, back: string) {
   const jar = await cookies();
-  jar.set(CODE_COOKIE, email, {
+  const keeping = {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: CODE_COOKIE_MAX_AGE,
-  });
+  };
+  jar.set(CODE_COOKIE, email, keeping);
+  if (back) jar.set(BACK_COOKIE, back, keeping);
 }
 
 async function whoseCode() {
@@ -53,6 +61,40 @@ async function whoseCode() {
 async function forget() {
   const jar = await cookies();
   jar.delete(CODE_COOKIE);
+  jar.delete(BACK_COOKIE);
+}
+
+/**
+ * Where somebody goes once we know who they are.
+ *
+ * The profile page only when there is something on it to fill in — which is the
+ * first time, and only the first time. After that, back to whatever they were
+ * reading when they knocked, and failing that the front page. Landing on a form
+ * about yourself every time you sign in reads as though the site has forgotten
+ * you, which is the opposite of what just happened.
+ */
+async function wherePut(): Promise<string> {
+  const jar = await cookies();
+  const back = onlyAPath(jar.get(BACK_COOKIE)?.value);
+
+  const supabase = await supabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return "/account";
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("name")
+    .eq("user_id", user.id)
+    .maybeSingle<{ name: string | null }>();
+
+  // Nothing written down yet: there is a reason to be on the form.
+  if (!data?.name?.trim()) return "/account";
+
+  // Not back to the sign-in pages, which would be a loop.
+  if (back && !back.startsWith("/account/")) return back;
+  return "/";
 }
 
 /**
@@ -65,14 +107,22 @@ export async function sendCode(_state: Result, form: FormData): Promise<Result> 
     .toLowerCase();
   if (!email.includes("@")) return { error: "Your email address, please." };
 
+  // Where they knocked from, so they can be put back there afterwards.
+  const back = onlyAPath(String(form.get("back") ?? ""));
+
   const supabase = await supabaseServer();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser: false, emailRedirectTo: landing },
+    options: {
+      shouldCreateUser: false,
+      // Carried in the link as well as the cookie: the link is often opened on
+      // the phone, where this browser's cookie is not.
+      emailRedirectTo: back ? `${landing}?next=${encodeURIComponent(back)}` : landing,
+    },
   });
   if (error) return { error: friendly(error.message) };
 
-  await remember(email);
+  await remember(email, back);
   redirect("/account/code");
 }
 
@@ -103,9 +153,10 @@ export async function verifyCode(_state: Result, form: FormData): Promise<Result
   const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
   if (error) return { error: friendly(error.message) };
 
+  const going = await wherePut();
   await forget();
   revalidatePath("/", "layout");
-  redirect("/account");
+  redirect(going);
 }
 
 /**

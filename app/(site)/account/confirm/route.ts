@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { BACK_COOKIE, onlyAPath } from "@/lib/auth-code";
 import { supabaseServer } from "@/lib/supabase/server";
 
 /**
@@ -29,9 +30,9 @@ export async function GET(request: NextRequest) {
   const tokenHash = searchParams.get("token_hash");
   const code = searchParams.get("code");
   const type = searchParams.get("type") ?? "email";
-  // Where to go once we know who this is; only ever a path on this site.
-  const next = searchParams.get("next");
-  const landing = next?.startsWith("/") ? next : "/account";
+  // Where to go once we know who this is; only ever a path on this site, and
+  // checked rather than trusted — this arrives in a URL anybody can write.
+  const asked = onlyAPath(searchParams.get("next"));
 
   const away = (why: string) =>
     NextResponse.redirect(new URL(`/account/sign-in?link=${why}`, origin));
@@ -53,5 +54,28 @@ export async function GET(request: NextRequest) {
     return away("empty");
   }
 
-  return NextResponse.redirect(new URL(landing, origin));
+  /* The profile page only the first time, when there is something on it to
+     fill in; otherwise back to whatever they were reading when they knocked.
+     Same rule as the code page, so both doors behave alike. */
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let landing = "/account";
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("name")
+      .eq("user_id", user.id)
+      .maybeSingle<{ name: string | null }>();
+
+    if (data?.name?.trim()) {
+      const back = asked || onlyAPath(request.cookies.get(BACK_COOKIE)?.value);
+      landing = back && !back.startsWith("/account/") ? back : "/";
+    }
+  }
+
+  const answer = NextResponse.redirect(new URL(landing, origin));
+  answer.cookies.delete(BACK_COOKIE);
+  return answer;
 }

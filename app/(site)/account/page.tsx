@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import ProfileForm from "@/components/ProfileForm";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -39,11 +38,9 @@ export default async function AccountPage() {
           listed={profile?.listed ?? true}
         />
 
-        {profile?.role === "admin" ? (
-          <p className="auth-switch">
-            You are an admin: <Link href="/admin">look after the site →</Link>
-          </p>
-        ) : null}
+        {/* The way into the back of the house was here too. It is in the strip
+            along the top of every page now, which is one place rather than two.
+        */}
 
         <form action={signOut} className="auth-out">
           <button type="submit" className="text-button">
