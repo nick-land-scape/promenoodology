@@ -2031,6 +2031,14 @@ html.has-top-bar {
     flex-direction: column;
     align-items: center;
     gap: 3px;
+    /* As tall as the menu, and no taller.
+     *
+     * The column version is given the full height of the window so that its last
+     * line can sit at the foot of it, and that height was carrying straight
+     * through to here: a bar anchored to the bottom of the screen, seven hundred
+     * and fifty pixels tall, painted in paper. The menu ended up at the top of
+     * it, and the page it covered looked like an empty page. */
+    height: auto;
     min-height: var(--bar-height);
     padding: 7px 10px;
     background: var(--paper);
