@@ -114,6 +114,8 @@ export type ProfileRow = {
   photo_path: string | null;
   colour: string | null;
   joined_on: string;
+  /** Given once and never moved. See migration 0015. */
+  member_no: number | null;
 };
 
 export type AssociationRow = {

@@ -211,11 +211,96 @@ export async function saveProfile(_state: Result, form: FormData): Promise<Resul
   return { message: "Saved." };
 }
 
+/**
+ * Your own portrait, on the community page.
+ *
+ * The file is already in the bucket by the time this runs — the browser puts it
+ * there under profiles/<your login>/, which is the only folder the storage policy
+ * lets you write to. This writes down which file is yours, and takes the one it
+ * replaced back out: a portrait nobody points at is a bill.
+ */
+export async function setMyPhoto(path: string | null): Promise<Result> {
+  const supabase = await supabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "You are not signed in any more." };
+
+  const { data: before } = await supabase
+    .from("profiles")
+    .select("photo_path")
+    .eq("user_id", user.id)
+    .maybeSingle<{ photo_path: string | null }>();
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ photo_path: path })
+    .eq("user_id", user.id);
+  if (error) return { error: error.message };
+
+  /* The one it replaces is nobody's now — but only if it is one of your own.
+   *
+   * A portrait an admin uploaded for you sits under profiles/<your row>/ rather
+   * than profiles/<your login>/, and the storage policy will not let you delete
+   * it. Trying anyway would be a failure nobody can act on, so it is left where
+   * it is and the row simply stops pointing at it. */
+  const old = before?.photo_path;
+  if (old && old !== path && old.startsWith(`profiles/${user.id}/`)) {
+    await supabase.storage.from("media").remove([old]);
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/community");
+  return { message: path ? "That is your portrait now." : "Taken off." };
+}
+
+/**
+ * A different email address.
+ *
+ * Nothing changes until the new address answers. Supabase sends a link there and
+ * the address only moves when somebody opens it, which is the whole point: an
+ * address you cannot read is not a way back into your account, and typing one
+ * letter wrong would otherwise lock you out of your own profile.
+ *
+ * Where the link lands is /account/confirm, the same door the sign-in links use;
+ * it knows an email change from a sign-in by the type Supabase names in the link.
+ */
+export async function changeMyEmail(_state: Result, form: FormData): Promise<Result> {
+  const supabase = await supabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "You are not signed in any more." };
+
+  const email = String(form.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  if (!email.includes("@") || /\s/.test(email)) {
+    return { error: "That does not look like an email address." };
+  }
+  if (email === (user.email ?? "").toLowerCase()) {
+    return { error: "That is the address you already use." };
+  }
+
+  const { error } = await supabase.auth.updateUser(
+    { email },
+    { emailRedirectTo: landing },
+  );
+  if (error) return { error: friendly(error.message) };
+
+  return {
+    message: `Sent to ${email}. Open the link in that inbox and the address moves — until then this one still works.`,
+  };
+}
+
 /** Supabase speaks in error codes; people do not. */
 function friendly(message: string) {
   const text = message.toLowerCase();
   if (text.includes("signups not allowed")) {
     return "There is no account with that address yet. Join us instead — it takes one more line.";
+  }
+  if (text.includes("email address is already") || text.includes("already been registered")) {
+    return "There is already an account with that address.";
   }
   if (text.includes("user already registered")) {
     return "There is already an account with this address. Sign in instead.";

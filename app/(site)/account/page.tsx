@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import ProfileForm from "@/components/ProfileForm";
+import { pretty } from "@/lib/admin/when";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { ProfileRow } from "@/lib/supabase/rows";
 import { signOut } from "./actions";
@@ -28,14 +29,18 @@ export default async function AccountPage() {
       <div className="auth">
         <h1 className="page-title">your profile</h1>
         <p className="page-intro">
-          Signed in as {user.email}. This is everything we keep about you, and you can change all of
-          it.
+          This is everything we keep about you, and nearly all of it is yours to change.
         </p>
 
         <ProfileForm
+          userId={user.id}
+          email={user.email ?? ""}
           name={profile?.name ?? ""}
           country={profile?.country ?? ""}
           listed={profile?.listed ?? true}
+          photo={profile?.photo_path ?? null}
+          memberNo={profile?.member_no ?? null}
+          since={profile?.joined_on ? pretty(profile.joined_on) : ""}
         />
 
         {/* The way into the back of the house was here too. It is in the strip
