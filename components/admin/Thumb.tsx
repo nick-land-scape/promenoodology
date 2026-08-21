@@ -63,7 +63,9 @@ export default function Thumb({
       width={known ? width : 800}
       height={known ? height : 800}
       sizes={sizes}
-      quality={72}
+      // 70 because that is the one quality this project's next.config allows;
+      // anything else is a warning on every thumbnail and the same picture.
+      quality={70}
       priority={priority}
       loading={eager ? "eager" : undefined}
       draggable={false}

@@ -125,6 +125,18 @@ export type AssociationRow = {
   published: boolean;
 };
 
+/** A film for the front page. */
+export type HeroVideoRow = {
+  id: string;
+  path: string;
+  poster_path: string | null;
+  position: number;
+  published: boolean;
+  called: string;
+  seconds: number | null;
+  bytes: number | null;
+};
+
 export type ApplicationRow = {
   id: string;
   what: string;

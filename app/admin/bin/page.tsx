@@ -25,7 +25,7 @@ export default async function BinPage({
 
   const found = await Promise.all(
     BINNABLE.map(async (spec) => {
-      const columns = ["id", "deleted_at", spec.title, spec.meta, spec.file]
+      const columns = ["id", "deleted_at", spec.title, spec.meta, ...(spec.files ?? [])]
         .filter(Boolean)
         .join(", ");
 
@@ -45,9 +45,14 @@ export default async function BinPage({
         deletedAt: row.deleted_at as string,
         name: (row[spec.title] ?? "").toString().slice(0, 90),
         meta: spec.meta ? (row[spec.meta] ?? "").toString() : "",
-        // Only a photograph and a logo have one, and only they are worth
-        // showing: the rest are words, and the words are the name.
-        picture: spec.file && row[spec.file] ? mediaUrl(row[spec.file] as string) : null,
+        // Only a photograph, a logo and a film have one, and only they are
+        // worth showing: the rest are words, and the words are the name. A film
+        // shows its poster — an mp4 in an <img> is a blank square.
+        picture: (() => {
+          const column = spec.picture ?? spec.files?.[0];
+          const path = column ? row[column] : null;
+          return path ? mediaUrl(path) : null;
+        })(),
       }));
     }),
   );

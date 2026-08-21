@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       .from(spec.table)
       // The columns are named at run time, so the builder's own parser cannot
       // see a shape in the string. Said out loud rather than fought with.
-      .select(spec.file ? `id, ${spec.file}` : "id")
+      .select(["id", ...(spec.files ?? [])].join(", "))
       .not("deleted_at", "is", null)
       .lt("deleted_at", due)
       .returns<Record<string, string | null>[]>();
@@ -74,9 +74,9 @@ export async function GET(request: NextRequest) {
     for (const row of data ?? []) {
       // The file first: nothing points at this row any more, so the only
       // mistake left is deleting the row and paying for the file for ever.
-      const path = spec.file ? row[spec.file] : null;
-      if (path) {
-        const { error: left } = await supabase.storage.from("media").remove([path]);
+      const paths = (spec.files ?? []).map((column) => row[column]).filter(Boolean) as string[];
+      if (paths.length > 0) {
+        const { error: left } = await supabase.storage.from("media").remove(paths);
         if (left) trouble.push(`${spec.table} ${row.id}: the file stayed — ${left.message}`);
       }
 

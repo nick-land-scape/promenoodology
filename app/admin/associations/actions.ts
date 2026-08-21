@@ -117,18 +117,17 @@ export async function deleteAssociation(id: string): Promise<Saved> {
   await requireAdminAction();
   const supabase = await supabaseServer();
 
-  const { data: row } = await supabase
+  /* Into the bin, and the logo stays where it is.
+   *
+   * It used to be taken out of the bucket here, which was right when deleting
+   * was final and is wrong now: a partner put back after a week would have come
+   * back without its logo, which is a restore that restored nothing. The bucket
+   * is swept when the thirty days are up, in bin-actions. */
+  const { error } = await supabase
     .from("associations")
-    .select("logo_path")
-    .eq("id", id)
-    .maybeSingle<{ logo_path: string | null }>();
-
-  const { error } = await supabase.from("associations").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
   if (error) return failed(error);
-
-  if (row?.logo_path?.startsWith("logos/")) {
-    await supabase.storage.from("media").remove([row.logo_path]);
-  }
 
   refreshSite();
   return { ok: true };

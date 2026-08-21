@@ -61,6 +61,15 @@ export const SECTIONS: Section[] = [
   },
 
   {
+    href: "/admin/home",
+    label: "the front page",
+    blurb: "The film behind the logo. One, or several and the page picks.",
+    icon: "film",
+    group: "content",
+    view: "/",
+  },
+
+  {
     href: "/admin/photos",
     label: "archive",
     blurb: "Every photograph: who took it, which year, which story it belongs to.",
