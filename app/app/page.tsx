@@ -1,10 +1,10 @@
 import Link from "next/link";
+import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
 import UpcomingEvents from "@/components/app/UpcomingEvents";
-import { dateParts, weekday, whenItIs } from "@/lib/app-data";
-import { shortDate } from "@/lib/app-data";
+import { dateParts, shortDate, weekday, whenItIs } from "@/lib/app-data";
 import { myBookings, requireMember } from "@/lib/app/me";
-import { getEvents, getNews } from "@/lib/source";
+import { getEvents, getNews, getPage, getResources, getStories } from "@/lib/source";
 
 export const metadata = { title: "Home" };
 
@@ -12,10 +12,24 @@ export const metadata = { title: "Home" };
    everybody's — no cached minute. */
 export const dynamic = "force-dynamic";
 
+/** How many of each thing a front screen can hold without becoming a list. */
+const FEW = { stories: 2, photographs: 6, news: 3 };
+
 export default async function AppHome() {
   const me = await requireMember("/app");
-  const [all, mine, news] = await Promise.all([getEvents(), myBookings(), getNews()]);
-  const asked = new Set(mine.map((booking) => booking.eventId));
+  const [all, mine, news, stories, photos, handbook] = await Promise.all([
+    getEvents(),
+    myBookings(),
+    getNews(),
+    getStories(),
+    getResources(),
+    getPage("handbook"),
+  ]);
+  /* Coming, not merely marked: the front screen says "you are coming" and that
+     should be a promise rather than a bookmark. */
+  const asked = new Set(
+    mine.filter((booking) => booking.state !== "interested").map((booking) => booking.eventId),
+  );
 
   const today = new Date().toISOString().slice(0, 10);
   const events = all
@@ -28,6 +42,18 @@ export default async function AppHome() {
       going: asked.has(event.id),
     }));
   const places = [...new Set(events.map((event) => event.place))].filter(Boolean);
+
+  /* The first heading of the handbook and the paragraph under it — enough to see
+     what kind of thing it is, and not enough to be reading it here. */
+  const blocks = handbook?.blocks ?? [];
+  const firstHeading = blocks.findIndex((block) => block.kind === "heading");
+  const peek =
+    firstHeading >= 0
+      ? {
+          heading: blocks[firstHeading].text,
+          text: blocks.slice(firstHeading + 1).find((block) => block.kind !== "heading")?.text ?? "",
+        }
+      : null;
 
   return (
     <>
@@ -45,7 +71,7 @@ export default async function AppHome() {
           <h2 className="app-h2">latest news</h2>
         </div>
         <ul className="row-list">
-          {news.map((item) => (
+          {news.slice(0, FEW.news).map((item) => (
             <li key={item.date + item.title}>
               <div className="row">
                 <span className="row-body">
@@ -69,17 +95,80 @@ export default async function AppHome() {
         </ul>
       </section>
 
-      <section className="band">
-        <h2>Everyone is a member</h2>
-        <p>
-          There is no list to get on and nothing to pay. Turn up once, cook something, and you are
-          part of it.
-        </p>
-        <Link className="pill" href="/app/events">
-          find something to join
-        </Link>
-      </section>
+      {/* Three ways into what has already happened. A front screen should offer
+          the club as it is *and* the club as it has been — the reading was buried
+          a tab away, and a tab nobody opens is a tab nobody knows about. */}
+      {stories.length > 0 ? (
+        <section className="app-section">
+          <div className="app-section-head">
+            <h2 className="app-h2">what we have done</h2>
+            <Link className="app-more" href="/app/read">
+              all {stories.length} ›
+            </Link>
+          </div>
+          <ul className="peek-stories">
+            {stories.slice(0, FEW.stories).map((story) => (
+              <li key={story.slug}>
+                <Link href={`/app/read/${story.slug}`}>
+                  {story.cover ? (
+                    <span className="peek-cover">
+                      <Photo src={story.cover.src} alt="" fill sizes="46vw" />
+                    </span>
+                  ) : null}
+                  <span className="peek-title">{story.title}</span>
+                  <span className="row-meta">{[story.where, story.when].filter(Boolean).join(" · ")}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
+      {photos.length > 0 ? (
+        <section className="app-section">
+          <div className="app-section-head">
+            <h2 className="app-h2">the archive</h2>
+            <Link className="app-more" href="/app/read?of=archive">
+              all {photos.length} ›
+            </Link>
+          </div>
+          <ul className="peek-photos">
+            {photos.slice(0, FEW.photographs).map((photo) => (
+              <li key={photo.photo.src}>
+                <Link href="/app/read?of=archive">
+                  <Photo
+                    src={photo.photo.src}
+                    alt=""
+                    width={photo.photo.width}
+                    height={photo.photo.height}
+                    sizes="33vw"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {peek ? (
+        <section className="app-section">
+          <div className="app-section-head">
+            <h2 className="app-h2">the handbook</h2>
+            <Link className="app-more" href="/app/read?of=handbook">
+              read it ›
+            </Link>
+          </div>
+          <Link className="peek-book" href="/app/read?of=handbook">
+            <span className="peek-book-no" aria-hidden="true">
+              01
+            </span>
+            <span>
+              <strong>{peek.heading}</strong>
+              <span className="peek-book-text">{peek.text}</span>
+            </span>
+          </Link>
+        </section>
+      ) : null}
     </>
   );
 }

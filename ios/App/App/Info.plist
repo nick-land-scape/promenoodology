@@ -34,6 +34,19 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<!--
+	  An iPad is held whichever way up somebody is holding it, and the reviewer's
+	  was landscape — the app it rejected before this one was reviewed on an iPad
+	  Air. The screens are a centred column with a hard maximum width, so every
+	  orientation is the same app with more paper around it.
+	-->
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 

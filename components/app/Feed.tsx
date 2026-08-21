@@ -213,50 +213,45 @@ function Composer({ meName }: { meName: string }) {
   /* Anything typed, chosen or named. While there is, the thing stays open: no
      amount of tidying is worth folding away something somebody has written. */
   const started = Boolean(words.trim() || place.trim() || paths.length > 0);
-
-  if (!open && !started) {
-    return (
-      <button
-        type="button"
-        className="compose compose-shut"
-        onClick={() => {
-          setOpen(true);
-          // Straight into the words: opening it is asking to write.
-          window.setTimeout(() => words_.current?.focus(), 40);
-        }}
-      >
-        <span className="avatar" aria-hidden="true">
-          {initials(meName) || "you"}
-        </span>
-        <span className="compose-shut-say">say something to everyone…</span>
-        <span className="compose-shut-mark" aria-hidden="true">
-          +
-        </span>
-      </button>
-    );
-  }
+  const shut = !open && !started;
 
   /* Three shapes, so nothing is mistaken for anything else: a round button with
      a camera in it adds pictures, a line with a pin on it is where you were, and
      the one filled pill posts. It was two identical grey pills side by side
      labelled PICTURES and POST. */
+  /*
+   * The field is always here, and that is the fix rather than the tidiness.
+   *
+   * Shut, this used to be a button that opened the real composer and then focused
+   * it — and on iOS a field focused by code rather than by a finger gets the caret
+   * and no keyboard. The keyboard only comes up for a touch that lands on a field
+   * that already exists. So the field exists, shut is one line of it, and tapping
+   * it is a touch on a real field: the keyboard comes up because iOS was asked by
+   * a finger.
+   */
   return (
-    <div className="compose">
+    <div className={shut ? "compose compose-shut" : "compose"}>
       <div className="compose-top">
         <span className="avatar" aria-hidden="true">
           {initials(meName) || "you"}
         </span>
         <textarea
           ref={words_}
-          rows={3}
+          rows={shut ? 1 : 3}
           value={words}
           onChange={(change) => setWords(change.target.value)}
+          onFocus={() => setOpen(true)}
           placeholder="say something to everyone…"
           aria-label="Write a post"
         />
+        {shut ? (
+          <span className="compose-shut-mark" aria-hidden="true">
+            +
+          </span>
+        ) : null}
       </div>
 
-      {paths.length > 0 ? (
+      {!shut && paths.length > 0 ? (
         <ul className="compose-pics">
           {paths.map((path) => (
             <li key={path}>
@@ -273,7 +268,7 @@ function Composer({ meName }: { meName: string }) {
         </ul>
       ) : null}
 
-      <div className="compose-foot">
+      <div className="compose-foot" hidden={shut}>
         <input
           ref={file}
           type="file"

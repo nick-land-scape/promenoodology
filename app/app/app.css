@@ -2,6 +2,14 @@
    simply keeps its column on a bigger screen. Same paper, same type, same
    plainness as the website — no shadows, no gradients, hairlines only. */
 
+/* The website keeps room at the foot of every page on a phone for its own menu
+   bar. The app has its own bar and its own room for it, so the website's ninety-two
+   pixels were a hand's width of nothing under every screen — which is what "so
+   much space below" was. */
+body:has(.app-shell) {
+  padding-bottom: 0;
+}
+
 .app-shell {
   --gutter: 18px;
   --hair: rgba(0, 0, 0, 0.14);
@@ -26,6 +34,30 @@
     border-left-color: var(--hair);
     border-right-color: var(--hair);
     min-height: 100vh;
+  }
+
+  /*
+   * And the bar stops being the width of the room.
+   *
+   * On an iPad — which is what the reviewer picked up last time — a bar of five
+   * tabs stretched across a thousand points has the tabs at the edges and a
+   * hand's width of nothing in the middle. Held to the column, it reads as the
+   * bottom of the app rather than the bottom of the window.
+   */
+  .tabbar {
+    left: 50%;
+    right: auto;
+    width: 100%;
+    max-width: 562px;
+    transform: translateX(-50%);
+    border-left: 1px solid var(--hair);
+    border-right: 1px solid var(--hair);
+  }
+
+  /* The door is a screen rather than a column, so it centres on its own terms. */
+  .doorway {
+    max-width: 30rem;
+    margin: 0 auto;
   }
 }
 
@@ -92,6 +124,24 @@
 
 .app-section + .app-section {
   padding-top: 26px;
+}
+
+/* The last thing on a screen ends where it ends.
+ *
+ * Every section reserves room underneath itself for whatever comes next, and the
+ * last one has nothing coming — so every screen finished with a stretch of empty
+ * paper above the tab bar that read as something failing to load. */
+.app-column > *:last-child > .app-section:last-child,
+.app-column > *:last-child > form.app-section:last-child {
+  padding-bottom: 0;
+}
+
+/* Inside a section, the row of places sits under the heading rather than above
+   the whole screen. */
+.app-section > .app-scroll {
+  margin: 0 calc(var(--gutter) * -1) 4px;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
 }
 
 .app-section-head {
@@ -535,32 +585,18 @@
   border-bottom: 1px solid var(--hair);
 }
 
-/* Shut: one line saying what it is for. Everything else appears on the first
-   touch, so the top of the feed is not four empty fields. */
-.compose-shut {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  border-left: 0;
-  border-right: 0;
-  border-top: 0;
-  background: none;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.compose-shut-say {
-  flex: 1;
-  min-width: 0;
-  color: var(--muted);
-  font-style: italic;
+/* Shut: one line, and the line is the field itself rather than a button that
+   opens one — see the note in Feed. Everything else appears on the first touch, so
+   the top of the feed is not four empty fields. */
+.compose-shut .compose-top textarea {
+  height: 38px;
+  padding-top: 9px;
+  border-bottom-color: transparent;
 }
 
 .compose-shut-mark {
   flex: none;
+  align-self: center;
   display: grid;
   place-items: center;
   width: 30px;
@@ -2204,4 +2240,340 @@
   .doorway-go {
     transition: none;
   }
+}
+
+/* ------------------------------------------------------- a look at the rest
+
+   Three previews on the front screen: what we have done, the archive, and the
+   first page of the handbook. Enough to see what kind of thing each one is, and
+   not enough to be reading it here. */
+
+.peek-stories {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.peek-stories a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.peek-cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 7px;
+  overflow: hidden;
+}
+
+.peek-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.peek-title {
+  display: block;
+  font-size: 1.02rem;
+  line-height: 1.2;
+}
+
+.peek-photos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.peek-photos li {
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.peek-photos img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* The first page of the handbook, set the way the handbook sets it: a number in
+   small capitals, the heading, and as much of the words as fits in three lines. */
+.peek-book {
+  display: flex;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.peek-book-no {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--purple);
+  padding-top: 3px;
+}
+
+.peek-book strong {
+  display: block;
+  font-weight: normal;
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.peek-book-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding-top: 4px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* The parts of a waiting screen, at the sizes the real screens use. */
+.waiting-part {
+  padding: 22px var(--gutter) 10px;
+}
+
+.waiting-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.waiting-chips {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  overflow: hidden;
+}
+
+.waiting-switcher {
+  display: flex;
+  gap: 6px;
+  padding: 14px var(--gutter) 6px;
+}
+
+.waiting-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 34px;
+}
+
+.waiting-covers,
+.waiting-grid {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.waiting-covers {
+  grid-template-columns: 1fr 1fr;
+}
+
+.waiting-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.waiting-story {
+  padding-bottom: 18px;
+}
+
+.waiting-story-words {
+  display: block;
+  padding: 10px var(--gutter) 0;
+}
+
+.waiting-post {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.waiting-card {
+  padding: 18px var(--gutter) 6px;
+}
+
+.waiting-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px var(--gutter) 0;
+}
+
+/* ------------------------------------------------------------------ a month */
+
+/* A month, for the question a list cannot answer: am I free on the fourteenth. */
+.month {
+  padding: 6px var(--gutter) 0;
+}
+
+.month-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+}
+
+.month-head strong {
+  font-weight: normal;
+  font-size: 1.15rem;
+}
+
+.month-head button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: inherit;
+}
+
+.month-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  padding-bottom: 4px;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--muted);
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+/* A day with nothing on it is not a button. Thirty squares that all invite a tap
+   and thirty answers of "nothing" is thirty wasted taps. */
+.month-day {
+  position: relative;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  opacity: 0.45;
+}
+
+.month-day-on {
+  opacity: 1;
+  color: var(--ink);
+  background: rgba(139, 63, 255, 0.08);
+}
+
+/* The mark under a day with something on it. */
+.month-day em {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 999px;
+  background: var(--purple);
+}
+
+.month-day-today {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.month-day-chosen {
+  background: var(--purple);
+  color: #fff;
+}
+
+.month-day-chosen em {
+  background: #fff;
+}
+
+/* -------------------------------------------------------- marking an evening */
+
+/* The row's own controls.
+ *
+ * Not beside the words: a bookmark and a "count me in" together are a hundred and
+ * fifty pixels, and on a phone that leaves the title breaking after "long table
+ * no." — so they take a line of their own, at the right, under what they are
+ * about. */
+.row:has(.row-does) {
+  flex-wrap: wrap;
+}
+
+.row-does {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  padding-top: 4px;
+}
+
+/* With room, they go back beside the words where they started. */
+@media (min-width: 430px) {
+  .row-does {
+    width: auto;
+    flex: none;
+    padding-top: 0;
+  }
+}
+
+/* A bookmark: no promise, no number, nothing sent to anybody. */
+.mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+}
+
+.mark svg {
+  width: 17px;
+  height: 17px;
+}
+
+.mark-on {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.mark:active {
+  transform: scale(0.92);
+}
+
+/* On your list, which is quieter than coming. */
+.row-maybe {
+  display: block;
+  padding-top: 2px;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
 }

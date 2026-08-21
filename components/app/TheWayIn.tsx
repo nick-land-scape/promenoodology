@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { appleSheet, buzz, inTheApp, whichPhone } from "@/lib/native";
+import { useRef, useState } from "react";
+import { appleSheet, buzz } from "@/lib/native";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 const CODE_LENGTH = 8;
@@ -41,17 +41,10 @@ export default function TheWayIn({ back }: { back: string }) {
   const [joining, setJoining] = useState(false);
   const [email, setEmail] = useState("");
   const [digits, setDigits] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState<"" | "apple" | "code" | "in">("");
   const [trouble, setTrouble] = useState("");
   const [said, setSaid] = useState("");
   const codeField = useRef<HTMLInputElement>(null);
-
-  const [onAPhone, setOnAPhone] = useState(false);
-  useEffect(() => {
-    setOnAPhone(inTheApp());
-  }, []);
 
   /** In. Everything below ends here. */
   function arrived() {
@@ -141,6 +134,20 @@ export default function TheWayIn({ back }: { back: string }) {
     setBusy("");
 
     if (error) {
+      /* Too many codes in an hour, and Supabase's own sender is stingy about it.
+       *
+       * Going no further would be wrong twice over: anybody who already has a code
+       * from five minutes ago can still use it, and the review account's standing
+       * code does not depend on an email having been sent at all. So the code step
+       * opens anyway and says what happened. */
+      if (/rate limit|too many|security purposes|after \d+ seconds/i.test(error.message)) {
+        setSaid(
+          "No new code just yet — too many have been asked for. If you already have one, it still works.",
+        );
+        setStep("code");
+        window.setTimeout(() => codeField.current?.focus(), 120);
+        return;
+      }
       setTrouble(friendly(error.message, joining));
       return;
     }
@@ -152,33 +159,48 @@ export default function TheWayIn({ back }: { back: string }) {
   async function withTheCode(code: string) {
     setTrouble("");
     setBusy("in");
-    const { error } = await supabase.auth.verifyOtp({
-      email: email.trim().toLowerCase(),
-      token: code,
-      type: "email",
-    });
-    if (error) {
-      setBusy("");
-      setDigits("");
-      setTrouble(friendly(error.message, joining));
-      return;
-    }
-    arrived();
-  }
+    const address = email.trim().toLowerCase();
 
-  async function withAPassword() {
-    setTrouble("");
-    setBusy("in");
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
-    if (error) {
-      setBusy("");
-      setTrouble(error.message);
+    const { error } = await supabase.auth.verifyOtp({ email: address, token: code, type: "email" });
+    if (!error) {
+      arrived();
       return;
     }
-    arrived();
+
+    /* Refused. One more thing to try before saying no: the standing code.
+     *
+     * Both app stores have to sign in to review an app with a login on it, and
+     * this login has no passwords — a code goes to an inbox and a reviewer has no
+     * inbox here. Apple rejected this project's sibling app for exactly that and
+     * offered three ways out; this is the second of them, a code that does not
+     * change, for one account.
+     *
+     * It is asked *after* the ordinary code has failed, so it costs nobody
+     * anything and there is nothing on this screen to find: no extra field, no
+     * hidden gesture, no "sign in as reviewer" for somebody to wonder about. The
+     * function it asks answers the same way to every wrong guess, slowly.
+     *
+     * What comes back is an ordinary one-time link, traded in the ordinary way. */
+    const { data, error: refused } = await supabase.functions.invoke("review-sign-in", {
+      method: "POST",
+      body: { email: address, code },
+    });
+    const standing = data as { ok?: boolean; token?: string } | null;
+
+    if (!refused && standing?.ok && standing.token) {
+      const { error: stillNo } = await supabase.auth.verifyOtp({
+        token_hash: standing.token,
+        type: "magiclink",
+      });
+      if (!stillNo) {
+        arrived();
+        return;
+      }
+    }
+
+    setBusy("");
+    setDigits("");
+    setTrouble(friendly(error.message, joining));
   }
 
   return (
@@ -190,31 +212,6 @@ export default function TheWayIn({ back }: { back: string }) {
       {step === "choose" ? (
         <>
           <h1>{joining ? "join us" : "welcome back"}</h1>
-          <p className="doorway-said">
-            {joining
-              ? "There is no list to get on and nothing to pay. An address, one code, and you are one of us."
-              : "No passwords here. A code to your inbox, or Apple."}
-          </p>
-
-          {/* Apple first on an Apple phone, because it is one press. */}
-          {(onAPhone && whichPhone() === "ios") || !onAPhone ? (
-            <button
-              type="button"
-              className="doorway-apple"
-              onClick={() => void withApple()}
-              disabled={busy !== ""}
-            >
-              <svg viewBox="0 0 18 22" aria-hidden="true">
-                <path
-                  fill="currentColor"
-                  d="M14.9 11.6c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7 1.4 0 1.8.8 3 .7 1.2 0 2-1.1 2.8-2.2.6-.9.9-1.7 1.1-2.2-2.3-.9-2.3-3.4-2.3-3.4zM12.4 4.3c.6-.8 1-1.9.9-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2.1-.5 2.8-1.3z"
-                />
-              </svg>
-              {busy === "apple" ? "asking Apple…" : joining ? "Sign up with Apple" : "Sign in with Apple"}
-            </button>
-          ) : null}
-
-          <p className="doorway-or">or</p>
 
           <label className="doorway-field">
             <span>your email</span>
@@ -234,36 +231,33 @@ export default function TheWayIn({ back }: { back: string }) {
             />
           </label>
 
-          {showPassword ? (
-            <label className="doorway-field">
-              <span>password</span>
-              <input
-                type="password"
-                autoComplete="current-password"
-                enterKeyHint="go"
-                value={password}
-                onChange={(change) => setPassword(change.target.value)}
-                onKeyDown={(key) => {
-                  if (key.key === "Enter") void withAPassword();
-                }}
-                placeholder="for the review account"
-              />
-            </label>
-          ) : null}
-
           <button
             type="button"
             className="doorway-go"
-            onClick={() => void (showPassword ? withAPassword() : askForACode())}
+            onClick={() => void askForACode()}
             disabled={busy !== "" || !email.trim()}
           >
-            {busy === "code"
-              ? "sending…"
-              : busy === "in"
-                ? "letting you in…"
-                : showPassword
-                  ? "sign in"
-                  : "send me a code"}
+            {busy === "code" ? "sending…" : busy === "in" ? "letting you in…" : "send me a code"}
+          </button>
+
+          {/* Apple under the code, not over it: the code is the way in for
+              everybody, and this is the way in for whoever would rather not type
+              an address. */}
+          <p className="doorway-or">or</p>
+
+          <button
+            type="button"
+            className="doorway-apple"
+            onClick={() => void withApple()}
+            disabled={busy !== ""}
+          >
+            <svg viewBox="0 0 18 22" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M14.9 11.6c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7 1.4 0 1.8.8 3 .7 1.2 0 2-1.1 2.8-2.2.6-.9.9-1.7 1.1-2.2-2.3-.9-2.3-3.4-2.3-3.4zM12.4 4.3c.6-.8 1-1.9.9-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2.1-.5 2.8-1.3z"
+              />
+            </svg>
+            {busy === "apple" ? "asking Apple…" : joining ? "Sign up with Apple" : "Sign in with Apple"}
           </button>
 
           {trouble ? <p className="doorway-trouble">{trouble}</p> : null}
@@ -271,15 +265,6 @@ export default function TheWayIn({ back }: { back: string }) {
           <div className="doorway-feet">
             <button type="button" onClick={() => { setJoining(!joining); setTrouble(""); }}>
               {joining ? "I have been here before" : "I have no account yet"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowPassword(!showPassword);
-                setTrouble("");
-              }}
-            >
-              {showPassword ? "use a code instead" : "sign in with a password"}
             </button>
           </div>
         </>

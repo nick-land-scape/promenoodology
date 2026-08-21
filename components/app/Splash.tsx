@@ -97,18 +97,44 @@ export default function Splash({ films }: { films: Film[] }) {
     }
   }, [films.length]);
 
-  /* When to leave. Two clocks: one that waits for the film and one that refuses
-     to wait for ever. Whichever comes first starts the fade. */
+  /*
+   * When to leave.
+   *
+   * Not on a clock alone. The screen behind this is fetched from the server, and
+   * leaving before it has arrived shows the skeleton — so the app opened with a
+   * curtain, a flash of grey blocks, and then the app. Three states where there
+   * should have been one.
+   *
+   * So it waits for something real to be there: a header, or the door. Bounded at
+   * both ends, because neither extreme is acceptable — never less than long
+   * enough to see (900ms), never more than three seconds however slow the line is.
+   */
   useEffect(() => {
     if (show !== true) return;
 
-    const patience = window.setTimeout(() => setGoing(true), 2500);
-    const enough = rolling ? window.setTimeout(() => setGoing(true), 1400) : 0;
-    return () => {
-      window.clearTimeout(patience);
-      if (enough) window.clearTimeout(enough);
+    const ready = () =>
+      Boolean(
+        document.querySelector(".app-column .app-header") ||
+          document.querySelector(".app-column .doorway"),
+      );
+
+    const earliest = 900;
+    const latest = 3000;
+    const from = performance.now();
+
+    let watching = 0;
+    const look = () => {
+      const waited = performance.now() - from;
+      if (waited >= latest || (waited >= earliest && ready())) {
+        setGoing(true);
+        return;
+      }
+      watching = window.setTimeout(look, 90);
     };
-  }, [show, rolling]);
+    watching = window.setTimeout(look, earliest);
+
+    return () => window.clearTimeout(watching);
+  }, [show]);
 
   useEffect(() => {
     if (!going) return;

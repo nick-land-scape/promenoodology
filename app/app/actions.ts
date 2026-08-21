@@ -17,7 +17,11 @@ import { whoIsThis } from "@/lib/app/me";
  * the first one instead of failing on a constraint nobody should ever see.
  */
 
-export type Asked = { ok: boolean; error?: string; state?: "asked" | "kept" | "declined" };
+export type Asked = {
+  ok: boolean;
+  error?: string;
+  state?: "interested" | "asked" | "kept" | "declined";
+};
 
 const MOST = 12;
 
@@ -70,6 +74,52 @@ export async function signUpForEvent(
   revalidatePath("/app/events");
   revalidatePath("/app/account");
   return { ok: true, state: "asked" };
+}
+
+/**
+ * Marking an evening to think about.
+ *
+ * A bookmark rather than a promise, and it shares the row that a place would use:
+ * it is the same fact about the same person and the same evening at a different
+ * strength, so somebody who marks one and then comes has one row that changed its
+ * mind rather than two rows disagreeing.
+ *
+ * Pressing it again takes the mark off. Pressing "count me in" over it turns the
+ * maybe into a yes, and the number of places asked for starts counting it.
+ */
+export async function markInterested(eventId: string, on: boolean): Promise<Asked> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const supabase = await supabaseServer();
+
+  if (!on) {
+    const { error } = await supabase
+      .from("bookings")
+      .delete()
+      .eq("event_id", eventId)
+      .eq("profile_id", me.id)
+      .eq("state", "interested");
+    if (error) return { ok: false, error: error.message };
+  } else {
+    const { error } = await supabase.from("bookings").upsert(
+      {
+        event_id: eventId,
+        profile_id: me.id,
+        // One, because it is not a number of places yet.
+        people: 1,
+        bringing: "",
+        state: "interested",
+      },
+      { onConflict: "event_id,profile_id" },
+    );
+    if (error) return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/app");
+  revalidatePath("/app/events");
+  revalidatePath("/app/account");
+  return { ok: true, state: on ? "interested" : undefined };
 }
 
 export async function cancelMyPlace(eventId: string): Promise<Asked> {

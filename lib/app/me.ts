@@ -33,7 +33,8 @@ export type MyBooking = {
   eventId: string;
   people: number;
   bringing: string;
-  state: "asked" | "kept" | "declined";
+  /** interested = a bookmark; asked = coming; kept/declined = our answer. */
+  state: "interested" | "asked" | "kept" | "declined";
 };
 
 export async function whoIsThis(): Promise<Me | null> {

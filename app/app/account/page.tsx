@@ -37,7 +37,11 @@ export default async function AccountPage() {
   ]);
 
   const byId = new Map(events.map((event) => [event.id, event]));
+  /* Only the promises. A bookmark is on your list, not on your word — and
+     counting the two together made "you said yes to 6" out of one yes and five
+     maybes. */
   const yes = mine
+    .filter((booking) => booking.state !== "interested")
     .map((booking) => ({ booking, event: byId.get(booking.eventId) }))
     .filter((pair) => Boolean(pair.event))
     .sort((a, b) => (a.event?.date ?? "").localeCompare(b.event?.date ?? ""));

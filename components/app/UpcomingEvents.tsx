@@ -24,28 +24,6 @@ export default function UpcomingEvents({ events, places }: Props) {
 
   return (
     <>
-      <div className="app-scroll" role="group" aria-label="Filter by place">
-        <button
-          type="button"
-          className="chip"
-          aria-pressed={place === null}
-          onClick={() => setPlace(null)}
-        >
-          everywhere
-        </button>
-        {places.map((name) => (
-          <button
-            key={name}
-            type="button"
-            className="chip"
-            aria-pressed={place === name}
-            onClick={() => setPlace(name)}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
-
       <div className="app-section">
         <div className="app-section-head">
           <h2 className="app-h2">what is coming up</h2>
@@ -53,6 +31,38 @@ export default function UpcomingEvents({ events, places }: Props) {
             {shown.length} {shown.length === 1 ? "event" : "events"}
           </span>
         </div>
+
+        {/*
+         * The places, under the heading they belong to.
+         *
+         * They were the first thing on the screen, above everything, which made
+         * them look like they governed the whole of it — and they govern six
+         * evenings. Under this heading it is obvious what they narrow down, and
+         * only shown when there is more than one place to choose between.
+         */}
+        {places.length > 1 ? (
+          <div className="app-scroll" role="group" aria-label="Which place">
+            <button
+              type="button"
+              className="chip"
+              aria-pressed={place === null}
+              onClick={() => setPlace(null)}
+            >
+              everywhere
+            </button>
+            {places.map((name) => (
+              <button
+                key={name}
+                type="button"
+                className="chip"
+                aria-pressed={place === name}
+                onClick={() => setPlace(name)}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        ) : null}
 
         {shown.length === 0 ? (
           <p className="app-note">Nothing here yet. Try everywhere.</p>
