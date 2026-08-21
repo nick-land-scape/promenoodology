@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 import { useKnock } from "@/lib/knock";
+import DarkSwitch from "./DarkSwitch";
 import Photo from "./Photo";
 import { SessionButton } from "./SessionLink";
 
@@ -64,8 +65,22 @@ export default function Nav({
             are — two links to the same place is one link too many. */}
       </div>
 
-      {/* Top right on a phone, last line of the menu on a wide screen. */}
+      {/*
+       * Top right on a phone, last line of the menu on a wide screen.
+       *
+       * "Make it dark" is in here rather than in the layout, and it has to be:
+       * on a phone it sits to the left of this, and what is to its right is
+       * sometimes a 34-pixel face and sometimes a hundred-pixel NEWSLETTER
+       * button. Positioned against a guessed width it landed on top of the
+       * button for everybody who was not signed in. In the same row, the row
+       * does the arithmetic.
+       *
+       * On a wide screen it is still the floating thing in the bottom corner —
+       * where an element sits in the markup and where it is drawn are different
+       * questions, and CSS answers the second one.
+       */}
       <div className="nav-session">
+        <DarkSwitch />
         <SessionButton />
       </div>
     </nav>

@@ -1,5 +1,4 @@
 import Contact from "@/components/Contact";
-import DarkSwitch from "@/components/DarkSwitch";
 import TopBar from "@/components/TopBar";
 import Nav from "@/components/Nav";
 import { getMenu } from "@/lib/site-pages";
@@ -17,9 +16,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <TopBar />
       {children}
       <Contact />
-      {/* Bottom right, out of the way of everything: it is a preference about
-          the screen rather than a part of the site's own furniture. */}
-      <DarkSwitch />
+      {/* "Make it dark" lives in the menu's own session row now — see the note
+          in Nav. It is still drawn in the bottom corner on a wide screen. */}
     </>
   );
 }
