@@ -719,16 +719,26 @@ body:has(.app-shell) {
   border: 1px solid var(--ink);
   /* A card has corners. Small — this is a printed card, not a phone icon. */
   border-radius: 10px;
+  isolation: isolate;
   /* Dragging on the card tilts it and does nothing else. Without this a drag up
      or down tilts it *and* scrolls the page underneath, which feels like the card
      is fighting you. Anywhere else on the screen still scrolls normally. */
   touch-action: none;
-  /* Not flat paper: a sheen across the face, brightest at the top left, so the
-     card reads as something with a surface. The glare the library draws moves
-     over the top of this. */
+  /* Not flat paper. Three layers, and each one is doing something: a hard
+     highlight down the top left, a wash of the club's purple coming up from the
+     bottom right, and a fine diagonal grain that makes the surface read as
+     something pressed rather than printed. The glare the tilt library draws moves
+     over the top of all of it. */
   background:
-    linear-gradient(148deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 42%),
-    linear-gradient(210deg, rgba(139, 63, 255, 0.07), rgba(139, 63, 255, 0) 46%),
+    linear-gradient(148deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0) 44%),
+    linear-gradient(210deg, rgba(139, 63, 255, 0.09), rgba(139, 63, 255, 0) 48%),
+    repeating-linear-gradient(
+      112deg,
+      rgba(0, 0, 0, 0.028) 0px,
+      rgba(0, 0, 0, 0.028) 1px,
+      rgba(255, 255, 255, 0.05) 2px,
+      rgba(255, 255, 255, 0.05) 4px
+    ),
     var(--paper);
   cursor: pointer;
   -webkit-user-select: none;
@@ -752,6 +762,62 @@ body:has(.app-shell) {
   /* Above the glare sheet, so the ink is lit rather than washed out. */
   position: relative;
   z-index: 2;
+}
+
+/*
+ * The light that crosses it by itself.
+ *
+ * A card you can tilt is a nice thing that nobody discovers, because pressing a
+ * membership card is not a thing anybody thinks to try. This is the hint: a band
+ * of light travels across the face every eight seconds, which is what a laminated
+ * card does when you move under a lamp — and something that catches the light is
+ * something you are more likely to pick up.
+ *
+ * Deliberately not a nag. Eight seconds apart, a second and a half to cross, and
+ * gone entirely for anybody who has asked for less movement.
+ */
+.member-card-metal {
+  position: absolute;
+  inset: -30% -60%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    104deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.14) 46%,
+    rgba(255, 255, 255, 0.75) 50%,
+    rgba(255, 255, 255, 0.14) 54%,
+    transparent 62%
+  );
+  mix-blend-mode: overlay;
+  transform: translateX(-42%);
+  animation: member-metal 8s cubic-bezier(0.5, 0, 0.5, 1) 2s infinite;
+}
+
+@keyframes member-metal {
+  0% {
+    transform: translateX(-42%);
+  }
+  /* The crossing takes a fifth of the cycle; the rest is the card sitting still. */
+  20% {
+    transform: translateX(42%);
+  }
+  100% {
+    transform: translateX(42%);
+  }
+}
+
+/* While it is being held, the moving light stops: what is in your hand should
+   answer your hand, not a timer. */
+.member-card-lifted .member-card-metal {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .member-card-metal {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 .member-card-top {
@@ -2576,4 +2642,9 @@ body:has(.app-shell) {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+/* A row of chips that starts at the page's edge rather than inside a section. */
+.app-scroll-flush {
+  padding: 0 var(--gutter) 10px;
 }

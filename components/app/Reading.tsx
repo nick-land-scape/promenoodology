@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Lightbox from "../Lightbox";
 import Photo from "../Photo";
 
@@ -30,15 +30,45 @@ export default function Reading({
   stories,
   photos,
   handbook,
+  openAt,
 }: {
   stories: Told[];
   photos: Shot[];
   handbook: Book;
+  /** Which view to open on, when something linked straight to one. */
+  openAt?: "stories" | "archive" | "handbook";
 }) {
-  const [view, setView] = useState<"stories" | "archive" | "handbook">("stories");
+  const [view, setView] = useState<"stories" | "archive" | "handbook">(openAt ?? "stories");
   /* Which photograph is open. An index rather than the photograph itself, so the
      arrows have somewhere to go. */
   const [at, setAt] = useState<number | null>(null);
+
+  /* The archive's own two filters, the same two the website has: a year, and a
+     shuffle. The wall is for wandering, so it is shuffled to begin with — the
+     order the files happened to arrive in is not a thought anybody had about a
+     wall. As chips rather than a row of text buttons, because this is a thumb.
+   */
+  const [year, setYear] = useState<string | null>(null);
+  const [shuffle, setShuffle] = useState(1);
+
+  const years = useMemo(
+    () => [...new Set(photos.map((photo) => photo.year).filter(Boolean))].sort().reverse(),
+    [photos],
+  );
+
+  const wall = useMemo(() => {
+    const chosen = photos.filter((photo) => !year || photo.year === year);
+    /* Shuffled from a number that only changes when somebody asks, so a rebuild
+       of the screen does not reshuffle under them. */
+    const order = [...chosen];
+    let seed = shuffle * 9301 + 49297;
+    for (let index = order.length - 1; index > 0; index -= 1) {
+      seed = (seed * 9301 + 49297) % 233280;
+      const swap = Math.floor((seed / 233280) * (index + 1));
+      [order[index], order[swap]] = [order[swap], order[index]];
+    }
+    return order;
+  }, [photos, year, shuffle]);
 
   return (
     <>
@@ -83,10 +113,36 @@ export default function Reading({
         <>
           <div className="app-section-head" style={{ padding: "14px var(--gutter) 8px" }}>
             <h2 className="app-h2">every photograph</h2>
-            <span className="app-label">{photos.length}</span>
+            <span className="app-label">{wall.length}</span>
           </div>
+
+          <div className="app-scroll app-scroll-flush" role="group" aria-label="Which year">
+            <button type="button" className="chip" onClick={() => setShuffle((n) => n + 1)}>
+              shuffle
+            </button>
+            <button
+              type="button"
+              className="chip"
+              aria-pressed={year === null}
+              onClick={() => setYear(null)}
+            >
+              every year
+            </button>
+            {years.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className="chip"
+                aria-pressed={year === value}
+                onClick={() => setYear((current) => (current === value ? null : value))}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+
           <ul className="mine-grid">
-            {photos.map((photo, index) => (
+            {wall.map((photo, index) => (
               <li key={photo.src}>
                 <button type="button" onClick={() => setAt(index)} aria-label="Open">
                   <Photo src={photo.src} alt="" width={photo.width} height={photo.height} sizes="33vw" />
@@ -124,7 +180,7 @@ export default function Reading({
           here would be a copy that drifts. */}
       {at !== null ? (
         <Lightbox
-          slides={photos.map((photo) => ({
+          slides={wall.map((photo) => ({
             key: photo.src,
             photo: { src: photo.src, width: photo.width, height: photo.height },
             caption: [photo.credit, photo.year].filter(Boolean).join(" · "),

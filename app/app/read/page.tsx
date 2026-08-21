@@ -20,8 +20,16 @@ export const revalidate = 60;
  * One tab rather than three. Five is the most a phone's bar can hold, and these
  * three are one activity: reading rather than turning up.
  */
-export default async function ReadPage() {
+export default async function ReadPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ of?: string }>;
+}) {
   await requireMember("/app/read");
+  /* Which of the three to open on, so a preview on the front screen lands where
+     it was pointing rather than on the first tab. */
+  const { of } = await searchParams;
+  const openAt = of === "archive" || of === "handbook" ? of : "stories";
 
   const [stories, photos, handbook] = await Promise.all([
     getStories(),
@@ -33,6 +41,7 @@ export default async function ReadPage() {
     <>
       <AppHeader eyebrow="read" title="what we have done" />
       <Reading
+        openAt={openAt}
         stories={stories.map((story) => ({
           slug: story.slug,
           title: story.title,

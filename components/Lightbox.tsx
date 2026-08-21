@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Photo from "./Photo";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Slide } from "@/lib/content";
 
 type Props = {
@@ -76,6 +76,15 @@ export default function Lightbox({ slides, index, onIndex, onClose, storyOf }: P
 
   if (!slide) return null;
 
+  /* Swiping.
+   *
+   * Arrows are for a mouse. On a phone the way through a set of photographs is a
+   * thumb, and a lightbox that ignores one feels like a web page — which is what
+   * it was. Horizontal only, and only past a distance no accidental drag covers:
+   * a vertical swipe still belongs to the page underneath.
+   */
+  const from = useRef<{ x: number; y: number } | null>(null);
+
   return (
     <div
       className="lightbox"
@@ -83,6 +92,21 @@ export default function Lightbox({ slides, index, onIndex, onClose, storyOf }: P
       aria-modal="true"
       aria-label={slide.caption}
       onClick={onClose}
+      onTouchStart={(touch) => {
+        const one = touch.touches[0];
+        from.current = { x: one.clientX, y: one.clientY };
+      }}
+      onTouchEnd={(touch) => {
+        const start = from.current;
+        from.current = null;
+        if (!start || !many) return;
+        const one = touch.changedTouches[0];
+        const across = one.clientX - start.x;
+        const down = one.clientY - start.y;
+        // A swipe, not a scroll and not a tap.
+        if (Math.abs(across) < 45 || Math.abs(across) < Math.abs(down)) return;
+        step(across < 0 ? 1 : -1);
+      }}
     >
       {/* The frame is exactly the size of the photo, so the photo itself ends up
           in the middle of the screen; everything else hangs off its corners.
@@ -114,12 +138,34 @@ export default function Lightbox({ slides, index, onIndex, onClose, storyOf }: P
           close ×
         </button>
 
+        {/* Top left, with the arrow every download in the world has.
+            It was a text button buried at the end of the caption, which is a
+            sentence about who took the photograph — so the one thing on the screen
+            that does something was reading as part of a credit. */}
+        <button
+          type="button"
+          className="lightbox-save"
+          onClick={() => void save()}
+          title="Save this photograph"
+          aria-label="Save this photograph"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 4v11m0 0 4.5-4.5M12 15l-4.5-4.5M4.5 19.5h15"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span>
+            {saving === "working" ? "saving…" : saving === "failed" ? "would not save" : "save"}
+          </span>
+        </button>
+
         <figcaption className="lightbox-caption">
           {slide.caption}
-          {slide.caption ? " · " : null}
-          <button type="button" className="text-button" onClick={() => void save()}>
-            {saving === "working" ? "saving…" : saving === "failed" ? "would not save" : "save it"}
-          </button>
           {story ? (
             <>
               {slide.caption ? " · " : null}

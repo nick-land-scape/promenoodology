@@ -1769,6 +1769,39 @@ body:has(.hero) .contact {
   cursor: default;
 }
 
+/* The way to keep a photograph: top left of the frame, with the arrow every
+   download in the world has. It was a text button at the end of the caption —
+   which is a sentence about who took the picture, so the one thing on the screen
+   that did something read as part of a credit. */
+.lightbox-save {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.lightbox-save svg {
+  width: 15px;
+  height: 15px;
+}
+
+.lightbox-save:hover,
+.lightbox-save:focus-visible {
+  color: var(--purple);
+}
+
 /* Just above the photo's top-right corner, never on top of the photo. */
 .lightbox-close {
   position: absolute;

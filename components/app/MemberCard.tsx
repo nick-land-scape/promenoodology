@@ -73,6 +73,15 @@ export default function MemberCard({ name, number, since, country, photo }: Prop
         glareBorderRadius="10px"
         gyroscope
       >
+        {/* The sheen: a band of light lying across the card, which moves on its
+            own every few seconds.
+            It is the only thing on this screen that moves unasked, and it is here
+            for a reason — pressing a card to tilt it is not a thing anybody knows
+            to try, and a card that catches the light by itself is one you are more
+            likely to touch. Quiet enough not to nag: eight seconds apart, and a
+            second and a half to cross. */}
+        <span className="member-card-metal" aria-hidden="true" />
+
         <div className="member-card-face">
           <div className="member-card-top">
             {photo ? (
