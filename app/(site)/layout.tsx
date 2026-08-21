@@ -1,4 +1,5 @@
 import Contact from "@/components/Contact";
+import DarkSwitch from "@/components/DarkSwitch";
 import AdminBar from "@/components/AdminBar";
 import Nav from "@/components/Nav";
 import { getMenu } from "@/lib/site-pages";
@@ -16,6 +17,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <AdminBar />
       {children}
       <Contact />
+      {/* Bottom right, out of the way of everything: it is a preference about
+          the screen rather than a part of the site's own furniture. */}
+      <DarkSwitch />
     </>
   );
 }

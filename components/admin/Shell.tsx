@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "@/app/(site)/account/actions";
+import DarkSwitch from "@/components/DarkSwitch";
 import { GROUPS, sectionsIn, viewFor } from "@/lib/admin/sections";
 import { Icon } from "./ui";
 
@@ -97,6 +98,10 @@ export default function Shell({
       </aside>
 
       <main className="admin-main">{children}</main>
+
+      {/* The same switch as on the site: the choice belongs to the screen, and
+          the back of the house is on the same screen. */}
+      <DarkSwitch />
     </div>
   );
 }

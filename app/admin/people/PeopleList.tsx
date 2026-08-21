@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import InHead from "@/components/admin/InHead";
 import Uploader from "@/components/admin/Uploader";
 import {
   Button,
   Chosen,
   Empty,
   Field,
-  Flag,
   Icon,
   Panel,
   Problem,
@@ -16,7 +16,6 @@ import {
   Tag,
   Tick,
   Word,
-  pretty,
   useChosen,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
@@ -40,6 +39,9 @@ export type Person = {
   joined: string;
   isMe: boolean;
 };
+
+/** The three answers to "is this person on the community page". */
+const SHOWING: Record<string, boolean | null> = { them: null, yes: true, no: false };
 
 /** The three the community page knows how to colour a name with. */
 const COLOURS = [
@@ -68,6 +70,7 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
   const [kept, setKept] = useState(initial);
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [pending, start] = useTransition();
 
   const changed = useMemo(() => {
@@ -81,7 +84,8 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
         was.colour !== person.colour ||
         was.listed !== person.listed ||
         was.listedByAdmin !== person.listedByAdmin ||
-        was.role !== person.role
+        was.role !== person.role ||
+        was.joined !== person.joined
       );
     });
   }, [people, kept]);
@@ -165,6 +169,7 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
           listed: person.listed,
           listed_by_admin: person.listedByAdmin,
           role: person.role,
+          joined_on: person.joined,
         })),
       );
       if (!result.ok) setProblem(result.error ?? "That did not save.");
@@ -203,6 +208,17 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
 
       {said ? <p className="admin-ok" style={{ display: "block", marginBottom: 14 }}>{said}</p> : null}
 
+      {/* Beside the title, and the panel below opens under it — the form was
+          taking up the top of the page every day for the once a month anybody
+          adds somebody. */}
+      <InHead>
+        <Button onClick={() => setAdding((was) => !was)}>
+          <Icon name="plus" />
+          {adding ? "never mind" : "add somebody"}
+        </Button>
+      </InHead>
+
+      {adding ? (
       <Panel
         name="somebody new"
         hint="A name is enough. Add an address as well and they are also sent a way in — that is the only way an account gets made now."
@@ -244,66 +260,97 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
           </div>
         </div>
       </Panel>
+      ) : null}
 
       {pick.count > 0 ? (
         <Chosen count={pick.count} what="people" onAll={pick.all} onNone={pick.none}>
-          <Word onClick={() => applyToChosen({ listedByAdmin: true })}>always shown</Word>
-          <Word onClick={() => applyToChosen({ listedByAdmin: false })}>always hidden</Word>
-          <Word onClick={() => applyToChosen({ listedByAdmin: null })}>up to them</Word>
-          <label>
-            from
-            <input
-              placeholder="a country, then Enter"
-              onKeyDown={(event) => {
-                if (event.key !== "Enter") return;
-                event.preventDefault();
-                applyToChosen({ country: event.currentTarget.value.trim() });
-                event.currentTarget.value = "";
-              }}
-            />
-          </label>
-          <label>
-            name in
-            <select
-              defaultValue=""
-              onChange={(event) => {
-                applyToChosen({ colour: event.target.value || null });
-                event.currentTarget.value = "";
-              }}
-            >
-              <option value="" disabled>
-                a colour
+          <select
+            defaultValue=""
+            aria-label="Put them on the community page, or take them off"
+            onChange={(event) => {
+              applyToChosen({ listedByAdmin: SHOWING[event.target.value] });
+              event.currentTarget.value = "";
+            }}
+          >
+            <option value="" disabled>
+              on the page
+            </option>
+            <option value="them">up to them</option>
+            <option value="yes">always shown</option>
+            <option value="no">always hidden</option>
+          </select>
+          <input
+            placeholder="a country, then Enter"
+            aria-label="Where they are all from"
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return;
+              event.preventDefault();
+              applyToChosen({ country: event.currentTarget.value.trim() });
+              event.currentTarget.value = "";
+            }}
+          />
+          <select
+            defaultValue=""
+            aria-label="Set the colour their names are printed in"
+            onChange={(event) => {
+              applyToChosen({ colour: event.target.value || null });
+              event.currentTarget.value = "";
+            }}
+          >
+            <option value="" disabled>
+              a colour
+            </option>
+            {COLOURS.map((colour) => (
+              <option key={colour.value} value={colour.value}>
+                {colour.label}
               </option>
-              {COLOURS.map((colour) => (
-                <option key={colour.value} value={colour.value}>
-                  {colour.label}
-                </option>
-              ))}
-            </select>
-          </label>
+            ))}
+          </select>
         </Chosen>
       ) : null}
 
       <ul className="admin-rows">
-        {people.map((person) => (
-          <li key={person.id} className="admin-row" style={{ flexWrap: "wrap" }}>
+        {people.map((person, index) => (
+          <li key={person.id} className="admin-row admin-person">
+            {/* Counting up, so "the fourteenth" is a thing anybody can say about
+                a list of sixty-four names. */}
+            <span className="admin-person-no">{index + 1}</span>
+
             <Tick
               on={pick.has(person.id)}
               onChoose={(range) => pick.toggle(person.id, range)}
               label={`Choose ${person.name || "this person"}`}
             />
 
-            <span className="admin-thumb admin-thumb-round">
-              {person.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={person.photoUrl} alt="" />
-              ) : (
-                initials(person.name)
+            {/* The portrait is its own button. It was a round thumbnail beside a
+                button that said "another portrait" — a circle where the page
+                shows a portrait, and a second control doing what clicking the
+                picture obviously ought to do. */}
+            <Uploader
+              folder={`profiles/${person.id}`}
+              many={false}
+              trigger={(open, working) => (
+                <button
+                  type="button"
+                  className="admin-portrait"
+                  onClick={open}
+                  disabled={working}
+                  title={person.photoUrl ? "Choose another portrait" : "Add a portrait"}
+                >
+                  {person.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={person.photoUrl} alt="" />
+                  ) : (
+                    <span className="admin-portrait-none">{initials(person.name)}</span>
+                  )}
+                  <em>{working ? "…" : person.photoUrl ? "replace" : "add one"}</em>
+                </button>
               )}
-            </span>
+              onDone={async (uploaded) => portrait(person, uploaded.path)}
+            />
 
-            <span className="admin-row-main" style={{ minWidth: 240 }}>
-              <span className="admin-fields" style={{ borderTop: 0 }}>
+            <span className="admin-person-body">
+              <span className="admin-fields admin-person-fields">
                 <Field label="name">
                   <input
                     value={person.name}
@@ -318,7 +365,7 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                     placeholder="optional"
                   />
                 </Field>
-                <Field label="name in" hint="Only for the few names the grid picks out.">
+                <Field label="name in">
                   <select
                     value={person.colour ?? ""}
                     onChange={(event) => edit(person.id, { colour: event.target.value || null })}
@@ -330,6 +377,13 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                     ))}
                   </select>
                 </Field>
+                <Field label="since">
+                  <input
+                    type="date"
+                    value={person.joined.slice(0, 10)}
+                    onChange={(event) => edit(person.id, { joined: event.target.value })}
+                  />
+                </Field>
                 <Field label="may look after the site">
                   <select
                     value={person.role}
@@ -338,89 +392,67 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                     }
                     disabled={person.isMe}
                   >
-                    <option value="member">no — a member</option>
-                    <option value="admin">yes — an admin</option>
+                    {/* The label above says what the answer means; a select is
+                        as wide as its longest option, and "no — a member" was
+                        taking a third of the row to say "no". */}
+                    <option value="member">no</option>
+                    <option value="admin">yes</option>
                   </select>
                 </Field>
               </span>
 
-              <span className="admin-row-meta" style={{ marginTop: 6 }}>
-                {person.email ? (
-                  <a href={`mailto:${person.email}`}>{person.email}</a>
-                ) : (
-                  "no address — on the page only"
-                )}
-                {" · since "}
-                {pretty(person.joined)}
-                {person.isMe ? " · this is you" : ""}
-              </span>
-            </span>
+              {/* Everything about the person that is not a field: who they are
+                  to the site, and the two things you can do about it. */}
+              <span className="admin-person-foot">
+                <span className="admin-person-who">
+                  {person.isMe ? <Tag tone="on">you</Tag> : null}
+                  {person.hasAccount ? (
+                    <Tag tone="on">can sign in</Tag>
+                  ) : person.email ? (
+                    <Tag>invited</Tag>
+                  ) : (
+                    <Tag>no account</Tag>
+                  )}
+                  {person.hasAccount ? null : (
+                    <Word onClick={() => invite(person)} disabled={pending}>
+                      {person.email ? "send it again" : "invite them"}
+                    </Word>
+                  )}
+                  {person.email ? (
+                    <a href={`mailto:${person.email}`} className="admin-person-mail">
+                      {person.email}
+                    </a>
+                  ) : null}
+                </span>
 
-            <span className="admin-row-side" style={{ flexDirection: "column", alignItems: "flex-end", gap: 7 }}>
-              <span style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                {person.isMe ? <Tag tone="on">you</Tag> : null}
-                {person.hasAccount ? (
-                  <Tag tone="on">can sign in</Tag>
-                ) : person.email ? (
-                  <Tag>invited</Tag>
-                ) : (
-                  <Tag>no account</Tag>
-                )}
-              </span>
+                <span className="admin-person-does">
+                  {person.photo ? (
+                    <Word danger onClick={() => portrait(person, null)} disabled={pending}>
+                      no portrait
+                    </Word>
+                  ) : null}
 
-              {/* Three states, not two. "Up to them" is a different answer from
-                  "forced to the same thing they chose", and only one of the two
-                  should survive them changing their mind. */}
-              <span style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                <button
-                  type="button"
-                  className="admin-flag"
-                  aria-pressed={person.listedByAdmin === null}
-                  onClick={() => edit(person.id, { listedByAdmin: null })}
-                  title={
-                    person.listed
-                      ? "They chose to be on the page"
-                      : "They chose not to be on the page"
-                  }
-                >
-                  up to them ({person.listed ? "shown" : "hidden"})
-                </button>
-                <button
-                  type="button"
-                  className="admin-flag"
-                  aria-pressed={person.listedByAdmin === true}
-                  onClick={() => edit(person.id, { listedByAdmin: true })}
-                  title="On the community page whatever they said"
-                >
-                  always shown
-                </button>
-                <button
-                  type="button"
-                  className="admin-flag"
-                  aria-pressed={person.listedByAdmin === false}
-                  onClick={() => edit(person.id, { listedByAdmin: false })}
-                  title="Off the community page whatever they said"
-                >
-                  always hidden
-                </button>
-              </span>
-              <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                <Uploader
-                  folder={`profiles/${person.id}`}
-                  many={false}
-                  label={person.photoUrl ? "another portrait" : "a portrait"}
-                  onDone={async (uploaded) => portrait(person, uploaded.path)}
-                />
-                {person.photo ? (
-                  <Word danger onClick={() => portrait(person, null)} disabled={pending}>
-                    no portrait
-                  </Word>
-                ) : null}
-                {person.hasAccount ? null : (
-                  <Word onClick={() => invite(person)} disabled={pending}>
-                    {person.email ? "send the invitation again" : "invite them"}
-                  </Word>
-                )}
+                  {/* Three answers, one control. They were three buttons in a
+                      row, all of them lit the same way, and which one was on was
+                      something you worked out rather than read. "Up to them" is
+                      genuinely a third answer, not the absence of the other
+                      two — only it survives them changing their mind. */}
+                  <label className="admin-person-showing">
+                    <span>on the page</span>
+                    <select
+                      value={person.listedByAdmin === null ? "them" : person.listedByAdmin ? "yes" : "no"}
+                      onChange={(event) =>
+                        edit(person.id, { listedByAdmin: SHOWING[event.target.value] })
+                      }
+                    >
+                      <option value="them">
+                        up to them — {person.listed ? "shown" : "hidden"}
+                      </option>
+                      <option value="yes">always shown</option>
+                      <option value="no">always hidden</option>
+                    </select>
+                  </label>
+                </span>
               </span>
             </span>
           </li>

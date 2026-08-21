@@ -27,6 +27,7 @@ export default function Uploader({
   label = "add photographs",
   many = true,
   watchWindow = false,
+  trigger,
   onDone,
 }: {
   /** Where in the bucket: "resources", "profiles/<id>", … */
@@ -35,6 +36,14 @@ export default function Uploader({
   many?: boolean;
   /** Also accept files dropped anywhere on the page. */
   watchWindow?: boolean;
+  /**
+   * Something other than a button to start it with.
+   *
+   * A portrait is its own invitation: you click the picture to change the
+   * picture. A button beside it saying "another portrait" was a second thing
+   * doing the first thing's job, and it was the one nobody looked at.
+   */
+  trigger?: (open: () => void, working: boolean) => React.ReactNode;
   /** Called once per picture, as soon as it is in the bucket. */
   onDone: (photo: Uploaded, file: File) => Promise<void> | void;
 }) {
@@ -159,17 +168,21 @@ export default function Uploader({
         onChange={(event) => take(event.target.files)}
       />
 
-      <button
-        type="button"
-        className="admin-btn"
-        disabled={working}
-        onClick={() => input.current?.click()}
-      >
-        <Icon name="upload" />
-        {working ? `${done + 1} of ${total}…` : label}
-      </button>
+      {trigger ? (
+        trigger(() => input.current?.click(), working)
+      ) : (
+        <button
+          type="button"
+          className="admin-btn"
+          disabled={working}
+          onClick={() => input.current?.click()}
+        >
+          <Icon name="upload" />
+          {working ? `${done + 1} of ${total}…` : label}
+        </button>
+      )}
 
-      {working ? (
+      {working && !trigger ? (
         <span className="admin-note" style={{ margin: 0 }}>
           shrinking and putting {left === 1 ? "it" : "them"} away — stay on this page
         </span>

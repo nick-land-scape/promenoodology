@@ -10,6 +10,16 @@
   --hairline: rgba(0, 0, 0, 0.12);
   /* For anything said quietly: a hint under a field, a label beside a link. */
   --quiet: #6f6a63;
+  /* A breath of ink on the paper: the back of a tag, a stripe on a table. These
+     were written as rgba(0,0,0,0.05) in a dozen places, which is the same thing
+     said badly — and invisible the moment the paper goes dark. */
+  --wash: rgba(0, 0, 0, 0.05);
+  --wash-soft: rgba(0, 0, 0, 0.03);
+  /* Paper you can just see through: the phone menu, the drop screen. */
+  --veil: rgba(255, 252, 246, 0.95);
+  /* What a picture printed on paper does to the paper under it. Multiply is
+     right on light and wrong on dark, where it erases the picture instead. */
+  --print: multiply;
 
   --serif: Times, "Times New Roman", Georgia, serif;
   --sans: Gotham, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -39,7 +49,7 @@ body {
 html {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: var(--purple) rgba(0, 0, 0, 0.05);
+  scrollbar-color: var(--purple) var(--wash);
 }
 
 /* A plain scrollbar in the site's own colours: no rounding, no shading. */
@@ -49,7 +59,7 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -154,7 +164,7 @@ img {
   display: block;
   width: 74px;
   line-height: 0;
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
 }
 
 .nav-mark img {
@@ -242,7 +252,7 @@ img {
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--wash);
   font-family: var(--sans);
   font-size: 0.6rem;
   font-weight: 700;
@@ -453,7 +463,7 @@ img {
   height: 72px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
   margin-bottom: 8px;
 }
 
@@ -531,7 +541,7 @@ img {
   flex: none;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
 }
 
 .quote-face img {
@@ -994,7 +1004,7 @@ img {
   transition: transform 0.5s ease-out;
   width: min(62vmin, 560px);
   height: auto;
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
   filter: saturate(1.2);
   pointer-events: none;
 }
@@ -1545,7 +1555,7 @@ body:has(.hero) .contact {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--veil);
   cursor: zoom-out;
 }
 
@@ -1618,6 +1628,113 @@ body:has(.hero) .contact {
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
+}
+
+/* ----------------------------------------------------------- paper at night */
+
+/*
+ * The same site with the paper turned down.
+ *
+ * Only the tokens change. Nothing here restyles a component, which is the whole
+ * argument for having had tokens in the first place — and the reason this is
+ * forty lines rather than four hundred.
+ *
+ * Three things are not a simple inversion. The paper is warm rather than black,
+ * because a true black behind a photograph makes the photograph look like a
+ * window and the page look like a hole. The three accents are lifted, because
+ * #8b3fff on near-black is a colour you can see but not read. And "multiply",
+ * which is what makes a logo sit *on* paper, erases a logo on dark paper — so
+ * the blend becomes screen and the marks are inverted back to themselves.
+ */
+:root[data-theme="dark"] {
+  --ink: #f2ece1;
+  --paper: #14120f;
+  --hairline: rgba(242, 236, 225, 0.16);
+  --quiet: #a9a196;
+  --wash: rgba(242, 236, 225, 0.06);
+  --wash-soft: rgba(242, 236, 225, 0.035);
+  --veil: rgba(20, 18, 15, 0.95);
+  --print: normal;
+
+  /* Lifted until they can be read rather than merely seen. */
+  --purple: #b98cff;
+  --blue: #4cc4f5;
+  --pink: #ff5fa5;
+}
+
+/* The mark is a purple scribble on white. On dark paper it needs turning
+   inside out rather than blending. */
+:root[data-theme="dark"] .nav-mark img,
+:root[data-theme="dark"] .admin-mark img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* A tick, a face, a portrait: images that are meant to look like themselves and
+   must not be inverted with the marks above. */
+:root[data-theme="dark"] .session-face img,
+:root[data-theme="dark"] .admin-portrait img {
+  filter: none;
+}
+
+/* Photographs keep their own light; the page around them dims. */
+:root[data-theme="dark"] img.photo,
+:root[data-theme="dark"] .admin-photo-frame img {
+  filter: brightness(0.94);
+}
+
+/*
+ * The switch itself: bottom right, and mostly out of the way.
+ *
+ * In the menu it read as one of the pages, which it is not — it is a preference
+ * about the screen you are reading on, and it belongs with the furniture rather
+ * than with the contents. Down here it holds a corner nothing else wants: the
+ * contact details have the left edge, the menu has the top, and on a phone it
+ * steps up over the bottom bar.
+ *
+ * Closed it is a glyph. The words arrive on hover, because "make it dark" is
+ * eleven characters of explanation for a button that needs none once you have
+ * pressed it a first time.
+ */
+.dark-switch {
+  position: fixed;
+  right: var(--edge);
+  bottom: var(--edge);
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  color: var(--quiet);
+  cursor: pointer;
+  overflow: hidden;
+  transition: max-width 0.22s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.dark-switch svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.dark-switch span {
+  padding-left: 8px;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dark-switch:hover,
+.dark-switch:focus-visible {
+  max-width: 200px;
+  color: var(--ink);
+  border-color: var(--ink);
 }
 
 /* ------------------------------------------------- the admin's own top line */
@@ -1837,6 +1954,10 @@ html.admin-bar {
     --admin-bar: 32px;
   }
 
+  .dark-switch {
+    bottom: calc(var(--bar-height) + 12px);
+  }
+
   .admin-bar-who {
     font-size: 0.85rem;
   }
@@ -1925,7 +2046,7 @@ html.admin-bar {
     width: 52px;
     height: 66px;
     overflow: hidden;
-    background: rgba(0, 0, 0, 0.05);
+    background: var(--wash);
   }
 
   .community-face img {
@@ -2020,15 +2141,15 @@ html.admin-bar {
 @keyframes breathe {
   0%,
   100% {
-    background-color: rgba(0, 0, 0, 0.07);
+    background-color: var(--wash);
   }
   50% {
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: var(--wash-soft);
   }
 }
 
 .photo:not([data-loaded]) {
-  background-color: rgba(0, 0, 0, 0.07);
+  background-color: var(--wash);
   animation: breathe 1.4s ease-in-out infinite;
 }
 
@@ -2133,7 +2254,7 @@ html.admin-bar {
 .holding-mark {
   width: min(52vmin, 420px);
   height: auto;
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
 }
 
 .holding-line {
@@ -2204,7 +2325,7 @@ html.admin-bar {
   display: block;
   margin-top: 6px;
   font-style: italic;
-  color: rgba(0, 0, 0, 0.55);
+  color: var(--quiet);
   font-size: 0.9em;
 }
 
@@ -2291,7 +2412,7 @@ html.admin-bar {
   object-fit: contain;
   /* Most of these arrive as black on white; multiply drops the white out onto
      the paper, the same trick the logo in the menu uses. */
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
 }
 
 .partners-row a {
@@ -2337,7 +2458,7 @@ html.admin-bar {
 
 .page-bg img {
   opacity: var(--bg-opacity, 0.18);
-  mix-blend-mode: var(--bg-blend, multiply);
+  mix-blend-mode: var(--bg-blend, var(--print));
   rotate: var(--bg-rotate, 0deg);
   /* Turning a picture leaves the window's corners empty; the size dial is how
      that gets solved, so it is not solved here behind anybody's back. */
@@ -2407,7 +2528,7 @@ html.admin-bar {
 
 /* Over the video on the front page, where there is no paper behind it. */
 body:has(.hero) .edit-this {
-  background: rgba(255, 252, 246, 0.9);
+  background: var(--veil);
 }
 
 @media screen and (max-width: 767px) {

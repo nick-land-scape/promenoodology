@@ -2,15 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import InHead from "@/components/admin/InHead";
 import Uploader from "@/components/admin/Uploader";
 import {
+  Bin,
   Button,
   Empty,
   Field,
   Flag,
   Grip,
   Icon,
-  Move,
   Place,
   Problem,
   SaveBar,
@@ -69,7 +70,7 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
     setOrder(true);
   }
 
-  const { dropProps, handleProps, dragging } = useDragOrder(rows, move);
+  const { dropProps, handleProps, stateOf } = useDragOrder(rows, move);
 
   function save() {
     setProblem("");
@@ -157,12 +158,13 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
     <>
       <Problem>{problem}</Problem>
 
-      <p style={{ margin: "0 0 18px" }}>
+      {/* Beside the title, where every other section's one action now is. */}
+      <InHead>
         <Button onClick={add} disabled={pending}>
           <Icon name="plus" />
           add a partner
         </Button>
-      </p>
+      </InHead>
 
       {order ? (
         <div className="admin-save" style={{ position: "static", marginTop: 0, marginBottom: 16 }}>
@@ -182,7 +184,7 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
               {...dropProps(row, index)}
               className={[
                 "admin-row",
-                dragging === row.id ? "admin-row-dragging" : "",
+                stateOf(row),
                 row.published ? "" : "admin-row-hidden",
               ]
                 .filter(Boolean)
@@ -190,16 +192,33 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
               style={{ flexWrap: "wrap" }}
             >
               <Grip {...handleProps(row)} />
-                  <Place index={index} total={rows.length} onMove={move} />
+              <Place index={index} total={rows.length} onMove={move} />
 
-              <span className="admin-thumb" style={{ width: 74, height: 54 }}>
-                {row.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={row.logoUrl} alt="" draggable={false} style={{ objectFit: "contain" }} />
-                ) : (
-                  "no logo"
+              {/* The box is the button. "No logo" was a label reporting a fact
+                  next to a button offering to fix it — two things where the
+                  empty box itself is the obvious place to press. */}
+              <Uploader
+                folder="logos"
+                many={false}
+                trigger={(open, working) => (
+                  <button
+                    type="button"
+                    className="admin-logo"
+                    onClick={open}
+                    disabled={working}
+                    title={row.logoUrl ? "Choose another logo" : "Add a logo"}
+                  >
+                    {row.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={row.logoUrl} alt="" draggable={false} />
+                    ) : (
+                      <span className="admin-logo-none">no logo</span>
+                    )}
+                    <em>{working ? "…" : row.logoUrl ? "replace" : "add one"}</em>
+                  </button>
                 )}
-              </span>
+                onDone={async (uploaded) => logo(row, uploaded.path)}
+              />
 
               <span className="admin-row-main" style={{ minWidth: 240 }}>
                 <span className="admin-fields">
@@ -233,27 +252,22 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 8,
+                    gap: 10,
                     flexWrap: "wrap",
                     justifyContent: "flex-end",
                   }}
                 >
-                  <Uploader
-                    folder="logos"
-                    many={false}
-                    label={row.logoUrl ? "another logo" : "a logo"}
-                    onDone={async (uploaded) => logo(row, uploaded.path)}
-                  />
                   {row.logo ? (
                     <Word danger onClick={() => logo(row, null)} disabled={pending}>
-                      no logo
+                      take the logo off
                     </Word>
                   ) : null}
+                  <Bin
+                    what={row.name || "this partner"}
+                    onClick={() => remove(row)}
+                    disabled={pending}
+                  />
                 </span>
-                <Move index={index} total={rows.length} onMove={move} />
-                <Word danger onClick={() => remove(row)} disabled={pending}>
-                  delete
-                </Word>
               </span>
             </li>
           ))}

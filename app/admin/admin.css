@@ -123,7 +123,7 @@ body:has(.admin) {
 .admin-mark img {
   width: 34px;
   height: auto;
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
 }
 
 .admin-mark span {
@@ -984,7 +984,7 @@ html.admin-dragging * {
   z-index: 80;
   display: grid;
   place-items: center;
-  background: rgba(255, 252, 246, 0.94);
+  background: var(--veil);
   pointer-events: none;
   text-align: center;
 }
@@ -1786,4 +1786,227 @@ html.admin-dragging * {
   font-size: 0.92em;
   font-style: italic;
   color: var(--admin-faint);
+}
+
+/* --------------------------------------------------------------- the people */
+
+/*
+ * One person, one card.
+ *
+ * It was a row: a round thumbnail, four fields that wrapped into a block, and a
+ * column of six controls stacked down the right — three of them buttons for the
+ * same question, all lit identically. On sixty-four people that is a wall.
+ *
+ * Now the fields lie across in one line and everything you can *do* is along the
+ * bottom, which is the same shape every other card on these pages has.
+ */
+.admin-person {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Counting up. Tabular figures so 9 and 10 line up at the left edge. */
+.admin-person-no {
+  flex: none;
+  width: 22px;
+  padding-top: 12px;
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-faint);
+  text-align: right;
+}
+
+.admin-person-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Across, not wrapped: name, where from, the colour, since when, and whether
+   they can get in here. The name gets the room the others do not need. */
+.admin-person-fields {
+  display: grid;
+  /* Measured rather than guessed: a date control needs about 110px before it
+     starts hiding its own year, and a two-letter select needs almost nothing. */
+  grid-template-columns: 1.35fr 0.95fr 0.8fr 1.15fr 1fr;
+  border-top: 0;
+}
+
+.admin-field input[type="date"] {
+  font-size: 0.95rem;
+}
+
+.admin-person-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 14px 2px;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-person-who,
+.admin-person-does {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-person-mail {
+  font-size: 0.88em;
+  color: var(--admin-quiet);
+}
+
+.admin-person-showing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88em;
+  font-style: italic;
+  color: var(--admin-quiet);
+}
+
+.admin-person-showing select {
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: none;
+  padding: 1px 0;
+  font: inherit;
+  font-style: normal;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/*
+ * The portrait, at the shape a portrait is.
+ *
+ * A circle crops the top of somebody's head off and then asks a button beside it
+ * to do the changing. This is the picture, at the proportions the community page
+ * prints it at, and clicking it is how you change it — which is what anybody
+ * would try first.
+ */
+.admin-portrait {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 56px;
+  height: 72px;
+  margin-top: 8px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  background: var(--admin-tint);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.admin-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-portrait-none {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--admin-faint);
+}
+
+/* The word only when you are on it: the picture should be the picture. */
+.admin-portrait em {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 3px 0;
+  background: rgba(0, 0, 0, 0.62);
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.admin-portrait:hover em,
+.admin-portrait:focus-visible em {
+  opacity: 1;
+}
+
+@media screen and (max-width: 900px) {
+  .admin-person-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* The logo box, which is also the button that fills it. */
+.admin-logo {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 84px;
+  height: 58px;
+  margin-top: 4px;
+  padding: 6px;
+  border: 1px solid var(--hairline);
+  background: var(--admin-tint);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.admin-logo img {
+  width: 100%;
+  height: 100%;
+  /* Contained, not cropped: a logo that has been cropped is somebody else's
+     logo. */
+  object-fit: contain;
+  display: block;
+  mix-blend-mode: var(--print);
+}
+
+.admin-logo-none {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--sans);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+}
+
+.admin-logo em {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 3px 0;
+  background: rgba(0, 0, 0, 0.62);
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.admin-logo:hover em,
+.admin-logo:focus-visible em {
+  opacity: 1;
 }
