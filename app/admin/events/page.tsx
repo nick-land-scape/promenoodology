@@ -9,12 +9,12 @@ export default async function EventsPage() {
   await requireAdmin();
   const supabase = await supabaseServer();
 
-  const [{ data: events }, { data: photos }, { data: bookings }, { data: partners }] =
+  const [{ data: events }, { data: photos }, { data: bookings }, { data: partners }, { data: told }] =
     await Promise.all([
     supabase
       .from("events")
       .select(
-        "id, happens_on, ends_on, starts_at, ends_at, title, place, spots, note, photo_path, partners, published",
+        "id, happens_on, ends_on, starts_at, ends_at, title, place, spots, note, photo_path, partners, story_id, published",
       )
       .order("happens_on")
       .returns<Row[]>(),
@@ -33,6 +33,11 @@ export default async function EventsPage() {
       .select("id, name, logo_path")
       .order("position")
       .returns<{ id: string; name: string; logo_path: string | null }[]>(),
+    supabase
+      .from("stories")
+      .select("id, title")
+      .order("position")
+      .returns<{ id: string; title: string }[]>(),
     ]);
 
   const pickable: Pickable[] = (photos ?? []).map((photo) => ({
@@ -64,6 +69,7 @@ export default async function EventsPage() {
           label: one.name || "unnamed partner",
           image: one.logo_path ? mediaUrl(one.logo_path) : undefined,
         }))}
+        told={told ?? []}
       />
     </Head>
   );

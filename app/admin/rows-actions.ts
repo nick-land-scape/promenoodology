@@ -58,7 +58,7 @@ function clean(table: TableName, values: RowValues): RowValues {
       continue;
     }
     // A story or a picture is either chosen or it is nothing.
-    if (column?.kind === "story" || column?.kind === "photo") {
+    if (column?.kind === "story" || column?.kind === "photo" || column?.kind === "storyref") {
       out[key] = value ? String(value) : null;
       continue;
     }

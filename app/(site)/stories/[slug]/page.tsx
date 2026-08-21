@@ -68,7 +68,7 @@ export default async function StoryPage({ params }: Params) {
         </p>
       </header>
 
-      <StoryBody slides={slides} sections={story.sections} />
+      <StoryBody slides={slides} sections={story.sections} built={story.blocks} />
 
       {/* Who did it, at the foot, where the credits of anything belong. */}
       {story.who.length > 0 || story.partners.length > 0 ? (

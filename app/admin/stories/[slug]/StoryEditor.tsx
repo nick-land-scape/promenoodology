@@ -29,7 +29,8 @@ import {
 } from "@/components/admin/ui";
 import { LAYOUTS } from "@/lib/photo-layout";
 import type { PhotoLayout } from "@/lib/supabase/rows";
-import { saveStory, saveStoryPhotos } from "../actions";
+import { saveStory, saveStoryPage, saveStoryPhotos } from "../actions";
+import StoryPage, { type Block, blankBlock } from "./StoryPage";
 
 /**
  * One story: what it was, and the text as it is written.
@@ -59,6 +60,8 @@ type Draft = {
   people: string[];
   /** Which organisations it was made with. */
   partners: string[];
+  /** The page, block by block, as somebody arranged it. */
+  page: Block[];
 };
 
 type PhotoLine = {
@@ -101,6 +104,12 @@ export default function StoryEditor({
   const [keptOrder, setKeptOrder] = useState(photos);
   const photosMoved = JSON.stringify(order) !== JSON.stringify(keptOrder);
 
+  /* The page itself. Its own state and its own comparison, because the words and
+     the arrangement are now one thing and the story's fields are another. */
+  const [page, setPage] = useState<Block[]>(story.page);
+  const [keptPage, setKeptPage] = useState<Block[]>(story.page);
+  const pageMoved = JSON.stringify(page) !== JSON.stringify(keptPage);
+
   function movePhoto(from: number, to: number) {
     const next = moved(order, from, to);
     if (next !== order) setOrder(next);
@@ -113,7 +122,7 @@ export default function StoryEditor({
   const [preview, setPreview] = useState(false);
 
   /* A word before anybody walks away from this. */
-  useUnsaved(dirty || photosMoved, "changes to this story");
+  useUnsaved(dirty || photosMoved || pageMoved, "changes to this story");
 
   function setLayout(id: string, layout: PhotoLayout | null) {
     setOrder((list) => list.map((one) => (one.id === id ? { ...one, layout } : one)));
@@ -164,6 +173,23 @@ export default function StoryEditor({
       if (!result.ok) {
         setProblem(result.error ?? "That did not save.");
         return;
+      }
+
+      if (pageMoved) {
+        const built = await saveStoryPage(
+          draft.id,
+          page.map((block) => ({
+            kind: block.kind,
+            words: block.words,
+            photo_id: block.photoId,
+            layout: block.layout,
+          })),
+        );
+        if (!built.ok) {
+          setProblem(`The story is saved, but the page is not: ${built.error ?? "it would not save"}`);
+          return;
+        }
+        setKeptPage(page);
       }
 
       if (photosMoved) {
@@ -307,244 +333,42 @@ export default function StoryEditor({
         </Fields>
       </Panel>
 
+      {/*
+       * One panel where there were two.
+       *
+       * The words were typed here as sections and paragraphs, the photographs
+       * were arranged in a panel below, and the page wove the two together by a
+       * rule. Two places to decide one thing, and neither of them was the page.
+       */}
       <Panel
-        name="the text"
-        hint="A section opens with a small purple heading; its paragraphs are spread through the photographs."
-      >
-        {draft.sections.length === 0 ? (
-          <p className="admin-empty" style={{ padding: "16px 14px" }}>
-            Nothing written yet.
-          </p>
-        ) : null}
-
-        {draft.sections.map((section, index) => (
-          <div className="admin-section" key={index}>
-            <header className="admin-section-head">
-              <input
-                value={section.heading}
-                onChange={(event) =>
-                  setSections(
-                    draft.sections.map((one, i) =>
-                      i === index ? { ...one, heading: event.target.value } : one,
-                    ),
-                  )
-                }
-                placeholder="heading — or leave empty for text before any heading"
-                aria-label={`Heading of section ${index + 1}`}
-              />
-              <Move index={index} total={draft.sections.length} onMove={(from, to) => setSections(moved(draft.sections, from, to))} />
-              <Word
-                danger
-                onClick={() => setSections(draft.sections.filter((_, i) => i !== index))}
-                aria-label={`Remove section ${index + 1}`}
-              >
-                remove
-              </Word>
-            </header>
-
-            {section.texts.map((text, line) => (
-              <div className="admin-para" key={line}>
-                <textarea
-                  rows={Math.min(10, Math.max(2, Math.ceil(text.length / 90)))}
-                  value={text}
-                  onChange={(event) =>
-                    setSections(
-                      draft.sections.map((one, i) =>
-                        i === index
-                          ? {
-                              ...one,
-                              texts: one.texts.map((old, j) => (j === line ? event.target.value : old)),
-                            }
-                          : one,
-                      ),
-                    )
-                  }
-                  placeholder="a paragraph"
-                  aria-label={`Paragraph ${line + 1}`}
-                />
-                <span className="admin-move" style={{ paddingTop: 2 }}>
-                  <Move
-                    index={line}
-                    total={section.texts.length}
-                    onMove={(from, to) =>
-                      setSections(
-                        draft.sections.map((one, i) =>
-                          i === index ? { ...one, texts: moved(one.texts, from, to) } : one,
-                        ),
-                      )
-                    }
-                  />
-                </span>
-                <Word
-                  danger
-                  aria-label={`Remove paragraph ${line + 1}`}
-                  onClick={() =>
-                    setSections(
-                      draft.sections.map((one, i) =>
-                        i === index
-                          ? { ...one, texts: one.texts.filter((_, j) => j !== line) }
-                          : one,
-                      ),
-                    )
-                  }
-                >
-                  ×
-                </Word>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              className="admin-add admin-add-inline"
-              onClick={() =>
-                setSections(
-                  draft.sections.map((one, i) =>
-                    i === index ? { ...one, texts: [...one.texts, ""] } : one,
-                  ),
-                )
-              }
-            >
-              + paragraph
-            </button>
-          </div>
-        ))}
-
-        <button
-          type="button"
-          className="admin-add"
-          onClick={() => setSections([...draft.sections, { heading: "", texts: [""] }])}
-        >
-          + section
-        </button>
-      </Panel>
-
-      <Panel
-        name="its photographs"
-        hint={`Everything tagged “${draft.tag}”, in the order they are read in.`}
+        name="the page"
+        hint="Every part of it in the order a reader gets it. Drag a block, or type a number."
         action={
           <Link href={`/admin/photos?story=${draft.tag}`} className="admin-btn">
             add or remove them →
           </Link>
         }
       >
-        {order.length === 0 ? (
-          <p className="admin-empty" style={{ padding: "16px 14px" }}>
-            None yet. Photographs are added in the archive and given this tag; the story picks them
-            up from there.
-          </p>
-        ) : (
-          <>
-            <ul className="admin-rows" style={{ border: 0, margin: "0 14px 12px" }}>
-              {order.map((photo, index) => (
-                <li
-                  key={photo.id}
-                  {...dropProps(photo, index)}
-                  className={[
-                    "admin-row",
-                    stateOf(photo),
-                    photo.published ? "" : "admin-row-hidden",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  style={{ flexWrap: "wrap" }}
-                >
-                  <Grip {...handleProps(photo)} />
-                  <Place index={index} total={order.length} onMove={movePhoto} />
-
-                  {/* The thumbnail is the way to see it properly: it is the
-                      only thing on the row anybody would think to click. */}
-                  <button
-                    type="button"
-                    className="admin-thumb admin-thumb-look"
-                    onClick={() => setLooking(index)}
-                    title="Look at it properly"
-                    aria-label="Look at it properly"
-                  >
-                    <Thumb
-                      src={photo.url}
-                      width={photo.width}
-                      height={photo.height}
-                      sizes="96px"
-                    />
-                  </button>
-
-                  <span className="admin-row-main" style={{ minWidth: 200 }}>
-                    <span className="admin-row-name" style={{ fontStyle: "normal" }}>
-                      {photo.credit || "nobody credited"}
-                    </span>
-                    <span className="admin-row-meta">
-                      {[
-                        photo.year || "no year",
-                        photo.width > 0 ? `${photo.width}×${photo.height}` : null,
-                        photo.width > 0 && Math.max(photo.width, photo.height) < 600
-                          ? "small for the page"
-                          : null,
-                        draft.featured === photo.id ? "the cover" : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
-                    {!photo.published ? <Tag tone="warn">hidden</Tag> : null}
-                  </span>
-
-                  <span className="admin-row-side" style={{ gap: 6 }}>
-                    {/* How it sits on the page. "let the page decide" is the
-                        automatic cycle, and the right answer almost always. */}
-                    <button
-                      type="button"
-                      className="admin-flag"
-                      aria-pressed={photo.layout === null}
-                      onClick={() => setLayout(photo.id, null)}
-                      title="The automatic layout, which never lines up and never breaks"
-                    >
-                      auto
-                    </button>
-                    {LAYOUTS.map((choice) => (
-                      <button
-                        key={choice.value}
-                        type="button"
-                        className="admin-flag"
-                        aria-pressed={photo.layout === choice.value}
-                        onClick={() => setLayout(photo.id, choice.value)}
-                        title={choice.hint}
-                      >
-                        {choice.label}
-                      </button>
-                    ))}
-
-                    <Move index={index} total={order.length} onMove={movePhoto} />
-
-                    <button
-                      type="button"
-                      className="admin-flag"
-                      aria-pressed={draft.featured === photo.id}
-                      onClick={() =>
-                        set("featured", draft.featured === photo.id ? null : photo.id)
-                      }
-                      title="The one that stands for this story in the list and in a link preview"
-                    >
-                      cover
-                    </button>
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <p className="admin-note" style={{ margin: "0 14px 12px" }}>
-              {photosMoved
-                ? "the order and the layouts go with the story when you save it"
-                : draft.featured
-                  ? "one of them is the cover"
-                  : "no cover chosen — the widest one is used"}
-            </p>
-          </>
-        )}
+        <StoryPage
+          blocks={page}
+          onChange={setPage}
+          photos={order.map((one) => ({
+            value: one.id,
+            label: [one.credit || "nobody credited", one.year].filter(Boolean).join(", "),
+            note: one.width > 0 ? `${one.width}×${one.height}` : undefined,
+            image: one.url,
+            width: one.width,
+            height: one.height,
+          }))}
+          cover={draft.featured}
+          onCover={(id) => set("featured", id)}
+        />
       </Panel>
 
       <SaveBar
         onSave={save}
         pending={pending}
-        dirty={dirty || photosMoved}
+        dirty={dirty || photosMoved || pageMoved}
         saved={justSaved}
         label="save this story"
       >

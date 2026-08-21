@@ -2638,3 +2638,10 @@ body:has(.hero) .edit-this {
   color: var(--purple);
   vertical-align: middle;
 }
+
+/* A gap somebody asked for, in a story built by hand. It is one column wide and
+   the height of a paragraph, which is enough to break a run of photographs. */
+.story-space {
+  grid-column: span 4;
+  height: 4rem;
+}

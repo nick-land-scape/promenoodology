@@ -12,6 +12,8 @@ export type Column = {
   key: string;
   /** For a "dates" or "times" column: which column holds the other end. */
   until?: string;
+  /** For a "when" column: which column holds the hour. */
+  time?: string;
   label: string;
   kind:
     | "text"
@@ -35,7 +37,24 @@ export type Column = {
      * is named in `until`.
      */
     | "dates"
-    | "times";
+    | "times"
+    /**
+     * A day and an hour as one thing, behind one calendar.
+     *
+     * An evening's beginning is not a date and, separately, a time — it is a
+     * moment. Two controls side by side asked it as two questions. `time` names
+     * the column that holds the hour.
+     */
+    | "when"
+    /**
+     * The story an evening became, by its id.
+     *
+     * Not the "story" kind, which writes a *tag* into story_tag so photographs
+     * and quotes can find their story. This is a real reference to a row, and it
+     * is the only place the two halves of the same thing are joined: an evening
+     * is what is going to happen, a story is what happened.
+     */
+    | "storyref";
   hint?: string;
   placeholder?: string;
   /** Take the whole width of the row rather than sitting in the grid. */
@@ -185,22 +204,17 @@ export const TABLES: Record<TableName, TableSpec> = {
       note: "",
       photo_path: null,
       partners: [],
+      story_id: null,
     },
     columns: [
       { key: "title", label: "what it is", kind: "text", placeholder: "soup and a walk" },
+      { key: "happens_on", time: "starts_at", label: "starts", kind: "when" },
       {
-        key: "happens_on",
-        until: "ends_on",
-        label: "which days",
-        kind: "dates",
-        hint: "Leave the second empty for something that starts and ends on one day.",
-      },
-      {
-        key: "starts_at",
-        until: "ends_at",
-        label: "and between",
-        kind: "times",
-        hint: "Leave the second empty if it just ends.",
+        key: "ends_on",
+        time: "ends_at",
+        label: "and ends",
+        kind: "when",
+        hint: "Leave it alone for something that starts and finishes on one day.",
       },
       { key: "place", label: "where", kind: "text", placeholder: "the yard, Burngreave" },
       {
@@ -228,6 +242,12 @@ export const TABLES: Record<TableName, TableSpec> = {
         kind: "photo",
         hint: "From the archive. Shown at the top of the evening in the app.",
       },
+      {
+        key: "story_id",
+        label: "what came of it",
+        kind: "storyref",
+        hint: "The story written about it afterwards, if there is one.",
+      },
     ],
   },
 };
@@ -236,8 +256,9 @@ export const TABLES: Record<TableName, TableSpec> = {
 export function writableColumns(table: TableName): string[] {
   const spec = TABLES[table];
   const keys = spec.columns.flatMap((column) =>
-    // A pair is one field and two columns; the second one is just as writable.
-    column.until ? [column.key, column.until] : [column.key],
+    // A field can stand for two columns — a stretch of days, or a day and an
+    // hour. Both halves are just as writable as one.
+    [column.key, column.until, column.time].filter(Boolean) as string[],
   );
   if (spec.pinned) keys.push(spec.pinned);
   return spec.publishable ? [...keys, "published"] : keys;
@@ -248,8 +269,11 @@ export function kindOf(table: TableName, key: string): Column["kind"] | "boolean
   const spec = TABLES[table];
   if (spec.pinned === key) return "boolean";
   const own = spec.columns.find((column) => column.key === key);
-  if (own) return own.kind;
+  // A "when" column's own key holds the day.
+  if (own) return own.kind === "when" ? "date" : own.kind;
+  // The hour half of a "when".
+  if (spec.columns.some((column) => column.time === key)) return "time";
   const pair = spec.columns.find((column) => column.until === key);
-  // The far end of a pair behaves exactly like the near end.
+  // The far end of a stretch behaves exactly like the near end.
   return pair ? (pair.kind === "dates" ? "date" : "time") : undefined;
 }

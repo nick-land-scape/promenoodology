@@ -98,6 +98,21 @@ export type Section = {
   texts: string[];
 };
 
+/**
+ * One thing on a story's page, in the order somebody put it there.
+ *
+ * The alternative — text in one list, photographs in another, woven together by
+ * a rule — is what this replaces. The rule made every story look like a story
+ * from this site and made it impossible to say "this paragraph, then that
+ * photograph". A story with no blocks still reads the old way, so nothing had to
+ * be converted before this could ship.
+ */
+export type StoryBlock =
+  | { kind: "heading"; words: string }
+  | { kind: "text"; words: string }
+  | { kind: "space" }
+  | { kind: "photo"; photo: Photo; caption: string; layout: Resource["layout"] };
+
 export type Story = {
   slug: string;
   /** The short tag used in data/resources.csv to mark this story's photos. */
@@ -117,6 +132,11 @@ export type Story = {
   photos: Resource[];
   credits: string[];
   cover: Photo | null;
+  /**
+   * The page, block by block. Empty for a story nobody has arranged by hand,
+   * which is read the old way instead.
+   */
+  blocks: StoryBlock[];
   /** What it was about, in a handful of words. Not the tag, which is a key. */
   topics: string[];
   /** Who was there, with their portrait where they have one. */

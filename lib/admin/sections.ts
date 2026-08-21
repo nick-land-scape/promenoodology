@@ -21,7 +21,7 @@ export type Section = {
   /** One of the shapes in components/admin/ui.tsx. */
   icon: string;
   /** Which heading in the menu it sits under. */
-  group: "content" | "material" | "community" | "post" | "settings";
+  group: "content" | "material" | "wall" | "community" | "post" | "settings";
   /** The page on the public site this looks after, if there is one. */
   view?: string;
 };
@@ -76,12 +76,13 @@ export const SECTIONS: Section[] = [
     group: "material",
     view: "/archive",
   },
+
   {
     href: "/admin/donations",
     label: "the wall",
     blurb: "Who put something in. No total, on purpose.",
     icon: "wall",
-    group: "material",
+    group: "wall",
     view: "/donations",
   },
 
@@ -130,14 +131,27 @@ export const SECTIONS: Section[] = [
 export const GROUPS: { key: Section["group"]; label: string }[] = [
   { key: "content", label: "content" },
   { key: "material", label: "resources" },
+  // Its own heading. It sat under "resources" beside the archive and the quotes,
+  // and it is not one: those are material a story is made of, and this is a list
+  // of people who gave money.
+  { key: "wall", label: "the wall" },
   { key: "community", label: "community" },
   // Everything that arrives from outside rather than being written here.
   { key: "post", label: "the post" },
   { key: "settings", label: "settings" },
 ];
 
+/**
+ * What is under a heading, in alphabetical order.
+ *
+ * The order used to be the order they happened to be written down in, which is
+ * an order only the person who wrote it knows. Alphabetical is the one order
+ * anybody can predict — you look for "events" where the e's are.
+ */
 export function sectionsIn(group: Section["group"]) {
-  return SECTIONS.filter((section) => section.group === group);
+  return SECTIONS.filter((section) => section.group === group).sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
 }
 
 /**

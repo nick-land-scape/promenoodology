@@ -10,7 +10,9 @@ export default async function PeoplePage() {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, user_id, email, name, country, role, listed, listed_by_admin, photo_path, colour, joined_on")
+    .select(
+      "id, user_id, email, name, country, role, listed, listed_by_admin, photo_path, colour, joined_on, member_no",
+    )
     .order("name")
     .returns<
       {
@@ -25,6 +27,7 @@ export default async function PeoplePage() {
         photo_path: string | null;
         colour: string | null;
         joined_on: string;
+        member_no: number | null;
       }[]
     >();
 
@@ -41,6 +44,7 @@ export default async function PeoplePage() {
     photo: row.photo_path,
     photoUrl: row.photo_path ? mediaUrl(row.photo_path) : null,
     joined: row.joined_on,
+    number: row.member_no,
     isMe: row.id === me.id,
   }));
 
@@ -50,6 +54,10 @@ export default async function PeoplePage() {
         Everybody, in alphabetical order — the community page and the list of accounts are one list.
         Most of them have never signed in to anything, and do not need to: being on the wall was
         never meant to require a login.
+      </p>
+      <p className="admin-note">
+        The number on the left is theirs for good. It is not their place in this list — the list is
+        alphabetical, so the numbers run out of order down the page, and that is the point of them.
       </p>
       <p className="admin-note">
         Somebody written down here is on the community page. Somebody invited is also sent a way in —

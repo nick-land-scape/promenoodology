@@ -40,6 +40,14 @@ export type Person = {
   photo: string | null;
   photoUrl: string | null;
   joined: string;
+  /**
+   * Theirs for good, and not their place in this list.
+   *
+   * The number that used to be here was the row's position — it moved whenever
+   * anybody was added or renamed, which is exactly what a member number must
+   * not do.
+   */
+  number: number | null;
   isMe: boolean;
 };
 
@@ -314,9 +322,11 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
       <ul className="admin-rows">
         {people.map((person, index) => (
           <li key={person.id} className="admin-row admin-person">
-            {/* Counting up, so "the fourteenth" is a thing anybody can say about
-                a list of sixty-four names. */}
-            <span className="admin-person-no">{index + 1}</span>
+            {/* Their own number, given once and never changed — not their place
+                in this list, which moves every time somebody is added. */}
+            <span className="admin-person-no" title="Their member number">
+              {person.number ?? "—"}
+            </span>
 
             <Tick
               on={pick.has(person.id)}
