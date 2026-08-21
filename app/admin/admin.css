@@ -2907,6 +2907,14 @@ html.admin-dragging * {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* No rule over the top of them. A field draws one so that fields stacked in a
+   grid are divided from each other — and these two are the first thing in the
+   row, where it has nothing to divide them from and reads as a line somebody
+   forgot to finish. The one down the middle stays: that one is doing a job. */
+.admin-fields-pair > .admin-field {
+  border-top: 0;
+}
+
 /* A page's address: a fact at the foot of the row, not the headline it was. */
 .admin-slug {
   display: block;

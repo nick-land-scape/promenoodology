@@ -29,7 +29,7 @@ export default async function PagesPage() {
     <Head title="pages">
       <p className="admin-intro">
         Every page of the website: whether it is on the site at all, what the menu calls it, and
-        which part of the menu it sits in. <strong>Edit →</strong> opens everything about a page you
+        which part of the menu it sits in. <strong>Edit page →</strong> opens everything about a page you
         can change: the heading, the line under it, the words where it has any, and the few things
         that page decides for itself. <strong>View ↗</strong> opens the page on the site itself, in
         a new tab.
@@ -37,7 +37,7 @@ export default async function PagesPage() {
       <p className="admin-note">
         A page that is off is off for everybody: out of the menu, out of the sitemap, and a
         &ldquo;this page took a different walk&rdquo; at its own address. To read one over before it
-        opens, use its edit → rather than turning it on.
+        opens, use its edit page → rather than turning it on.
       </p>
       <PageList initial={lines} />
     </Head>
