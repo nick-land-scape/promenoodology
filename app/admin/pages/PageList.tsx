@@ -83,7 +83,10 @@ function PageRow({
         </span>
         <span className="admin-row-meta">{line.madeOf}</span>
 
-        <span className="admin-fields" style={{ marginTop: 6 }}>
+        {/* The two menu questions side by side: what it is called and which
+            part it sits in are one decision asked twice, and the grid's
+            auto-fit was stacking them because the row is narrow. */}
+        <span className="admin-fields admin-fields-pair" style={{ marginTop: 6 }}>
           <Field
             label="in the menu as"
             hint="Empty means it is not listed — the page is still there."
@@ -123,12 +126,16 @@ function PageRow({
           labels={["on the site", "off the site"]}
         />
 
+        {/* Two words and two arrows. A pair of buttons the same size reads as a
+            pair of choices, which is what they are; "edit the page" spelled out
+            was the biggest thing in the row and the arrow already says where it
+            goes. → stays here, ↗ leaves for the site. */}
         <Link
           href={`/admin/pages/${line.slug}`}
           className="admin-btn"
           title="Everything about this page you can change: the heading, the line under it, the words where it has any, and what it decides for itself"
         >
-          edit the page →
+          edit →
         </Link>
 
         {line.visible ? (
@@ -136,10 +143,10 @@ function PageRow({
             href={`/${line.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="admin-word"
+            className="admin-btn admin-btn-quiet"
             title="Opens the page itself, in a new tab"
           >
-            see it ↗
+            view ↗
           </a>
         ) : (
           <Tag tone="warn">404 for everybody</Tag>

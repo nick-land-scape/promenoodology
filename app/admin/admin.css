@@ -2900,3 +2900,9 @@ html.admin-dragging * {
   font-style: italic;
   color: var(--admin-quiet);
 }
+
+/* Two fields that belong together, side by side however narrow the row is.
+   auto-fit gives up below its minimum and stacks; this does not. */
+.admin-fields-pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
