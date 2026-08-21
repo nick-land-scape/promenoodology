@@ -2855,3 +2855,48 @@ html.admin-dragging * {
   font-style: italic;
   color: var(--admin-faint);
 }
+
+/* Whether a page is on the site, the way in, and the way out to it — one line,
+   in that order, because that is the order you think about them in. */
+.admin-doors {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: none;
+  padding-top: 2px;
+}
+
+/* The menu, in the three parts it actually has. */
+.admin-part {
+  margin-bottom: 30px;
+}
+
+.admin-part-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--ink);
+  margin-bottom: 2px;
+}
+
+.admin-part-head h2 {
+  margin: 0;
+  font: inherit;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.admin-part-head p {
+  margin: 0;
+  font-size: 0.88em;
+  font-style: italic;
+  color: var(--admin-quiet);
+}
