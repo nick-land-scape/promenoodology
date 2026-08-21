@@ -1,114 +1,174 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { liftTheCurtain } from "@/lib/native";
 import type { Film } from "@/lib/source";
 
 /**
- * The screen while the app opens.
+ * The curtain the app opens with.
  *
- * The same films as the front page of the website, full screen, with the logo
- * multiplied over them — the multiply is what makes it look like ink on the
- * picture rather than a sticker over it, because the white of the scan disappears
- * and only the purple stays.
+ * The same films as the front page of the website, full screen, with the mark
+ * multiplied over them — multiply is what makes it look like ink on the picture
+ * rather than a sticker over it, because the white of the scan disappears and only
+ * the purple stays.
  *
- * Three things it is careful about:
+ * Why it is written the way it is:
  *
- * It shows once a session. A splash on every navigation is a splash you learn to
- * hate, so it is remembered in sessionStorage — which is per tab and forgotten
- * when the tab closes, so opening the app tomorrow gets it again.
+ * **It waits for the film, but not for long.** The first version held the screen
+ * for a flat second and a half and then left, which on any real connection meant
+ * the film had not started and nobody ever saw one — the answer to "why isn't the
+ * video loading" was that it was, just not in time to be looked at. Now the
+ * curtain stays until the film actually has a frame to show, and gives up after
+ * two and a half seconds if it does not. An app that waits on a video is worse
+ * than an app with no video.
  *
- * It leaves on its own. The app underneath is already rendered behind it; this is
- * not waiting for anything, so it fades after a moment rather than hanging on for
- * a film to load. Pressing it also dismisses it, because being made to look at a
- * splash is the one thing worse than one you did not ask for.
+ * **It asks the film to play out loud.** Muted autoplay is allowed in a WebView,
+ * but "allowed" is not "always", so play() is called and its refusal is caught
+ * rather than left to be silence.
  *
- * It is not shown to anybody who has asked for less movement — they get the still
- * and no fade, for the same moment.
+ * **The ink arrives.** The mark is revealed by a sweep across it rather than faded
+ * in, so it reads as being painted on — which is what it is, a scan of a brush.
+ *
+ * **Once a session**, remembered per tab, so it is a way of opening the app rather
+ * than a thing that happens between screens.
  */
+/**
+ * Decided once per page load, outside the component.
+ *
+ * The effect below used to read sessionStorage and write it in the same breath,
+ * which is a bug the moment anything mounts twice — and React mounts everything
+ * twice in development on purpose. First run: nothing seen, show the curtain,
+ * write "yes". Second run, immediately after: reads its own "yes", concludes the
+ * curtain has already been shown, and takes it away before a single frame of it
+ * has been drawn. Which is exactly what "the video isn't loading" looked like:
+ * the film was fine, the curtain it lives in was being dismissed by itself.
+ *
+ * A module-scope answer survives the second mount and any remount inside the same
+ * page life, and starts again from storage on a real load — which is what "once a
+ * session" is supposed to mean.
+ */
+let decided: boolean | null = null;
+
 export default function Splash({ films }: { films: Film[] }) {
-  /* Null until it is known: the answer lives in sessionStorage, and reading that
-     on the server would be guessing. Nothing is drawn until it is known, so the
-     splash never flashes at somebody who has already seen it. */
+  const film = useRef<HTMLVideoElement>(null);
+  /* Null until it is known: the answer lives in sessionStorage and reading that on
+     the server would be guessing, so nothing is drawn until it is known and the
+     curtain never flashes at somebody who has already seen it. */
   const [show, setShow] = useState<boolean | null>(null);
   const [going, setGoing] = useState(false);
+  const [rolling, setRolling] = useState(false);
   const [at, setAt] = useState(0);
+  const [still, setStill] = useState(false);
 
-  /* The native launch screen, put away.
-   *
-   * It is told not to hide itself (see capacitor.config.ts) so that it can hold
-   * the screen until this is drawn and the join between the two is invisible.
-   * Which means something has to actually put it away — and until this line
-   * existed, nothing did: the app opened on a white screen for ever, with the
-   * whole thing loaded and running behind it. */
+  /* The native launch screen is told to hide itself after a moment (see
+     capacitor.config.ts). This lifts it earlier where the bridge is there —
+     early, but never load-bearing. */
   useEffect(() => {
     void liftTheCurtain();
   }, []);
 
   useEffect(() => {
-    let seen = false;
-    try {
-      seen = sessionStorage.getItem("splashed") === "yes";
-      sessionStorage.setItem("splashed", "yes");
-    } catch {
-      // A browser with storage switched off. It gets the splash every time,
-      // which is the harmless way round.
-    }
-    if (seen) {
-      setShow(false);
+    setStill(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+    // Already answered in this page life — including by a second mount.
+    if (decided !== null) {
+      setShow(decided);
+      if (decided && films.length > 1) setAt(Math.floor(Math.random() * films.length));
       return;
     }
 
-    setShow(true);
-    if (films.length > 1) setAt(Math.floor(Math.random() * films.length));
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem("splashed") === "yes";
+    } catch {
+      // Storage switched off: it shows every time, which is the harmless way round.
+    }
 
-    const leaving = window.setTimeout(() => setGoing(true), 1500);
-    const gone = window.setTimeout(() => setShow(false), 2100);
-    return () => {
-      window.clearTimeout(leaving);
-      window.clearTimeout(gone);
-    };
+    decided = !seen;
+    setShow(decided);
+    if (!seen) {
+      try {
+        sessionStorage.setItem("splashed", "yes");
+      } catch {
+        /* nothing to remember with */
+      }
+      if (films.length > 1) setAt(Math.floor(Math.random() * films.length));
+    }
   }, [films.length]);
+
+  /* When to leave. Two clocks: one that waits for the film and one that refuses
+     to wait for ever. Whichever comes first starts the fade. */
+  useEffect(() => {
+    if (show !== true) return;
+
+    const patience = window.setTimeout(() => setGoing(true), 2500);
+    const enough = rolling ? window.setTimeout(() => setGoing(true), 1400) : 0;
+    return () => {
+      window.clearTimeout(patience);
+      if (enough) window.clearTimeout(enough);
+    };
+  }, [show, rolling]);
+
+  useEffect(() => {
+    if (!going) return;
+    const gone = window.setTimeout(() => setShow(false), 620);
+    return () => window.clearTimeout(gone);
+  }, [going]);
 
   if (!show) return null;
 
-  const film = films[at] ?? films[0];
+  const chosen = films[at] ?? films[0];
 
   return (
     <div
-      className={going ? "splash splash-going" : "splash"}
-      // Not a dialog and not a button: it is a curtain. It says nothing to a
-      // screen reader, which is already reading the app behind it.
+      className={[
+        "curtain",
+        going ? "curtain-going" : "",
+        rolling ? "curtain-rolling" : "",
+        still ? "curtain-still" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      // A curtain, not a dialogue: the app behind it is already being read out.
       aria-hidden="true"
+      // Impatience is allowed.
       onClick={() => setGoing(true)}
     >
-      {film?.poster ? (
+      {chosen?.poster ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img className="splash-still" src={film.poster} alt="" fetchPriority="high" />
+        <img className="curtain-still-frame" src={chosen.poster} alt="" fetchPriority="high" />
       ) : null}
 
-      {film ? (
+      {chosen && !still ? (
         <video
-          className="splash-film"
-          src={film.src}
-          poster={film.poster ?? undefined}
+          ref={film}
+          className="curtain-film"
+          src={chosen.src}
+          poster={chosen.poster ?? undefined}
           autoPlay
           muted
           loop
           playsInline
           preload="auto"
           tabIndex={-1}
+          onCanPlay={() => {
+            setRolling(true);
+            // Asked out loud: muted autoplay is allowed in a WebView, and
+            // "allowed" is not "always".
+            film.current?.play().catch(() => {
+              /* Refused. The still underneath is doing the job. */
+            });
+          }}
         />
       ) : null}
 
-      {/* Two copies, multiplied, exactly as the front page does it: the ink
-          doubles over the busy parts of the picture and the white of the scan
-          disappears. */}
+      {/* Two multiplied copies, exactly as the front page does it: the ink doubles
+          over the busy parts of the picture and the white of the scan disappears. */}
       {[0, 1].map((layer) => (
         <Image
           key={layer}
-          className={layer === 0 ? "splash-mark" : "splash-mark splash-mark-ink"}
+          className={layer === 0 ? "curtain-mark" : "curtain-mark curtain-mark-ink"}
           src="/logo.png"
           alt=""
           width={1600}

@@ -8,8 +8,8 @@ import { useState } from "react";
  *
  * They were there before and they did nothing — four buttons with no handlers,
  * one of them called "saved" for a thing this club does not have. Four again, and
- * each one goes somewhere: what is on, telling somebody about us, your own
- * details, and out to the website.
+ * each one goes somewhere inside the app: what is on, telling somebody about us,
+ * your own details, and saying something to us.
  *
  * Telling somebody uses the phone's own share sheet where there is one, because
  * that is where the messages people actually send from live. Where there is not
@@ -80,15 +80,16 @@ export default function Shortcuts() {
           </Link>
         </li>
 
+        {/* Was "the website". Inside the app that is not a place to go: what is
+            on it is in here, and a link out is a way out. */}
         <li>
-          <Link className="shortcut" href="/">
+          <Link className="shortcut" href="/app/contact">
             <span className="shortcut-ring" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="20" height="20">
-                <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" strokeWidth="1.4" />
-                <path d="M3.6 9.8h16.8M3.6 14.2h16.8M12 3.4c-2.6 2.4-2.6 14.8 0 17.2 2.6-2.4 2.6-14.8 0-17.2z" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M3.5 6h17v12h-17zM3.5 6l8.5 6.5L20.5 6" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
               </svg>
             </span>
-            <span>the website</span>
+            <span>get in touch</span>
           </Link>
         </li>
       </ul>

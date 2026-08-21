@@ -22,7 +22,7 @@
 export type LegalPart = { heading: string; text?: never } | { heading?: never; text: string };
 
 export type LegalSpec = {
-  slug: "privacy" | "imprint" | "terms";
+  slug: "privacy" | "imprint" | "terms" | "support";
   title: string;
   lead: string;
   changed: string;
@@ -33,6 +33,44 @@ export type LegalSpec = {
 const GAP = "— still to be filled in —";
 
 export const LEGAL: LegalSpec[] = [
+  {
+    slug: "support",
+    title: "help",
+    lead: "Something not working, or a question. Both reach a person.",
+    changed: "21 August 2026",
+    parts: [
+      {
+        text: "There is no ticket system here and no chatbot. Write to info@promeNOODology.com and somebody who can actually do something about it will read it, usually the same week.",
+      },
+      { heading: "From inside the app" },
+      {
+        text: "Your account, then get in touch — a bug, an idea, or a word. A bug carries the screen you were on and the phone you were holding with it, which is the difference between us fixing it and us guessing.",
+      },
+      { heading: "Signing in" },
+      {
+        text: "There are no passwords. You give your address, a code arrives, you type it in. If the code has not come: look in the spam folder, check the address for a typo, and ask for another one — the old one stops working as soon as a new one is sent. Codes are good for an hour and for one use.",
+      },
+      {
+        text: "If you signed in with Apple and chose to hide your email address, Apple gives us a forwarding address instead of yours. That works, but it means we cannot recognise you by the address you normally use — in the app, under ways to sign in, you can join Apple to the account you already have.",
+      },
+      { heading: "Your own things" },
+      {
+        text: "Your name, where you are from, your portrait and whether you are on the community page are all yours to change in the app, under your personal information. Your member number and the day you joined are not — write to us if either is wrong.",
+      },
+      { heading: "Leaving" },
+      {
+        text: "Your account, then leave the club, at the bottom. It deletes the rows rather than hiding them: the profile, the portrait, what you signed up for, everything you wrote and the pictures on it, and the login itself. It cannot be undone, which is why it asks twice. If you would rather we did it, write and we will.",
+      },
+      { heading: "Coming to something" },
+      {
+        text: "Saying yes in the app is saying you intend to be there, not buying a ticket — nothing is charged and nothing is owed, here or anywhere else in this club. Tell us about allergies before an evening rather than after it.",
+      },
+      { heading: "If the app will not open" },
+      {
+        text: "It needs a line to the outside: everything on its screens is the club as it is right now. If it says there is no signal and your phone plainly has one, close it and open it again — and if that does not do it, write to us with the make of phone. That is exactly the kind of thing the bug button is for.",
+      },
+    ],
+  },
   {
     slug: "privacy",
     title: "what we do with your data",

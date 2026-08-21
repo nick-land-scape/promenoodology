@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import Photo from "../Photo";
 import type { ClubEvent } from "@/lib/content";
 import { cancelMyPlace, signUpForEvent } from "@/app/app/actions";
+import { buzz } from "@/lib/native";
 
 export type Joinable = ClubEvent & {
   /** When it is, said the way the row says it. */
@@ -40,6 +41,7 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
         setSaid({ id: event.id, words: answer.error ?? "That did not go through.", bad: true });
         return;
       }
+      void buzz("medium");
       setOpen(null);
       setBringing("");
       setSaid({

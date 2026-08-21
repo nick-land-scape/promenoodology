@@ -31,10 +31,11 @@ export default async function AppHome() {
 
   return (
     <>
+      {/* No "website ↗". Inside the app the website is not somewhere to go —
+          everything on it that is worth reading is in here, under Read. */}
       <AppHeader
         eyebrow="welcome"
         title={me.name ? `hello, ${me.name.split(" ")[0]}` : "hello"}
-        aside={<Link href="/">website ↗</Link>}
       />
 
       <UpcomingEvents events={events} places={places} />

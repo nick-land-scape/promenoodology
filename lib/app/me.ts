@@ -76,10 +76,16 @@ export async function whoIsThis(): Promise<Me | null> {
   };
 }
 
-/** The same, but there is no version of these screens for a stranger. */
+/**
+ * The same, but there is no version of these screens for a stranger.
+ *
+ * To the app's own door rather than the website's sign-in page: opening an app and
+ * being shown a web page — heading, paragraph, menu, footer — is the moment
+ * somebody decides this is not really an app.
+ */
 export async function requireMember(where: string): Promise<Me> {
   const me = await whoIsThis();
-  if (!me) redirect(`/account/sign-in?from=${encodeURIComponent(where)}`);
+  if (!me) redirect(`/app/enter?from=${encodeURIComponent(where)}`);
   return me;
 }
 

@@ -38,7 +38,20 @@ const config: CapacitorConfig = {
        app to read a story. Anything else (Instagram, a mailto, a link somebody
        posted) opens in the phone's own browser, which is both the rule and the
        kinder behaviour. */
-    allowNavigation: ["www.promenoodology.com", "promenoodology.com", "bqdtxqdmdtzffvkvrqpt.supabase.co"],
+    allowNavigation: [
+      "www.promenoodology.com",
+      "promenoodology.com",
+      "bqdtxqdmdtzffvkvrqpt.supabase.co",
+      /* Apple's own sign-in page.
+       *
+       * The app signs in through the native sheet and never needs this — but if it
+       * ever falls back to the web flow, this is the line that decides whether the
+       * person comes back into the app or is handed to Safari and left looking at
+       * the login screen again. That is the bug the sibling app was rejected for,
+       * and it is one missing hostname wide. */
+      "appleid.apple.com",
+      "appleid.cdn-apple.com",
+    ],
   },
 
   ios: {

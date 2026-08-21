@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { leaveTheClub } from "@/app/app/actions";
+import { supabaseBrowser } from "@/lib/supabase/browser";
 
 /**
  * Leaving, asked twice.
@@ -10,6 +10,12 @@ import { leaveTheClub } from "@/app/app/actions";
  * Small, quiet and last, because it is not a thing anybody should reach for by
  * accident — and asked twice, because it cannot be undone. The first press only
  * says what will happen; the second one does it.
+ *
+ * The deleting is done by Supabase's own function rather than by this site's
+ * server (see supabase/functions/leave-the-club). Removing a login needs a key
+ * that would otherwise have to be set by hand on the hosting account — and an
+ * account deletion that half works because a variable is missing is worse than
+ * none: it takes the person's things and leaves them a login.
  */
 export default function Leaving() {
   const router = useRouter();
@@ -44,12 +50,24 @@ export default function Leaving() {
           if (!confirm("Delete your account and everything on it? This cannot be undone.")) return;
           setTrouble("");
           start(async () => {
-            const answer = await leaveTheClub();
-            if (!answer.ok) {
-              setTrouble(answer.error ?? "That did not work.");
+            const supabase = supabaseBrowser();
+            const { data, error } = await supabase.functions.invoke("leave-the-club", {
+              method: "POST",
+            });
+            const said = data as { ok?: boolean; error?: string } | null;
+
+            if (error || !said?.ok) {
+              setTrouble(
+                said?.error ??
+                  "That did not finish. Nothing has been deleted — write to info@promeNOODology.com and we will do it by hand.",
+              );
               return;
             }
-            router.push("/");
+
+            // The login is gone, so the session in this browser is a ghost.
+            await supabase.auth.signOut();
+            router.replace("/app/enter");
+            router.refresh();
           });
         }}
       >

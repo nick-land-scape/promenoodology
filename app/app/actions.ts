@@ -201,79 +201,16 @@ export async function takeDownMyReply(id: string): Promise<{ ok: boolean; error?
 
 /* ---------------------------------------------------------------- leaving */
 
-/**
- * Leaving, and meaning it.
+/* Leaving is done by Supabase's own function — supabase/functions/leave-the-club —
+ * and not from here.
  *
- * Everything: the profile, the portrait, what you signed up for, everything you
- * wrote and every picture on it, and the login itself. Not a flag, not a request
- * that lands in somebody's inbox — the rows are deleted.
+ * It was here, and it needed the service key: the only way to remove a login is
+ * with a key that must never reach a browser, which meant a variable set by hand
+ * on the hosting account. Until somebody set it, the button deleted a person's
+ * things and left them a login they could still sign in with — which is not what
+ * it says, and not what an app store allows of an app that keeps accounts.
  *
- * It is here rather than as a note to us for two reasons. It is what the words on
- * the button say, and a button that says "leave the club" and files a ticket is a
- * button that lies. And Google will not take an app that keeps accounts without a
- * way to delete one from inside it, so the honest version is also the required
- * one.
- *
- * The order is deliberate: the files first, because after the rows are gone
- * nothing knows which files were theirs; then the profile, which takes the posts,
- * the replies and the bookings with it through the foreign keys; then the login.
- * If the last step fails the account is empty and cannot be signed into
- * meaningfully — better that than a login with a half-deleted person behind it.
- */
-export async function leaveTheClub(): Promise<{ ok: boolean; error?: string }> {
-  const me = await whoIsThis();
-  if (!me) return { ok: false, error: "You are not signed in any more." };
-
-  const service = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-  if (!service) {
-    return {
-      ok: false,
-      error:
-        "This cannot finish here: the server has no service key, so the login itself cannot be removed. Write to info@promeNOODology.com and we will do it by hand.",
-    };
-  }
-
-  const supabase = await supabaseServer();
-
-  /* Their own two folders in the bucket: the portrait and anything they put on a
-     post. Listed and removed rather than guessed at. */
-  for (const folder of [`profiles/${me.userId}`, `posts/${me.userId}`]) {
-    const { data: files } = await supabase.storage.from("media").list(folder);
-    const paths = (files ?? []).map((file) => `${folder}/${file.name}`);
-    if (paths.length > 0) await supabase.storage.from("media").remove(paths);
-  }
-
-  // Anything they posted before the folders existed, or that an admin uploaded
-  // for them, is pointed at by the row rather than by the folder.
-  const { data: theirs } = await supabase
-    .from("posts")
-    .select("photo_paths, photo_path")
-    .eq("author_id", me.id)
-    .returns<{ photo_paths: string[] | null; photo_path: string | null }[]>();
-  const loose = (theirs ?? []).flatMap((post) => [...(post.photo_paths ?? []), post.photo_path ?? ""]).filter(Boolean);
-  if (loose.length > 0) await supabase.storage.from("media").remove(loose);
-  if (me.photoPath) await supabase.storage.from("media").remove([me.photoPath]);
-
-  const { error } = await supabase.from("profiles").delete().eq("id", me.id);
-  if (error) return { ok: false, error: error.message };
-
-  const gone = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users/${me.userId}`, {
-    method: "DELETE",
-    headers: { apikey: service, Authorization: `Bearer ${service}` },
-  });
-  if (!gone.ok) {
-    console.error("The profile went but the login stayed:", gone.status, await gone.text());
-    return {
-      ok: false,
-      error:
-        "Everything about you has been deleted, but the login itself would not go. Write to info@promeNOODology.com and we will finish it.",
-    };
-  }
-
-  await supabase.auth.signOut();
-  revalidatePath("/", "layout");
-  return { ok: true };
-}
+ * Inside Supabase that key is Supabase's own and there is nothing to configure. */
 
 /* ------------------------------------------------------------------- waving */
 

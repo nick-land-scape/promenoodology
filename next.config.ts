@@ -1,6 +1,24 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /*
+   * How long the browser may keep a page it has already fetched.
+   *
+   * This is the difference between an app and a website in a wrapper. Every screen
+   * in /app is dynamic — it is about *you*, so it cannot be cached for everybody —
+   * and Next keeps dynamic pages in the client router for exactly zero seconds by
+   * default. So switching tabs asked the server again, every time, over whatever
+   * signal the phone had: three taps between Home and What's on was three round
+   * trips for three pages that had not changed.
+   *
+   * Thirty seconds. Long enough that moving around the app is instant, short
+   * enough that anything anybody actually does — signing up for an evening, waving
+   * back, posting — is seen straight away, because every one of those calls
+   * revalidates the paths it touched and that clears this too.
+   */
+  experimental: {
+    staleTimes: { dynamic: 30, static: 180 },
+  },
   // The whole site is static — nothing here needs a server at request time.
   images: {
     // Photos are shown small in grids and at most ~1200px on hover / full view.
@@ -49,6 +67,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       { source: "/privacy", destination: "/legal/privacy" },
+      { source: "/support", destination: "/legal/support" },
+      { source: "/help", destination: "/legal/support" },
       { source: "/imprint", destination: "/legal/imprint" },
       { source: "/terms", destination: "/legal/terms" },
     ];

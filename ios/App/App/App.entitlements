@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sign in with Apple.
+
+  Without this file the native sheet does not appear at all: iOS refuses the
+  request, the app falls back to the web flow, and the web flow is what got this
+  project's sibling app rejected twice — signed in somewhere else, still looking at
+  the login screen here.
+
+  "Default" rather than a named container: this app is not part of a group of apps
+  sharing one Apple ID relationship.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+</dict>
+</plist>

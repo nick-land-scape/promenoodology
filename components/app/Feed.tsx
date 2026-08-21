@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import Photo from "../Photo";
 import type { Member, Post } from "@/lib/content";
 import { replyTo, say, takeDownMyPost, takeDownMyReply, wave } from "@/app/app/actions";
+import { buzz } from "@/lib/native";
 import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
 import { mediaUrl } from "@/lib/supabase/config";
 
@@ -200,6 +201,7 @@ function Composer({ meName }: { meName: string }) {
         setTrouble(answer.error ?? "That did not go up.");
         return;
       }
+      void buzz("medium");
       setWords("");
       setPlace("");
       setPaths([]);

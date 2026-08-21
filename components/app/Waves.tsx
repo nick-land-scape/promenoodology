@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Photo from "../Photo";
 import { wave, waveseen } from "@/app/app/actions";
+import { buzz } from "@/lib/native";
 import type { Wave } from "@/lib/app/me";
 import { mediaUrl } from "@/lib/supabase/config";
 
@@ -56,7 +57,10 @@ export default function Waves({ waves }: { waves: Wave[] }) {
                 onClick={() =>
                   start(async () => {
                     const answer = await wave(one.whoId);
-                    if (answer.ok) setWaved((current) => ({ ...current, [one.whoId]: true }));
+                    if (answer.ok) {
+                      void buzz("light");
+                      setWaved((current) => ({ ...current, [one.whoId]: true }));
+                    }
                   })
                 }
               >

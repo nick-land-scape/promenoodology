@@ -2359,16 +2359,39 @@ html.has-top-bar {
     width: min(92vw, var(--limit), calc(64vh * var(--ar)));
   }
 
-  /* Not enough width for caption and controls side by side: stack them. */
+  /*
+   * Under the photograph, everything is one centred column.
+   *
+   * On a wide screen the caption hangs off the bottom left of the photograph and
+   * the arrows off the bottom right, which reads as two corners of one frame. On
+   * a phone there is not the width for that, and what it turned into was three
+   * things at three different left edges under a centred picture — the caption
+   * here, the save button after it, the arrows below and slightly elsewhere. One
+   * column, centred, in the order you use them.
+   */
   .lightbox-caption {
+    left: 0;
+    right: 0;
     max-width: 100%;
+    text-align: center;
   }
 
   .lightbox-controls {
-    top: calc(100% + 34px);
+    top: calc(100% + 40px);
     left: 0;
-    right: auto;
-    gap: 16px;
+    right: 0;
+    justify-content: center;
+    gap: 22px;
+  }
+
+  /* And the way out goes where a way out goes on a phone: the top right of the
+     screen, where a thumb is, rather than tucked over the corner of the picture. */
+  .lightbox-close {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 14px);
+    right: 16px;
+    bottom: auto;
+    z-index: 2;
   }
 
   .hero-video,

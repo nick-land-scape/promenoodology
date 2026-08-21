@@ -19,6 +19,7 @@ export const dynamic = "force-dynamic";
    them: they are not things you change, they are things you are entitled to
    read. */
 const LEGAL = [
+  { label: "help", href: "/support" },
   { label: "what we do with your data", href: "/privacy" },
   { label: "terms and conditions", href: "/terms" },
   { label: "imprint", href: "/imprint" },

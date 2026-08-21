@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
 import { requireMember } from "@/lib/app/me";
@@ -78,9 +77,7 @@ export default async function AppStoryPage({ params }: { params: Promise<{ slug:
         </p>
       ) : null}
 
-      <p className="app-foot">
-        <Link href={`/stories/${story.slug}`}>See it laid out on the website ↗</Link>
-      </p>
+
     </>
   );
 }

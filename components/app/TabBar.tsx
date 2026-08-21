@@ -17,6 +17,10 @@ const TABS = [
 export default function TabBar() {
   const pathname = usePathname();
 
+  /* Not on the door. There is nothing to switch between until somebody is in,
+     and four tabs under a sign-in screen are four dead ends. */
+  if (pathname === "/app/enter") return null;
+
   return (
     <nav className="tabbar" aria-label="Main">
       {TABS.map(({ href, label, icon: Icon }) => {
