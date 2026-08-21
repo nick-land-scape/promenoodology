@@ -8,6 +8,7 @@ import { addRow, deleteRow, type RowValues, saveRows } from "@/app/admin/rows-ac
 import { type Column, TABLES, type TableName } from "@/lib/admin/tables";
 import { Picker, type Pickable } from "./Pick";
 import { Some } from "./Many";
+import When from "./When";
 import type { Choice } from "./Picker";
 import { Bin, Empty, Field, Flag, Icon, Problem, SaveBar, Word, pretty, today } from "./ui";
 
@@ -153,6 +154,33 @@ export default function RowsEditor({
           type="date"
           value={String(value ?? "")}
           onChange={(event) => edit(row.id, column.key, event.target.value)}
+        />
+      );
+    }
+
+    if (column.kind === "when") {
+      /* A day and an hour together, behind a calendar of our own — the one place
+         the browser's control genuinely cannot help, because it has no idea the
+         two belong to each other. */
+      const hour = column.time ?? column.key;
+      // The end of something may not be before its beginning, and the calendar
+      // says so by refusing the squares rather than by complaining afterwards.
+      const beginning = spec.columns.find((one) => one.kind === "when" && one !== column);
+      return (
+        <When
+          label={column.label}
+          date={String(value ?? "")}
+          time={String(row[hour] ?? "")}
+          notBefore={
+            beginning && spec.columns.indexOf(beginning) < spec.columns.indexOf(column)
+              ? String(row[beginning.key] ?? "") || undefined
+              : undefined
+          }
+          onChange={(day, at) => {
+            edit(row.id, column.key, day);
+            edit(row.id, hour, at);
+          }}
+          empty={column.hint ? "not set" : "choose a day"}
         />
       );
     }
@@ -429,6 +457,9 @@ export default function RowsEditor({
                     /* A stretch needs two controls' worth of room; in one
                        column the browser clips its own date format. */
                     two={column.kind === "dates" || column.kind === "times"}
+                    /* A "when" is one control and fits one column. Spanning two
+                       in a three-column grid left the next field alone on a row
+                       with nothing under it. */
                   >
                     {cell(row, column)}
                   </Field>

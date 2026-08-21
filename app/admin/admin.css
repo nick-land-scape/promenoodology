@@ -2030,10 +2030,11 @@ html.admin-dragging * {
   gap: 12px;
 }
 
-/* Counting up. Tabular figures so 9 and 10 line up at the left edge. */
+/* Their number. Tabular figures so 9 and 10 line up, and wide enough for three
+   digits before it needs thinking about again. */
 .admin-person-no {
   flex: none;
-  width: 22px;
+  width: 26px;
   padding-top: 12px;
   font-size: 0.85em;
   font-variant-numeric: tabular-nums;
@@ -3092,4 +3093,197 @@ html.admin-dragging * {
 /* A field holding two controls needs two columns of the grid. */
 .admin-field-two {
   grid-column: span 2;
+}
+
+/* ------------------------------------------------------- a day and an hour */
+
+/*
+ * One field, one calendar. The face is a line like every other field's control;
+ * the month is a popover built the same way the searchable dropdown is, so the
+ * back of the house has one idea of what "a thing that opens" looks like.
+ */
+.admin-when {
+  position: relative;
+  min-width: 0;
+}
+
+.admin-when-face {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-when-face svg {
+  flex: none;
+  width: 9px;
+  height: 6px;
+  color: var(--admin-faint);
+}
+
+.admin-when-none {
+  color: var(--admin-faint);
+  font-style: italic;
+}
+
+.admin-when-drop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: -8px;
+  z-index: 50;
+  width: 258px;
+  padding: 10px 11px 11px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
+}
+
+.admin-when-drop header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.admin-when-drop header strong {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.admin-when-drop header button {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--hairline);
+  background: none;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.admin-when-drop header button:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.admin-when-week,
+.admin-when-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.admin-when-week {
+  margin-bottom: 3px;
+}
+
+.admin-when-week span {
+  font-family: var(--sans);
+  font-size: 0.48rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+  text-align: center;
+}
+
+.admin-when-grid button {
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  background: none;
+  font: inherit;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.admin-when-grid button:hover:not([disabled]) {
+  border-color: var(--purple);
+}
+
+/* Today is marked, the chosen day is filled: one is a fact, the other an answer,
+   and they should not look alike.
+   
+   Written as descendants of the grid on purpose: a single class loses to
+   ".admin-when-grid button", which sets background: none — so the chosen day
+   was carrying the class and showing nothing. */
+.admin-when-grid .admin-when-today {
+  box-shadow: inset 0 -2px 0 var(--admin-faint);
+}
+
+.admin-when-grid .admin-when-on {
+  background: var(--purple);
+  color: #fff;
+}
+
+.admin-when-grid .admin-when-on.admin-when-today {
+  box-shadow: none;
+}
+
+.admin-when-grid button[disabled] {
+  color: var(--admin-faint);
+  opacity: 0.4;
+  cursor: default;
+}
+
+.admin-when-drop footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-when-drop footer label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.9em;
+  font-style: italic;
+  color: var(--admin-quiet);
+}
+
+.admin-when-drop footer input {
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: none;
+  padding: 1px 0;
+  font: inherit;
+  font-style: normal;
+  font-size: 0.98rem;
+  color: var(--ink);
+}
+
+.admin-when-clear {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.88em;
+  font-style: italic;
+  color: var(--admin-quiet);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.admin-when-clear:hover {
+  color: var(--pink);
 }
