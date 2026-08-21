@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import InHead from "@/components/admin/InHead";
+import Thumb from "@/components/admin/Thumb";
 import Uploader from "@/components/admin/Uploader";
 import {
   Button,
@@ -338,8 +339,7 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                   title={person.photoUrl ? "Choose another portrait" : "Add a portrait"}
                 >
                   {person.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={person.photoUrl} alt="" />
+                    <Thumb src={person.photoUrl} width={0} height={0} sizes="64px" />
                   ) : (
                     <span className="admin-portrait-none">{initials(person.name)}</span>
                   )}

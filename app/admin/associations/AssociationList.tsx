@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import InHead from "@/components/admin/InHead";
+import Thumb from "@/components/admin/Thumb";
 import Uploader from "@/components/admin/Uploader";
 import {
   Bin,
@@ -209,8 +210,7 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
                     title={row.logoUrl ? "Choose another logo" : "Add a logo"}
                   >
                     {row.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={row.logoUrl} alt="" draggable={false} />
+                      <Thumb src={row.logoUrl} width={0} height={0} sizes="96px" fit="contain" />
                     ) : (
                       <span className="admin-logo-none">no logo</span>
                     )}

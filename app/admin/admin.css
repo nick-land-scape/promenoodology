@@ -2472,3 +2472,17 @@ html.admin-dragging * {
   font-size: 0.85em;
   color: var(--ink);
 }
+
+/* A picture in the back of the house: a wash until the bytes land, and never
+   the file itself where a thumbnail will do. */
+.admin-thumbnail {
+  background-color: var(--wash);
+}
+
+.admin-thumbnail[data-loaded] {
+  background-color: transparent;
+}
+
+.admin-thumbnail-contain {
+  object-fit: contain;
+}

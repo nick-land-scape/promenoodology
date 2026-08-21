@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Thumb from "./Thumb";
 import { Icon } from "./ui";
 
 /**
@@ -121,8 +122,7 @@ export default function Picker({
         onClick={() => setOpen((was) => !was)}
       >
         {chosen?.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={chosen.image} alt="" draggable={false} />
+          <Thumb src={chosen.image} width={0} height={0} sizes="24px" />
         ) : null}
         <span className={chosen ? "" : "admin-picker-none"}>{chosen?.label ?? empty ?? "—"}</span>
         <svg viewBox="0 0 10 6" aria-hidden="true" className="admin-picker-arrow">
@@ -171,8 +171,7 @@ export default function Picker({
                   onClick={() => take(one.value)}
                 >
                   {one.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={one.image} alt="" draggable={false} loading="lazy" />
+                    <Thumb src={one.image} width={0} height={0} sizes="40px" />
                   ) : one.value && options.some((option) => option.image) ? (
                     // A blank of the same size, so the names stay in one column
                     // whether or not somebody has sat for a portrait.

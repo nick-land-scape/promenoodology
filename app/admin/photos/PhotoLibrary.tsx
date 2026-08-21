@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import ArchiveCheck from "@/components/admin/ArchiveCheck";
+import Thumb from "@/components/admin/Thumb";
 import ImageEditor from "@/components/admin/ImageEditor";
 import InHead from "@/components/admin/InHead";
 import { Look } from "@/components/admin/Pick";
@@ -556,8 +557,15 @@ export default function PhotoLibrary({
                 onClick={() => setLooking(item.url)}
                 aria-label="Look at it properly"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.url} alt="" loading="lazy" draggable={false} />
+                <Thumb
+                  src={item.url}
+                  width={item.width}
+                  height={item.height}
+                  // Three to a row on a wide screen, two on a phone. Said
+                  // properly, this is the difference between a 320px file and a
+                  // 1500px one on every card.
+                  sizes="(max-width: 700px) 46vw, (max-width: 1100px) 30vw, 320px"
+                />
               </button>
 
               {/* Outside the button that opens it, so choosing and looking are
