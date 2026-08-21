@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import ArchiveCheck from "@/components/admin/ArchiveCheck";
 import ImageEditor from "@/components/admin/ImageEditor";
 import InHead from "@/components/admin/InHead";
 import { Look } from "@/components/admin/Pick";
@@ -24,7 +25,14 @@ import {
   useDragOrder,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
-import { addPhoto, deletePhoto, reorderPhotos, replacePhoto, savePhotos } from "./actions";
+import {
+  addPhoto,
+  deletePhoto,
+  fixSizes,
+  reorderPhotos,
+  replacePhoto,
+  savePhotos,
+} from "./actions";
 
 export type PhotoItem = {
   id: string;
@@ -414,6 +422,36 @@ export default function PhotoLibrary({
           </InHead>
         </div>
       </div>
+
+      {/* Only where the whole archive is on screen: a check of "everything" that
+          silently means "the eleven you have filtered to" is worse than none. */}
+      {story === ALL && items.length > 0 ? (
+        <ArchiveCheck
+          items={items}
+          onFix={async (fixes) => {
+            const result = await fixSizes(fixes);
+            if (!result.ok) return result.error ?? "The sizes did not save.";
+            setItems((list) =>
+              list.map((one) => {
+                const fix = fixes.find((f) => f.id === one.id);
+                return fix ? { ...one, width: fix.width, height: fix.height } : one;
+              }),
+            );
+            router.refresh();
+            return null;
+          }}
+          onDrop={async (ids) => {
+            for (const id of ids) {
+              const result = await deletePhoto(id);
+              if (!result.ok) return result.error ?? "One of them would not delete.";
+              setItems((list) => list.filter((one) => one.id !== id));
+              setKept((list) => list.filter((one) => one.id !== id));
+            }
+            router.refresh();
+            return null;
+          }}
+        />
+      ) : null}
 
       {reordered ? (
         <div className="admin-save" style={{ position: "static", marginTop: 0, marginBottom: 16 }}>

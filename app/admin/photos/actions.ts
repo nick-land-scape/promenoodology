@@ -109,6 +109,45 @@ export async function savePhotos(inputs: PhotoInput[]): Promise<Saved> {
 }
 
 /**
+ * Write down what a photograph actually measures.
+ *
+ * The archive draws every picture from the size recorded for it, so a row that
+ * disagrees with its file is a photograph printed in the wrong shape — squashed
+ * into a landscape box when it is a portrait. Nothing about the file is wrong,
+ * which is why this cannot be spotted by looking for broken images: it is the
+ * row that is wrong, and only the file can settle it.
+ *
+ * Two of these were found in the archive as imported. Rather than correcting
+ * them by hand, the browser measures every file and hands the disagreements
+ * here — so the next import is checked the same way.
+ */
+export async function fixSizes(
+  fixes: { id: string; width: number; height: number }[],
+): Promise<Saved & { fixed?: number }> {
+  await requireAdminAction();
+  const supabase = await supabaseServer();
+
+  let fixed = 0;
+  for (const one of fixes) {
+    if (one.width <= 0 || one.height <= 0) {
+      return {
+        ok: false,
+        error: `${one.id} was measured as ${one.width}×${one.height}, which cannot be right. Nothing has been changed.`,
+      };
+    }
+    const { error } = await supabase
+      .from("photos")
+      .update({ width: one.width, height: one.height })
+      .eq("id", one.id);
+    if (error) return failed(error);
+    fixed += 1;
+  }
+
+  refreshSite();
+  return { ok: true, fixed };
+}
+
+/**
  * Put an edited photograph in the place of the one it came from.
  *
  * A new path rather than the old one, and that is deliberate. Overwriting the
