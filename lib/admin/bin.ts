@@ -9,7 +9,15 @@
 export const DAYS_IN_THE_BIN = 30;
 
 export type Binnable = {
-  table: "stories" | "photos" | "quotes" | "news" | "events" | "donations" | "associations";
+  table:
+    | "stories"
+    | "photos"
+    | "quotes"
+    | "news"
+    | "events"
+    | "donations"
+    | "associations"
+    | "hero_videos";
   /** The heading it belongs under in the back of the house. */
   section: string;
   /** Where its section lives, for the link back. */
@@ -20,8 +28,20 @@ export type Binnable = {
   title: string;
   /** A second line, where there is something worth saying. */
   meta?: string;
-  /** The column holding a path in the bucket, for anything with a file. */
-  file?: string;
+  /**
+   * The columns holding a path in the bucket, for anything with files of its own.
+   *
+   * More than one because a film has two: itself, and the still made from its
+   * first frame. Both go when it does — a poster nothing points at is a bill like
+   * any other file.
+   */
+  files?: string[];
+  /**
+   * Which of them can be drawn as a thumbnail, where that is not the first.
+   *
+   * An mp4 in an <img> is a blank square, so a film shows its poster.
+   */
+  picture?: string;
 };
 
 export const BINNABLE: Binnable[] = [
@@ -33,7 +53,7 @@ export const BINNABLE: Binnable[] = [
     one: "a photograph",
     title: "credit",
     meta: "year",
-    file: "path",
+    files: ["path"],
   },
   { table: "quotes", section: "quotes", href: "/admin/quotes", one: "a quote", title: "text", meta: "who" },
   { table: "news", section: "news", href: "/admin/news", one: "a note", title: "title", meta: "published_on" },
@@ -52,7 +72,18 @@ export const BINNABLE: Binnable[] = [
     href: "/admin/associations",
     one: "a partner",
     title: "name",
-    file: "logo_path",
+    files: ["logo_path"],
+  },
+  {
+    table: "hero_videos",
+    section: "the front page",
+    href: "/admin/home",
+    one: "a film",
+    title: "called",
+    /* No second line: the only column left is how many seconds it runs, and
+       "6" on its own under a name says nothing. */
+    files: ["path", "poster_path"],
+    picture: "poster_path",
   },
 ];
 

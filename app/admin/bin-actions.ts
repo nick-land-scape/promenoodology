@@ -67,14 +67,14 @@ export async function destroy(table: string, id: string): Promise<Saved> {
   const spec = known(table);
   const supabase = await supabaseServer();
 
-  if (spec.file) {
+  if (spec.files) {
     const { data } = await supabase
       .from(spec.table)
-      .select(spec.file)
+      .select(spec.files.join(", "))
       .eq("id", id)
       .maybeSingle<Record<string, string | null>>();
-    const path = data?.[spec.file];
-    if (path) await supabase.storage.from("media").remove([path]);
+    const paths = spec.files.map((column) => data?.[column]).filter(Boolean) as string[];
+    if (paths.length > 0) await supabase.storage.from("media").remove(paths);
   }
 
   const { error } = await supabase.from(spec.table).delete().eq("id", id);
@@ -121,14 +121,14 @@ export async function emptyTheBin(): Promise<Saved & { gone?: number }> {
   for (const spec of BINNABLE) {
     const { data } = await supabase
       .from(spec.table)
-      .select(spec.file ? `id, ${spec.file}` : "id")
+      .select(["id", ...(spec.files ?? [])].join(", "))
       .not("deleted_at", "is", null)
       .lt("deleted_at", due)
       .returns<Record<string, string | null>[]>();
 
     for (const row of data ?? []) {
-      const path = spec.file ? row[spec.file] : null;
-      if (path) await supabase.storage.from("media").remove([path]);
+      const paths = (spec.files ?? []).map((column) => row[column]).filter(Boolean) as string[];
+      if (paths.length > 0) await supabase.storage.from("media").remove(paths);
 
       const { error } = await supabase.from(spec.table).delete().eq("id", row.id as string);
       if (error) return { ok: false, error: `${gone} were emptied, then: ${error.message}` };

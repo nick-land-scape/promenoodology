@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Film } from "@/lib/source";
 
 /** Knock this many times on the logo to be let into the members' app. */
 const KNOCKS = 3;
@@ -15,13 +16,30 @@ const KNOCK_WINDOW = 1400;
  * Moving the pointer nudges the two apart — the video drifts with the cursor,
  * the logo against it. A few pixels only; it should read as the page breathing,
  * not as an effect.
+ *
+ * Which film you get is decided here rather than on the server, and that is the
+ * whole reason it can be more than one: the home page is built once and cached
+ * for everybody, so a server that picked would pick once and every visitor for
+ * the next minute would see the same one. Picked in the browser, the page stays
+ * static and the film is still a surprise.
+ *
+ * With several films nothing is rendered until that choice is made — the poster
+ * alone holds the page. Rendering the first one and then swapping would fetch a
+ * film nobody was going to watch.
  */
-export default function Hero() {
+export default function Hero({ films }: { films: Film[] }) {
   const stage = useRef<HTMLElement>(null);
   const frame = useRef(0);
   const knocks = useRef(0);
   const lastKnock = useRef(0);
   const router = useRouter();
+
+  /* One film needs no choosing, so it is drawn straight away. */
+  const [at, setAt] = useState<number | null>(films.length > 1 ? null : 0);
+
+  useEffect(() => {
+    if (films.length > 1) setAt(Math.floor(Math.random() * films.length));
+  }, [films.length]);
 
   /** Three knocks on the logo, and the door to the members' app opens. */
   const knock = () => {
@@ -56,31 +74,41 @@ export default function Hero() {
     };
   }, [track]);
 
+  const film = at === null ? null : films[at];
+  /* Before the choice, the first film's still: they are all the same square, and
+     the page should not be blank paper while the dice are rolled. */
+  const poster = film?.poster ?? films[0]?.poster ?? null;
+
   return (
     <main className="hero" ref={stage}>
       <h1 className="visually-hidden">promeNOODology</h1>
 
-      {/* eslint-disable-next-line @next/next/no-img-element -- already a small, correctly sized still */}
-      <img
-        className="hero-poster"
-        src="/hero-poster.jpg"
-        alt=""
-        aria-hidden="true"
-        fetchPriority="high"
-      />
-      <video
-        className="hero-video"
-        poster="/hero-poster.jpg"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-        tabIndex={-1}
-      >
-        <source src="/hero.mp4" type="video/mp4" />
-      </video>
+      {/* The still under the film, and all there is to look at until one has
+          been chosen. Not next/image: it is one fixed square that wants to be
+          the first thing fetched, not a set of sizes.
+          eslint-disable-next-line @next/next/no-img-element */}
+      {poster ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="hero-poster" src={poster} alt="" aria-hidden="true" fetchPriority="high" />
+      ) : null}
+
+      {film ? (
+        <video
+          // A fresh element per film: changing the src of a playing video is not
+          // reliably a reload, and this one only ever loads once.
+          key={film.id}
+          className="hero-video"
+          src={film.src}
+          poster={film.poster ?? undefined}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+      ) : null}
 
       {/* Tab once and the way into the members' app shows itself. */}
       <Link href="/app" className="hero-door">

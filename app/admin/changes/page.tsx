@@ -22,6 +22,7 @@ const SECTIONS: Record<string, string> = {
   pages: "a page",
   profiles: "somebody",
   theme: "the look of the site",
+  hero_videos: "a film on the front page",
 };
 
 /** A column named the way the screen names it. */
@@ -60,6 +61,11 @@ const FIELDS: Record<string, string> = {
   authors: "who wrote it",
   partners: "who it is with",
   position: "the order",
+  called: "what it is called",
+  path: "the file",
+  poster_path: "the still",
+  seconds: "how long it runs",
+  bytes: "what it weighs",
 };
 
 const said = (value: string | null) => {

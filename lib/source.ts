@@ -524,6 +524,47 @@ export async function getPartners(): Promise<Partner[]> {
   }
 }
 
+/* ---------------------------------------------------------- the front page */
+
+/** A film behind the logo, and the still shown while it loads. */
+export type Film = { id: string; src: string; poster: string | null };
+
+/**
+ * The films on the front page, in order.
+ *
+ * The one that ships with the site answers when the list is empty, and that is
+ * not the fallback-to-files habit this file is otherwise careful about: /hero.mp4
+ * is not a stale copy of anything in the database, it is the film the front page
+ * was built with. Without it an empty list is a sheet of paper with a logo on it.
+ */
+export async function getHeroVideos(): Promise<Film[]> {
+  const builtIn: Film = { id: "built-in", src: "/hero.mp4", poster: "/hero-poster.jpg" };
+  if (!hasSupabase()) return [builtIn];
+
+  try {
+    const { data } = await supabasePublic()
+      .from("hero_videos")
+      .select("id, path, poster_path")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .order("position")
+      .returns<{ id: string; path: string; poster_path: string | null }[]>();
+
+    const films = (data ?? [])
+      .filter((row) => row.path)
+      .map((row) => ({
+        id: row.id,
+        src: mediaUrl(row.path),
+        poster: row.poster_path ? mediaUrl(row.poster_path) : null,
+      }));
+
+    return films.length > 0 ? films : [builtIn];
+  } catch {
+    // Before migration 0019 there is no such table.
+    return [builtIn];
+  }
+}
+
 /* ---------------------------------------------------------------- helpers */
 
 /** id → the path of the photograph, for resolving a story's chosen cover. */
