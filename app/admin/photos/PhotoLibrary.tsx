@@ -151,6 +151,10 @@ export default function PhotoLibrary({
     [people],
   );
   const years = useMemo(() => yearsFor(items), [items]);
+  const toldStories: Choice[] = useMemo(
+    () => stories.map((one) => ({ value: one.tag, label: one.title })),
+    [stories],
+  );
 
   /*
    * Naming the photographer.
@@ -567,7 +571,7 @@ export default function PhotoLibrary({
                       />
                     )}
                   </Field>
-                  <Field label="year">
+                  <Field label="year" wide>
                     <Picker
                       value={item.year}
                       onChange={(next) => edit(item.id, { year: next })}
@@ -577,17 +581,19 @@ export default function PhotoLibrary({
                     />
                   </Field>
                   <Field label="story" wide>
-                    <select
+                    {/* The same control as the two above it: a native select
+                        draws its own arrow, at its own size, and three fields in
+                        a column with two different arrows looks like a mistake
+                        because it is one. */}
+                    <Picker
                       value={item.story ?? ""}
-                      onChange={(event) => edit(item.id, { story: event.target.value || null })}
-                    >
-                      <option value="">no story — loose</option>
-                      {stories.map((one) => (
-                        <option key={one.tag} value={one.tag}>
-                          {one.title}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(next) => edit(item.id, { story: next || null })}
+                      options={toldStories}
+                      empty="no story — loose"
+                      search={stories.length > 8}
+                      wide
+                      label="Which story this belongs to"
+                    />
                   </Field>
                 </div>
 

@@ -2601,3 +2601,77 @@ html.admin-dragging * {
   outline: 0;
   border-bottom-color: var(--purple);
 }
+
+/* ------------------------------------------------------------- the preview */
+
+/*
+ * The story as a reader gets it, over the top of the editor.
+ *
+ * Everything inside the white area is the site's own markup and the site's own
+ * stylesheet — globals.css is loaded back here too, which is what makes this
+ * possible without a second implementation of the page. The strip along the top
+ * is the only thing that is not the site, and it says so.
+ */
+.admin-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.admin-preview-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex: none;
+  padding: 10px var(--edge);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.admin-preview-bar strong {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-preview-bar span {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.86rem;
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.admin-preview-bar button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.admin-preview-bar button:hover {
+  color: var(--purple);
+}
+
+.admin-preview-page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* The site keeps 250px on the left for a menu that is not here. */
+.admin-preview-page .page {
+  padding-left: var(--edge);
+  min-height: 0;
+}

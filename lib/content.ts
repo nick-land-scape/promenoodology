@@ -113,4 +113,10 @@ export type Story = {
   photos: Resource[];
   credits: string[];
   cover: Photo | null;
+  /** What it was about, in a handful of words. Not the tag, which is a key. */
+  topics: string[];
+  /** Who was there, with their portrait where they have one. */
+  who: { name: string; photo: string | null }[];
+  /** Which organisations it was made with. */
+  partners: { name: string; logo: string | null; url: string | null }[];
 };

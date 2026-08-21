@@ -2551,3 +2551,77 @@ body:has(.hero) .edit-this {
     padding: 6px 10px;
   }
 }
+
+/* ------------------------------------------------------ a story's own credits */
+
+/* What it was about: a handful of words under the place and the date, set as
+   labels rather than as prose, because that is what they are. */
+.story-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story-topics li {
+  padding: 3px 9px;
+  border: 1px solid var(--hairline);
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+/* Who did it, at the foot of the story, where credits belong. */
+.story-credits {
+  display: grid;
+  gap: 34px;
+  margin: 54px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--hairline);
+}
+
+.story-who,
+.story-partners {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 22px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story-who li {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 76px;
+  font-size: 0.86em;
+  line-height: 1.25;
+}
+
+.story-who img {
+  width: 76px;
+  height: 96px;
+  object-fit: cover;
+  display: block;
+}
+
+.story-partners li {
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  font-size: 0.95em;
+}
+
+.story-partners img {
+  width: auto;
+  max-width: 130px;
+  max-height: 46px;
+  object-fit: contain;
+  mix-blend-mode: var(--print);
+}

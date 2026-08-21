@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Cite from "@/components/Cite";
 import type { Slide } from "@/lib/content";
 import { siteUrl } from "@/lib/site";
+import Photo from "@/components/Photo";
 import StoryBody from "@/components/StoryBody";
 import { getNeighbours, getStories, getStory } from "@/lib/source";
 
@@ -65,9 +66,63 @@ export default async function StoryPage({ params }: Params) {
             .filter(Boolean)
             .join(" · ")}
         </p>
+
+        {story.topics.length > 0 ? (
+          <ul className="story-topics">
+            {story.topics.map((topic) => (
+              <li key={topic}>{topic}</li>
+            ))}
+          </ul>
+        ) : null}
       </header>
 
       <StoryBody slides={slides} sections={story.sections} />
+
+      {/* Who did it, at the foot, where the credits of anything belong. */}
+      {story.who.length > 0 || story.partners.length > 0 ? (
+        <footer className="story-credits">
+          {story.who.length > 0 ? (
+            <section>
+              <h2 className="story-label">who was there</h2>
+              <ul className="story-who">
+                {story.who.map((person) => (
+                  <li key={person.name}>
+                    {person.photo ? (
+                      <Photo src={person.photo} alt="" width={160} height={200} sizes="60px" />
+                    ) : null}
+                    <span>{person.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {story.partners.length > 0 ? (
+            <section>
+              <h2 className="story-label">made with</h2>
+              <ul className="story-partners">
+                {story.partners.map((partner) => (
+                  <li key={partner.name}>
+                    {partner.url ? (
+                      <a href={partner.url} target="_blank" rel="noopener noreferrer">
+                        {partner.logo ? (
+                          <Photo src={partner.logo} alt={partner.name} width={300} height={200} sizes="130px" />
+                        ) : (
+                          partner.name
+                        )}
+                      </a>
+                    ) : partner.logo ? (
+                      <Photo src={partner.logo} alt={partner.name} width={300} height={200} sizes="130px" />
+                    ) : (
+                      partner.name
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </footer>
+      ) : null}
 
       <Cite
         title={story.title}

@@ -7,11 +7,15 @@ import { Some, Tags } from "@/components/admin/Many";
 import { Look } from "@/components/admin/Pick";
 import type { Choice } from "@/components/admin/Picker";
 import Thumb from "@/components/admin/Thumb";
+import StoryBody from "@/components/StoryBody";
+import InHead from "@/components/admin/InHead";
 import {
+  Button,
   Field,
   Fields,
   Flag,
   Grip,
+  Icon,
   Move,
   Panel,
   Place,
@@ -188,6 +192,15 @@ export default function StoryEditor({
   return (
     <>
       <Problem>{problem}</Problem>
+
+      {/* Beside the title: the one thing you want from this page that is not
+          typing into it. */}
+      <InHead>
+        <Button tone="quiet" onClick={() => setPreview(true)}>
+          <Icon name="eye" />
+          see the page
+        </Button>
+      </InHead>
 
       <Panel
         name="what it was"
@@ -536,6 +549,83 @@ export default function StoryEditor({
         ) : null}
       </SaveBar>
       {looking ? <Look url={looking} onClose={() => setLooking(null)} /> : null}
+
+      {/*
+       * The page, as a reader gets it.
+       *
+       * Not an impression of it: the same component the story's own page is
+       * built from, given the draft instead of the database — so the layout
+       * cycle, the way the paragraphs are threaded between the photographs, the
+       * lightbox, all of it is the real thing rather than a second
+       * implementation that would drift from the first by Friday. The only
+       * difference is that the menu is not there, and unsaved changes are.
+       */}
+      {preview ? (
+        <div className="admin-preview" role="dialog" aria-label="The story as a reader sees it">
+          <div className="admin-preview-bar">
+            <strong>as a reader sees it</strong>
+            <span>
+              {dirty || photosMoved ? "including what you have not saved yet" : "exactly as saved"}
+            </span>
+            <button type="button" onClick={() => setPreview(false)}>
+              close ×
+            </button>
+          </div>
+
+          <div className="admin-preview-page">
+            <main className="page">
+              <header className="story-header">
+                <p className="crumb">stories</p>
+                <h1 className="page-title">{draft.title || "Untitled"}</h1>
+                {draft.subtitle ? <p className="story-hook">{draft.subtitle}</p> : null}
+                <p className="story-meta">
+                  {[
+                    draft.place,
+                    draft.happened || [...new Set(order.map((one) => one.year))].filter(Boolean).join(", "),
+                    draft.made_with,
+                    credited(order),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+                {draft.topics.length > 0 ? (
+                  <ul className="story-topics">
+                    {draft.topics.map((topic) => (
+                      <li key={topic}>{topic}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </header>
+
+              <StoryBody
+                slides={order
+                  // Hidden photographs are not on the page, so they are not in
+                  // the preview either — a preview that shows what the reader
+                  // will not see is worse than no preview.
+                  .filter((one) => one.published)
+                  .map((one) => ({
+                    key: one.id,
+                    photo: { src: one.url, width: one.width, height: one.height },
+                    caption: [one.credit, one.year].filter(Boolean).join(", "),
+                    layout: one.layout,
+                  }))}
+                sections={draft.sections.map((section) => ({
+                  heading: section.heading.trim() || null,
+                  texts: section.texts.map((text) => text.trim()).filter(Boolean),
+                }))}
+              />
+            </main>
+          </div>
+        </div>
+      ) : null}
     </>
   );
+}
+
+/** "photos by …", the same sentence the story's own page prints. */
+function credited(photos: { credit: string }[]): string | null {
+  const names = [...new Set(photos.map((one) => one.credit).filter(Boolean))];
+  if (names.length === 0) return null;
+  if (names.length === 1) return `photos by ${names[0]}`;
+  return `photos by ${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
