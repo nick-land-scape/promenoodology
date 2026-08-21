@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * The small pieces the back of the house is built out of.
@@ -29,9 +29,22 @@ const ICONS: Record<string, string> = {
   eye: "M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 14.8a2.8 2.8 0 1 0 0-5.6 2.8 2.8 0 0 0 0 5.6z",
   out: "M15 17l5-5-5-5M20 12H9M12 20H6.5A2.5 2.5 0 0 1 4 17.5v-11A2.5 2.5 0 0 1 6.5 4H12",
   plus: "M12 5v14M5 12h14",
+  minus: "M5 12h14",
+  turnleft: "M8 5 4.5 8.5 8 12M4.5 8.5h9A6 6 0 1 1 7.5 14.5",
+  turnright: "M16 5l3.5 3.5L16 12M19.5 8.5h-9A6 6 0 1 0 16.5 14.5",
+  flipx: "M12 3v18M8 7 3.5 12 8 17V7M16 7l4.5 5-4.5 5V7",
+  flipy: "M3 12h18M7 8l5-4.5L17 8H7M7 16l5 4.5L17 16H7",
+  crop: "M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14",
+  swap: "M4 8h13l-3.5-3.5M20 16H7l3.5 3.5",
+  eyeoff:
+    "M4 4l16 16M9.9 5.9A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.6 7.7A17 17 0 0 0 2.5 12S6 18.5 12 18.5a9 9 0 0 0 3.4-.66M9.6 9.7a2.8 2.8 0 0 0 3.9 3.9",
   up: "M12 19V5M6 11l6-6 6 6",
   upload: "M12 16V4m0 0 4 4m-4-4-4 4M4 20h16",
   trash: "M4 7h16M9.5 7V5.5A1.5 1.5 0 0 1 11 4h2a1.5 1.5 0 0 1 1.5 1.5V7M6 7l1 12.5A1.5 1.5 0 0 0 8.5 21h7L18 7",
+  theme: "M12 3a9 9 0 1 0 0 18c1.7 0 2-1.2 1.2-2.2-.8-1-.2-2.3 1.1-2.3H18a3 3 0 0 0 3-3A9 9 0 0 0 12 3zM7.5 11.5h.01M10.5 8h.01M14.5 8h.01",
+  search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM16 16l4.5 4.5",
+  sun: "M12 5V2m0 20v-3m7-7h3M2 12h3m12.5-5.5 2-2m-15 15 2-2m0-11-2-2m15 15-2-2M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z",
+  moon: "M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z",
 };
 
 export function Icon({ name }: { name: string }) {
@@ -136,6 +149,30 @@ export function Word({
 }
 
 /**
+ * Throwing something away.
+ *
+ * A bin rather than the word "delete", for one reason: it is the only
+ * irreversible thing on any of these pages, and a word in a row of words does
+ * not look different from the words either side of it. A red bin does.
+ */
+export function Bin({
+  what,
+  ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { what?: string }) {
+  return (
+    <button
+      type="button"
+      {...rest}
+      className="admin-bin"
+      aria-label={what ? `Delete ${what}` : "Delete"}
+      title={what ? `Delete ${what}` : "Delete"}
+    >
+      <Icon name="trash" />
+    </button>
+  );
+}
+
+/**
  * Shown or hidden. The only switch in the back of the house, and it says which
  * state it is in rather than leaving you to read a colour.
  */
@@ -148,6 +185,9 @@ export function Flag({
   onChange: (next: boolean) => void;
   labels?: [string, string];
 }) {
+  /* An eye, open or struck through, rather than a small square that was purple
+     when on and grey when off — a colour is a thing you have to have been told,
+     and an eye with a line through it is a thing you already know. */
   return (
     <button
       type="button"
@@ -155,6 +195,7 @@ export function Flag({
       aria-pressed={on}
       onClick={() => onChange(!on)}
     >
+      <Icon name={on ? "eye" : "eyeoff"} />
       {on ? labels[0] : labels[1]}
     </button>
   );
@@ -294,6 +335,10 @@ export function useDragOrder<T extends { id: string }>(
   onMove: (from: number, to: number) => void,
 ) {
   const [dragging, setDragging] = useState<string | null>(null);
+  /* Which row the pointer is over. Without this a drag was all faith: the thing
+     you had picked up looked no different, nothing said where it would land,
+     and you found out by letting go. */
+  const [over, setOver] = useState<string | null>(null);
 
   /**
    * The row: where something can be dropped, but not where a drag starts.
@@ -307,6 +352,10 @@ export function useDragOrder<T extends { id: string }>(
       onDragOver: (event: React.DragEvent) => {
         event.preventDefault();
         event.dataTransfer.dropEffect = "move";
+        if (over !== _item.id) setOver(_item.id);
+      },
+      onDragLeave: () => {
+        if (over === _item.id) setOver(null);
       },
       onDrop: (event: React.DragEvent) => {
         event.preventDefault();
@@ -316,6 +365,7 @@ export function useDragOrder<T extends { id: string }>(
         const from = items.findIndex((one) => one.id === id);
         if (from !== -1 && from !== index) onMove(from, index);
         setDragging(null);
+        setOver(null);
       },
     };
   }
@@ -328,12 +378,26 @@ export function useDragOrder<T extends { id: string }>(
         event.dataTransfer.setData("text/plain", item.id);
         event.dataTransfer.effectAllowed = "move";
         setDragging(item.id);
+        // The whole page says a drag is happening, which is what lets the
+        // cursor be a closed hand over every row rather than only this one.
+        document.documentElement.classList.add("admin-dragging");
       },
-      onDragEnd: () => setDragging(null),
+      onDragEnd: () => {
+        setDragging(null);
+        setOver(null);
+        document.documentElement.classList.remove("admin-dragging");
+      },
     };
   }
 
-  return { dropProps, handleProps, dragging };
+  /** What a row should be called while a drag is in the air. */
+  function stateOf(item: T) {
+    if (dragging === item.id) return "admin-row-dragging";
+    if (dragging && over === item.id) return "admin-row-over";
+    return "";
+  }
+
+  return { dropProps, handleProps, dragging, over, stateOf };
 }
 
 /** The thing you take hold of. Small, and the only way a drag begins. */
@@ -416,5 +480,143 @@ export function Place({
         }
       }}
     />
+  );
+}
+
+/* ---------------------------------------------------------- choosing several
+
+   Sixty-five people and a hundred and sixty photographs. Giving forty of them
+   the same photographer, or taking a dozen names off the community page, is one
+   decision — and doing it forty times is not the same thing, it is the same
+   thing done badly.
+
+   Nothing here writes anything. Choosing marks rows; an action applies the
+   change to every marked row in the page's own state; the page's own save button
+   writes it. So a bulk change is reviewable before it is real, and it is undone
+   by reloading, like every other change in here. */
+
+export function useChosen<T extends { id: string }>(items: T[]) {
+  const [chosen, setChosen] = useState<Set<string>>(new Set());
+  const last = useRef<string | null>(null);
+
+  // Anything no longer on screen — filtered away, deleted — is no longer chosen
+  // either. Acting on rows you cannot see is how a bulk edit becomes a surprise.
+  // In an effect rather than during the render, because a render is not allowed
+  // to be the place where things change.
+  const ids = items.map((item) => item.id).join(",");
+  useEffect(() => {
+    const visible = new Set(ids ? ids.split(",") : []);
+    setChosen((before) => {
+      const live = [...before].filter((id) => visible.has(id));
+      return live.length === before.size ? before : new Set(live);
+    });
+  }, [ids]);
+
+  function toggle(id: string, range = false) {
+    // Worked out here, not inside the updater below. A state updater may be run
+    // more than once, or run and thrown away — so it is no place to record what
+    // was last touched, and recording it there is why shift-clicking chose two
+    // rows instead of the four between them.
+    const from = last.current ? items.findIndex((item) => item.id === last.current) : -1;
+    const to = items.findIndex((item) => item.id === id);
+    last.current = id;
+
+    setChosen((before) => {
+      const next = new Set(before);
+
+      // Shift takes everything between this and the last one touched, which is
+      // how a run of forty gets chosen without forty clicks.
+      if (range && from !== -1 && to !== -1) {
+        const [start, end] = from < to ? [from, to] : [to, from];
+        for (let i = start; i <= end; i += 1) next.add(items[i].id);
+        return next;
+      }
+
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  return {
+    chosen,
+    count: chosen.size,
+    has: (id: string) => chosen.has(id),
+    toggle,
+    all: () => setChosen(new Set(items.map((item) => item.id))),
+    none: () => setChosen(new Set()),
+    /** The chosen ones, in the order they are on screen. */
+    picked: () => items.filter((item) => chosen.has(item.id)),
+  };
+}
+
+/** The tick on a row. */
+export function Tick({
+  on,
+  onChoose,
+  label,
+}: {
+  on: boolean;
+  onChoose: (range: boolean) => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      className="admin-tick"
+      role="checkbox"
+      aria-checked={on}
+      aria-label={label}
+      title="Click to choose. Shift-click to choose everything in between."
+      onClick={(event) => onChoose(event.shiftKey)}
+    >
+      {on ? "✓" : ""}
+    </button>
+  );
+}
+
+/**
+ * What to do with the ones you chose. Appears only when something is chosen,
+ * and says how many — a bulk action with no count is a bulk action you cannot
+ * check before you take it.
+ */
+export function Chosen({
+  count,
+  what,
+  onNone,
+  onAll,
+  children,
+}: {
+  count: number;
+  /** "photographs", "people" — what is being counted. */
+  what: string;
+  onNone: () => void;
+  onAll: () => void;
+  children: React.ReactNode;
+}) {
+  /*
+   * Two halves, and which half a thing is in is the whole point.
+   *
+   * On the left, what is chosen — the count, and the two words that change it.
+   * On the right, what you can do to them. "All" and "none" used to sit on the
+   * right, at the far end past the delete bin, which put a harmless thing that
+   * changes the *selection* in among the things that change the *photographs*,
+   * and pushed the row onto a second line besides.
+   */
+  return (
+    <div className="admin-chosen" role="group" aria-label={`${count} ${what} chosen`}>
+      <span className="admin-chosen-count">
+        <strong>
+          {count} {count === 1 ? what.replace(/s$/, "") : what}
+        </strong>
+        <button type="button" onClick={onAll}>
+          all
+        </button>
+        <button type="button" onClick={onNone}>
+          none
+        </button>
+      </span>
+      <span className="admin-chosen-do">{children}</span>
+    </div>
   );
 }

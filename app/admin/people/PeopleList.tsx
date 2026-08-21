@@ -2,8 +2,24 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import InHead from "@/components/admin/InHead";
+import Picker from "@/components/admin/Picker";
+import Thumb from "@/components/admin/Thumb";
 import Uploader from "@/components/admin/Uploader";
-import { Button, Empty, Field, Flag, Icon, Panel, Problem, SaveBar, Tag, Word, pretty } from "@/components/admin/ui";
+import {
+  Button,
+  Chosen,
+  Empty,
+  Field,
+  Icon,
+  Panel,
+  Problem,
+  SaveBar,
+  Tag,
+  Tick,
+  Word,
+  useChosen,
+} from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
 import { addPerson, invitePerson, savePeople, setPortrait } from "./actions";
 
@@ -25,6 +41,15 @@ export type Person = {
   joined: string;
   isMe: boolean;
 };
+
+/** The three answers to "is this person on the community page". */
+const SHOWING: Record<string, boolean | null> = { them: null, yes: true, no: false };
+
+const SHOWS = [
+  { value: "them", label: "up to them" },
+  { value: "yes", label: "always shown" },
+  { value: "no", label: "always hidden" },
+];
 
 /** The three the community page knows how to colour a name with. */
 const COLOURS = [
@@ -53,6 +78,7 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
   const [kept, setKept] = useState(initial);
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [pending, start] = useTransition();
 
   const changed = useMemo(() => {
@@ -66,7 +92,8 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
         was.colour !== person.colour ||
         was.listed !== person.listed ||
         was.listedByAdmin !== person.listedByAdmin ||
-        was.role !== person.role
+        was.role !== person.role ||
+        was.joined !== person.joined
       );
     });
   }, [people, kept]);
@@ -123,6 +150,24 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
     });
   }
 
+  /* Choosing several. Nothing here writes: an action changes every chosen row in
+     this page's state, and the save button below writes them — so taking a dozen
+     names off the community page is as reviewable as taking one off. */
+  const pick = useChosen(people);
+
+  /* What the whole selection already agrees on, so the bar shows a state
+     rather than an empty field. */
+  const picked = people.filter((one) => pick.has(one.id));
+  const theirColour =
+    picked.length > 0 && picked.every((one) => one.colour === picked[0].colour)
+      ? picked[0].colour ?? ""
+      : "";
+
+  function applyToChosen(patch: Partial<Person>) {
+    setPeople((list) => list.map((one) => (pick.has(one.id) ? { ...one, ...patch } : one)));
+    setJustSaved(false);
+  }
+
   function edit(id: string, patch: Partial<Person>) {
     setPeople((list) => list.map((person) => (person.id === id ? { ...person, ...patch } : person)));
     setJustSaved(false);
@@ -140,6 +185,7 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
           listed: person.listed,
           listed_by_admin: person.listedByAdmin,
           role: person.role,
+          joined_on: person.joined,
         })),
       );
       if (!result.ok) setProblem(result.error ?? "That did not save.");
@@ -178,6 +224,17 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
 
       {said ? <p className="admin-ok" style={{ display: "block", marginBottom: 14 }}>{said}</p> : null}
 
+      {/* Beside the title, and the panel below opens under it — the form was
+          taking up the top of the page every day for the once a month anybody
+          adds somebody. */}
+      <InHead>
+        <Button onClick={() => setAdding((was) => !was)}>
+          <Icon name="plus" />
+          {adding ? "never mind" : "add somebody"}
+        </Button>
+      </InHead>
+
+      {adding ? (
       <Panel
         name="somebody new"
         hint="A name is enough. Add an address as well and they are also sent a way in — that is the only way an account gets made now."
@@ -219,21 +276,78 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
           </div>
         </div>
       </Panel>
+      ) : null}
+
+      {pick.count > 0 ? (
+        <Chosen count={pick.count} what="people" onAll={pick.all} onNone={pick.none}>
+          <Picker
+            value=""
+            onChange={(next) => next && applyToChosen({ listedByAdmin: SHOWING[next] })}
+            options={SHOWS}
+            empty="on the page"
+            label="Put them on the community page, or take them off"
+          />
+          <input
+            placeholder="a country, then Enter"
+            aria-label="Where they are all from"
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return;
+              event.preventDefault();
+              applyToChosen({ country: event.currentTarget.value.trim() });
+              event.currentTarget.value = "";
+            }}
+          />
+          <Picker
+            value={theirColour}
+            onChange={(next) => applyToChosen({ colour: next || null })}
+            options={COLOURS.map((colour) => ({ value: colour.value, label: colour.label }))}
+            empty="a colour"
+            label="Set the colour their names are printed in"
+          />
+        </Chosen>
+      ) : null}
 
       <ul className="admin-rows">
-        {people.map((person) => (
-          <li key={person.id} className="admin-row" style={{ flexWrap: "wrap" }}>
-            <span className="admin-thumb admin-thumb-round">
-              {person.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={person.photoUrl} alt="" />
-              ) : (
-                initials(person.name)
-              )}
-            </span>
+        {people.map((person, index) => (
+          <li key={person.id} className="admin-row admin-person">
+            {/* Counting up, so "the fourteenth" is a thing anybody can say about
+                a list of sixty-four names. */}
+            <span className="admin-person-no">{index + 1}</span>
 
-            <span className="admin-row-main" style={{ minWidth: 240 }}>
-              <span className="admin-fields" style={{ borderTop: 0 }}>
+            <Tick
+              on={pick.has(person.id)}
+              onChoose={(range) => pick.toggle(person.id, range)}
+              label={`Choose ${person.name || "this person"}`}
+            />
+
+            {/* The portrait is its own button. It was a round thumbnail beside a
+                button that said "another portrait" — a circle where the page
+                shows a portrait, and a second control doing what clicking the
+                picture obviously ought to do. */}
+            <Uploader
+              folder={`profiles/${person.id}`}
+              many={false}
+              trigger={(open, working) => (
+                <button
+                  type="button"
+                  className="admin-portrait"
+                  onClick={open}
+                  disabled={working}
+                  title={person.photoUrl ? "Choose another portrait" : "Add a portrait"}
+                >
+                  {person.photoUrl ? (
+                    <Thumb src={person.photoUrl} width={0} height={0} sizes="64px" />
+                  ) : (
+                    <span className="admin-portrait-none">{initials(person.name)}</span>
+                  )}
+                  <em>{working ? "…" : person.photoUrl ? "replace" : "add one"}</em>
+                </button>
+              )}
+              onDone={async (uploaded) => portrait(person, uploaded.path)}
+            />
+
+            <span className="admin-person-body">
+              <span className="admin-fields admin-person-fields">
                 <Field label="name">
                   <input
                     value={person.name}
@@ -248,109 +362,105 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                     placeholder="optional"
                   />
                 </Field>
-                <Field label="name in" hint="Only for the few names the grid picks out.">
-                  <select
+                <Field label="name in">
+                  <Picker
                     value={person.colour ?? ""}
-                    onChange={(event) => edit(person.id, { colour: event.target.value || null })}
-                  >
-                    {COLOURS.map((colour) => (
-                      <option key={colour.value} value={colour.value}>
-                        {colour.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(next) => edit(person.id, { colour: next || null })}
+                    options={COLOURS.filter((one) => one.value).map((colour) => ({
+                      value: colour.value,
+                      label: colour.label,
+                    }))}
+                    empty="black"
+                    label="The colour this name is printed in"
+                  />
+                </Field>
+                <Field label="since">
+                  <input
+                    type="date"
+                    value={person.joined.slice(0, 10)}
+                    onChange={(event) => edit(person.id, { joined: event.target.value })}
+                  />
                 </Field>
                 <Field label="may look after the site">
-                  <select
-                    value={person.role}
-                    onChange={(event) =>
-                      edit(person.id, { role: event.target.value === "admin" ? "admin" : "member" })
-                    }
-                    disabled={person.isMe}
-                  >
-                    <option value="member">no — a member</option>
-                    <option value="admin">yes — an admin</option>
-                  </select>
+                  {/* The label above says what the answer means: "no — a member"
+                      was taking a third of the row to say "no". Nobody may take
+                      the last door off themselves, so this one is a fact rather
+                      than a control on your own row. */}
+                  {person.isMe ? (
+                    <span className="admin-said">yes — that is you</span>
+                  ) : (
+                    <Picker
+                      value={person.role}
+                      onChange={(next) =>
+                        edit(person.id, { role: next === "admin" ? "admin" : "member" })
+                      }
+                      options={[
+                        { value: "member", label: "no" },
+                        { value: "admin", label: "yes" },
+                      ]}
+                      empty={null}
+                      label="Whether they may look after the site"
+                    />
+                  )}
                 </Field>
               </span>
 
-              <span className="admin-row-meta" style={{ marginTop: 6 }}>
-                {person.email ? (
-                  <a href={`mailto:${person.email}`}>{person.email}</a>
-                ) : (
-                  "no address — on the page only"
-                )}
-                {" · since "}
-                {pretty(person.joined)}
-                {person.isMe ? " · this is you" : ""}
-              </span>
-            </span>
+              {/* Everything about the person that is not a field: who they are
+                  to the site, and the two things you can do about it. */}
+              <span className="admin-person-foot">
+                <span className="admin-person-who">
+                  {person.isMe ? <Tag tone="on">you</Tag> : null}
+                  {person.hasAccount ? (
+                    <Tag tone="on">can sign in</Tag>
+                  ) : person.email ? (
+                    <Tag>invited</Tag>
+                  ) : (
+                    <Tag>no account</Tag>
+                  )}
+                  {person.hasAccount ? null : (
+                    <Word onClick={() => invite(person)} disabled={pending}>
+                      {person.email ? "send it again" : "invite them"}
+                    </Word>
+                  )}
+                  {person.email ? (
+                    <a href={`mailto:${person.email}`} className="admin-person-mail">
+                      {person.email}
+                    </a>
+                  ) : null}
+                </span>
 
-            <span className="admin-row-side" style={{ flexDirection: "column", alignItems: "flex-end", gap: 7 }}>
-              <span style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                {person.isMe ? <Tag tone="on">you</Tag> : null}
-                {person.hasAccount ? (
-                  <Tag tone="on">can sign in</Tag>
-                ) : person.email ? (
-                  <Tag>invited</Tag>
-                ) : (
-                  <Tag>no account</Tag>
-                )}
-              </span>
+                <span className="admin-person-does">
+                  {person.photo ? (
+                    <Word danger onClick={() => portrait(person, null)} disabled={pending}>
+                      no portrait
+                    </Word>
+                  ) : null}
 
-              {/* Three states, not two. "Up to them" is a different answer from
-                  "forced to the same thing they chose", and only one of the two
-                  should survive them changing their mind. */}
-              <span style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                <button
-                  type="button"
-                  className="admin-flag"
-                  aria-pressed={person.listedByAdmin === null}
-                  onClick={() => edit(person.id, { listedByAdmin: null })}
-                  title={
-                    person.listed
-                      ? "They chose to be on the page"
-                      : "They chose not to be on the page"
-                  }
-                >
-                  up to them ({person.listed ? "shown" : "hidden"})
-                </button>
-                <button
-                  type="button"
-                  className="admin-flag"
-                  aria-pressed={person.listedByAdmin === true}
-                  onClick={() => edit(person.id, { listedByAdmin: true })}
-                  title="On the community page whatever they said"
-                >
-                  always shown
-                </button>
-                <button
-                  type="button"
-                  className="admin-flag"
-                  aria-pressed={person.listedByAdmin === false}
-                  onClick={() => edit(person.id, { listedByAdmin: false })}
-                  title="Off the community page whatever they said"
-                >
-                  always hidden
-                </button>
-              </span>
-              <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                <Uploader
-                  folder={`profiles/${person.id}`}
-                  many={false}
-                  label={person.photoUrl ? "another portrait" : "a portrait"}
-                  onDone={async (uploaded) => portrait(person, uploaded.path)}
-                />
-                {person.photo ? (
-                  <Word danger onClick={() => portrait(person, null)} disabled={pending}>
-                    no portrait
-                  </Word>
-                ) : null}
-                {person.hasAccount ? null : (
-                  <Word onClick={() => invite(person)} disabled={pending}>
-                    {person.email ? "send the invitation again" : "invite them"}
-                  </Word>
-                )}
+                  {/* Three answers, one control. They were three buttons in a
+                      row, all of them lit the same way, and which one was on was
+                      something you worked out rather than read. "Up to them" is
+                      genuinely a third answer, not the absence of the other
+                      two — only it survives them changing their mind. */}
+                  <span className="admin-person-showing">
+                    <span>on the page</span>
+                    <Picker
+                      value={
+                        person.listedByAdmin === null ? "them" : person.listedByAdmin ? "yes" : "no"
+                      }
+                      onChange={(next) => edit(person.id, { listedByAdmin: SHOWING[next] })}
+                      options={[
+                        {
+                          value: "them",
+                          label: `up to them — ${person.listed ? "shown" : "hidden"}`,
+                        },
+                        { value: "yes", label: "always shown" },
+                        { value: "no", label: "always hidden" },
+                      ]}
+                      empty={null}
+                      label="Whether they are on the community page"
+                    />
+                  </span>
+                </span>
               </span>
             </span>
           </li>

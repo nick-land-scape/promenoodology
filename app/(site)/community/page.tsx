@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CommunityGrid from "@/components/CommunityGrid";
-import Photo from "@/components/Photo";
 import type { Partner } from "@/lib/source";
 import { getMembers, getPageHead, getPartners } from "@/lib/source";
 import { pageIsVisible } from "@/lib/site-pages";
@@ -15,18 +14,19 @@ export const metadata: Metadata = {
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
 
-/** A logo where there is one, the name where there is not. */
+/**
+ * A logo where there is one, the name where there is not.
+ *
+ * A plain img rather than next/image, and deliberately: a logo is very often an
+ * SVG, which next/image refuses to touch unless the whole project opts into
+ * serving arbitrary SVG through its optimiser. A logo is thirty pixels tall and
+ * there is nothing to optimise — so it is fetched as it is, and a vector stays a
+ * vector.
+ */
 function Logo({ partner }: { partner: Partner }) {
   if (!partner.logo) return <span className="partners-name">{partner.name}</span>;
-  return (
-    <Photo
-      src={partner.logo.src}
-      alt={partner.name}
-      width={partner.logo.width}
-      height={partner.logo.height}
-      sizes="160px"
-    />
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={partner.logo.src} alt={partner.name} loading="lazy" />;
 }
 
 export default async function CommunityPage() {

@@ -3,11 +3,19 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { Some } from "@/components/admin/Many";
+import { Look } from "@/components/admin/Pick";
+import type { Choice } from "@/components/admin/Picker";
+import Thumb from "@/components/admin/Thumb";
+import StoryBody from "@/components/StoryBody";
+import InHead from "@/components/admin/InHead";
 import {
+  Button,
   Field,
   Fields,
   Flag,
   Grip,
+  Icon,
   Move,
   Panel,
   Place,
@@ -44,6 +52,12 @@ type Draft = {
   published: boolean;
   /** Which photograph stands for the story. Null: worked out from the photos. */
   featured: string | null;
+  /** Labels — not the tag, which is a key the photographs look for. */
+  topics: string[];
+  /** Who was there. */
+  people: string[];
+  /** Which organisations it was made with. */
+  partners: string[];
 };
 
 type PhotoLine = {
@@ -53,14 +67,21 @@ type PhotoLine = {
   year: string;
   published: boolean;
   layout: PhotoLayout | null;
+  width: number;
+  height: number;
 };
 
 export default function StoryEditor({
   story,
   photos,
+  everybody,
+  organisations,
 }: {
   story: Draft;
   photos: PhotoLine[];
+  /** Everybody who could have been there. */
+  everybody: Choice[];
+  organisations: Choice[];
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(story);
@@ -84,24 +105,14 @@ export default function StoryEditor({
     if (next !== order) setOrder(next);
   }
 
-  const { dropProps, handleProps, dragging } = useDragOrder(order, movePhoto);
+  const { dropProps, handleProps, stateOf } = useDragOrder(order, movePhoto);
+
+  /* Looking at one properly, and seeing the whole thing as a reader would. */
+  const [looking, setLooking] = useState<number | null>(null);
+  const [preview, setPreview] = useState(false);
 
   function setLayout(id: string, layout: PhotoLayout | null) {
     setOrder((list) => list.map((one) => (one.id === id ? { ...one, layout } : one)));
-  }
-
-  function keepPhotos() {
-    setProblem("");
-    start(async () => {
-      const result = await saveStoryPhotos(
-        order.map((photo) => ({ id: photo.id, layout: photo.layout })),
-      );
-      if (!result.ok) setProblem(result.error ?? "The arrangement did not save.");
-      else {
-        setKeptOrder(order);
-        router.refresh();
-      }
-    });
   }
 
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
@@ -113,6 +124,16 @@ export default function StoryEditor({
     set("sections", sections);
   }
 
+  /*
+   * One button.
+   *
+   * The photographs used to be kept on their own, on the grounds that they are
+   * rows in the archive rather than parts of the story — which is true about the
+   * database and beside the point on the page: you have made one set of changes
+   * to one story, and being asked to save it in two goes, with two buttons whose
+   * names both began "keep", is the kind of correctness nobody thanks you for.
+   * The story goes first, because it is the one that can be refused.
+   */
   function save() {
     setProblem("");
     start(async () => {
@@ -131,11 +152,29 @@ export default function StoryEditor({
           texts: section.texts,
         })),
         published: draft.published,
+        topics: draft.topics,
+        people: draft.people,
+        partners: draft.partners,
       });
 
       if (!result.ok) {
         setProblem(result.error ?? "That did not save.");
         return;
+      }
+
+      if (photosMoved) {
+        const arranged = await saveStoryPhotos(
+          order.map((photo) => ({ id: photo.id, layout: photo.layout })),
+        );
+        if (!arranged.ok) {
+          setProblem(
+            `The story is saved, but its photographs are not: ${
+              arranged.error ?? "the order would not save"
+            }`,
+          );
+          return;
+        }
+        setKeptOrder(order);
       }
 
       // The address may have been minted on this very save.
@@ -153,6 +192,15 @@ export default function StoryEditor({
   return (
     <>
       <Problem>{problem}</Problem>
+
+      {/* Beside the title: the one thing you want from this page that is not
+          typing into it. */}
+      <InHead>
+        <Button tone="quiet" onClick={() => setPreview(true)}>
+          <Icon name="eye" />
+          see the page
+        </Button>
+      </InHead>
 
       <Panel
         name="what it was"
@@ -198,7 +246,14 @@ export default function StoryEditor({
               placeholder="August 2023"
             />
           </Field>
-          <Field label="with" hint="Who it was made with or within.">
+          {/*
+           * "with" sat directly above "made with", and "tag" directly above
+           * "tags" — the same word twice for two different things, which is a
+           * naming problem rather than a duplicate field. What this one actually
+           * holds is the thing a story happened inside: an assembly, a
+           * festival, a programme. So it says that.
+           */}
+          <Field label="part of" hint="An assembly, a festival, a programme it happened inside.">
             <input
               value={draft.made_with}
               onChange={(event) => set("made_with", event.target.value)}
@@ -206,7 +261,7 @@ export default function StoryEditor({
             />
           </Field>
           <Field
-            label="tag"
+            label="photo tag"
             hint="What its photographs and quotes look for. Change it and they are carried across with it."
           >
             <input
@@ -215,24 +270,37 @@ export default function StoryEditor({
               placeholder="dfor500"
             />
           </Field>
-          <Field
-            label="address"
-            hint={
-              /^untitled-/.test(draft.slug)
-                ? "Made from the title the first time you save, and then left alone unless you change it here."
-                : "You can change it — but every link anybody has already shared stops working, and there is no redirect."
-            }
-          >
-            <input
-              value={draft.slug}
-              onChange={(event) => set("slug", event.target.value)}
-              spellCheck={false}
+          {/*
+           * The address is not editable any more, and that is a feature.
+           *
+           * It is made from the title the first time a story is saved and then
+           * left alone for ever, because every link anybody has shared is a
+           * promise and there is no redirect behind a change. A field that can
+           * silently break every link to a page does not belong next to a field
+           * for the place it happened.
+           */}
+          {/* Two lists side by side rather than stacked: they are the same
+              question asked of people and of organisations, and reading them
+              across is how anybody would check who is missing. */}
+          <Field label="who was there" hint="From the community. They keep their own names.">
+            <Some
+              value={draft.people}
+              onChange={(next) => set("people", next)}
+              options={everybody}
+              add="add somebody"
+              empty="nobody named yet"
+            />
+          </Field>
+          <Field label="partners" hint="From the list under Partners in the menu.">
+            <Some
+              value={draft.partners}
+              onChange={(next) => set("partners", next)}
+              options={organisations}
+              add="add a partner"
+              empty="no partners on this one"
             />
           </Field>
         </Fields>
-        <p className="admin-note" style={{ margin: "10px 14px 12px" }}>
-          It will be read at <code>/stories/{draft.slug}</code>.
-        </p>
       </Panel>
 
       <Panel
@@ -348,9 +416,9 @@ export default function StoryEditor({
 
       <Panel
         name="its photographs"
-        hint={`Everything in the archive tagged “${draft.tag}”, in the order they are read in. Drag a row, or use the arrows.`}
+        hint={`Everything tagged “${draft.tag}”, in the order they are read in.`}
         action={
-          <Link href={`/admin/photos?story=${draft.tag}`} className="admin-btn admin-btn-quiet">
+          <Link href={`/admin/photos?story=${draft.tag}`} className="admin-btn">
             add or remove them →
           </Link>
         }
@@ -369,7 +437,7 @@ export default function StoryEditor({
                   {...dropProps(photo, index)}
                   className={[
                     "admin-row",
-                    dragging === photo.id ? "admin-row-dragging" : "",
+                    stateOf(photo),
                     photo.published ? "" : "admin-row-hidden",
                   ]
                     .filter(Boolean)
@@ -379,14 +447,38 @@ export default function StoryEditor({
                   <Grip {...handleProps(photo)} />
                   <Place index={index} total={order.length} onMove={movePhoto} />
 
-                  <span className="admin-thumb" style={{ width: 68, height: 50 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.url} alt="" loading="lazy" draggable={false} />
-                  </span>
+                  {/* The thumbnail is the way to see it properly: it is the
+                      only thing on the row anybody would think to click. */}
+                  <button
+                    type="button"
+                    className="admin-thumb admin-thumb-look"
+                    onClick={() => setLooking(index)}
+                    title="Look at it properly"
+                    aria-label="Look at it properly"
+                  >
+                    <Thumb
+                      src={photo.url}
+                      width={photo.width}
+                      height={photo.height}
+                      sizes="96px"
+                    />
+                  </button>
 
-                  <span className="admin-row-main" style={{ minWidth: 180 }}>
-                    <span className="admin-row-meta" style={{ marginTop: 4 }}>
-                      {[photo.credit, photo.year].filter(Boolean).join(", ") || "no credit"}
+                  <span className="admin-row-main" style={{ minWidth: 200 }}>
+                    <span className="admin-row-name" style={{ fontStyle: "normal" }}>
+                      {photo.credit || "nobody credited"}
+                    </span>
+                    <span className="admin-row-meta">
+                      {[
+                        photo.year || "no year",
+                        photo.width > 0 ? `${photo.width}×${photo.height}` : null,
+                        photo.width > 0 && Math.max(photo.width, photo.height) < 600
+                          ? "small for the page"
+                          : null,
+                        draft.featured === photo.id ? "the cover" : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
                     {!photo.published ? <Tag tone="warn">hidden</Tag> : null}
                   </span>
@@ -434,27 +526,13 @@ export default function StoryEditor({
               ))}
             </ul>
 
-            <div className="admin-save" style={{ position: "static", margin: "0 14px 12px" }}>
-              <button
-                type="button"
-                className="admin-btn"
-                onClick={keepPhotos}
-                disabled={pending || !photosMoved}
-              >
-                {pending ? "saving…" : "keep this arrangement"}
-              </button>
-              {photosMoved ? (
-                <span className="admin-note" style={{ margin: 0 }}>
-                  the order and the layouts are kept on their own — the cover is kept with the story
-                </span>
-              ) : (
-                <span className="admin-note" style={{ margin: 0 }}>
-                  {draft.featured
-                    ? "one of them is the cover"
-                    : "no cover chosen — the widest one is used"}
-                </span>
-              )}
-            </div>
+            <p className="admin-note" style={{ margin: "0 14px 12px" }}>
+              {photosMoved
+                ? "the order and the layouts go with the story when you save it"
+                : draft.featured
+                  ? "one of them is the cover"
+                  : "no cover chosen — the widest one is used"}
+            </p>
           </>
         )}
       </Panel>
@@ -462,9 +540,9 @@ export default function StoryEditor({
       <SaveBar
         onSave={save}
         pending={pending}
-        dirty={dirty}
+        dirty={dirty || photosMoved}
         saved={justSaved}
-        label="keep this story"
+        label="save this story"
       >
         {!draft.published ? (
           <span className="admin-note" style={{ margin: 0 }}>
@@ -472,6 +550,91 @@ export default function StoryEditor({
           </span>
         ) : null}
       </SaveBar>
+      {/* The whole story's photographs, so the arrows walk it in the order a
+          reader will see it. */}
+      {looking !== null ? (
+        <Look
+          items={order.map((one) => ({
+            id: one.id,
+            url: one.url,
+            width: one.width,
+            height: one.height,
+          }))}
+          index={looking}
+          onIndex={setLooking}
+          onClose={() => setLooking(null)}
+        />
+      ) : null}
+
+      {/*
+       * The page, as a reader gets it.
+       *
+       * Not an impression of it: the same component the story's own page is
+       * built from, given the draft instead of the database — so the layout
+       * cycle, the way the paragraphs are threaded between the photographs, the
+       * lightbox, all of it is the real thing rather than a second
+       * implementation that would drift from the first by Friday. The only
+       * difference is that the menu is not there, and unsaved changes are.
+       */}
+      {preview ? (
+        <div className="admin-preview" role="dialog" aria-label="The story as a reader sees it">
+          <div className="admin-preview-bar">
+            <strong>as a reader sees it</strong>
+            <span>
+              {dirty || photosMoved ? "including what you have not saved yet" : "exactly as saved"}
+            </span>
+            <button type="button" onClick={() => setPreview(false)}>
+              close ×
+            </button>
+          </div>
+
+          <div className="admin-preview-page">
+            <main className="page">
+              <header className="story-header">
+                <p className="crumb">stories</p>
+                <h1 className="page-title">{draft.title || "Untitled"}</h1>
+                {draft.subtitle ? <p className="story-hook">{draft.subtitle}</p> : null}
+                <p className="story-meta">
+                  {[
+                    draft.place,
+                    draft.happened || [...new Set(order.map((one) => one.year))].filter(Boolean).join(", "),
+                    draft.made_with,
+                    credited(order),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              </header>
+
+              <StoryBody
+                slides={order
+                  // Hidden photographs are not on the page, so they are not in
+                  // the preview either — a preview that shows what the reader
+                  // will not see is worse than no preview.
+                  .filter((one) => one.published)
+                  .map((one) => ({
+                    key: one.id,
+                    photo: { src: one.url, width: one.width, height: one.height },
+                    caption: [one.credit, one.year].filter(Boolean).join(", "),
+                    layout: one.layout,
+                  }))}
+                sections={draft.sections.map((section) => ({
+                  heading: section.heading.trim() || null,
+                  texts: section.texts.map((text) => text.trim()).filter(Boolean),
+                }))}
+              />
+            </main>
+          </div>
+        </div>
+      ) : null}
     </>
   );
+}
+
+/** "photos by …", the same sentence the story's own page prints. */
+function credited(photos: { credit: string }[]): string | null {
+  const names = [...new Set(photos.map((one) => one.credit).filter(Boolean))];
+  if (names.length === 0) return null;
+  if (names.length === 1) return `photos by ${names[0]}`;
+  return `photos by ${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }

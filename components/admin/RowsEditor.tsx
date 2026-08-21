@@ -1,5 +1,6 @@
 "use client";
 
+import Dropdown from "./Picker";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { addRow, deleteRow, type RowValues, saveRows } from "@/app/admin/rows-actions";
@@ -157,32 +158,29 @@ export default function RowsEditor({
 
     if (column.kind === "choice") {
       return (
-        <select
+        <Dropdown
           value={String(value ?? "")}
-          onChange={(event) => edit(row.id, column.key, event.target.value)}
-        >
-          {(column.options ?? []).map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          onChange={(next) => edit(row.id, column.key, next)}
+          options={(column.options ?? []).map((option) => ({
+            value: option.value,
+            label: option.label,
+          }))}
+          empty={null}
+          label={column.label}
+        />
       );
     }
 
     if (column.kind === "story") {
       return (
-        <select
+        <Dropdown
           value={String(value ?? "")}
-          onChange={(event) => edit(row.id, column.key, event.target.value || null)}
-        >
-          <option value="">no story in particular</option>
-          {stories.map((story) => (
-            <option key={story.tag} value={story.tag}>
-              {story.title}
-            </option>
-          ))}
-        </select>
+          onChange={(next) => edit(row.id, column.key, next || null)}
+          options={stories.map((story) => ({ value: story.tag, label: story.title }))}
+          empty="no story in particular"
+          search={stories.length > 8}
+          label={column.label}
+        />
       );
     }
 

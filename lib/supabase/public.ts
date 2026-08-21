@@ -20,7 +20,18 @@ export type Loose = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    /**
+     * Loose in the same way the tables are. The database has a handful of
+     * functions the site calls by name — confirming a newsletter address,
+     * signing up for one — and declaring Functions as empty made every call to
+     * one a type error about a parameter that "should be undefined".
+     */
+    Functions: {
+      [name: string]: {
+        Args: Record<string, unknown>;
+        Returns: unknown;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

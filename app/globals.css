@@ -8,12 +8,27 @@
   /* Paper rather than screen-white: warmer, and kinder to the photographs. */
   --paper: #fffcf6;
   --hairline: rgba(0, 0, 0, 0.12);
+  /* For anything said quietly: a hint under a field, a label beside a link. */
+  --quiet: #6f6a63;
+  /* A breath of ink on the paper: the back of a tag, a stripe on a table. These
+     were written as rgba(0,0,0,0.05) in a dozen places, which is the same thing
+     said badly — and invisible the moment the paper goes dark. */
+  --wash: rgba(0, 0, 0, 0.05);
+  --wash-soft: rgba(0, 0, 0, 0.03);
+  /* Paper you can just see through: the phone menu, the drop screen. */
+  --veil: rgba(255, 252, 246, 0.95);
+  /* What a picture printed on paper does to the paper under it. Multiply is
+     right on light and wrong on dark, where it erases the picture instead. */
+  --print: multiply;
 
   --serif: Times, "Times New Roman", Georgia, serif;
   --sans: Gotham, "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   --edge: 25px;
   --sidebar: 250px;
+  /* The admin's top line, and nought for everybody else. Every fixed thing
+     along the top of the window adds this, so one number moves them all. */
+  --admin-bar: 0px;
   /* The contact details get their own narrow lane down the right edge, so
      nothing else has to make room for them. */
   --lane: 40px;
@@ -34,7 +49,7 @@ body {
 html {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: var(--purple) rgba(0, 0, 0, 0.05);
+  scrollbar-color: var(--purple) var(--wash);
 }
 
 /* A plain scrollbar in the site's own colours: no rounding, no shading. */
@@ -44,7 +59,7 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -127,7 +142,7 @@ img {
 
 .nav {
   position: fixed;
-  top: var(--edge);
+  top: calc(var(--edge) + var(--admin-bar));
   left: var(--edge);
   z-index: 20;
   display: flex;
@@ -136,7 +151,7 @@ img {
   align-items: flex-start;
   /* With a submenu open the menu can get tall; it scrolls rather than spilling
      off the screen. */
-  max-height: calc(100vh - var(--edge) * 2);
+  max-height: calc(100vh - var(--edge) * 2 - var(--admin-bar));
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -149,7 +164,7 @@ img {
   display: block;
   width: 74px;
   line-height: 0;
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
 }
 
 .nav-mark img {
@@ -237,7 +252,7 @@ img {
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--wash);
   font-family: var(--sans);
   font-size: 0.6rem;
   font-weight: 700;
@@ -292,6 +307,7 @@ img {
      rule below puts it back to one edge, where there is no room to spare. */
   padding-right: calc(var(--edge) * 2);
   padding-bottom: calc(var(--edge) + 40px);
+  padding-top: calc(var(--edge) + var(--admin-bar));
   min-height: 100vh;
 }
 
@@ -447,7 +463,7 @@ img {
   height: 72px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
   margin-bottom: 8px;
 }
 
@@ -525,7 +541,7 @@ img {
   flex: none;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
 }
 
 .quote-face img {
@@ -988,7 +1004,7 @@ img {
   transition: transform 0.5s ease-out;
   width: min(62vmin, 560px);
   height: auto;
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
   filter: saturate(1.2);
   pointer-events: none;
 }
@@ -1539,7 +1555,7 @@ body:has(.hero) .contact {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--veil);
   cursor: zoom-out;
 }
 
@@ -1614,6 +1630,184 @@ body:has(.hero) .contact {
   pointer-events: none;
 }
 
+/* ----------------------------------------------------------- paper at night */
+
+/*
+ * The same site with the paper turned down.
+ *
+ * Only the tokens change. Nothing here restyles a component, which is the whole
+ * argument for having had tokens in the first place — and the reason this is
+ * forty lines rather than four hundred.
+ *
+ * Three things are not a simple inversion. The paper is warm rather than black,
+ * because a true black behind a photograph makes the photograph look like a
+ * window and the page look like a hole. The three accents are lifted, because
+ * #8b3fff on near-black is a colour you can see but not read. And "multiply",
+ * which is what makes a logo sit *on* paper, erases a logo on dark paper — so
+ * the blend becomes screen and the marks are inverted back to themselves.
+ */
+:root[data-theme="dark"] {
+  --ink: #f2ece1;
+  --paper: #14120f;
+  --hairline: rgba(242, 236, 225, 0.16);
+  --quiet: #a9a196;
+  --wash: rgba(242, 236, 225, 0.06);
+  --wash-soft: rgba(242, 236, 225, 0.035);
+  --veil: rgba(20, 18, 15, 0.95);
+  --print: normal;
+
+  /* Lifted until they can be read rather than merely seen. */
+  --purple: #b98cff;
+  --blue: #4cc4f5;
+  --pink: #ff5fa5;
+}
+
+/* The mark is a purple scribble on white. On dark paper it needs turning
+   inside out rather than blending. */
+:root[data-theme="dark"] .nav-mark img,
+:root[data-theme="dark"] .admin-mark img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* A tick, a face, a portrait: images that are meant to look like themselves and
+   must not be inverted with the marks above. */
+:root[data-theme="dark"] .session-face img,
+:root[data-theme="dark"] .admin-portrait img {
+  filter: none;
+}
+
+/* Photographs keep their own light; the page around them dims. */
+:root[data-theme="dark"] img.photo,
+:root[data-theme="dark"] .admin-photo-frame img {
+  filter: brightness(0.94);
+}
+
+/*
+ * The switch itself: bottom right, and mostly out of the way.
+ *
+ * In the menu it read as one of the pages, which it is not — it is a preference
+ * about the screen you are reading on, and it belongs with the furniture rather
+ * than with the contents. Down here it holds a corner nothing else wants: the
+ * contact details have the left edge, the menu has the top, and on a phone it
+ * steps up over the bottom bar.
+ *
+ * Closed it is a glyph. The words arrive on hover, because "make it dark" is
+ * eleven characters of explanation for a button that needs none once you have
+ * pressed it a first time.
+ */
+.dark-switch {
+  position: fixed;
+  right: var(--edge);
+  bottom: var(--edge);
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  color: var(--quiet);
+  cursor: pointer;
+  overflow: hidden;
+  transition: max-width 0.22s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.dark-switch svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.dark-switch span {
+  padding-left: 8px;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dark-switch:hover,
+.dark-switch:focus-visible {
+  max-width: 200px;
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* ------------------------------------------------- the admin's own top line */
+
+/*
+ * Paper, like the rest of the site, and told apart by one purple line.
+ *
+ * It began as ink — the one dark thing on the page — and that was too loud: it
+ * is furniture, on every page, above the work. What it needs is to be a
+ * different *plane* rather than a different colour, so it is the same paper with
+ * a purple rule under it, and the greeting is set in Times against the two ways
+ * in in Helvetica capitals — words in Times, labels in Helvetica, as everywhere
+ * else here.
+ */
+html.admin-bar {
+  --admin-bar: 36px;
+}
+
+.admin-bar-strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  height: var(--admin-bar);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--edge);
+  background: var(--paper);
+  /* Not a border: a border would count in the height and shift the number
+     everything else is offset by. */
+  box-shadow: inset 0 -2px 0 var(--purple);
+}
+
+.admin-bar-who {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1;
+  color: var(--quiet);
+  margin-right: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-bar-link {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--quiet);
+  text-decoration: none;
+  padding: 12px 0 12px 16px;
+  margin-left: 16px;
+  border-left: 1px solid var(--hairline);
+  transition: color 0.15s ease;
+}
+
+/* The way into the page you are actually looking at is the one you want nine
+   times out of ten, so it is the one set in ink. */
+.admin-bar-here {
+  color: var(--ink);
+}
+
+.admin-bar-link:hover,
+.admin-bar-link:focus-visible {
+  color: var(--purple);
+}
+
 /* -------------------------------------------------------------------- mobile */
 
 @media screen and (max-width: 767px) {
@@ -1646,7 +1840,7 @@ body:has(.hero) .contact {
   .nav::before {
     content: "";
     position: fixed;
-    top: 0;
+    top: var(--admin-bar);
     left: 0;
     right: 0;
     height: var(--top-bar);
@@ -1656,7 +1850,7 @@ body:has(.hero) .contact {
 
   .nav-mark {
     position: fixed;
-    top: 7px;
+    top: calc(7px + var(--admin-bar));
     left: var(--edge);
     z-index: 21;
     width: 38px;
@@ -1688,7 +1882,7 @@ body:has(.hero) .contact {
   /* Out of the bottom bar, up into the strip at the top, on the right. */
   .nav-session {
     position: fixed;
-    top: 9px;
+    top: calc(9px + var(--admin-bar));
     right: var(--edge);
     z-index: 21;
     align-items: center;
@@ -1717,28 +1911,86 @@ body:has(.hero) .contact {
     padding: 7px 14px;
   }
 
-  /* The sidebar stays on the left, just clear of the menu bar. */
+  /*
+   * On a phone the contact details stop being a lane and become a footer.
+   *
+   * Turned on their side they cost 26px of every page's width, which is a lot
+   * of a 375px screen to spend on three words nobody is reading on the way
+   * down. At the foot, across, under a rule, they are where anybody would look
+   * for them — and the page gets its full width back.
+   */
   .contact {
-    left: 2px;
-    bottom: calc(var(--bar-height) + 14px);
-    gap: 12px;
-    font-size: 0.85em;
+    position: static;
+    writing-mode: horizontal-tb;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 4px 14px;
+    margin: 34px var(--edge) 0;
+    padding-top: 15px;
+    border-top: 1px solid var(--hairline);
+    /* Small enough that the label and both addresses make one line on the
+       narrowest phone; they wrap gracefully below that. */
+    font-size: 0.78em;
   }
 
   body {
     padding-bottom: calc(var(--bar-height) + 24px);
   }
 
-  /* Room down the right for the turned contact details. */
+  /* Nothing in the left margin any more: the contact details are a footer. */
   .page {
-    padding-left: 26px;
+    padding-left: var(--edge);
     padding-right: var(--edge);
-    padding-top: calc(var(--top-bar) + var(--edge));
+    padding-top: calc(var(--top-bar) + var(--edge) + var(--admin-bar));
     min-height: 0;
   }
 
   .page {
     padding-bottom: 0;
+  }
+
+  html.admin-bar {
+    --admin-bar: 32px;
+  }
+
+  /*
+   * On a phone it stops floating.
+   *
+   * There is no corner to float in: the menu holds the bottom, the contact
+   * details now run across above it, and a button hovering over either covers
+   * something somebody is reading — it was sitting on the end of the email
+   * address. In the flow, right-aligned under the footer, it covers nothing. And
+   * it is open, because a phone has no hover to open it with.
+   */
+  .dark-switch {
+    position: static;
+    max-width: none;
+    margin: 14px var(--edge) 0 auto;
+  }
+
+  .admin-bar-who {
+    font-size: 0.85rem;
+  }
+
+  .admin-bar-link {
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    padding-left: 11px;
+    margin-left: 11px;
+  }
+
+  /* Two links and a greeting will not fit across a phone. The greeting is the
+     one that can go: it is the least useful thing on the strip. */
+  .admin-bar-strip:has(.admin-bar-here) .admin-bar-who {
+    display: none;
+  }
+
+  .admin-bar-strip:has(.admin-bar-here) .admin-bar-here {
+    margin-right: auto;
+    border-left: 0;
+    padding-left: 0;
+    margin-left: 0;
   }
 
   .page-title {
@@ -1805,7 +2057,7 @@ body:has(.hero) .contact {
     width: 52px;
     height: 66px;
     overflow: hidden;
-    background: rgba(0, 0, 0, 0.05);
+    background: var(--wash);
   }
 
   .community-face img {
@@ -1900,15 +2152,15 @@ body:has(.hero) .contact {
 @keyframes breathe {
   0%,
   100% {
-    background-color: rgba(0, 0, 0, 0.07);
+    background-color: var(--wash);
   }
   50% {
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: var(--wash-soft);
   }
 }
 
 .photo:not([data-loaded]) {
-  background-color: rgba(0, 0, 0, 0.07);
+  background-color: var(--wash);
   animation: breathe 1.4s ease-in-out infinite;
 }
 
@@ -2013,7 +2265,7 @@ body:has(.hero) .contact {
 .holding-mark {
   width: min(52vmin, 420px);
   height: auto;
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
 }
 
 .holding-line {
@@ -2084,7 +2336,7 @@ body:has(.hero) .contact {
   display: block;
   margin-top: 6px;
   font-style: italic;
-  color: rgba(0, 0, 0, 0.55);
+  color: var(--quiet);
   font-size: 0.9em;
 }
 
@@ -2171,7 +2423,7 @@ body:has(.hero) .contact {
   object-fit: contain;
   /* Most of these arrive as black on white; multiply drops the white out onto
      the paper, the same trick the logo in the menu uses. */
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
 }
 
 .partners-row a {
@@ -2217,7 +2469,7 @@ body:has(.hero) .contact {
 
 .page-bg img {
   opacity: var(--bg-opacity, 0.18);
-  mix-blend-mode: var(--bg-blend, multiply);
+  mix-blend-mode: var(--bg-blend, var(--print));
   rotate: var(--bg-rotate, 0deg);
   /* Turning a picture leaves the window's corners empty; the size dial is how
      that gets solved, so it is not solved here behind anybody's back. */
@@ -2254,4 +2506,122 @@ body:has(.hero) .contact {
   .page-bg img {
     rotate: none;
   }
+}
+
+/* ------------------------------------------------ the way into the back of house
+
+   From a page to the field that holds it. Only an admin sees it, and it sits in
+   the one corner nothing else uses: the menu is top left on a wide screen and
+   along the bottom on a phone, the contact details run down the left edge. */
+
+.edit-this {
+  position: fixed;
+  right: var(--edge);
+  bottom: var(--edge);
+  z-index: 25;
+  padding: 8px 14px;
+  border: 1px solid var(--purple);
+  background: var(--paper);
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-style: normal;
+  text-decoration: none;
+  color: var(--purple);
+}
+
+.edit-this:hover {
+  background: var(--purple);
+  color: var(--paper);
+}
+
+/* Over the video on the front page, where there is no paper behind it. */
+body:has(.hero) .edit-this {
+  background: var(--veil);
+}
+
+@media screen and (max-width: 767px) {
+  /* Clear of the menu bar along the bottom. */
+  .edit-this {
+    bottom: calc(var(--bar-height) + 12px);
+    right: 10px;
+    font-size: 0.56rem;
+    padding: 6px 10px;
+  }
+}
+
+/* ------------------------------------------------------ a story's own credits */
+
+/* What it was about: a handful of words under the place and the date, set as
+   labels rather than as prose, because that is what they are. */
+.story-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story-topics li {
+  padding: 3px 9px;
+  border: 1px solid var(--hairline);
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+/* Who did it, at the foot of the story, where credits belong. */
+.story-credits {
+  display: grid;
+  gap: 34px;
+  margin: 54px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--hairline);
+}
+
+.story-who,
+.story-partners {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 22px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story-who li {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 76px;
+  font-size: 0.86em;
+  line-height: 1.25;
+}
+
+.story-who img {
+  width: 76px;
+  height: 96px;
+  object-fit: cover;
+  display: block;
+}
+
+.story-partners li {
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  font-size: 0.95em;
+}
+
+.story-partners img {
+  width: auto;
+  max-width: 130px;
+  max-height: 46px;
+  object-fit: contain;
+  mix-blend-mode: var(--print);
 }

@@ -47,10 +47,31 @@ export async function getStories(): Promise<Story[]> {
   if (!hasSupabase()) return fileStories.getStories();
 
   const supabase = supabasePublic();
-  const [{ data: rows }, photos, chosen] = await Promise.all([
+  const [{ data: rows }, photos, chosen, { data: theirs }, { data: made }] = await Promise.all([
     supabase.from("stories").select("*").eq("published", true).order("position").returns<StoryRow[]>(),
     getResources(),
     coverPaths(),
+    // Who was there and who it was made with, for every story at once — one
+    // query rather than one per story, because the lists are tiny and there are
+    // seven stories.
+    supabase
+      .from("story_people")
+      .select("story_id, position, profiles(name, photo_path)")
+      .order("position")
+      .returns<
+        { story_id: string; position: number; profiles: { name: string; photo_path: string | null } | null }[]
+      >(),
+    supabase
+      .from("story_partners")
+      .select("story_id, position, associations(name, logo_path, url, published)")
+      .order("position")
+      .returns<
+        {
+          story_id: string;
+          position: number;
+          associations: { name: string; logo_path: string | null; url: string | null; published: boolean } | null;
+        }[]
+      >(),
   ]);
   if (!rows?.length) return fileStories.getStories();
 
@@ -77,6 +98,22 @@ export async function getStories(): Promise<Story[]> {
       photos: mine,
       credits: unique(mine.map((photo) => photo.credit)),
       cover: found?.photo ?? cover(mine),
+      topics: (row as StoryRow & { topics?: string[] | null }).topics ?? [],
+      who: (theirs ?? [])
+        .filter((one) => one.story_id === row.id && one.profiles)
+        .map((one) => ({
+          name: one.profiles!.name,
+          photo: one.profiles!.photo_path ? mediaUrl(one.profiles!.photo_path) : null,
+        })),
+      // A partner taken off the community page is off the stories too: there is
+      // one answer to "do we show these people", and it is theirs.
+      partners: (made ?? [])
+        .filter((one) => one.story_id === row.id && one.associations?.published)
+        .map((one) => ({
+          name: one.associations!.name,
+          logo: one.associations!.logo_path ? mediaUrl(one.associations!.logo_path) : null,
+          url: one.associations!.url || null,
+        })),
     };
   });
 }
@@ -98,6 +135,23 @@ export async function getNeighbours(slug: string) {
 
 /* ------------------------------------------------------- photos and quotes */
 
+/*
+ * An empty table is an answer.
+ *
+ * Every one of these used to fall back to the files in /data when the query came
+ * back with nothing, and that made deletion impossible to finish: emptying the
+ * quotes in the back of the house brought back the seven that ship with the
+ * repository, and they could not be deleted either, because they were never
+ * rows. Reported as "we deleted all quotes but they are still in the archive",
+ * and that is exactly what it was.
+ *
+ * The files are for a copy of the site with no database at all — which is the
+ * check at the top of each of these functions, and is the only case they were
+ * ever meant for. Once there are keys, the database is the truth, including when
+ * its answer is "none".
+ */
+
+
 export async function getResources(): Promise<Resource[]> {
   if (!hasSupabase()) return files.getResources();
 
@@ -111,9 +165,8 @@ export async function getResources(): Promise<Resource[]> {
       .returns<PhotoRow[]>(),
     photographerNames(),
   ]);
-  if (!data?.length) return files.getResources();
 
-  return data.map((row) => ({
+  return (data ?? []).map((row) => ({
     file: row.path,
     // Somebody who has an account is credited by the name on it, so correcting
     // your own name on your profile corrects it under every photograph you took.
@@ -136,10 +189,9 @@ export async function getQuotes(): Promise<Quote[]> {
     .eq("published", true)
     .order("created_at")
     .returns<QuoteRow[]>();
-  if (!data?.length) return files.getQuotes();
 
   const faces = await portraits();
-  return data.map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     who: row.who ?? "",
     where: row.place ?? "",
@@ -160,10 +212,9 @@ export async function getDonations(): Promise<Donation[]> {
     .eq("published", true)
     .order("given_on", { ascending: false })
     .returns<DonationRow[]>();
-  if (!data?.length) return files.getDonations();
 
   const faces = await portraits();
-  return data.map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     who: row.who ?? "",
     when: row.given_on,
@@ -299,9 +350,8 @@ export async function getEvents(): Promise<ClubEvent[]> {
     .eq("published", true)
     .order("happens_on")
     .returns<EventRow[]>();
-  if (!data?.length) return appFiles.getEvents();
 
-  return data.map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     date: row.happens_on,
     time: row.starts_at ?? "",
@@ -325,9 +375,8 @@ export async function getNews(): Promise<NewsItem[]> {
     .eq("published", true)
     .order("published_on", { ascending: false })
     .returns<NewsRow[]>();
-  if (!data?.length) return appFiles.getNews();
 
-  return data.map((row) => ({ date: row.published_on, title: row.title, text: row.text ?? "" }));
+  return (data ?? []).map((row) => ({ date: row.published_on, title: row.title, text: row.text ?? "" }));
 }
 
 /** The feed is still examples: nobody can post until members can sign in. */
@@ -354,7 +403,6 @@ export async function getMembers(): Promise<Member[]> {
     .select("name, country, photo_path, colour, listed, listed_by_admin")
     .returns<ProfileRow[]>();
   const shown = (data ?? []).filter((row) => row.listed_by_admin ?? row.listed);
-  if (!shown.length) return files.getMembers();
 
   return shown.map((row) => {
     const parts = (row.name ?? "").split(" ");

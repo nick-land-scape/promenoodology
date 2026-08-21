@@ -14,7 +14,7 @@ export default async function DonationsPage() {
     .returns<Row[]>();
 
   return (
-    <Head title="the wall" view="/donations">
+    <Head title="the wall">
       <p className="admin-intro">
         Every gift, one by one, newest first. There is deliberately no total on the page and none
         here either: it is a list of people who made something possible, not a thermometer.

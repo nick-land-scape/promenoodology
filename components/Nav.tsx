@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 import { useKnock } from "@/lib/knock";
 import Photo from "./Photo";
-import { AdminLink, SessionButton } from "./SessionLink";
+import { SessionButton } from "./SessionLink";
 
 export type NavLink = { href: string; label: string };
 
@@ -59,7 +59,9 @@ export default function Nav({
             {link.label}
           </Link>
         ))}
-        <AdminLink />
+        {/* The way into the back of the house used to be here. It is in the
+            strip along the top now, on every page, where it also says who you
+            are — two links to the same place is one link too many. */}
       </div>
 
       {/* Top right on a phone, last line of the menu on a wide screen. */}

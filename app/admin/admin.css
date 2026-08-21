@@ -12,7 +12,8 @@
 
 :root {
   --admin-side: 210px;
-  --admin-quiet: #6f6a63;
+  --admin-top: 36px;
+  --admin-quiet: var(--quiet);
   --admin-faint: #a09a92;
   --admin-tint: rgba(139, 63, 255, 0.06);
 }
@@ -31,9 +32,68 @@ body:has(.admin) {
 
 /* ------------------------------------------------------------------ the menu */
 
-.admin-side {
+/* --------------------------------------------------------- the strip on top */
+
+/*
+ * The same strip as on the site, and for the same reason: one place for "where
+ * am I" and "let me see it". It used to be a button in every section's own
+ * header, next to that section's own actions, which put the way *out* in the
+ * row reserved for what you can *do* — and two sections had simply forgotten to
+ * pass it, so from those there was no way out at all.
+ */
+.admin-top {
   position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: var(--admin-top);
+  display: flex;
+  align-items: center;
+  padding: 0 calc(var(--edge) * 2) 0 20px;
+  background: var(--paper);
+  box-shadow: inset 0 -2px 0 var(--purple);
+}
+
+.admin-top-who {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1;
+  color: var(--admin-quiet);
+  margin-right: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-top-link {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--admin-quiet);
+  text-decoration: none;
+  padding: 12px 0 12px 16px;
+  margin-left: 16px;
+  border-left: 1px solid var(--hairline);
+  transition: color 0.15s ease;
+}
+
+.admin-top-here {
+  color: var(--ink);
+}
+
+.admin-top-link:hover {
+  color: var(--purple);
+}
+
+.admin-side {
+  position: fixed;
+  top: var(--admin-top);
   bottom: 0;
   left: 0;
   z-index: 20;
@@ -63,7 +123,7 @@ body:has(.admin) {
 .admin-mark img {
   width: 34px;
   height: auto;
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--print);
 }
 
 .admin-mark span {
@@ -201,12 +261,12 @@ body:has(.admin) {
   /* Twice the edge on the right, for the same reason as the site's own pages:
      the menu holds the left, so one edge on the right reads as a page sliding
      off rather than as a column. The phone rule below puts it back. */
-  padding: 0 calc(var(--edge) * 2) 90px var(--edge);
+  padding: var(--admin-top) calc(var(--edge) * 2) 90px var(--edge);
 }
 
 .admin-head {
   position: sticky;
-  top: 0;
+  top: var(--admin-top);
   z-index: 10;
   display: flex;
   align-items: baseline;
@@ -234,7 +294,7 @@ body:has(.admin) {
 
 .admin-back {
   display: inline-block;
-  margin-bottom: 4px;
+  margin: 3px 0 0;
   font-size: 0.9em;
 }
 
@@ -403,6 +463,20 @@ body:has(.admin) {
   padding: 4px 0;
 }
 
+/*
+ * The double line above the first field.
+ *
+ * The panel's header draws a rule under itself, and every field draws one over
+ * itself — which is right between rows and wrong at the top, where the two land
+ * four pixels apart and read as a border somebody forgot to finish. The grid has
+ * an unknown number of columns, so there is no "first row" to select; pulling the
+ * whole grid up by exactly one pixel puts the two rules on top of each other,
+ * which is what one rule looks like.
+ */
+.admin-panel-body > .admin-fields:first-child {
+  margin-top: -5px;
+}
+
 /* ------------------------------------------------------------------- fields */
 
 /* Fields sit in a grid of cells divided by hairlines — the same idea as the
@@ -538,7 +612,12 @@ body:has(.admin) {
   color: var(--paper);
 }
 
-/* A word you can press: used for hidden/shown, move up, remove. */
+/* A word you can press: used for hidden/shown, move up, remove.
+ *
+ * Underlined, always. Set in the same italic as the prose around it and with no
+ * line under it, these read as captions — you found out they were buttons by
+ * hovering, or by not finding out at all. The site's own links are underlined;
+ * so are these now. */
 .admin-word {
   border: 0;
   background: none;
@@ -549,6 +628,9 @@ body:has(.admin) {
   color: var(--admin-quiet);
   cursor: pointer;
   text-align: left;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 .admin-word:hover {
@@ -562,6 +644,72 @@ body:has(.admin) {
 .admin-word[disabled] {
   opacity: 0.3;
   cursor: default;
+}
+
+/* A button that is only a glyph: crop, and anything else that sits in a row of
+   controls where a word would be one word too many. */
+.admin-icon-word {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--admin-faint);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-icon-word svg {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-icon-word:hover {
+  color: var(--purple);
+  border-color: var(--purple);
+}
+
+/* The bin.
+ *
+ * The one irreversible button on any of these pages, and the only red thing —
+ * as a word among words it looked exactly as harmless as "edit" beside it. */
+.admin-bin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--admin-faint);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.admin-bin svg {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-bin:hover {
+  color: var(--pink);
+  border-color: var(--pink);
+  background: rgba(232, 38, 135, 0.06);
+}
+
+.admin-bin[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.admin-bin[disabled]:hover {
+  color: var(--admin-faint);
+  border-color: transparent;
+  background: none;
 }
 
 /* Shown or hidden — the one switch in the whole back of the house. */
@@ -581,20 +729,15 @@ body:has(.admin) {
   cursor: pointer;
 }
 
-.admin-flag::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  background: var(--admin-faint);
+.admin-flag svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
 }
 
 .admin-flag[aria-pressed="true"] {
   color: var(--purple);
   border-color: var(--purple);
-}
-
-.admin-flag[aria-pressed="true"]::before {
-  background: var(--purple);
 }
 
 /* ------------------------------------------------------------------- the rows */
@@ -618,8 +761,49 @@ body:has(.admin) {
   border-top: 0;
 }
 
-.admin-row-dragging {
+/* ---------------------------------------------------------------- dragging */
+
+/*
+ * What a drag has to say, and did not.
+ *
+ * Dragging worked and felt like nothing. The row you had picked up looked
+ * exactly like the rows you had not, nothing marked where it would land, and you
+ * found out by letting go — so every reorder was a small act of faith followed
+ * by reading the list again to check.
+ *
+ * Three things say it now. The thing in your hand goes pale, tilts a degree and
+ * lifts off the page, so it plainly is *held*. The row under the pointer grows a
+ * purple line on the edge the thing will arrive at. And the cursor is a closed
+ * hand for as long as the drag lasts, anywhere on the page — which is why the
+ * class goes on the document and not on the row.
+ */
+.admin-row-dragging,
+.admin-photo.admin-row-dragging {
+  opacity: 0.5;
   background: var(--admin-tint);
+  transform: rotate(-0.6deg) scale(0.99);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.13);
+}
+
+/* Where it will land. On a row that is a line across; on a photograph, which
+   sits in a grid, the line goes down the leading edge instead. */
+.admin-row-over {
+  box-shadow: inset 0 3px 0 var(--purple);
+}
+
+.admin-photo.admin-row-over {
+  box-shadow: inset 3px 0 0 var(--purple);
+}
+
+html.admin-dragging,
+html.admin-dragging * {
+  cursor: grabbing !important;
+}
+
+/* The handle says what it offers before the drag as well as during it. */
+.admin-grip,
+.admin-row-index {
+  cursor: grab;
 }
 
 .admin-row-hidden .admin-row-name {
@@ -835,15 +1019,25 @@ body:has(.admin) {
   z-index: 80;
   display: grid;
   place-items: center;
-  gap: 6px;
-  background: rgba(255, 252, 246, 0.94);
+  background: var(--veil);
   pointer-events: none;
   text-align: center;
 }
 
+/* A frame drawn where the files are going, rather than words floating on a
+   wash: the dashes are the oldest way there is of saying "in here". */
+.admin-drop-frame {
+  display: grid;
+  gap: 6px;
+  padding: 40px 54px;
+  border: 2px dashed var(--purple);
+  background: var(--paper);
+}
+
 .admin-drop p {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
+  line-height: 1.1;
 }
 
 .admin-drop em {
@@ -867,22 +1061,158 @@ body:has(.admin) {
 }
 
 /* Looking at one photograph properly. */
+/*
+ * Looking at one properly.
+ *
+ * It used to be a bare <img> with max-width: 100%, which lets a picture be its
+ * own size or less — so the sixty-two thumbnails in the archive opened at 300
+ * pixels in the middle of a black screen. It fills the frame now, up to 2.4× its
+ * own size, and the caption says how big it really is so nobody has to guess
+ * whether they are looking at a photograph or at a magnified one.
+ */
 .admin-look {
   position: fixed;
   inset: 0;
   z-index: 90;
   display: grid;
   place-items: center;
-  padding: 30px;
-  background: rgba(0, 0, 0, 0.86);
+  padding: 54px 64px;
+  background: rgba(0, 0, 0, 0.88);
+}
+
+/* The way out is the whole backdrop, behind everything else. */
+.admin-look-away {
+  position: absolute;
+  inset: 0;
   border: 0;
+  background: none;
   cursor: zoom-out;
 }
 
-.admin-look img {
-  max-width: 100%;
-  max-height: 84vh;
+.admin-look-frame {
+  position: relative;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  /* A definite width, which is the whole trick: "100%" on the picture below
+     needs something to be 100% *of*, and with the frame sized by its own
+     contents that was the picture itself — so a 300px file opened at 300px in
+     the middle of an empty screen. */
+  width: 100%;
+  max-height: 100%;
+  min-width: 0;
+}
+
+.admin-look-frame img {
+  /* Up to the frame, up to 2.4× the file, whichever comes first. */
+  width: min(100%, var(--limit));
+  max-height: calc(100vh - 150px);
   object-fit: contain;
+  display: block;
+}
+
+.admin-look-frame figcaption {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.admin-look-count {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* The arrows sit against the edges of the window, out of the picture's way. */
+.admin-look-step {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 60px;
+  border: 0;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 1.4rem;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.admin-look-step:hover {
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+}
+
+.admin-look-back {
+  left: 0;
+}
+
+.admin-look-on {
+  right: 0;
+}
+
+/* What you can do to it while you are looking at it. */
+.admin-look-tools {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-look-tools button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.4);
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+}
+
+.admin-look-tools button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.admin-look-tools button:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+.admin-look-danger:hover {
+  border-color: var(--pink) !important;
+  color: var(--pink) !important;
+}
+
+@media screen and (max-width: 700px) {
+  .admin-look {
+    padding: 50px 12px;
+  }
+
+  .admin-look-step {
+    width: 34px;
+    height: 48px;
+  }
+
+  .admin-look-tools button span {
+    display: none;
+  }
 }
 
 /* ------------------------------------------------------------ choosing one */
@@ -1101,6 +1431,35 @@ body:has(.admin) {
     display: block;
   }
 
+  /* The menu is a header rather than a column here, so it is in the flow and
+     the strip along the top has to be made room for rather than moved past. */
+  .admin-side {
+    margin-top: var(--admin-top);
+  }
+
+  /* Nothing is pinned under the strip, so the sticky header sits at the top of
+     the scroll rather than 36px down it. */
+  .admin-head {
+    top: 0;
+  }
+
+  .admin-main {
+    padding-top: 0;
+  }
+
+  /* On a phone the greeting is the first thing to go: the two ways out are what
+     the strip is for. */
+  .admin-top-who {
+    display: none;
+  }
+
+  .admin-top-link:first-of-type {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
+    margin-right: auto;
+  }
+
   /* The menu stops being a column and becomes a header that wraps: the mark and
      the way out on the first line, every section on the lines under it. It
      wraps rather than scrolling sideways — the same as the site's own menu on a
@@ -1277,4 +1636,1222 @@ body:has(.admin) {
 .admin-grip svg {
   width: 9px;
   height: 15px;
+}
+
+/* ------------------------------------------------------------ choosing several
+
+   The tick, and the strip of things to do with what is ticked. */
+
+.admin-tick {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  line-height: 1;
+  color: var(--purple);
+  cursor: pointer;
+}
+
+.admin-tick:hover {
+  border-color: var(--purple);
+}
+
+.admin-tick[aria-checked="true"] {
+  border-color: var(--purple);
+  box-shadow: inset 0 0 0 1px var(--purple);
+}
+
+/* On a photograph, over the corner of it: there is no room for a column of its
+   own, and it sits beside the frame rather than inside it so that choosing and
+   opening stay two separate gestures.
+
+   Top left, because that is where a checkbox goes — every list anybody has ever
+   ticked reads left to right, and the right-hand corner is where the thing you
+   are choosing usually keeps its own controls. */
+.admin-photo {
+  position: relative;
+}
+
+.admin-photo > .admin-tick {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 24px;
+  height: 24px;
+  font-size: 0.85rem;
+  /* Over a photograph rather than on paper, so it needs its own ground. */
+  background: var(--paper);
+  box-shadow: 0 0 0 1px rgba(255, 252, 246, 0.7);
+}
+
+/* The strip. It sticks to the top, under the section's own title, because what
+   you chose is at the other end of a long scroll from what you want to do
+   with it. */
+.admin-chosen {
+  position: sticky;
+  top: 74px;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--purple);
+  background: var(--paper);
+}
+
+/* The picker inside the bar is a line, like the selects beside it, not a box. */
+.admin-chosen .admin-picker-face {
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 1px;
+  min-width: 7.5rem;
+}
+
+/* A year is four characters and does not need seven rem of room. */
+.admin-picker-narrow .admin-picker-face {
+  min-width: 4.6rem;
+}
+
+/* What is chosen: the count and the two words that change it, set as one label
+   so they read as a group rather than as three separate things. */
+.admin-chosen-count {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.admin-chosen strong {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--purple);
+  white-space: nowrap;
+}
+
+.admin-chosen-count button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.admin-chosen-count button:hover {
+  color: var(--purple);
+}
+
+/* What you can do to them, held together at the other end. */
+.admin-chosen-do {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.admin-chosen label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.92em;
+  font-style: italic;
+  color: var(--admin-quiet);
+}
+
+.admin-chosen select,
+.admin-chosen input {
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: none;
+  padding: 1px 0;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  min-width: 6.5rem;
+}
+
+.admin-chosen select:focus,
+.admin-chosen input:focus {
+  outline: 0;
+  border-bottom-color: var(--purple);
+}
+
+@media screen and (max-width: 900px) {
+  .admin-chosen {
+    position: static;
+  }
+
+  .admin-chosen-do {
+    margin-left: 0;
+  }
+}
+
+/* A picked photographer and a typed one are the same question, so they share a
+   field — with just enough air between them not to read as one control. */
+.admin-field select + input {
+  margin-top: 4px;
+}
+
+/* ------------------------------------------------------- the searchable list */
+
+/*
+ * A dropdown with faces in it.
+ *
+ * The native one was right until the list became the whole community: sixty-six
+ * names in a scrolling column, alphabetical, nothing to type at and no way to
+ * tell two Gabrielas apart. You were picking a string and hoping. This shows the
+ * portrait beside the name and filters as you type, which is how anybody
+ * actually recognises somebody.
+ *
+ * It is built to sit in a field and look like the thing it replaced — no border,
+ * no box, the value in Times at the size of the text around it — so a card does
+ * not suddenly grow a widget where it used to have a line.
+ */
+.admin-picker {
+  position: relative;
+  min-width: 0;
+}
+
+.admin-picker-face {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-picker-face > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-picker-face img {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  object-fit: cover;
+  /* Square, like the portraits on the community page now are. */
+  border: 1px solid var(--hairline);
+}
+
+.admin-picker-arrow {
+  flex: none;
+  width: 9px;
+  height: 6px;
+  color: var(--admin-faint);
+}
+
+.admin-picker-none {
+  color: var(--admin-faint);
+  font-style: italic;
+}
+
+.admin-picker-drop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: -8px;
+  z-index: 50;
+  min-width: 230px;
+  max-width: min(320px, 78vw);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  /* The one place in the back of the house with a shadow: it is the only thing
+     that is genuinely above the page rather than part of it. */
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
+}
+
+.admin-picker-wide .admin-picker-drop {
+  min-width: 280px;
+}
+
+.admin-picker-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.admin-picker-search svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--admin-faint);
+}
+
+.admin-picker-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.admin-picker-search input::placeholder {
+  color: var(--admin-faint);
+  font-style: italic;
+}
+
+.admin-picker-list {
+  max-height: 264px;
+  overflow-y: auto;
+}
+
+.admin-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  background: none;
+  padding: 6px 11px;
+  font: inherit;
+  font-size: 0.98rem;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-picker-list > .admin-picker-row:first-child {
+  border-top: 0;
+}
+
+.admin-picker-row img,
+.admin-picker-noface {
+  flex: none;
+  width: 30px;
+  height: 38px;
+  object-fit: cover;
+  border: 1px solid var(--hairline);
+}
+
+.admin-picker-noface {
+  background: var(--admin-tint);
+}
+
+.admin-picker-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-picker-row em {
+  flex: none;
+  font-size: 0.8em;
+  color: var(--admin-faint);
+}
+
+/* Where the keyboard is, and what is already chosen — two different things, so
+   they look different: one is a wash, the other is a mark. */
+.admin-picker-cursor {
+  background: var(--admin-tint);
+}
+
+.admin-picker-on .admin-picker-name {
+  color: var(--purple);
+}
+
+.admin-picker-empty {
+  margin: 0;
+  padding: 12px 11px;
+  font-size: 0.92em;
+  font-style: italic;
+  color: var(--admin-faint);
+}
+
+/* --------------------------------------------------------------- the people */
+
+/*
+ * One person, one card.
+ *
+ * It was a row: a round thumbnail, four fields that wrapped into a block, and a
+ * column of six controls stacked down the right — three of them buttons for the
+ * same question, all lit identically. On sixty-four people that is a wall.
+ *
+ * Now the fields lie across in one line and everything you can *do* is along the
+ * bottom, which is the same shape every other card on these pages has.
+ */
+.admin-person {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Counting up. Tabular figures so 9 and 10 line up at the left edge. */
+.admin-person-no {
+  flex: none;
+  width: 22px;
+  padding-top: 12px;
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-faint);
+  text-align: right;
+}
+
+.admin-person-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Across, not wrapped: name, where from, the colour, since when, and whether
+   they can get in here. The name gets the room the others do not need. */
+.admin-person-fields {
+  display: grid;
+  /* Measured rather than guessed: a date control needs about 110px before it
+     starts hiding its own year, and a two-letter select needs almost nothing. */
+  grid-template-columns: 1.35fr 0.95fr 0.8fr 1.15fr 1fr;
+  border-top: 0;
+}
+
+.admin-field input[type="date"] {
+  font-size: 0.95rem;
+}
+
+.admin-person-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 14px 2px;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-person-who,
+.admin-person-does {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-person-mail {
+  font-size: 0.88em;
+  color: var(--admin-quiet);
+}
+
+.admin-person-showing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88em;
+  font-style: italic;
+  color: var(--admin-quiet);
+}
+
+.admin-person-showing select {
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: none;
+  padding: 1px 0;
+  font: inherit;
+  font-style: normal;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/*
+ * The portrait, at the shape a portrait is.
+ *
+ * A circle crops the top of somebody's head off and then asks a button beside it
+ * to do the changing. This is the picture, at the proportions the community page
+ * prints it at, and clicking it is how you change it — which is what anybody
+ * would try first.
+ */
+.admin-portrait {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 56px;
+  height: 72px;
+  margin-top: 8px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  background: var(--admin-tint);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.admin-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-portrait-none {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--admin-faint);
+}
+
+/* The word only when you are on it: the picture should be the picture. */
+.admin-portrait em {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 3px 0;
+  background: rgba(0, 0, 0, 0.62);
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.admin-portrait:hover em,
+.admin-portrait:focus-visible em {
+  opacity: 1;
+}
+
+@media screen and (max-width: 900px) {
+  .admin-person-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* The number and the portrait keep the top line; the fields go under them
+     rather than into a 140px column beside them. */
+  .admin-person {
+    flex-wrap: wrap;
+  }
+
+  .admin-person-body {
+    flex-basis: 100%;
+  }
+
+  .admin-person-foot {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* The logo box, which is also the button that fills it. */
+.admin-logo {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 84px;
+  height: 58px;
+  margin-top: 4px;
+  padding: 6px;
+  border: 1px solid var(--hairline);
+  background: var(--admin-tint);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.admin-logo img {
+  width: 100%;
+  height: 100%;
+  /* Contained, not cropped: a logo that has been cropped is somebody else's
+     logo. */
+  object-fit: contain;
+  display: block;
+  mix-blend-mode: var(--print);
+}
+
+.admin-logo-none {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--sans);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+}
+
+.admin-logo em {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 3px 0;
+  background: rgba(0, 0, 0, 0.62);
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.admin-logo:hover em,
+.admin-logo:focus-visible em {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------- the theme */
+
+/* Set in the typefaces being chosen: the only honest way to choose one. */
+.admin-theme-taste {
+  padding: 16px 14px 18px;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-theme-taste p {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+  line-height: 1.35;
+  max-width: 34rem;
+}
+
+.admin-theme-taste span {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+}
+
+.admin-theme-colour {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+/* The browser's own colour well, with its chrome taken off. */
+.admin-theme-colour input[type="color"] {
+  width: 34px;
+  height: 24px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  background: none;
+  cursor: pointer;
+}
+
+.admin-theme-colour input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.admin-theme-colour input[type="color"]::-webkit-color-swatch {
+  border: 0;
+}
+
+.admin-theme-colour code {
+  font-size: 0.78rem;
+  color: var(--admin-quiet);
+}
+
+/* -------------------------------------------------------------- the editor */
+
+/*
+ * Editing a photograph, over the top of everything.
+ *
+ * Dark, unlike the rest of the back of the house, and for once that is not a
+ * style choice: you cannot judge a crop against paper. Every photo editor ever
+ * made puts the picture on something near-black, because the eye reads the edges
+ * of an image against a dark ground and invents them against a light one.
+ */
+.admin-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: var(--edge);
+  background: rgba(12, 11, 9, 0.86);
+}
+
+.admin-editor-sheet {
+  display: flex;
+  flex-direction: column;
+  width: min(1000px, 100%);
+  max-height: 100%;
+  background: #17150f;
+  color: #f2ece1;
+  border: 1px solid rgba(242, 236, 225, 0.18);
+}
+
+.admin-editor-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(242, 236, 225, 0.14);
+}
+
+.admin-editor-head strong {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.admin-editor-facts {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: rgba(242, 236, 225, 0.55);
+}
+
+.admin-editor-shut {
+  border: 0;
+  background: none;
+  padding: 0 2px;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: rgba(242, 236, 225, 0.6);
+  cursor: pointer;
+}
+
+.admin-editor-shut:hover {
+  color: #f2ece1;
+}
+
+/* The picture. A fixed height rather than the image's own, so the toolbar does
+   not jump up and down the screen as you turn a photograph on its side. */
+.admin-editor-stage {
+  position: relative;
+  height: min(58vh, 520px);
+  background: #0d0c0a;
+  overflow: hidden;
+}
+
+.admin-editor-stage img {
+  display: block;
+  max-width: 100%;
+}
+
+.admin-editor-waiting {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font-style: italic;
+  color: rgba(242, 236, 225, 0.5);
+}
+
+.admin-editor-problem {
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(242, 236, 225, 0.14);
+  background: rgba(232, 38, 135, 0.12);
+  color: #ff9ec6;
+}
+
+.admin-editor-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(242, 236, 225, 0.14);
+}
+
+/* Buttons that belong together sit in one bordered run, so the eye groups
+   "looking at it" apart from "turning it" without needing a label for each. */
+.admin-editor-set {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(242, 236, 225, 0.2);
+}
+
+.admin-editor-set button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-left: 1px solid rgba(242, 236, 225, 0.14);
+  background: none;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 225, 0.75);
+  cursor: pointer;
+}
+
+.admin-editor-set button:first-child {
+  border-left: 0;
+}
+
+.admin-editor-set button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.admin-editor-set button:hover {
+  background: rgba(242, 236, 225, 0.09);
+  color: #fff;
+}
+
+.admin-editor-straight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-style: italic;
+  color: rgba(242, 236, 225, 0.55);
+}
+
+.admin-editor-straight input {
+  width: 120px;
+  accent-color: var(--purple);
+}
+
+.admin-editor-straight em {
+  min-width: 2.6rem;
+  font-variant-numeric: tabular-nums;
+  font-style: normal;
+}
+
+/* The shape, behind one press. */
+.admin-editor-shape {
+  position: relative;
+  margin-left: auto;
+}
+
+.admin-editor-shape > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba(242, 236, 225, 0.2);
+  background: none;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 225, 0.75);
+  cursor: pointer;
+}
+
+.admin-editor-shape > button:hover,
+.admin-editor-shape > button.admin-editor-open {
+  border-color: var(--purple);
+  color: #fff;
+}
+
+.admin-editor-shapes {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 2;
+  min-width: 190px;
+  background: #201d16;
+  border: 1px solid rgba(242, 236, 225, 0.24);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+}
+
+.admin-editor-shapes button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-top: 1px solid rgba(242, 236, 225, 0.12);
+  background: none;
+  font: inherit;
+  font-size: 0.95rem;
+  color: #f2ece1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-editor-shapes button:first-child {
+  border-top: 0;
+}
+
+.admin-editor-shapes button:hover {
+  background: rgba(242, 236, 225, 0.08);
+}
+
+.admin-editor-shapes button.admin-editor-on {
+  color: var(--purple);
+}
+
+.admin-editor-shapes em {
+  font-size: 0.78em;
+  color: rgba(242, 236, 225, 0.45);
+}
+
+.admin-editor-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+}
+
+.admin-editor-gap {
+  flex: 1;
+}
+
+/* The editor is dark, so the words in it cannot be the paper ones. */
+.admin-editor .admin-word {
+  color: rgba(242, 236, 225, 0.6);
+}
+
+.admin-editor .admin-word:hover {
+  color: #fff;
+}
+
+.admin-editor .admin-note {
+  color: rgba(242, 236, 225, 0.45);
+}
+
+.admin-editor .admin-btn {
+  border-color: rgba(242, 236, 225, 0.5);
+  color: #f2ece1;
+}
+
+.admin-editor .admin-btn:hover {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: #fff;
+}
+
+.admin-editor .admin-btn[disabled] {
+  opacity: 0.4;
+}
+
+/* Cropper's own furniture, made to match: purple where it draws its lines. */
+.admin-editor .cropper-view-box {
+  outline-color: var(--purple);
+}
+
+.admin-editor .cropper-line,
+.admin-editor .cropper-point {
+  background-color: var(--purple);
+}
+
+@media screen and (max-width: 700px) {
+  .admin-editor-stage {
+    height: 46vh;
+  }
+
+  .admin-editor-shape {
+    margin-left: 0;
+  }
+}
+
+/* ------------------------------------------------------ is anything broken? */
+
+.admin-check .admin-panel-head {
+  align-items: center;
+}
+
+.admin-check-out {
+  padding: 4px 14px 14px;
+}
+
+.admin-check-fine {
+  margin: 0;
+  font-style: italic;
+  color: var(--admin-quiet);
+}
+
+.admin-check-lot {
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+  margin-top: 12px;
+}
+
+.admin-check-lot:first-child {
+  padding-top: 0;
+  border-top: 0;
+  margin-top: 0;
+}
+
+.admin-check-lot h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 6px;
+  font: inherit;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.admin-check-lot ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-check-lot li {
+  font-size: 0.92em;
+  line-height: 1.5;
+  color: var(--admin-quiet);
+}
+
+.admin-check-lot code {
+  font-size: 0.85em;
+  color: var(--ink);
+}
+
+/* A picture in the back of the house: a wash until the bytes land, and never
+   the file itself where a thumbnail will do. */
+.admin-thumbnail {
+  background-color: var(--wash);
+}
+
+.admin-thumbnail[data-loaded] {
+  background-color: transparent;
+}
+
+.admin-thumbnail-contain {
+  object-fit: contain;
+}
+
+/* ------------------------------------------------------------ several things */
+
+.admin-many {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.admin-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 9px;
+  border: 1px solid var(--hairline);
+  background: var(--admin-tint);
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.admin-chips em {
+  font-size: 0.78em;
+  color: var(--admin-faint);
+}
+
+.admin-chips button {
+  border: 0;
+  background: none;
+  padding: 0 4px;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--admin-faint);
+  cursor: pointer;
+}
+
+.admin-chips button:hover {
+  color: var(--pink);
+}
+
+.admin-chips-empty {
+  margin: 0;
+  font-size: 0.9em;
+  font-style: italic;
+  color: var(--admin-faint);
+}
+
+.admin-many-add {
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: none;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 0.98rem;
+  color: var(--ink);
+  width: 100%;
+}
+
+.admin-many-add::placeholder {
+  color: var(--admin-faint);
+  font-style: italic;
+}
+
+.admin-many-add:focus {
+  outline: 0;
+  border-bottom-color: var(--purple);
+}
+
+/* ------------------------------------------------------------- the preview */
+
+/*
+ * The story as a reader gets it, over the top of the editor.
+ *
+ * Everything inside the white area is the site's own markup and the site's own
+ * stylesheet — globals.css is loaded back here too, which is what makes this
+ * possible without a second implementation of the page. The strip along the top
+ * is the only thing that is not the site, and it says so.
+ */
+.admin-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.admin-preview-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex: none;
+  padding: 10px var(--edge);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.admin-preview-bar strong {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-preview-bar span {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.86rem;
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.admin-preview-bar button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.admin-preview-bar button:hover {
+  color: var(--purple);
+}
+
+.admin-preview-page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* The site keeps 250px on the left for a menu that is not here. */
+.admin-preview-page .page {
+  padding-left: var(--edge);
+  min-height: 0;
+}
+
+/* What a photograph measures, on the photograph.
+ *
+ * Sixty-two of the archive are thumbnails somebody imported instead of the
+ * picture, and that is worth being able to see across a page of cards rather
+ * than one at a time behind a click. */
+.admin-photo-size {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.55);
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+}
+
+/* Under 600px on the longest edge: the page will draw it soft. */
+.admin-photo-small {
+  background: var(--pink);
+  color: #fff;
+}
+
+.admin-photo-frame {
+  position: relative;
+}
+
+/* Who was there and which partners: one row of two, because they are the same
+   question asked twice and reading them across is how you spot who is missing.
+   The grid's own auto-fit would give them a column each only by accident. */
+.admin-fields > .admin-field:has(.admin-many) {
+  grid-column: span 1;
+}
+
+/* A fact where a control would be, so the row keeps its shape. */
+.admin-said {
+  font-size: 1.05rem;
+  line-height: 1.4;
+  font-style: italic;
+  color: var(--admin-faint);
 }

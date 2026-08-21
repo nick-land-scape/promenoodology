@@ -38,7 +38,7 @@ export default async function EventsPage() {
   const taken = (events ?? []).filter((event) => asked.get(String(event.id)));
 
   return (
-    <Head title="what's on" view="/app">
+    <Head title="what's on">
       <p className="admin-intro">
         The evenings in the members&rsquo; app. A new one starts hidden: fill it in, then turn it on
         when it is really happening. Hidden means nobody outside can see it at all.

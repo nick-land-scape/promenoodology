@@ -14,7 +14,7 @@ export default async function NewsPage() {
     .returns<Row[]>();
 
   return (
-    <Head title="news" view="/app">
+    <Head title="news">
       <p className="admin-intro">
         Short notes on the front screen of the members&rsquo; app, newest first. They are for people
         who are already coming — what changed, what to bring, what happened last time.

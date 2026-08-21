@@ -15,7 +15,7 @@ export default async function NewsletterPage() {
     .returns<NewsletterRow[]>();
 
   return (
-    <Head title="newsletter" view="/newsletter">
+    <Head title="newsletter">
       <p className="admin-intro">
         Everybody who asked to hear when there is something to come to. Nobody else can read this
         list — not even the person who signed up, which is why the form can only ever say

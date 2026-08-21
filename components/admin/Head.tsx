@@ -8,35 +8,39 @@ import Link from "next/link";
 export default function Head({
   title,
   back,
-  view,
   action,
   children,
 }: {
   title: string;
   /** { href, label } for the crumb above the title. */
   back?: { href: string; label: string };
-  /** The page on the public site this section looks after. */
-  view?: string;
   action?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   return (
     <>
       <header className="admin-head">
+        {/* The way back sits under the title, not over it. Above, it was the
+            first thing on the page and the title read as its subtitle — and on
+            a long list the sticky header showed the crumb where the name of the
+            section should be. */}
         <div>
+          <h1 className="admin-title">{title}</h1>
           {back ? (
-            <p className="admin-back" style={{ margin: 0 }}>
-              <Link href={back.href}>← {back.label}</Link>
+            <p className="admin-back">
+              <Link href={back.href}>← back to {back.label}</Link>
             </p>
           ) : null}
-          <h1 className="admin-title">{title}</h1>
         </div>
-        <div className="admin-head-actions">
-          {view ? (
-            <a href={view} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn-quiet">
-              look at it ↗
-            </a>
-          ) : null}
+        {/*
+         * Only what you can *do* here — the way out to the site is in the strip
+         * along the top, the same one on every page.
+         *
+         * Always rendered, even empty: a section whose one action lives in a
+         * client component puts it here through a portal (see InHead), and a
+         * portal needs something to aim at.
+         */}
+        <div className="admin-head-actions" id="admin-head-slot">
           {action}
         </div>
       </header>

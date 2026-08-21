@@ -16,6 +16,8 @@ import { supabaseServer } from "@/lib/supabase/server";
 export type PhotoInput = {
   id: string;
   credit: string;
+  /** Who took it, when they are somebody with a row of their own. */
+  credit_profile_id: string | null;
   year: string;
   story_tag: string | null;
   published: boolean;
@@ -27,6 +29,7 @@ export async function addPhoto(input: {
   width: number;
   height: number;
   credit: string;
+  credit_profile_id: string | null;
   year: string;
   story_tag: string | null;
 }): Promise<Saved & { id?: string }> {
@@ -47,6 +50,7 @@ export async function addPhoto(input: {
       width: input.width,
       height: input.height,
       credit: input.credit.trim(),
+      credit_profile_id: input.credit_profile_id,
       year: input.year.trim(),
       story_tag: input.story_tag,
       position: (last?.position ?? 0) + 1,
@@ -69,6 +73,7 @@ export async function savePhoto(input: PhotoInput): Promise<Saved> {
     .from("photos")
     .update({
       credit: input.credit.trim(),
+      credit_profile_id: input.credit_profile_id,
       year: input.year.trim(),
       story_tag: input.story_tag,
       published: input.published,
@@ -90,12 +95,118 @@ export async function savePhotos(inputs: PhotoInput[]): Promise<Saved> {
       .from("photos")
       .update({
         credit: input.credit.trim(),
+        credit_profile_id: input.credit_profile_id,
         year: input.year.trim(),
         story_tag: input.story_tag,
         published: input.published,
       })
       .eq("id", input.id);
     if (error) return failed(error);
+  }
+
+  refreshSite();
+  return { ok: true };
+}
+
+/**
+ * Write down what a photograph actually measures.
+ *
+ * The archive draws every picture from the size recorded for it, so a row that
+ * disagrees with its file is a photograph printed in the wrong shape — squashed
+ * into a landscape box when it is a portrait. Nothing about the file is wrong,
+ * which is why this cannot be spotted by looking for broken images: it is the
+ * row that is wrong, and only the file can settle it.
+ *
+ * Two of these were found in the archive as imported. Rather than correcting
+ * them by hand, the browser measures every file and hands the disagreements
+ * here — so the next import is checked the same way.
+ */
+export async function fixSizes(
+  fixes: { id: string; width: number; height: number }[],
+): Promise<Saved & { fixed?: number }> {
+  await requireAdminAction();
+  const supabase = await supabaseServer();
+
+  let fixed = 0;
+  for (const one of fixes) {
+    if (one.width <= 0 || one.height <= 0) {
+      return {
+        ok: false,
+        error: `${one.id} was measured as ${one.width}×${one.height}, which cannot be right. Nothing has been changed.`,
+      };
+    }
+    const { error } = await supabase
+      .from("photos")
+      .update({ width: one.width, height: one.height })
+      .eq("id", one.id);
+    if (error) return failed(error);
+    fixed += 1;
+  }
+
+  refreshSite();
+  return { ok: true, fixed };
+}
+
+/**
+ * Put an edited photograph in the place of the one it came from.
+ *
+ * A new path rather than the old one, and that is deliberate. Overwriting the
+ * file in the bucket would leave every cache in the chain — the CDN, the
+ * browser, the copy in somebody's open tab — serving the picture that no longer
+ * exists, and no amount of revalidating this site fixes a file cached under a
+ * name that has not changed. A new name is the only version of this that is
+ * honest with a cache.
+ *
+ * So: write the row, then take the old file out. That order, because a row
+ * pointing at a file that is gone is a hole on the page, while a file nothing
+ * points at is only a bill — and if the delete fails we would rather have the
+ * bill.
+ */
+export async function replacePhoto(input: {
+  id: string;
+  path: string;
+  width: number;
+  height: number;
+}): Promise<Saved> {
+  await requireAdminAction();
+  const supabase = await supabaseServer();
+
+  const { data: before } = await supabase
+    .from("photos")
+    .select("path")
+    .eq("id", input.id)
+    .maybeSingle<{ path: string }>();
+
+  if (!before) {
+    return {
+      ok: false,
+      error: "That photograph is not in the archive any more, so there was nothing to replace.",
+    };
+  }
+  if (!input.path || input.width <= 0 || input.height <= 0) {
+    return {
+      ok: false,
+      error: `The edited file was handed over as ${input.width}×${input.height} at "${input.path}", which cannot be right. Nothing has changed.`,
+    };
+  }
+
+  const { error } = await supabase
+    .from("photos")
+    .update({ path: input.path, width: input.width, height: input.height })
+    .eq("id", input.id);
+  if (error) return failed(error);
+
+  // An evening in the app can point at a photograph by its path, so it follows
+  // the picture rather than being left pointing at a file about to go.
+  await supabase.from("events").update({ photo_path: input.path }).eq("photo_path", before.path);
+
+  if (before.path !== input.path) {
+    const { error: leftover } = await supabase.storage.from("media").remove([before.path]);
+    if (leftover) {
+      // Said out loud, and not as a failure: the archive is correct, there is
+      // simply a file in the bucket nobody will ever ask for again.
+      console.warn(`The old file ${before.path} could not be removed:`, leftover.message);
+    }
   }
 
   refreshSite();

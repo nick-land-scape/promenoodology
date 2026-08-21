@@ -4,14 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
+  Bin,
   Empty,
   Flag,
   Grip,
-  Move,
   Place,
   Problem,
   Tag,
-  Word,
   moved,
   useDragOrder,
 } from "@/components/admin/ui";
@@ -31,8 +30,11 @@ export type StoryRow = {
 /**
  * The stories, in the order visitors read them.
  *
- * The order can be dragged or nudged with the arrows and is only written when
- * you say so — dragging a row is a decision in progress, not five saves.
+ * The order is dragged, or typed into the number, and is only written when you
+ * say so — dragging a row is a decision in progress, not five saves. The pair of
+ * arrows that used to sit in every row is gone: with seven stories it was a
+ * third way to do the same thing, and with sixty photographs it was never the
+ * way anybody would choose.
  */
 export default function StoriesList({ initial }: { initial: StoryRow[] }) {
   const router = useRouter();
@@ -49,7 +51,7 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
     setProblem("");
   }
 
-  const { dropProps, handleProps, dragging } = useDragOrder(rows, move);
+  const { dropProps, handleProps, stateOf } = useDragOrder(rows, move);
 
   function keepOrder() {
     setProblem("");
@@ -127,14 +129,14 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
             {...dropProps(row, index)}
             className={[
               "admin-row",
-              dragging === row.id ? "admin-row-dragging" : "",
+              stateOf(row),
               row.published ? "" : "admin-row-hidden",
             ]
               .filter(Boolean)
               .join(" ")}
           >
             <Grip {...handleProps(row)} />
-                  <Place index={index} total={rows.length} onMove={move} />
+            <Place index={index} total={rows.length} onMove={move} />
 
             <span className="admin-row-main">
               <Link href={`/admin/stories/${row.slug}`} className="admin-row-name" style={{ fontStyle: "normal" }}>
@@ -156,13 +158,10 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
             <span className="admin-row-side">
               <Tag>{row.tag}</Tag>
               <Flag on={row.published} onChange={(next) => show(row, next)} />
-              <Move index={index} total={rows.length} onMove={move} />
               <Link href={`/admin/stories/${row.slug}`} className="admin-word">
-                open
+                edit
               </Link>
-              <Word danger onClick={() => remove(row)} disabled={pending}>
-                delete
-              </Word>
+              <Bin what={row.title || "this story"} onClick={() => remove(row)} disabled={pending} />
             </span>
           </li>
         ))}

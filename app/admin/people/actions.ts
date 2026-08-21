@@ -33,6 +33,14 @@ export type PersonInput = {
   /** An admin's answer, which wins. Null: leave it to them. */
   listed_by_admin: boolean | null;
   role: "member" | "admin";
+  /**
+   * Since when they have been one of us.
+   *
+   * It was whatever day the row happened to be written, which for sixty-four
+   * people imported from a spreadsheet is the day of the import — the same date
+   * for all of them, and wrong for every one.
+   */
+  joined_on: string;
 };
 
 const COLOURS = new Set(["orange", "green", "blue"]);
@@ -77,6 +85,9 @@ export async function savePeople(people: PersonInput[]): Promise<Saved> {
         listed: person.listed,
         listed_by_admin: person.listed_by_admin,
         role: person.role === "admin" ? "admin" : "member",
+        // A date the database will not take is worse than the one already
+        // there, so an unreadable one is simply not sent.
+        ...(/^\d{4}-\d{2}-\d{2}$/.test(person.joined_on) ? { joined_on: person.joined_on } : {}),
       })
       .eq("id", person.id);
     if (error) return failed(error);

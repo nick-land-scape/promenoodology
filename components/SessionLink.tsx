@@ -4,23 +4,14 @@ import Link from "next/link";
 import { initials, useSession } from "@/lib/session";
 
 /**
- * Two small pieces of the menu that depend on who is looking.
+ * The one piece of the menu that depends on who is looking.
  *
  * Nothing is drawn until we know — a link that changes under somebody's finger
  * is worse than one that arrives a moment late.
+ *
+ * The admin's way in used to be here as well. It is in the strip along the top
+ * now, where it also says who you are.
  */
-
-/** The way into the back of the house. Only an admin ever sees it. */
-export function AdminLink() {
-  const session = useSession();
-  if (!session?.admin) return null;
-
-  return (
-    <Link href="/admin" className="nav-admin">
-      look after the site
-    </Link>
-  );
-}
 
 /**
  * The newsletter, or your own face if you happen to be signed in. On a phone
