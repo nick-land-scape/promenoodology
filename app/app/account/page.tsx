@@ -1,17 +1,16 @@
-import Photo from "@/components/Photo";
 import Link from "next/link";
+import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
-import { dateParts } from "@/lib/app-data";
+import MySettings from "@/components/app/MySettings";
+import { whenItIs } from "@/lib/app-data";
+import { pretty } from "@/lib/admin/when";
+import { myBookings, requireMember } from "@/lib/app/me";
 import { getEvents } from "@/lib/source";
 
 export const metadata = { title: "Account" };
 
-const SHORTCUTS = [
-  { label: "member card", icon: "▤" },
-  { label: "invite", icon: "＋" },
-  { label: "saved", icon: "☆" },
-  { label: "settings", icon: "⚙" },
-];
+/* Yours, and nobody else's, so there is nothing here worth caching. */
+export const dynamic = "force-dynamic";
 
 const ROWS = [
   { label: "propose a new member", href: "mailto:info@promeNOODology.com" },
@@ -19,68 +18,89 @@ const ROWS = [
   { label: "leave the club", href: "mailto:info@promeNOODology.com" },
 ];
 
-// A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
-
 export default async function AccountPage() {
-  // The first two events stand in for "things you said yes to".
-  const booked = (await getEvents())
-    .slice(0, 2)
-    .map((event) => ({ ...event, ...dateParts(event.date) }));
+  const me = await requireMember("/app/account");
+  const [mine, events] = await Promise.all([myBookings(), getEvents()]);
+
+  const byId = new Map(events.map((event) => [event.id, event]));
+  /* What you actually said yes to, newest first — it used to be "the first two
+     events stand in for things you said yes to", which is a drawing of an app. */
+  const yes = mine
+    .map((booking) => ({ booking, event: byId.get(booking.eventId) }))
+    .filter((pair): pair is { booking: (typeof mine)[number]; event: NonNullable<typeof pair.event> } =>
+      Boolean(pair.event),
+    )
+    .sort((a, b) => a.event.date.localeCompare(b.event.date));
 
   return (
     <>
-      <AppHeader eyebrow="your account" title="Nick Ulrich" />
+      <AppHeader
+        eyebrow="your account"
+        title={me.name || "your account"}
+        aside={me.admin ? <Link href="/admin">look after the site ↗</Link> : null}
+      />
 
       <section className="app-section">
         <div className="member-card">
-          <p className="member-name">Nick Ulrich</p>
-          <p className="member-since">member since 2024 · Zürich</p>
-          <p className="member-number">NO 0028</p>
+          <p className="member-name">{me.name || "no name yet"}</p>
+          <p className="member-since">
+            {[
+              me.since ? `member since ${pretty(me.since)}` : null,
+              me.country || null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+          <p className="member-number">
+            {me.memberNo ? `NO ${String(me.memberNo).padStart(4, "0")}` : "not numbered yet"}
+          </p>
         </div>
       </section>
-
-      <ul className="shortcuts">
-        {SHORTCUTS.map((shortcut) => (
-          <li key={shortcut.label}>
-            <button type="button" className="shortcut">
-              <span className="shortcut-ring" aria-hidden="true">
-                {shortcut.icon}
-              </span>
-              <span>{shortcut.label}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
 
       <section className="app-section">
         <div className="app-section-head">
           <h2 className="app-h2">you said yes to</h2>
+          <span className="app-label">{yes.length}</span>
         </div>
-        <ul className="row-list">
-          {booked.map((event) => (
-            <li key={event.id}>
-              <div className="row">
-                <span className="row-date">
-                  <span className="row-day">{event.day}</span>
-                  <span className="row-month">{event.month}</span>
-                </span>
-                <span className="row-body">
-                  <span className="row-title">{event.title}</span>
-                  <span className="row-meta">
-                    {event.time} · {event.place}
+        {yes.length === 0 ? (
+          <p className="app-note">
+            Nothing yet. <Link href="/app/book">Have a look at what is on</Link>.
+          </p>
+        ) : (
+          <ul className="row-list">
+            {yes.map(({ booking, event }) => (
+              <li key={booking.id}>
+                <div className="row">
+                  <span className="row-body">
+                    <span className="row-title">{event.title}</span>
+                    <span className="row-meta">{whenItIs(event)}</span>
+                    <span className="row-yes">
+                      {booking.people} {booking.people === 1 ? "place" : "places"}
+                      {booking.bringing ? ` · bringing ${booking.bringing}` : ""}
+                      {booking.state === "kept" ? " · kept for you" : ""}
+                      {booking.state === "declined" ? " · not this time" : ""}
+                    </span>
                   </span>
-                </span>
-                {event.photo ? (
-                  <span className="row-thumb">
-                    <Photo src={event.photo.src} alt="" fill sizes="58px" />
-                  </span>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
+                  {event.photo ? (
+                    <span className="row-thumb">
+                      <Photo src={event.photo.src} alt="" fill sizes="58px" />
+                    </span>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
+
+      <MySettings
+        userId={me.userId}
+        name={me.name}
+        country={me.country}
+        email={me.email}
+        photo={me.photoPath}
+        listed={me.listed}
+      />
 
       <section className="app-section">
         {ROWS.map((row) => (
@@ -92,7 +112,7 @@ export default async function AccountPage() {
       </section>
 
       <p className="app-foot">
-        A preview — nothing is booked or posted yet. <Link href="/">Back to the website</Link>.
+        <Link href="/">Back to the website</Link>.
       </p>
     </>
   );

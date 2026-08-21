@@ -5,7 +5,15 @@ import { useState } from "react";
 import type { ClubEvent } from "@/lib/content";
 
 type Props = {
-  events: (ClubEvent & { day: string; month: string; weekday: string })[];
+  events: (ClubEvent & {
+    day: string;
+    month: string;
+    weekday: string;
+    /** The whole of when it is, in one line. */
+    when: string;
+    /** Whether you have asked for a place. */
+    going: boolean;
+  })[];
   places: string[];
 };
 
@@ -59,10 +67,12 @@ export default function UpcomingEvents({ events, places }: Props) {
                   </span>
                   <span className="row-body">
                     <span className="row-title">{event.title}</span>
-                    <span className="row-meta">
-                      {event.weekday} {event.time} · {event.place} · {event.spots} places
-                    </span>
+                    <span className="row-meta">{event.when}</span>
+                    {event.partners.length > 0 ? (
+                      <span className="row-meta">with {event.partners.join(", ")}</span>
+                    ) : null}
                     {event.note ? <span className="row-meta">{event.note}</span> : null}
+                    {event.going ? <span className="row-yes">you are coming</span> : null}
                   </span>
                   {event.photo ? (
                     <span className="row-thumb">

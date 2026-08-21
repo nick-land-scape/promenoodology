@@ -1,28 +1,39 @@
 import Link from "next/link";
 import AppHeader from "@/components/app/AppHeader";
 import UpcomingEvents from "@/components/app/UpcomingEvents";
-import { dateParts, shortDate, weekday } from "@/lib/app-data";
+import { dateParts, weekday, whenItIs } from "@/lib/app-data";
+import { shortDate } from "@/lib/app-data";
+import { myBookings, requireMember } from "@/lib/app/me";
 import { getEvents, getNews } from "@/lib/source";
 
 export const metadata = { title: "Home" };
 
-// A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
+/* What you have said yes to is on this screen, so it is yours rather than
+   everybody's — no cached minute. */
+export const dynamic = "force-dynamic";
 
 export default async function AppHome() {
-  const events = (await getEvents()).map((event) => ({
-    ...event,
-    ...dateParts(event.date),
-    weekday: weekday(event.date),
-  }));
-  const places = [...new Set(events.map((event) => event.place))];
-  const news = await getNews();
+  const me = await requireMember("/app");
+  const [all, mine, news] = await Promise.all([getEvents(), myBookings(), getNews()]);
+  const asked = new Set(mine.map((booking) => booking.eventId));
+
+  const today = new Date().toISOString().slice(0, 10);
+  const events = all
+    .filter((event) => (event.until || event.date) >= today)
+    .map((event) => ({
+      ...event,
+      ...dateParts(event.date),
+      weekday: weekday(event.date),
+      when: whenItIs(event),
+      going: asked.has(event.id),
+    }));
+  const places = [...new Set(events.map((event) => event.place))].filter(Boolean);
 
   return (
     <>
       <AppHeader
         eyebrow="welcome"
-        title="hello"
+        title={me.name ? `hello, ${me.name.split(" ")[0]}` : "hello"}
         aside={<Link href="/">website ↗</Link>}
       />
 

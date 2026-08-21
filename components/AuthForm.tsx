@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AppleSignIn from "./AppleSignIn";
 import { useActionState } from "react";
 import { type Result, sendCode } from "@/app/(site)/account/actions";
 
@@ -44,6 +45,13 @@ export function SignInForm({ back }: { back?: string }) {
           {sending ? "sending…" : "send me a code →"}
         </button>
       </form>
+
+      {/* The other way in. Under the code rather than over it: the code is the
+          one that works for everybody, and this one only for whoever has joined
+          Apple to their account — or whose Apple address is the one we already
+          have for them. */}
+      <p className="auth-or">or</p>
+      <AppleSignIn back={back} />
 
       {/* No "join us": accounts start with an invitation from /admin → people. */}
       <p className="auth-switch">

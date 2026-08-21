@@ -12,6 +12,28 @@ import { imageSize } from "./image-size";
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 
+/**
+ * When a thing is, in one line: "Sat 22 Aug, 19:00–23:00" — or "22–24 Aug" for
+ * something that runs over days.
+ *
+ * One function because every screen was writing its own version out of date,
+ * time and place, and each of them had a different idea about which parts to
+ * leave out when they were missing. The back of the house now keeps a last day
+ * and a finishing time, and neither was reaching the app at all.
+ */
+export function whenItIs(event: {
+  date: string;
+  until?: string;
+  time?: string;
+  endTime?: string;
+  place?: string;
+}): string {
+  const first = shortDate(event.date);
+  const day = event.until ? `${first} – ${shortDate(event.until)}` : `${weekday(event.date)} ${first}`;
+  const hours = [event.time, event.endTime].filter(Boolean).join("–");
+  return [day, hours, event.place].filter(Boolean).join(" · ");
+}
+
 export function getEvents(): ClubEvent[] {
   const [, ...rows] = readRows("events.csv");
   return rows
@@ -20,12 +42,19 @@ export function getEvents(): ClubEvent[] {
       return {
         id: `${date}-${title}`,
         date,
+        // The file the site shipped with knows about one day and one time; the
+        // rest are things only the database keeps.
+        until: "",
         time: time ?? "",
+        endTime: "",
         title: title ?? "",
         place: place ?? "",
         spots: Number(spots) || 0,
         note: note.join(", "),
         photo: resourcePhoto(photo),
+        partners: [],
+        asked: 0,
+        story: null,
       };
     })
     .sort((a, b) => a.date.localeCompare(b.date));

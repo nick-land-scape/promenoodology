@@ -71,13 +71,20 @@ export type PageRow = {
 export type EventRow = {
   id: string;
   happens_on: string;
+  /** The last day, for anything that runs longer than an evening. */
+  ends_on: string | null;
   starts_at: string;
+  ends_at: string;
   title: string;
   place: string;
   spots: number;
   note: string;
   photo_path: string | null;
   published: boolean;
+  /** Partner ids. See migration 0014. */
+  partners: string[];
+  /** The story written about it afterwards. See migration 0016. */
+  story_id: string | null;
 };
 
 export type NewsRow = {

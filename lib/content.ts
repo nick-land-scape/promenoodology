@@ -33,12 +33,22 @@ export type ClubEvent = {
   id: string;
   /** ISO day, e.g. 2026-08-22. */
   date: string;
+  /** The last day, where it runs over more than one. Empty for an evening. */
+  until: string;
   time: string;
+  /** When it ends, where anybody has said. */
+  endTime: string;
   title: string;
   place: string;
   spots: number;
   note: string;
   photo: Photo | null;
+  /** Who it is being put on with. */
+  partners: string[];
+  /** How many places have been asked for, over all the asking. */
+  asked: number;
+  /** The story written about it afterwards, if there is one. */
+  story: { slug: string; title: string } | null;
 };
 
 export type NewsItem = {

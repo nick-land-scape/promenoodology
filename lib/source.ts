@@ -395,30 +395,79 @@ export async function getPage(slug: string): Promise<{
 
 /* -------------------------------------------------------------- the app */
 
+/**
+ * The evenings, as the app has to show them.
+ *
+ * Four things the back of the house has been keeping for a while and the app has
+ * been dropping on the floor: the day it ends, the time it ends, who it is being
+ * put on with, and how many places have been asked for. An evening that says
+ * "1 Aug" when it runs to the third, or that takes a booking for a place that
+ * went last week, is not a small inaccuracy — it is the app being wrong about the
+ * only thing anybody opens it for.
+ *
+ * The bookings are counted here rather than asked for per evening: it is one
+ * query for all of them, and the read policy only ever returns your own anyway
+ * unless you are an admin — so this count is what *you* can see, which is why the
+ * screens say "places asked for" rather than pretending to a total.
+ */
 export async function getEvents(): Promise<ClubEvent[]> {
   if (!hasSupabase()) return appFiles.getEvents();
 
   const supabase = supabasePublic();
-  const { data } = await supabase
-    .from("events")
-    .select("*")
-    .is("deleted_at", null)
-    .eq("published", true)
-    .order("happens_on")
-    .returns<EventRow[]>();
+  const [{ data }, { data: partners }, { data: stories }, { data: bookings }] = await Promise.all([
+    supabase
+      .from("events")
+      .select("*")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .order("happens_on")
+      .returns<EventRow[]>(),
+    supabase
+      .from("associations")
+      .select("id, name")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .returns<{ id: string; name: string }[]>(),
+    supabase
+      .from("stories")
+      .select("id, slug, title")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .returns<{ id: string; slug: string; title: string }[]>(),
+    supabase
+      .from("bookings")
+      .select("event_id, people")
+      .returns<{ event_id: string; people: number }[]>(),
+  ]);
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    date: row.happens_on,
-    time: row.starts_at ?? "",
-    title: row.title,
-    place: row.place ?? "",
-    spots: row.spots ?? 0,
-    note: row.note ?? "",
-    photo: row.photo_path
-      ? { src: mediaUrl(row.photo_path), width: 1500, height: 1000 }
-      : null,
-  }));
+  const named = new Map((partners ?? []).map((one) => [one.id, one.name]));
+  const told = new Map((stories ?? []).map((one) => [one.id, one]));
+  const asked = new Map<string, number>();
+  for (const booking of bookings ?? []) {
+    asked.set(booking.event_id, (asked.get(booking.event_id) ?? 0) + (booking.people || 1));
+  }
+
+  return (data ?? []).map((row) => {
+    const story = row.story_id ? told.get(row.story_id) : undefined;
+    return {
+      id: row.id,
+      date: row.happens_on,
+      // Only where it says something the first day does not.
+      until: row.ends_on && row.ends_on !== row.happens_on ? row.ends_on : "",
+      time: row.starts_at ?? "",
+      endTime: row.ends_at ?? "",
+      title: row.title,
+      place: row.place ?? "",
+      spots: row.spots ?? 0,
+      note: row.note ?? "",
+      photo: row.photo_path
+        ? { src: mediaUrl(row.photo_path), width: 1500, height: 1000 }
+        : null,
+      partners: (row.partners ?? []).map((id) => named.get(id)).filter(Boolean) as string[],
+      asked: asked.get(row.id) ?? 0,
+      story: story ? { slug: story.slug, title: story.title } : null,
+    };
+  });
 }
 
 export async function getNews(): Promise<NewsItem[]> {

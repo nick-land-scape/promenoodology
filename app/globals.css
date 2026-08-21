@@ -796,6 +796,69 @@ img {
   font-size: 0.95em;
 }
 
+/* ------------------------------------------------------ the other way in
+
+   Apple's own button, to Apple's own rules: their mark, their words, and the
+   whole thing black on white or white on black — nothing in between, and never
+   our purple. It is the one button on this site that is not allowed to be ours. */
+
+.auth-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 14px;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6f6a63;
+}
+
+.auth-or::before,
+.auth-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+}
+
+.apple-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.apple-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.apple-button svg {
+  width: 15px;
+  height: 18px;
+  /* Apple's mark sits a hair high in its own box. */
+  margin-top: -2px;
+}
+
+.auth-other {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 /* ------------------------------------------------------------- your profile
 
    The portrait is the button: you press the picture to change the picture. Its

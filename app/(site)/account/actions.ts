@@ -10,6 +10,7 @@ import {
   onlyAPath,
   tidyCode,
 } from "@/lib/auth-code";
+import { isReviewer, tokenForReviewer } from "@/lib/review";
 import { SITE_URL } from "@/lib/site";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -110,6 +111,17 @@ export async function sendCode(_state: Result, form: FormData): Promise<Result> 
   // Where they knocked from, so they can be put back there afterwards.
   const back = onlyAPath(String(form.get("back") ?? ""));
 
+  /* The one account whose code does not change — see lib/review.ts.
+   *
+   * Nothing is sent: there is no inbox at the other end of it, and asking
+   * Supabase for a code we know nobody will read only spends the hour's ration
+   * of them. Straight to the page that asks for the code, where the standing one
+   * works. */
+  if (isReviewer(email)) {
+    await remember(email, back);
+    redirect("/account/code");
+  }
+
   const supabase = await supabaseServer();
   const { error } = await supabase.auth.signInWithOtp({
     email,
@@ -150,8 +162,22 @@ export async function verifyCode(_state: Result, form: FormData): Promise<Result
   if (!token) return { error: "The code from the email, please." };
 
   const supabase = await supabaseServer();
-  const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
-  if (error) return { error: friendly(error.message) };
+
+  /* The reviewer's standing code, traded for an ordinary one-time link and then
+     for an ordinary session. Anybody else typing anything at all goes down the
+     same path they always did. */
+  if (isReviewer(email)) {
+    const hashed = await tokenForReviewer(token);
+    if (!hashed) return { error: "That code is wrong." };
+    const { error: refused } = await supabase.auth.verifyOtp({
+      token_hash: hashed,
+      type: "magiclink",
+    });
+    if (refused) return { error: friendly(refused.message) };
+  } else {
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+    if (error) return { error: friendly(error.message) };
+  }
 
   const going = await wherePut();
   await forget();
