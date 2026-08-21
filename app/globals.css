@@ -14,6 +14,9 @@
 
   --edge: 25px;
   --sidebar: 250px;
+  /* The admin's top line, and nought for everybody else. Every fixed thing
+     along the top of the window adds this, so one number moves them all. */
+  --admin-bar: 0px;
   /* The contact details get their own narrow lane down the right edge, so
      nothing else has to make room for them. */
   --lane: 40px;
@@ -127,7 +130,7 @@ img {
 
 .nav {
   position: fixed;
-  top: var(--edge);
+  top: calc(var(--edge) + var(--admin-bar));
   left: var(--edge);
   z-index: 20;
   display: flex;
@@ -136,7 +139,7 @@ img {
   align-items: flex-start;
   /* With a submenu open the menu can get tall; it scrolls rather than spilling
      off the screen. */
-  max-height: calc(100vh - var(--edge) * 2);
+  max-height: calc(100vh - var(--edge) * 2 - var(--admin-bar));
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -292,6 +295,7 @@ img {
      rule below puts it back to one edge, where there is no room to spare. */
   padding-right: calc(var(--edge) * 2);
   padding-bottom: calc(var(--edge) + 40px);
+  padding-top: calc(var(--edge) + var(--admin-bar));
   min-height: 100vh;
 }
 
@@ -1614,6 +1618,78 @@ body:has(.hero) .contact {
   pointer-events: none;
 }
 
+/* ------------------------------------------------- the admin's own top line */
+
+/*
+ * Ink, where the rest of the site is paper.
+ *
+ * That is the whole design idea: this strip is not part of the website, it is
+ * the door into the back of it, and it should be impossible to mistake for
+ * content. So it is the one dark thing on the page, with a purple hairline
+ * along the bottom, and it sets the greeting in Times and the two ways in in
+ * Helvetica capitals — the same division of labour the site uses everywhere,
+ * words in Times, labels in Helvetica.
+ */
+html.admin-bar {
+  --admin-bar: 36px;
+}
+
+.admin-bar-strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  height: var(--admin-bar);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--edge);
+  background: var(--ink);
+  /* Not a border: a border would count in the height and shift the number
+     everything else is offset by. */
+  box-shadow: inset 0 -2px 0 var(--purple);
+}
+
+.admin-bar-who {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1;
+  color: rgba(255, 252, 246, 0.6);
+  margin-right: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-bar-link {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  color: rgba(255, 252, 246, 0.6);
+  text-decoration: none;
+  padding: 12px 0 12px 16px;
+  margin-left: 16px;
+  border-left: 1px solid rgba(255, 252, 246, 0.16);
+  transition: color 0.15s ease;
+}
+
+/* The way into the page you are actually looking at is the one you want nine
+   times out of ten, so it is the bright one. */
+.admin-bar-here {
+  color: var(--paper);
+}
+
+.admin-bar-link:hover,
+.admin-bar-link:focus-visible {
+  /* Lighter than the site's purple, which is too dark to read on ink. */
+  color: #b98cff;
+}
+
 /* -------------------------------------------------------------------- mobile */
 
 @media screen and (max-width: 767px) {
@@ -1646,7 +1722,7 @@ body:has(.hero) .contact {
   .nav::before {
     content: "";
     position: fixed;
-    top: 0;
+    top: var(--admin-bar);
     left: 0;
     right: 0;
     height: var(--top-bar);
@@ -1656,7 +1732,7 @@ body:has(.hero) .contact {
 
   .nav-mark {
     position: fixed;
-    top: 7px;
+    top: calc(7px + var(--admin-bar));
     left: var(--edge);
     z-index: 21;
     width: 38px;
@@ -1688,7 +1764,7 @@ body:has(.hero) .contact {
   /* Out of the bottom bar, up into the strip at the top, on the right. */
   .nav-session {
     position: fixed;
-    top: 9px;
+    top: calc(9px + var(--admin-bar));
     right: var(--edge);
     z-index: 21;
     align-items: center;
@@ -1717,28 +1793,71 @@ body:has(.hero) .contact {
     padding: 7px 14px;
   }
 
-  /* The sidebar stays on the left, just clear of the menu bar. */
+  /*
+   * On a phone the contact details stop being a lane and become a footer.
+   *
+   * Turned on their side they cost 26px of every page's width, which is a lot
+   * of a 375px screen to spend on three words nobody is reading on the way
+   * down. At the foot, across, under a rule, they are where anybody would look
+   * for them — and the page gets its full width back.
+   */
   .contact {
-    left: 2px;
-    bottom: calc(var(--bar-height) + 14px);
-    gap: 12px;
-    font-size: 0.85em;
+    position: static;
+    writing-mode: horizontal-tb;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 4px 14px;
+    margin: 34px var(--edge) 0;
+    padding-top: 15px;
+    border-top: 1px solid var(--hairline);
+    /* Small enough that the label and both addresses make one line on the
+       narrowest phone; they wrap gracefully below that. */
+    font-size: 0.78em;
   }
 
   body {
     padding-bottom: calc(var(--bar-height) + 24px);
   }
 
-  /* Room down the right for the turned contact details. */
+  /* Nothing in the left margin any more: the contact details are a footer. */
   .page {
-    padding-left: 26px;
+    padding-left: var(--edge);
     padding-right: var(--edge);
-    padding-top: calc(var(--top-bar) + var(--edge));
+    padding-top: calc(var(--top-bar) + var(--edge) + var(--admin-bar));
     min-height: 0;
   }
 
   .page {
     padding-bottom: 0;
+  }
+
+  html.admin-bar {
+    --admin-bar: 32px;
+  }
+
+  .admin-bar-who {
+    font-size: 0.85rem;
+  }
+
+  .admin-bar-link {
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    padding-left: 11px;
+    margin-left: 11px;
+  }
+
+  /* Two links and a greeting will not fit across a phone. The greeting is the
+     one that can go: it is the least useful thing on the strip. */
+  .admin-bar-strip:has(.admin-bar-here) .admin-bar-who {
+    display: none;
+  }
+
+  .admin-bar-strip:has(.admin-bar-here) .admin-bar-here {
+    margin-right: auto;
+    border-left: 0;
+    padding-left: 0;
+    margin-left: 0;
   }
 
   .page-title {
@@ -2253,5 +2372,49 @@ body:has(.hero) .contact {
      some eyes — so it is set straight. */
   .page-bg img {
     rotate: none;
+  }
+}
+
+/* ------------------------------------------------ the way into the back of house
+
+   From a page to the field that holds it. Only an admin sees it, and it sits in
+   the one corner nothing else uses: the menu is top left on a wide screen and
+   along the bottom on a phone, the contact details run down the left edge. */
+
+.edit-this {
+  position: fixed;
+  right: var(--edge);
+  bottom: var(--edge);
+  z-index: 25;
+  padding: 8px 14px;
+  border: 1px solid var(--purple);
+  background: var(--paper);
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-style: normal;
+  text-decoration: none;
+  color: var(--purple);
+}
+
+.edit-this:hover {
+  background: var(--purple);
+  color: var(--paper);
+}
+
+/* Over the video on the front page, where there is no paper behind it. */
+body:has(.hero) .edit-this {
+  background: rgba(255, 252, 246, 0.9);
+}
+
+@media screen and (max-width: 767px) {
+  /* Clear of the menu bar along the bottom. */
+  .edit-this {
+    bottom: calc(var(--bar-height) + 12px);
+    right: 10px;
+    font-size: 0.56rem;
+    padding: 6px 10px;
   }
 }

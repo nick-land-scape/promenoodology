@@ -81,6 +81,18 @@ const looksLike = (file: File, ...kinds: string[]) =>
 /** Anything at all that this can make into a picture. */
 export const ACCEPTS = "image/*,.heic,.heif,.avif";
 
+/**
+ * Where a drawing belongs, and where only a photograph does.
+ *
+ * A logo is very often a vector and a background can be one; the archive is a
+ * wall of photographs and the community page is a wall of faces, and neither has
+ * any use for one. That distinction is not fussiness: an SVG has no pixel size,
+ * the archive draws every photograph from the size recorded for it, and a picture
+ * recorded as nought by nought is drawn as nothing at all. Measured — it went up,
+ * it was accepted, and it arrived on the page as an invisible zero-by-zero gap.
+ */
+const VECTORS_WELCOME = ["logos", "backgrounds"];
+
 /** What an iPhone saves, made into something every browser can read. */
 async function fromHeic(file: File): Promise<File> {
   // Loaded here and nowhere else: two and a half megabytes of WebAssembly that
@@ -132,7 +144,13 @@ export async function uploadPhoto(file: File, folder: string): Promise<Uploaded>
   if (looksLike(file, "heic", "heif")) {
     ready = await fromHeic(file);
   } else if (looksLike(file, "svg+xml", "svg")) {
-    // A vector, left as one.
+    // A vector, left as one — but only where one can be drawn.
+    if (!VECTORS_WELCOME.some((where) => folder.startsWith(where))) {
+      throw new Error(
+        `${file.name} is a drawing, and this is for photographs — a vector has no size of its own, ` +
+          "so it would arrive on the page as nothing. Logos and backgrounds take them.",
+      );
+    }
   } else if (looksLike(file, "gif")) {
     // May be animated; a canvas would keep the first frame and throw the rest.
   } else if (!file.type.startsWith("image/")) {
@@ -143,7 +161,21 @@ export async function uploadPhoto(file: File, folder: string): Promise<Uploaded>
     );
   }
 
-  const untouched = looksLike(ready, "svg+xml", "svg", "gif") || ready.size <= KEEP;
+  const asItIs = looksLike(ready, "svg+xml", "svg", "gif");
+
+  /* How big it is in pixels, asked before anything is decided.
+   *
+   * This used to be judged on the file size alone, and that is wrong in the
+   * common case: a 2600-pixel photograph that happens to compress to 300kB is
+   * under any byte threshold you like and still four times wider than this site
+   * ever draws one. Measured: a 2600×1700 PNG and a 1400×2100 JPEG both went up
+   * untouched, at their own dimensions, as PNG and JPEG.
+   *
+   * So both have to be true to skip the work: small on disk AND no bigger than
+   * the site draws. Either one alone is not a reason. */
+  const before = asItIs ? { width: 0, height: 0 } : await measure(ready);
+  const withinBounds = Math.max(before.width, before.height) <= MAX_EDGE;
+  const untouched = asItIs || (ready.size <= KEEP && withinBounds);
 
   if (!untouched) {
     ready = await withDeadline(
@@ -168,7 +200,9 @@ export async function uploadPhoto(file: File, folder: string): Promise<Uploaded>
     });
   }
 
-  const { width, height } = await measure(ready);
+  // Measured again only if the compression actually changed the picture; the
+  // one taken above still stands for anything that went through untouched.
+  const { width, height } = untouched ? before : await measure(ready);
   const type = ready.type || file.type || "image/jpeg";
   const path = `${folder}/${crypto.randomUUID()}.${extensionOf(type, ready.name)}`;
 

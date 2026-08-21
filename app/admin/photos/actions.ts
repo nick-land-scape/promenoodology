@@ -16,6 +16,8 @@ import { supabaseServer } from "@/lib/supabase/server";
 export type PhotoInput = {
   id: string;
   credit: string;
+  /** Who took it, when they are somebody with a row of their own. */
+  credit_profile_id: string | null;
   year: string;
   story_tag: string | null;
   published: boolean;
@@ -27,6 +29,7 @@ export async function addPhoto(input: {
   width: number;
   height: number;
   credit: string;
+  credit_profile_id: string | null;
   year: string;
   story_tag: string | null;
 }): Promise<Saved & { id?: string }> {
@@ -47,6 +50,7 @@ export async function addPhoto(input: {
       width: input.width,
       height: input.height,
       credit: input.credit.trim(),
+      credit_profile_id: input.credit_profile_id,
       year: input.year.trim(),
       story_tag: input.story_tag,
       position: (last?.position ?? 0) + 1,
@@ -69,6 +73,7 @@ export async function savePhoto(input: PhotoInput): Promise<Saved> {
     .from("photos")
     .update({
       credit: input.credit.trim(),
+      credit_profile_id: input.credit_profile_id,
       year: input.year.trim(),
       story_tag: input.story_tag,
       published: input.published,
@@ -90,6 +95,7 @@ export async function savePhotos(inputs: PhotoInput[]): Promise<Saved> {
       .from("photos")
       .update({
         credit: input.credit.trim(),
+        credit_profile_id: input.credit_profile_id,
         year: input.year.trim(),
         story_tag: input.story_tag,
         published: input.published,

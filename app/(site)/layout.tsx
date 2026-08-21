@@ -1,4 +1,5 @@
 import Contact from "@/components/Contact";
+import AdminBar from "@/components/AdminBar";
 import Nav from "@/components/Nav";
 import { getMenu } from "@/lib/site-pages";
 
@@ -11,6 +12,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   return (
     <>
       <Nav main={main} more={more} />
+      {/* Only an admin ever sees this, and it makes its own room. */}
+      <AdminBar />
       {children}
       <Contact />
     </>

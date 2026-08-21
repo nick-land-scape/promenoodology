@@ -2,7 +2,11 @@ import Head from "@/components/admin/Head";
 import { requireAdmin } from "@/lib/admin/guard";
 import { mediaUrl } from "@/lib/supabase/config";
 import { supabaseServer } from "@/lib/supabase/server";
-import PhotoLibrary, { type PhotoItem, type StoryOption } from "./PhotoLibrary";
+import PhotoLibrary, {
+  type PersonOption,
+  type PhotoItem,
+  type StoryOption,
+} from "./PhotoLibrary";
 
 export default async function PhotosPage({
   searchParams,
@@ -13,10 +17,10 @@ export default async function PhotosPage({
   const { story } = await searchParams;
   const supabase = await supabaseServer();
 
-  const [{ data: photos }, { data: stories }] = await Promise.all([
+  const [{ data: photos }, { data: stories }, { data: people }] = await Promise.all([
     supabase
       .from("photos")
-      .select("id, path, width, height, credit, year, story_tag, published")
+      .select("id, path, width, height, credit, credit_profile_id, year, story_tag, published")
       .order("position")
       .returns<
         {
@@ -25,6 +29,7 @@ export default async function PhotosPage({
           width: number;
           height: number;
           credit: string;
+          credit_profile_id: string | null;
           year: string;
           story_tag: string | null;
           published: boolean;
@@ -35,6 +40,13 @@ export default async function PhotosPage({
       .select("tag, title")
       .order("position")
       .returns<{ tag: string; title: string }[]>(),
+    // Everybody who could have taken one, whether or not they are shown on the
+    // community page — somebody hidden there still took photographs.
+    supabase
+      .from("profiles")
+      .select("id, name")
+      .order("name")
+      .returns<{ id: string; name: string }[]>(),
   ]);
 
   const items: PhotoItem[] = (photos ?? []).map((photo) => ({
@@ -44,6 +56,7 @@ export default async function PhotosPage({
     width: photo.width,
     height: photo.height,
     credit: photo.credit ?? "",
+    person: photo.credit_profile_id,
     year: photo.year ?? "",
     story: photo.story_tag,
     published: photo.published,
@@ -54,14 +67,20 @@ export default async function PhotosPage({
     title: one.title,
   }));
 
+  const persons: PersonOption[] = (people ?? []).map((one) => ({
+    id: one.id,
+    name: one.name,
+  }));
+
   return (
     <Head title="the archive" view="/archive">
       <p className="admin-intro">
         Photographs keep the shape they arrived in — the wall is not a grid — so there is nothing to
         crop and nothing to line up. What matters is who took each one, the year, and which story it
-        belongs to.
+        belongs to. Pick the photographer from the community where you can — then their name follows
+        them if they ever change it.
       </p>
-      <PhotoLibrary initial={items} stories={options} filter={story ?? ""} />
+      <PhotoLibrary initial={items} stories={options} people={persons} filter={story ?? ""} />
     </Head>
   );
 }

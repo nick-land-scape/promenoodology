@@ -30,12 +30,19 @@ export type PhotoItem = {
   width: number;
   height: number;
   credit: string;
+  /**
+   * Who took it, when they are one of us. The name is kept in `credit` too, so
+   * the site has something to print either way — but this is what makes the
+   * credit follow somebody who changes their name.
+   */
+  person: string | null;
   year: string;
   story: string | null;
   published: boolean;
 };
 
 export type StoryOption = { tag: string; title: string };
+export type PersonOption = { id: string; name: string };
 
 /** Two tags that are not stories: everything, and everything with no story. */
 const ALL = "";
@@ -51,10 +58,12 @@ const LOOSE = "—";
 export default function PhotoLibrary({
   initial,
   stories,
+  people,
   filter,
 }: {
   initial: PhotoItem[];
   stories: StoryOption[];
+  people: PersonOption[];
   filter: string;
 }) {
   const router = useRouter();
@@ -69,6 +78,7 @@ export default function PhotoLibrary({
 
   /* What new uploads are given, so a batch does not have to be typed twice. */
   const [credit, setCredit] = useState("");
+  const [person, setPerson] = useState("");
   const [year, setYear] = useState("");
 
   const shown = useMemo(() => {
@@ -84,12 +94,29 @@ export default function PhotoLibrary({
       if (!was) return false;
       return (
         was.credit !== item.credit ||
+        was.person !== item.person ||
         was.year !== item.year ||
         was.story !== item.story ||
         was.published !== item.published
       );
     });
   }, [items, kept]);
+
+  const named = useMemo(() => new Map(people.map((one) => [one.id, one.name])), [people]);
+
+  /*
+   * Naming the photographer.
+   *
+   * Both fields are written at once. `person` is the real answer and what the
+   * site prefers, and `credit` is kept in step with it so that a caption still
+   * reads properly anywhere the join is not made — and so that unpicking
+   * somebody leaves their name behind as plain text rather than a blank.
+   */
+  function credited(id: string, personId: string) {
+    const name = named.get(personId);
+    if (!name) return;
+    edit(id, { person: personId, credit: name });
+  }
 
   function edit(id: string, patch: Partial<PhotoItem>) {
     setItems((list) => list.map((item) => (item.id === id ? { ...item, ...patch } : item)));
@@ -103,6 +130,7 @@ export default function PhotoLibrary({
         changed.map((item) => ({
           id: item.id,
           credit: item.credit,
+          credit_profile_id: item.person,
           year: item.year,
           story_tag: item.story,
           published: item.published,
@@ -220,12 +248,33 @@ export default function PhotoLibrary({
               ))}
             </select>
           </Field>
-          <Field label="photographer" hint="Given to whatever you add next — not to what is already here.">
-            <input
-              value={credit}
-              onChange={(event) => setCredit(event.target.value)}
-              placeholder="who took them"
-            />
+          <Field
+            label="photographer"
+            hint="Given to whatever you add next — not to what is already here."
+          >
+            <select
+              value={person}
+              onChange={(event) => {
+                setPerson(event.target.value);
+                // The name comes along, so the credit reads properly even
+                // before anything looks up the person.
+                setCredit(named.get(event.target.value) ?? "");
+              }}
+            >
+              <option value="">a name, by hand</option>
+              {people.map((one) => (
+                <option key={one.id} value={one.id}>
+                  {one.name}
+                </option>
+              ))}
+            </select>
+            {person ? null : (
+              <input
+                value={credit}
+                onChange={(event) => setCredit(event.target.value)}
+                placeholder="who took them"
+              />
+            )}
           </Field>
           <Field label="year" hint="Same — for new ones only.">
             <input
@@ -248,6 +297,7 @@ export default function PhotoLibrary({
                     width: uploaded.width,
                     height: uploaded.height,
                     credit,
+                    credit_profile_id: person || null,
                     year,
                     story_tag: story === ALL || story === LOOSE ? null : story,
                   });
@@ -262,6 +312,7 @@ export default function PhotoLibrary({
                     width: uploaded.width,
                     height: uploaded.height,
                     credit,
+                    person: person || null,
                     year,
                     story: story === ALL || story === LOOSE ? null : story,
                     published: true,
@@ -315,12 +366,35 @@ export default function PhotoLibrary({
 
           <label>
             photo by
+            <select
+              defaultValue=""
+              onChange={(event) => {
+                const name = named.get(event.target.value);
+                if (name) applyToChosen({ person: event.target.value, credit: name });
+                event.currentTarget.value = "";
+              }}
+            >
+              <option value="" disabled>
+                one of us
+              </option>
+              {people.map((one) => (
+                <option key={one.id} value={one.id}>
+                  {one.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            or a name
             <input
-              placeholder="a name, then Enter"
+              placeholder="then Enter"
               onKeyDown={(event) => {
                 if (event.key !== "Enter") return;
                 event.preventDefault();
-                applyToChosen({ credit: event.currentTarget.value.trim() });
+                // Typed by hand means not one of us: the link goes with it,
+                // otherwise the site would keep printing the old person.
+                applyToChosen({ credit: event.currentTarget.value.trim(), person: null });
                 event.currentTarget.value = "";
               }}
             />
@@ -390,12 +464,32 @@ export default function PhotoLibrary({
 
               <figcaption className="admin-photo-body">
                 <div className="admin-fields">
-                  <Field label="photo by">
-                    <input
-                      value={item.credit}
-                      onChange={(event) => edit(item.id, { credit: event.target.value })}
-                      placeholder="—"
-                    />
+                  {/* Wide, because a name in a 90px box is a name you cannot
+                      read: "Álvaro Smoolenaars García" needs the row. */}
+                  <Field label="photo by" wide>
+                    <select
+                      value={item.person ?? ""}
+                      onChange={(event) => {
+                        if (event.target.value) credited(item.id, event.target.value);
+                        else edit(item.id, { person: null });
+                      }}
+                    >
+                      <option value="">a name, by hand</option>
+                      {people.map((one) => (
+                        <option key={one.id} value={one.id}>
+                          {one.name}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Only where nobody is picked, so the two cannot disagree
+                        on screen about who took the photograph. */}
+                    {item.person ? null : (
+                      <input
+                        value={item.credit}
+                        onChange={(event) => edit(item.id, { credit: event.target.value })}
+                        placeholder="—"
+                      />
+                    )}
                   </Field>
                   <Field label="year">
                     <input

@@ -1395,3 +1395,9 @@ body:has(.admin) {
     margin-left: 0;
   }
 }
+
+/* A picked photographer and a typed one are the same question, so they share a
+   field — with just enough air between them not to read as one control. */
+.admin-field select + input {
+  margin-top: 4px;
+}
