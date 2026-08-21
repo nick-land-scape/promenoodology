@@ -153,7 +153,7 @@ export default function StoryEditor({
   }
 
   function destroy(photoId: string) {
-    if (!confirm("Delete this photograph for good? The file goes too, and there is no undo.")) {
+    if (!confirm("Delete this photograph? It goes to the bin for thirty days.")) {
       return;
     }
     setProblem("");

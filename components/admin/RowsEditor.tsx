@@ -118,7 +118,7 @@ export default function RowsEditor({
 
   function remove(row: Row) {
     const name = String(row[spec.title] ?? "").slice(0, 60);
-    if (!confirm(`Delete ${name ? `“${name}”` : "this"}? There is no undo.`)) return;
+    if (!confirm(`Delete ${name ? `“${name}”` : "this"}? It goes to the bin for thirty days.`)) return;
 
     setProblem("");
     start(async () => {

@@ -165,7 +165,13 @@ export async function deleteRow(table: string, id: string): Promise<Saved> {
   const name = known(table);
   const supabase = await supabaseServer();
 
-  const { error } = await supabase.from(name).delete().eq("id", id);
+  /* Into the bin, not gone: these four sections are quotes, notes, gifts and
+     evenings, and the one people delete by accident is whichever they are
+     looking at. bin-actions does the destroying, thirty days later. */
+  const { error } = await supabase
+    .from(name)
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
   if (error) return failed(error);
 
   refreshSite();

@@ -79,10 +79,10 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
   function remove(row: StoryRow) {
     const warning =
       row.photos > 0
-        ? `Delete “${row.title}”? Its ${row.photos} photograph${
+        ? `Delete “${row.title}”? It goes to the bin for thirty days. Its ${row.photos} photograph${
             row.photos === 1 ? "" : "s"
-          } stay in the archive, but with no story to belong to.`
-        : `Delete “${row.title}”? There is no undo.`;
+          } stay in the archive, with no story to belong to.`
+        : `Delete “${row.title}”? It goes to the bin for thirty days.`;
     if (!confirm(warning)) return;
 
     setProblem("");

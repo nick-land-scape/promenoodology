@@ -1,3 +1,4 @@
+import BinLink from "@/components/admin/BinLink";
 import Head from "@/components/admin/Head";
 import type { Pickable } from "@/components/admin/Pick";
 import RowsEditor, { type Row } from "@/components/admin/RowsEditor";
@@ -52,7 +53,7 @@ export default async function EventsPage() {
   }
 
   return (
-    <Head title="what's on">
+    <Head title="what's on" action={<BinLink table="events" />}>
       <p className="admin-intro">
         The evenings in the members&rsquo; app. A new one starts hidden: fill it in, then turn it on
         when it is really happening. Hidden means nobody outside can see it at all. Where anybody has

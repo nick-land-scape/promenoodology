@@ -49,7 +49,11 @@ export async function getStories(): Promise<Story[]> {
   const supabase = supabasePublic();
   const [{ data: rows }, photos, chosen, { data: theirs }, { data: built }, { data: made }] =
     await Promise.all([
-    supabase.from("stories").select("*").eq("published", true).order("position").returns<StoryRow[]>(),
+    supabase.from("stories").select("*")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .order("position")
+      .returns<StoryRow[]>(),
     getResources(),
     coverPaths(),
     // Who was there and who it was made with, for every story at once — one
@@ -208,6 +212,7 @@ export async function getResources(): Promise<Resource[]> {
     supabase
       .from("photos")
       .select("*")
+    .is("deleted_at", null)
       .eq("published", true)
       .order("position")
       .returns<PhotoRow[]>(),
@@ -234,6 +239,7 @@ export async function getQuotes(): Promise<Quote[]> {
   const { data } = await supabase
     .from("quotes")
     .select("*")
+    .is("deleted_at", null)
     .eq("published", true)
     .order("created_at")
     .returns<QuoteRow[]>();
@@ -257,6 +263,7 @@ export async function getDonations(): Promise<Donation[]> {
   const { data } = await supabase
     .from("donations")
     .select("*")
+    .is("deleted_at", null)
     .eq("published", true)
     .order("given_on", { ascending: false })
     .returns<DonationRow[]>();
@@ -395,6 +402,7 @@ export async function getEvents(): Promise<ClubEvent[]> {
   const { data } = await supabase
     .from("events")
     .select("*")
+    .is("deleted_at", null)
     .eq("published", true)
     .order("happens_on")
     .returns<EventRow[]>();
@@ -421,6 +429,7 @@ export async function getNews(): Promise<NewsItem[]> {
     supabase
       .from("news")
       .select("*")
+    .is("deleted_at", null)
       // The pinned one first, then the newest. At most one is pinned, which the
       // save enforces.
       .order("pinned", { ascending: false })
@@ -494,6 +503,7 @@ export async function getPartners(): Promise<Partner[]> {
     const { data } = await supabasePublic()
       .from("associations")
       .select("id, name, url, logo_path")
+    .is("deleted_at", null)
       .eq("published", true)
       .order("position")
       .returns<{ id: string; name: string; url: string | null; logo_path: string | null }[]>();
@@ -522,6 +532,7 @@ async function coverPaths() {
   const { data } = await supabasePublic()
     .from("photos")
     .select("id, path")
+    .is("deleted_at", null)
     .returns<{ id: string; path: string }[]>();
   return new Map((data ?? []).map((row) => [row.id, row.path]));
 }

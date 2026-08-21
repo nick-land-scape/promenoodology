@@ -3657,3 +3657,134 @@ html.admin-dragging * {
   color: var(--admin-faint);
   font-style: italic;
 }
+
+/* ------------------------------------------------------------------ the bin */
+
+/* "3 in the bin", in a section's heading. Absent when the bin is empty, so it
+   never becomes furniture.
+   
+   Left of the add button, and said here rather than left to the order things
+   arrive in: this link is a server component that awaits a count, so it lands
+   *after* the client button that portals itself into the same slot. Insertion
+   order is not something either of them controls. */
+.admin-binlink {
+  order: -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 2px;
+}
+
+.admin-binlink svg {
+  width: 13px;
+  height: 13px;
+}
+
+.admin-binlink:hover {
+  color: var(--pink);
+  border-bottom-color: var(--pink);
+}
+
+/* How long a thing has left. Said in days, because "four days" is something to
+   act on and "20 September" is something to work out. */
+.admin-left {
+  font-family: var(--sans);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+  white-space: nowrap;
+}
+
+.admin-left-soon {
+  color: var(--pink);
+}
+
+/* Which part of the bin to look at. Only what is actually in there is offered:
+   a filter that can only return nothing is a button that lies. */
+.admin-sift {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.admin-sift button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--hairline);
+  background: none;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 30px;
+  color: var(--admin-quiet);
+  cursor: pointer;
+}
+
+.admin-sift button em {
+  font-family: var(--serif);
+  font-size: 0.8rem;
+  font-style: normal;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-faint);
+}
+
+.admin-sift button:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.admin-sift button[aria-pressed="true"] {
+  border-color: var(--purple);
+  color: var(--purple);
+  box-shadow: inset 0 0 0 1px var(--purple);
+}
+
+.admin-sift button[aria-pressed="true"] em {
+  color: var(--purple);
+}
+
+/* --------------------------------------------------------- what changed */
+
+.admin-change {
+  align-items: baseline;
+}
+
+.admin-change-when {
+  flex: none;
+  width: 8.5rem;
+  font-family: var(--sans);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+}
+
+/* The verb, which is the part anybody is scanning for. */
+.admin-change-did {
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--purple);
+}

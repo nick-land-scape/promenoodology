@@ -3,24 +3,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
- * Somebody has just copied a passage. Offer them the reference to go with it.
+ * Mark a passage and a quotation mark appears beside it.
  *
- * The idea is a newspaper's: a quotation is not much use without the thing it
- * came from, and the moment to hand somebody the source is the moment they take
- * the words — not on a page they would have to come back to.
+ * The first version of this waited for somebody to press copy and then offered
+ * the reference — which works and nobody would ever find, because it asks you to
+ * do the thing before it tells you the thing is possible. Marking text is the
+ * moment somebody has decided a sentence matters; that is when to offer.
  *
- * It asks rather than acts. Quietly rewriting what somebody put on their
- * clipboard is the kind of helpfulness that makes people distrust a website: they
- * pressed copy, and what they get should be what they copied until they say
- * otherwise. So the copy goes through untouched, and this offers to replace it.
+ * Pressing it puts the passage and the reference on the clipboard together. An
+ * ordinary copy is left entirely alone: what you copy is what you get, and this
+ * is a second, visible way of taking the words that says what it will give you.
  *
- * It keeps out of the way of anything that is not reading: a couple of words is
- * somebody grabbing a name, not quoting, and a selection inside a form is
- * somebody editing.
+ * It stays out of the way of anything that is not reading — a couple of words is
+ * somebody grabbing a name, and a selection inside a form is somebody editing.
  */
 
-/** Below this, nobody is quoting. */
-const ENOUGH = 40;
+/** Below this it is not a quotation. Two or three words is nobody quoting. */
+const ENOUGH = 25;
+
+type Where = { x: number; y: number };
 
 export default function QuoteThis({
   title,
@@ -32,42 +33,71 @@ export default function QuoteThis({
   url: string;
 }) {
   const [passage, setPassage] = useState("");
+  const [at, setAt] = useState<Where | null>(null);
   const [done, setDone] = useState(false);
   const [refused, setRefused] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mine = useRef(false);
 
   const forget = useCallback(() => {
     setPassage("");
+    setAt(null);
     setDone(false);
     setRefused(false);
-    if (timer.current) clearTimeout(timer.current);
   }, []);
+
+  /* What is marked, and where it ends on screen. */
+  const look = useCallback(() => {
+    // A press on the mark itself is not a change of selection.
+    if (mine.current) return;
+
+    const selection = window.getSelection();
+    const said = selection?.toString().trim() ?? "";
+    if (!selection || selection.isCollapsed || said.length < ENOUGH) {
+      forget();
+      return;
+    }
+
+    const node = selection.anchorNode;
+    const parent = node instanceof Element ? node : node?.parentElement;
+    if (parent?.closest("input, textarea, [contenteditable='true']")) {
+      forget();
+      return;
+    }
+
+    const boxes = selection.getRangeAt(0).getClientRects();
+    const last = boxes[boxes.length - 1];
+    if (!last) {
+      forget();
+      return;
+    }
+
+    setPassage(said);
+    setDone(false);
+    setRefused(false);
+    // Just after the end of the marked text, which is where the pointer
+    // already is. Kept inside the window: a mark half off the screen is a mark
+    // nobody can press.
+    setAt({
+      x: Math.min(Math.max(12, last.right + 8), window.innerWidth - 130),
+      y: Math.min(Math.max(12, last.bottom + 8), window.innerHeight - 52),
+    });
+  }, [forget]);
 
   useEffect(() => {
-    const copied = () => {
-      const said = window.getSelection()?.toString().trim() ?? "";
-      if (said.length < ENOUGH) return;
-
-      // Anything inside a form is somebody editing, not somebody quoting.
-      const where = window.getSelection()?.anchorNode;
-      const parent = where instanceof Element ? where : where?.parentElement;
-      if (parent?.closest("input, textarea, [contenteditable='true']")) return;
-
-      setPassage(said);
-      setDone(false);
-      if (timer.current) clearTimeout(timer.current);
-      // Long enough to notice and read, short enough not to sit there.
-      timer.current = setTimeout(() => setPassage(""), 12_000);
-    };
-
-    document.addEventListener("copy", copied);
+    // Both, because text is marked with a mouse and with a keyboard.
+    const later = () => window.setTimeout(look, 0);
+    document.addEventListener("pointerup", later);
+    document.addEventListener("keyup", later);
+    // Scrolling moves the text out from under the mark.
+    window.addEventListener("scroll", forget, { passive: true });
     return () => {
-      document.removeEventListener("copy", copied);
-      if (timer.current) clearTimeout(timer.current);
+      document.removeEventListener("pointerup", later);
+      document.removeEventListener("keyup", later);
+      window.removeEventListener("scroll", forget);
     };
-  }, []);
+  }, [look, forget]);
 
-  if (!passage) return null;
+  if (!passage || !at) return null;
 
   const today = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
@@ -76,7 +106,6 @@ export default function QuoteThis({
   });
 
   const reference = `promeNOODology, “${title}”${year ? `, ${year}` : ""}. ${url} (accessed ${today}).`;
-  // Curly quotes and an em dash, because this is going into somebody's writing.
   const quoted = `“${passage.replace(/\s+/g, " ")}”\n\n— ${reference}`;
 
   /**
@@ -85,14 +114,15 @@ export default function QuoteThis({
    * navigator.clipboard needs permission and is turned down in more situations
    * than one would think — an embedded view, a page that has lost focus, a
    * browser being strict. The old execCommand route needs no permission at all
-   * as long as it happens inside a click, which this does. It is deprecated and
-   * it works, and between a deprecated path and a dead button the button loses.
+   * as long as it happens inside a click, which this does. Between a deprecated
+   * path and a dead button, the button loses.
    */
   async function take() {
     setRefused(false);
+
     try {
       await navigator.clipboard.writeText(quoted);
-      finish();
+      setDone(true);
       return;
     } catch {
       // Fall through to the old way.
@@ -108,56 +138,44 @@ export default function QuoteThis({
       const worked = document.execCommand("copy");
       hidden.remove();
       if (worked) {
-        finish();
+        setDone(true);
         return;
       }
     } catch {
       // Nothing left to try.
     }
 
-    // Say so, and leave the passage on screen to be taken by hand. A button
-    // that quietly does nothing is worse than one that admits it.
+    // Say so rather than sit there. A button that quietly does nothing is worse
+    // than one that admits it.
     setRefused(true);
   }
 
-  function finish() {
-    setDone(true);
-    setRefused(false);
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setPassage(""), 2600);
-  }
-
-  const words = passage.split(/\s+/).filter(Boolean).length;
-
   return (
-    <aside className="quoting" role="status">
-      <p className="quoting-said">
-        {done
-          ? "Copied, with the reference underneath it."
-          : refused
-            ? "Your browser would not let us write to the clipboard — the reference is below, to take by hand."
-            : `You have copied ${words} words. Take the reference with them?`}
-      </p>
-
-      {done ? null : (
-        <p className={refused ? "quoting-shape quoting-all" : "quoting-shape"}>
-          {/* Refused: the whole reference, selectable. Otherwise the tail of the
-              passage, which is enough to show what is on offer. */}
-          {refused ? null : <span>“…{passage.replace(/\s+/g, " ").slice(-46)}”</span>}
-          <em>{refused ? reference : `— ${reference}`}</em>
-        </p>
-      )}
-
-      <p className="quoting-does">
-        {done || refused ? null : (
-          <button type="button" className="text-button" onClick={take}>
-            yes, with the reference
-          </button>
-        )}
-        <button type="button" className="quoting-shut" onClick={forget}>
-          {done || refused ? "close" : "no, thanks"}
-        </button>
-      </p>
-    </aside>
+    <button
+      type="button"
+      className={["quote-mark", done ? "quote-mark-done" : "", refused ? "quote-mark-sorry" : ""]
+        .filter(Boolean)
+        .join(" ")}
+      style={{ left: at.x, top: at.y }}
+      // The press must not count as a change of selection, or the mark takes
+      // itself away before it has done anything.
+      onPointerDown={() => {
+        mine.current = true;
+        window.setTimeout(() => {
+          mine.current = false;
+        }, 400);
+      }}
+      onClick={take}
+      title={
+        done
+          ? "The passage and the reference are on your clipboard"
+          : "Copy this passage with the reference"
+      }
+    >
+      <span aria-hidden="true" className="quote-mark-glyph">
+        {done ? "✓" : refused ? "!" : "“"}
+      </span>
+      {done ? "copied with the source" : refused ? "your browser said no" : "quote this"}
+    </button>
   );
 }

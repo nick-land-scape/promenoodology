@@ -249,7 +249,7 @@ export default function PhotoLibrary({
     const doomed = pick.picked();
     if (
       !confirm(
-        `Delete ${doomed.length} photograph${doomed.length === 1 ? "" : "s"}? The files go too, and there is no undo.`,
+        `Delete ${doomed.length} photograph${doomed.length === 1 ? "" : "s"}? They go to the bin for thirty days.`,
       )
     ) {
       return;
@@ -283,7 +283,7 @@ export default function PhotoLibrary({
   }
 
   function remove(item: PhotoItem) {
-    if (!confirm("Delete this photograph? The file goes too, and there is no undo.")) return;
+    if (!confirm("Delete this photograph? It goes to the bin for thirty days.")) return;
     setProblem("");
     start(async () => {
       const result = await deletePhoto(item.id);

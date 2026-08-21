@@ -145,7 +145,7 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
   }
 
   function remove(row: Partner) {
-    if (!confirm(`Delete ${row.name || "this partner"}? The logo goes too.`)) return;
+    if (!confirm(`Delete ${row.name || "this partner"}? It goes to the bin for thirty days.`)) return;
     setProblem("");
     start(async () => {
       const result = await deleteAssociation(row.id);

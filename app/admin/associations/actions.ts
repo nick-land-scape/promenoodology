@@ -123,7 +123,7 @@ export async function deleteAssociation(id: string): Promise<Saved> {
     .eq("id", id)
     .maybeSingle<{ logo_path: string | null }>();
 
-  const { error } = await supabase.from("associations").delete().eq("id", id);
+  const { error } = await supabase.from("associations").update({ deleted_at: new Date().toISOString() }).eq("id", id);
   if (error) return failed(error);
 
   if (row?.logo_path?.startsWith("logos/")) {

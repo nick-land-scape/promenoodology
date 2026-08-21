@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { pretty, today } from "@/lib/admin/when";
 
 /**
  * The small pieces the back of the house is built out of.
@@ -385,18 +386,11 @@ export function moved<T>(list: T[], from: number, to: number): T[] {
   return next;
 }
 
-/** 12 August 2026, or the raw thing if it is not a date. */
-export function pretty(iso: string) {
-  if (!iso) return "";
-  const date = new Date(`${iso}T00:00:00Z`);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-}
 
-/** Today, as the date inputs want it. */
-export function today() {
-  return new Date().toISOString().slice(0, 10);
-}
+/* The two date helpers live in lib/admin/when.ts now — they are plain functions
+   and a server page has every right to call one. Re-exported so that the fifteen
+   places importing them from here carry on working. */
+export { pretty, today };
 
 /* ------------------------------------------------------- putting things in order
 

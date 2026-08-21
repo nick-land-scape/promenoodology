@@ -1,3 +1,4 @@
+import BinLink from "@/components/admin/BinLink";
 import Head from "@/components/admin/Head";
 import RowsEditor, { type Row } from "@/components/admin/RowsEditor";
 import { requireAdmin } from "@/lib/admin/guard";
@@ -21,7 +22,7 @@ export default async function QuotesPage() {
   ]);
 
   return (
-    <Head title="quotes">
+    <Head title="quotes" action={<BinLink table="quotes" />}>
       <p className="admin-intro">
         The things people said. On the archive wall they are the pauses between the photographs, so a
         long one is fine and a short one is better. If the name matches somebody on the community
