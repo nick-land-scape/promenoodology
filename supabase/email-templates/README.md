@@ -1,7 +1,8 @@
 # The emails
 
-Two emails, and they are the whole of signing in: there are no passwords on this
-site, so a code in an inbox is the only key there is.
+Three emails. Two of them are the whole of signing in — there are no passwords on
+this site, so a code in an inbox is the only key there is — and the third is for
+somebody moving their account to a different address.
 
 They live in the Supabase dashboard rather than in this repository — Supabase
 renders them, not us — so these files are the copy of record. Change them here,
@@ -10,9 +11,9 @@ dashboard login.
 
 ## Putting them in
 
-There is a script, and it exists because pasting is where this goes wrong: there
-are two templates, each with its own save button, and an email that looks
-unchanged is indistinguishable from one that was never saved.
+There is a script, and it exists because pasting is where this goes wrong: each
+template has its own save button, and an email that looks unchanged is
+indistinguishable from one that was never saved.
 
 ```bash
 SUPABASE_ACCESS_TOKEN=sbp_... node scripts/email-templates.mjs --check
@@ -32,11 +33,19 @@ contents into the message body and set the subject line next to it.
 |---|---|---|
 | `magic-link.html` | Magic Link | `Your code for promeNOODology` |
 | `confirm-signup.html` | Confirm signup | `Welcome to promeNOODology — here is your code` |
+| `email-change.html` | Change Email Address | `Confirm your new address for promeNOODology` |
 
-Both are needed, and they are not interchangeable: **Magic Link** goes to
-somebody who already has an account, **Confirm signup** to somebody joining for
-the first time. Supabase picks between them, so leaving one on the stock template
-means half the people who sign in get a bare blue link and no code.
+They are not interchangeable: **Magic Link** goes to somebody who already has an
+account, **Confirm signup** to somebody joining for the first time, and **Change
+Email Address** to the new inbox when somebody changes their address on
+`/account`. Supabase picks between them, so leaving any of them on the stock
+template means some of the people knocking get a bare blue link that may not even
+work where they open it.
+
+**Change Email Address** carries no code, and should not: a code is typed into the
+page you left open, which checks it against the address in a cookie — the address
+being left behind. There is nowhere for that code to go, so that email sends the
+link and says as much.
 
 ## Why `{{ .Token }}` matters
 

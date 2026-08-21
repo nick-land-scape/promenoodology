@@ -1,15 +1,15 @@
 /**
- * Puts the two emails in supabase/email-templates/ into the Supabase project.
+ * Puts the emails in supabase/email-templates/ into the Supabase project.
  *
  *   SUPABASE_ACCESS_TOKEN=sbp_... node scripts/email-templates.mjs
  *   SUPABASE_ACCESS_TOKEN=sbp_... node scripts/email-templates.mjs --check
  *
  * Why this exists rather than "paste it in the dashboard": pasting is where it
- * goes wrong. There are two templates and they are not interchangeable, each has
- * its own save button, and an email that looks unchanged is indistinguishable
- * from one that was never saved — you cannot tell by looking at the inbox which
- * of the two you are seeing. This reads the files and writes both, and `--check`
- * tells you what is actually up there without changing anything.
+ * goes wrong. The templates are not interchangeable, each has its own save
+ * button, and an email that looks unchanged is indistinguishable from one that
+ * was never saved — you cannot tell by looking at the inbox which one you are
+ * seeing. This reads the files and writes them all, and `--check` tells you what
+ * is actually up there without changing anything.
  *
  * The token is a personal access token from
  * https://supabase.com/dashboard/account/tokens. It is read from the environment
@@ -40,6 +40,19 @@ const TEMPLATES = [
     subjectKey: "mailer_subjects_confirmation",
     subject: "Welcome to promeNOODology — here is your code",
     what: "Confirm signup — somebody joining for the first time",
+  },
+  {
+    file: "email-change.html",
+    contentKey: "mailer_templates_email_change_content",
+    subjectKey: "mailer_subjects_email_change",
+    subject: "Confirm your new address for promeNOODology",
+    what: "Change Email Address — somebody moving their account to a new inbox",
+    /* The one email here that carries no code, and should not.
+     *
+     * A code is typed into the page you left open, which checks it against the
+     * address in a cookie — the address being left behind. There is nowhere for
+     * a code from this email to go, so it sends the link and says so. */
+    needsCode: false,
   },
 ];
 
@@ -81,7 +94,11 @@ async function check() {
 
     console.log(template.what);
     console.log(`  subject:  ${current[template.subjectKey] ?? "(default)"}`);
-    console.log(`  has code: ${live.includes("{{ .Token }}") ? "yes" : "NO — it will only send a link"}`);
+    console.log(
+      template.needsCode === false
+        ? `  has link: ${live.includes("token_hash") ? "yes" : "NO — the stock link only works in one browser"}`
+        : `  has code: ${live.includes("{{ .Token }}") ? "yes" : "NO — it will only send a link"}`,
+    );
     console.log(`  matches ${template.file}: ${same ? "yes" : "no"}`);
     console.log("");
   }
@@ -97,9 +114,14 @@ async function push() {
 
   for (const template of TEMPLATES) {
     const html = readFileSync(path.join(ROOT, "supabase/email-templates", template.file), "utf8");
-    if (!html.includes("{{ .Token }}")) {
+    if (template.needsCode !== false && !html.includes("{{ .Token }}")) {
       throw new Error(
         `${template.file} has no {{ .Token }} in it — it would send a link and no code.`,
+      );
+    }
+    if (!html.includes("token_hash")) {
+      throw new Error(
+        `${template.file} does not link through token_hash — the link would only work in the browser that asked for it.`,
       );
     }
     body[template.contentKey] = html;
@@ -116,7 +138,7 @@ async function push() {
   }
 
   for (const template of TEMPLATES) console.log(`  wrote ${template.what}`);
-  console.log("\nBoth in place. Ask for a code and read what arrives.");
+  console.log("\nAll in place. Ask for a code and read what arrives.");
 }
 
 try {

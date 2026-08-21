@@ -1,0 +1,73 @@
+<!--
+  Authentication → Emails → "Change Email Address"
+  Subject: Confirm your new address for promeNOODology
+
+  Sent when somebody on /account asks to sign in with a different address.
+
+  A link and no code, and this is the one email here where that is right. The
+  code page trades a code for a session against the address in a cookie, which is
+  the address somebody is *leaving*; a code in this email would have nowhere to be
+  typed. The link carries what it needs and lands at the same door the sign-in
+  links use, which knows an email change from a sign-in by the type in the URL.
+
+  Through {{ .RedirectTo }}?token_hash={{ .TokenHash }} rather than
+  {{ .ConfirmationURL }} for the reason the other two templates say: the stock URL
+  hands back a token that can only be traded in the browser that asked for it, and
+  this email is opened wherever the new inbox happens to be — which, for an
+  address somebody has just typed, is very often a phone.
+
+  Times and Helvetica, no web fonts, tables and inline styles: the same materials
+  as the site and the only HTML mail clients agree on.
+-->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fffcf6;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:36px 16px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:440px;">
+
+        <tr>
+          <td style="padding-bottom:26px;">
+            <span style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:1.6px;text-transform:uppercase;color:#8b3fff;">promeNOODology</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="font-family:Times,'Times New Roman',Georgia,serif;font-size:30px;line-height:1.1;color:#000000;padding-bottom:10px;">
+            is this your address now?
+          </td>
+        </tr>
+
+        <tr>
+          <td style="font-family:Times,'Times New Roman',Georgia,serif;font-size:17px;line-height:1.45;color:#000000;padding-bottom:26px;">
+            Somebody signed in as {{ .Email }} asked to move their account to this
+            address. One click and it moves — until then the old one still works.
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=email_change" style="display:inline-block;border:1px solid #000000;padding:13px 22px;font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#000000;text-decoration:none;">
+              yes, use this address
+            </a>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:28px;border-top:1px solid rgba(0,0,0,0.12);">
+            <p style="font-family:Times,'Times New Roman',Georgia,serif;font-size:14px;line-height:1.45;color:#6f6a63;font-style:italic;margin:22px 0 0;">
+              If it was not you, do nothing at all. Without that click nothing
+              moves, and whoever asked cannot read this — which is the whole
+              reason we send it here.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:22px;">
+            <a href="mailto:info@promeNOODology.com" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:1.2px;text-transform:uppercase;color:#e82687;text-decoration:none;">info@promeNOODology.com</a>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
