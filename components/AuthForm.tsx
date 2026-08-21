@@ -3,7 +3,7 @@
 import Link from "next/link";
 import AppleSignIn from "./AppleSignIn";
 import { useActionState } from "react";
-import { type Result, sendCode } from "@/app/(site)/account/actions";
+import { join, type Result, sendCode } from "@/app/(site)/account/actions";
 
 /**
  * The two ways in, and neither of them has a password.
@@ -53,10 +53,9 @@ export function SignInForm({ back }: { back?: string }) {
       <p className="auth-or">or</p>
       <AppleSignIn back={back} />
 
-      {/* No "join us": accounts start with an invitation from /admin → people. */}
       <p className="auth-switch">
-        No account? They start with an invitation from us — the{" "}
-        <Link href="/newsletter">newsletter</Link> is the way to hear from us in the meantime.
+        No account yet? <Link href="/account/register">Join us</Link> — it takes an address and one
+        code, and there is nothing to pay.
       </p>
     </>
   );
@@ -66,4 +65,50 @@ function Says({ state }: { state: Result }) {
   if (state.error) return <p className="auth-error">{state.error}</p>;
   if (state.message) return <p className="auth-message">{state.message}</p>;
   return null;
+}
+
+/**
+ * Joining.
+ *
+ * The same shape as signing in, because it is the same act with one extra
+ * question: an address, a name if you feel like giving one, and a code. No
+ * password, so there is nothing to choose and nothing to forget — and no second
+ * field asking you to type the same address again.
+ */
+export function JoinForm({ back }: { back?: string }) {
+  const [state, action, sending] = useActionState(join, EMPTY);
+
+  return (
+    <>
+      <form action={action} className="auth-form">
+        {back ? <input type="hidden" name="back" value={back} /> : null}
+        <label>
+          <span>your name</span>
+          <input name="name" autoComplete="name" placeholder="what to call you" />
+        </label>
+        <label>
+          <span>email</span>
+          <input
+            name="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            placeholder="where the code should go"
+            required
+          />
+        </label>
+        <Says state={state} />
+        <button type="submit" className="join-primary" disabled={sending}>
+          {sending ? "sending…" : "send me a code →"}
+        </button>
+      </form>
+
+      <p className="auth-or">or</p>
+      <AppleSignIn back={back} join />
+
+      <p className="auth-switch">
+        Been here before? <Link href="/account/sign-in">Sign in</Link>.
+      </p>
+    </>
+  );
 }

@@ -1,166 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import {
-  changeMyEmail,
-  saveProfile,
-  setMyPhoto,
-  signOut,
-} from "@/app/(site)/account/actions";
-import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
+import { useEffect, useState, useTransition } from "react";
+import { changeMyEmail } from "@/app/(site)/account/actions";
 import { supabaseBrowser } from "@/lib/supabase/browser";
-import { mediaUrl } from "@/lib/supabase/config";
-import Photo from "../Photo";
-
-type Props = {
-  userId: string;
-  name: string;
-  country: string;
-  email: string;
-  photo: string | null;
-  listed: boolean;
-};
 
 /**
- * Everything about you, in the app.
+ * How you get in, on a screen of its own: the address a code goes to, and Apple.
  *
- * The same actions the website's profile page uses — one set of rules about what
- * a member may change about themselves, in one place, rather than a second
- * implementation that drifts. What is different here is the shape: a phone, one
- * thing under another, and the portrait big enough to be worth tapping.
+ * Both halves of "how you sign in" in one place, because they are one question —
+ * and because the account screen was becoming a form with a card on top of it.
  */
-export default function MySettings({ userId, name, country, email, photo, listed }: Props) {
-  const [portrait, setPortrait] = useState(photo);
-  const [busy, setBusy] = useState(false);
-  const [trouble, setTrouble] = useState("");
-  const file = useRef<HTMLInputElement>(null);
-  const [, start] = useTransition();
-
-  async function take(chosen: File | null) {
-    if (!chosen) return;
-    setTrouble("");
-    setBusy(true);
-    try {
-      const uploaded = await uploadPhoto(chosen, `profiles/${userId}`);
-      const answer = await setMyPhoto(uploaded.path);
-      if (answer.error) setTrouble(answer.error);
-      else setPortrait(uploaded.path);
-    } catch (error) {
-      setTrouble(error instanceof Error ? error.message : "That picture did not go up.");
-    } finally {
-      setBusy(false);
-      if (file.current) file.current.value = "";
-    }
-  }
-
+export default function MySigningIn({ email }: { email: string }) {
   return (
     <>
-      <div className="me-strip">
-        {/* Tap the picture to change the picture. */}
-        <input
-          ref={file}
-          type="file"
-          accept={ACCEPTS}
-          hidden
-          onChange={(change) => void take(change.target.files?.[0] ?? null)}
-        />
-        <button
-          type="button"
-          className="me-face"
-          onClick={() => file.current?.click()}
-          disabled={busy}
-          aria-label={portrait ? "Choose another portrait" : "Add a portrait"}
-        >
-          {portrait ? (
-            <Photo src={mediaUrl(portrait)} alt="" width={600} height={800} sizes="120px" priority />
-          ) : (
-            <span className="me-face-none">add a portrait</span>
-          )}
-          <em>{busy ? "putting it up…" : portrait ? "change" : "add"}</em>
-        </button>
-
-        <div className="me-strip-said">
-          <p className="app-note" style={{ margin: 0 }}>
-            This is the photograph on the community page. It is shrunk on the way up, and the
-            camera&rsquo;s notes are left behind.
-          </p>
-          {portrait ? (
-            <button
-              type="button"
-              className="pill pill-small"
-              disabled={busy}
-              onClick={() =>
-                start(async () => {
-                  const answer = await setMyPhoto(null);
-                  if (answer.error) setTrouble(answer.error);
-                  else setPortrait(null);
-                })
-              }
-            >
-              take it off
-            </button>
-          ) : null}
-          {trouble ? <p className="app-error">{trouble}</p> : null}
-        </div>
-      </div>
-
-      <Details name={name} country={country} listed={listed} />
       <TheAddress email={email} />
       <Apple />
-
-      <form action={signOut} className="app-section">
-        <button type="submit" className="pill pill-wide">
-          sign out
-        </button>
-      </form>
     </>
-  );
-}
-
-/** Your name, where you are from, and whether you are on the community page. */
-function Details({
-  name,
-  country,
-  listed,
-}: {
-  name: string;
-  country: string;
-  listed: boolean;
-}) {
-  const [said, setSaid] = useState("");
-  const [pending, start] = useTransition();
-
-  return (
-    <form
-      className="field-block"
-      action={(form) =>
-        start(async () => {
-          const answer = await saveProfile({}, form);
-          setSaid(answer.error ?? answer.message ?? "");
-        })
-      }
-    >
-      <div className="field">
-        <label htmlFor="me-name">your name</label>
-        <input id="me-name" name="name" defaultValue={name} required />
-      </div>
-      <div className="field">
-        <label htmlFor="me-country">where you are from</label>
-        <input id="me-country" name="country" defaultValue={country} placeholder="optional" />
-      </div>
-      {/* The community page is a decision, so it is asked rather than assumed —
-          and it is the same column the website's profile page writes. */}
-      <label className="me-check">
-        <input type="checkbox" name="listed" defaultChecked={listed} />
-        <span>show me on the community page</span>
-      </label>
-      <div className="form-actions">
-        <button type="submit" className="pill pill-solid pill-wide" disabled={pending}>
-          {pending ? "saving…" : "save"}
-        </button>
-        {said ? <p className="app-note">{said}</p> : null}
-      </div>
-    </form>
   );
 }
 

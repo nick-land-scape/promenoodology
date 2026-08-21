@@ -1,0 +1,99 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+
+/**
+ * The four rings under the card.
+ *
+ * They were there before and they did nothing — four buttons with no handlers,
+ * one of them called "saved" for a thing this club does not have. Four again, and
+ * each one goes somewhere: what is on, telling somebody about us, your own
+ * details, and out to the website.
+ *
+ * Telling somebody uses the phone's own share sheet where there is one, because
+ * that is where the messages people actually send from live. Where there is not
+ * one — a desktop browser, mostly — it falls back to an email, which is the thing
+ * a share sheet would have offered anyway.
+ */
+
+const INVITE = {
+  title: "promeNOODology",
+  text: "Come and cook with us. Everyone is a member.",
+};
+
+export default function Shortcuts() {
+  const [said, setSaid] = useState("");
+
+  async function tell() {
+    const url = "https://promenoodology.com";
+    if (navigator.share) {
+      try {
+        await navigator.share({ ...INVITE, url });
+        return;
+      } catch {
+        // Dismissed, or refused. Either way, nothing to say about it.
+        return;
+      }
+    }
+    window.location.href = `mailto:?subject=${encodeURIComponent(INVITE.title)}&body=${encodeURIComponent(`${INVITE.text}\n\n${url}`)}`;
+    setSaid("Opening an email — this browser has nothing to share with.");
+  }
+
+  return (
+    <>
+      <ul className="shortcuts">
+        <li>
+          <Link className="shortcut" href="/app/events">
+            <span className="shortcut-ring" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <rect x="3.5" y="5" width="17" height="15.5" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M3.5 9.5h17" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M8 3.5v3M16 3.5v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span>what&rsquo;s on</span>
+          </Link>
+        </li>
+
+        <li>
+          <button type="button" className="shortcut" onClick={() => void tell()}>
+            <span className="shortcut-ring" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <path d="M12 16V4m0 0 4 4m-4-4-4 4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 14v5.5h14V14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span>tell somebody</span>
+          </button>
+        </li>
+
+        <li>
+          <Link className="shortcut" href="/app/account/details">
+            <span className="shortcut-ring" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M12 3.5v2.2M12 18.3v2.2M4.9 7.8l1.9 1.1M17.2 15.1l1.9 1.1M4.9 16.2l1.9-1.1M17.2 8.9l1.9-1.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span>your details</span>
+          </Link>
+        </li>
+
+        <li>
+          <Link className="shortcut" href="/">
+            <span className="shortcut-ring" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M3.6 9.8h16.8M3.6 14.2h16.8M12 3.4c-2.6 2.4-2.6 14.8 0 17.2 2.6-2.4 2.6-14.8 0-17.2z" fill="none" stroke="currentColor" strokeWidth="1.4" />
+              </svg>
+            </span>
+            <span>the website</span>
+          </Link>
+        </li>
+      </ul>
+
+      {said ? <p className="app-note">{said}</p> : null}
+    </>
+  );
+}

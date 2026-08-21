@@ -500,8 +500,107 @@ export async function getNews(): Promise<NewsItem[]> {
 }
 
 /** The feed is still examples: nobody can post until members can sign in. */
+/**
+ * The feed.
+ *
+ * Every word of it used to come out of a CSV file — the posts, the names, the
+ * likes, the replies — so nothing anybody wrote in the app could appear on it and
+ * nothing on it had ever been in the database. It reads the database now, and
+ * only falls back to the file when there is no database at all.
+ *
+ * Read with the caller's own session rather than the public key: the policy on
+ * posts is "signed in to read", so the anon key gets nothing and would quietly
+ * show an empty feed to a member who is looking right at their own post.
+ */
 export async function getPosts(): Promise<Post[]> {
-  return appFiles.getPosts();
+  if (!hasSupabase()) return appFiles.getPosts();
+
+  const { supabaseServer } = await import("./supabase/server");
+  const supabase = await supabaseServer();
+
+  const [{ data: posts }, { data: replies }, names] = await Promise.all([
+    supabase
+      .from("posts")
+      .select("id, author_id, place, text, photo_path, photo_paths, created_at")
+      .order("created_at", { ascending: false })
+      .limit(80)
+      .returns<
+        {
+          id: string;
+          author_id: string;
+          place: string | null;
+          text: string;
+          photo_path: string | null;
+          photo_paths: string[] | null;
+          created_at: string;
+        }[]
+      >(),
+    supabase
+      .from("post_replies")
+      .select("id, post_id, author_id, text, created_at")
+      .order("created_at")
+      .returns<
+        { id: string; post_id: string; author_id: string; text: string; created_at: string }[]
+      >(),
+    peopleNames(),
+  ]);
+
+  const said = new Map<string, Post["replies"]>();
+  for (const reply of replies ?? []) {
+    const list = said.get(reply.post_id) ?? [];
+    list.push({
+      id: reply.id,
+      author: names.get(reply.author_id) ?? "somebody",
+      authorId: reply.author_id,
+      when: howLongAgo(reply.created_at),
+      text: reply.text,
+    });
+    said.set(reply.post_id, list);
+  }
+
+  return (posts ?? []).map((row) => {
+    /* The old single-picture column is still read: a post written before there
+       could be more than one still has its photograph in it. */
+    const paths = row.photo_paths?.length
+      ? row.photo_paths
+      : row.photo_path
+        ? [row.photo_path]
+        : [];
+    return {
+      id: row.id,
+      author: names.get(row.author_id) ?? "somebody",
+      authorId: row.author_id,
+      place: row.place ?? "",
+      when: howLongAgo(row.created_at),
+      text: row.text,
+      // A nominal size: the app draws them into a fixed frame and nobody
+      // measures a picture on the way in.
+      photos: paths.map((path) => ({ src: mediaUrl(path), width: 1200, height: 900 })),
+      replies: said.get(row.id) ?? [],
+    };
+  });
+}
+
+/** id → name, for everybody who might have written something. */
+async function peopleNames(): Promise<Map<string, string>> {
+  const { data } = await supabasePublic()
+    .from("profiles")
+    .select("id, name")
+    .returns<{ id: string; name: string }[]>();
+  return new Map((data ?? []).map((row) => [row.id, row.name || "somebody"]));
+}
+
+/** "just now", "20 minutes ago", "yesterday", "3 August". */
+function howLongAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const minutes = Math.round((Date.now() - then) / 60000);
+  if (minutes < 2) return "just now";
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  if (hours < 48) return "yesterday";
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long" });
 }
 
 /* --------------------------------------------------------------- community */

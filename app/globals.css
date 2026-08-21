@@ -2927,3 +2927,48 @@ body:has(.hero) .edit-this {
   color: #fff;
 }
 
+
+/* ------------------------------------------------------------------- in writing
+
+   The three pages a club has to have: a privacy policy, terms, an imprint. Plain
+   on purpose — nobody should be admiring the typography of a privacy policy — but
+   set in the same materials as everything else, and narrow enough to read. */
+
+.legal {
+  max-width: 34rem;
+}
+
+.legal h2 {
+  margin: 30px 0 8px;
+  font: inherit;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+.legal p {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.legal-when {
+  margin-top: 32px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+  font-style: italic;
+  color: var(--quiet);
+}
+
+.legal-others {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}

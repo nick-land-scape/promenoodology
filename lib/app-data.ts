@@ -78,16 +78,20 @@ export function getNews(): NewsItem[] {
 export function getPosts(): Post[] {
   const [, ...rows] = readRows("posts.csv");
   return rows.map((columns) => {
-    const [author, place, when, likes, replies, photo, ...text] = columns;
+    /* The file still has its likes and replies columns and they are read past:
+       there are no likes any more, and a reply is a row in a table now rather
+       than a number somebody typed into a spreadsheet. */
+    const [author, place, when, , , photo, ...text] = columns;
+    const picture = resourcePhoto(photo);
     return {
       id: `${author}-${when}`,
       author: author ?? "",
+      authorId: "",
       place: place ?? "",
       when: when ?? "",
-      likes: Number(likes) || 0,
-      replies: Number(replies) || 0,
       text: text.join(", "),
-      photo: resourcePhoto(photo),
+      photos: picture ? [picture] : [],
+      replies: [],
     };
   });
 }

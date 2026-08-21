@@ -186,24 +186,44 @@ export async function verifyCode(_state: Result, form: FormData): Promise<Result
 }
 
 /**
- * Joining, which is closed.
+ * Joining.
  *
- * An account now starts with an invitation from /admin → people. This is left
- * here rather than deleted because the form that called it may still be open in
- * somebody's tab, and a button that quietly does nothing is worse than one that
- * says why.
+ * It was closed — an account started with an invitation from the back of the
+ * house — and it is open now, because the app is going into a store and an app
+ * you cannot get into is an app nobody can review, let alone use. It also happens
+ * to be what this club says on its own front page: everyone is a member.
  *
- * Worth being straight about the limit: this is the app declining, not the
- * database. The same public key could still be used to sign somebody up directly
- * against Supabase. Closing that properly means turning signups off in the
- * Supabase dashboard and giving the invitation on the admin page a service-role
- * key of its own — see the note in .env.example.
+ * The same code to the same inbox as signing in, with one difference: this one is
+ * allowed to make an account that does not exist yet. Nothing else about a new
+ * member is assumed — the trigger on the database writes them down unlisted, so
+ * being on the community page stays a decision rather than a consequence of
+ * having signed up.
  */
-export async function join(_state: Result, _form: FormData): Promise<Result> {
-  return {
-    error:
-      "Accounts are closed at the moment — they start with an invitation from us. Put your address on the newsletter and we will be in touch.",
-  };
+export async function join(_state: Result, form: FormData): Promise<Result> {
+  const email = String(form.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  if (!email.includes("@")) return { error: "Your email address, please." };
+
+  const back = onlyAPath(String(form.get("back") ?? ""));
+  const name = String(form.get("name") ?? "").trim();
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      // The one difference from signing in.
+      shouldCreateUser: true,
+      // Carried into the profile the database makes, so somebody who gave their
+      // name does not have to give it again.
+      data: name ? { name } : undefined,
+      emailRedirectTo: back ? `${landing}?next=${encodeURIComponent(back)}` : landing,
+    },
+  });
+  if (error) return { error: friendly(error.message) };
+
+  await remember(email, back);
+  redirect("/account/code");
 }
 
 export async function signOut() {

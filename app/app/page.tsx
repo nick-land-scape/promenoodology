@@ -74,7 +74,7 @@ export default async function AppHome() {
           There is no list to get on and nothing to pay. Turn up once, cook something, and you are
           part of it.
         </p>
-        <Link className="pill" href="/app/book">
+        <Link className="pill" href="/app/events">
           find something to join
         </Link>
       </section>

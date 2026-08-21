@@ -112,6 +112,13 @@ export const SECTIONS: Section[] = [
     group: "post",
   },
   {
+    href: "/admin/feedback",
+    label: "what people said",
+    blurb: "Bugs, ideas and words sent from inside the app.",
+    icon: "inbox",
+    group: "post",
+  },
+  {
     href: "/admin/newsletter",
     label: "newsletter",
     blurb: "Who wants to hear when there is something to come to.",

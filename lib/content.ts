@@ -61,15 +61,26 @@ export type NewsItem = {
   pinned: boolean;
 };
 
+export type Reply = {
+  id: string;
+  author: string;
+  authorId: string;
+  when: string;
+  text: string;
+};
+
 export type Post = {
   id: string;
   author: string;
+  /** Which profile wrote it, so the app knows whether it is yours to delete. */
+  authorId: string;
   place: string;
   when: string;
-  likes: number;
-  replies: number;
   text: string;
-  photo: Photo | null;
+  /* More than one, because an evening is not one photograph. No likes: a like is
+     a number that makes people watch a number. */
+  photos: Photo[];
+  replies: Reply[];
 };
 
 export type Quote = {

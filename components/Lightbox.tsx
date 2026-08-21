@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Photo from "./Photo";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Slide } from "@/lib/content";
 
 type Props = {
@@ -19,6 +19,7 @@ type Props = {
  * uses. Arrow keys and Escape work too.
  */
 export default function Lightbox({ slides, index, onIndex, onClose, storyOf }: Props) {
+  const [saving, setSaving] = useState<"" | "working" | "failed">("");
   const slide = slides[index];
   const many = slides.length > 1;
   const story = slide && storyOf ? storyOf(slide) : null;
@@ -33,6 +34,45 @@ export default function Lightbox({ slides, index, onIndex, onClose, storyOf }: P
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
+
+  /**
+   * Saving the photograph.
+   *
+   * Not `<a download>`: the files are on the storage host rather than on this
+   * one, and a browser ignores the download attribute across origins — it would
+   * open the picture in a tab and leave whoever pressed it to work out the rest.
+   * Fetching the bytes and handing over a blob works because the bucket is public
+   * and sends the headers for it, and it means the file arrives with a name that
+   * says what it is rather than a UUID.
+   */
+  async function save() {
+    if (!slide) return;
+    setSaving("working");
+    try {
+      const answer = await fetch(slide.photo.src, { mode: "cors" });
+      if (!answer.ok) throw new Error(String(answer.status));
+      const blob = await answer.blob();
+      const url = URL.createObjectURL(blob);
+      const ext = slide.photo.src.split(".").pop()?.split("?")[0] ?? "jpg";
+      const named = (slide.caption || "promeNOODology")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 60);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${named || "photograph"}.${ext}`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      // Given a moment to start, then let go of the bytes.
+      window.setTimeout(() => URL.revokeObjectURL(url), 20_000);
+      setSaving("");
+    } catch {
+      setSaving("failed");
+    }
+  }
 
   if (!slide) return null;
 
@@ -76,6 +116,10 @@ export default function Lightbox({ slides, index, onIndex, onClose, storyOf }: P
 
         <figcaption className="lightbox-caption">
           {slide.caption}
+          {slide.caption ? " · " : null}
+          <button type="button" className="text-button" onClick={() => void save()}>
+            {saving === "working" ? "saving…" : saving === "failed" ? "would not save" : "save it"}
+          </button>
           {story ? (
             <>
               {slide.caption ? " · " : null}

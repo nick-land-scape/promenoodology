@@ -37,7 +37,20 @@ const nextConfig: NextConfig = {
       { source: "/munity/explained", destination: "/about", permanent: true },
       { source: "/munity/explained/index.html", destination: "/about", permanent: true },
       { source: "/munity/resources", destination: "/archive", permanent: true },
+      // The app's second tab was "book", which promised a transaction that does
+      // not exist. Anybody with it on a home screen still lands somewhere.
+      { source: "/app/book", destination: "/app/events", permanent: true },
       { source: "/munity/resources/index.html", destination: "/archive", permanent: true },
+    ];
+  },
+  // The three written pages are one route with three addresses: /privacy is a
+  // better thing to link to from an app store form than /legal/privacy, and a
+  // rewrite keeps the address the reader sees.
+  async rewrites() {
+    return [
+      { source: "/privacy", destination: "/legal/privacy" },
+      { source: "/imprint", destination: "/legal/imprint" },
+      { source: "/terms", destination: "/legal/terms" },
     ];
   },
   async headers() {

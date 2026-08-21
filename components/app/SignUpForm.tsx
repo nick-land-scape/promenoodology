@@ -4,39 +4,38 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import Photo from "../Photo";
 import type { ClubEvent } from "@/lib/content";
-import { askForAPlace, dropMyPlace } from "@/app/app/actions";
+import { cancelMyPlace, signUpForEvent } from "@/app/app/actions";
 
-export type Bookable = ClubEvent & {
+export type Joinable = ClubEvent & {
   /** When it is, said the way the row says it. */
   label: string;
-  /** Your own booking, where you have one. */
+  /** Your own place, where you have asked for one. */
   mine: { people: number; bringing: string; state: "asked" | "kept" | "declined" } | null;
 };
 
 /**
- * Asking for a place, for real.
+ * Signing up for an evening.
  *
- * This was a drawing: you chose an evening, pressed the button, and it told you
- * what you *would* have asked for — "this is a placeholder, no message has been
- * sent". The table and its policies have been in the database since the first
- * migration, so the only thing missing was this screen meaning it.
+ * Not booking, and the word matters: there is nothing here to book. Nobody is
+ * reserving a table or paying for a room — you are saying you are coming, and
+ * roughly how many of you, to something somebody else is putting on. "Book"
+ * promised a transaction that does not exist, and the screen it named listed
+ * three rooms that do not exist to go with it.
  *
- * The two other tabs went the same way. "Spaces we can use" listed three rooms
- * that do not exist with an "ask" button that did nothing, and a whole evening
- * was a mailto. What there really is for both is the form on the handbook page,
- * which lands in the back of the house — so that is where they point.
+ * What it is instead: the evenings still to come, one press to say you are in,
+ * and the same press again to say you are not.
  */
-export default function BookingForm({ events }: { events: Bookable[] }) {
+export default function SignUpForm({ events, past }: { events: Joinable[]; past: Joinable[] }) {
   const [open, setOpen] = useState<string | null>(null);
   const [people, setPeople] = useState("2");
   const [bringing, setBringing] = useState("");
   const [said, setSaid] = useState<{ id: string; words: string; bad?: boolean } | null>(null);
   const [pending, start] = useTransition();
 
-  function ask(event: Bookable) {
+  function join(event: Joinable) {
     setSaid(null);
     start(async () => {
-      const answer = await askForAPlace(event.id, Number(people), bringing);
+      const answer = await signUpForEvent(event.id, Number(people), bringing);
       if (!answer.ok) {
         setSaid({ id: event.id, words: answer.error ?? "That did not go through.", bad: true });
         return;
@@ -45,19 +44,19 @@ export default function BookingForm({ events }: { events: Bookable[] }) {
       setBringing("");
       setSaid({
         id: event.id,
-        words: `Asked for ${people} ${people === "1" ? "place" : "places"}. We will answer you.`,
+        words: `You are down for ${people} ${people === "1" ? "place" : "places"}.`,
       });
     });
   }
 
-  function drop(event: Bookable) {
-    if (!confirm(`Drop your place at “${event.title}”?`)) return;
+  function cancel(event: Joinable) {
+    if (!confirm(`Say you are not coming to “${event.title}” after all?`)) return;
     setSaid(null);
     start(async () => {
-      const answer = await dropMyPlace(event.id);
+      const answer = await cancelMyPlace(event.id);
       setSaid(
         answer.ok
-          ? { id: event.id, words: "Dropped. Ask again whenever you like." }
+          ? { id: event.id, words: "Taken off. Sign up again whenever you like." }
           : { id: event.id, words: answer.error ?? "That did not work.", bad: true },
       );
     });
@@ -67,7 +66,7 @@ export default function BookingForm({ events }: { events: Bookable[] }) {
     <>
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">open for booking</h2>
+          <h2 className="app-h2">still to come</h2>
           <span className="app-label">
             {events.length} {events.length === 1 ? "evening" : "evenings"}
           </span>
@@ -97,7 +96,7 @@ export default function BookingForm({ events }: { events: Bookable[] }) {
 
                     {event.mine ? (
                       <span className="row-yes">
-                        you asked for {event.mine.people}{" "}
+                        you are coming, {event.mine.people}{" "}
                         {event.mine.people === 1 ? "place" : "places"}
                         {event.mine.state === "kept" ? " · kept for you" : null}
                         {event.mine.state === "declined" ? " · not this time" : null}
@@ -109,10 +108,10 @@ export default function BookingForm({ events }: { events: Bookable[] }) {
                     <button
                       type="button"
                       className="pill pill-small"
-                      onClick={() => drop(event)}
+                      onClick={() => cancel(event)}
                       disabled={pending}
                     >
-                      drop out
+                      not coming
                     </button>
                   ) : (
                     <button
@@ -124,7 +123,7 @@ export default function BookingForm({ events }: { events: Bookable[] }) {
                       }}
                       disabled={pending}
                     >
-                      {open === event.id ? "close" : "book"}
+                      {open === event.id ? "close" : "count me in"}
                     </button>
                   )}
                 </div>
@@ -136,7 +135,7 @@ export default function BookingForm({ events }: { events: Bookable[] }) {
                     className="field-block"
                     onSubmit={(submit) => {
                       submit.preventDefault();
-                      ask(event);
+                      join(event);
                     }}
                   >
                     <div className="field-pair">
@@ -170,7 +169,7 @@ export default function BookingForm({ events }: { events: Bookable[] }) {
                         className="pill pill-solid pill-wide"
                         disabled={pending}
                       >
-                        {pending ? "asking…" : "ask for a place"}
+                        {pending ? "signing you up…" : "yes, I am coming"}
                       </button>
                     </div>
                   </form>
@@ -186,6 +185,41 @@ export default function BookingForm({ events }: { events: Bookable[] }) {
           </ul>
         )}
       </section>
+
+      {/* What has already happened. Half of what this club is is what it has
+          already done, and this screen used to throw all of it away. */}
+      {past.length > 0 ? (
+        <section className="app-section">
+          <div className="app-section-head">
+            <h2 className="app-h2">already happened</h2>
+            <span className="app-label">{past.length}</span>
+          </div>
+          <ul className="row-list">
+            {past.map((event) => (
+              <li key={event.id}>
+                <div className="row row-past">
+                  {event.photo ? (
+                    <span className="row-thumb">
+                      <Photo src={event.photo.src} alt="" fill sizes="58px" />
+                    </span>
+                  ) : null}
+                  <span className="row-body">
+                    <span className="row-title">{event.title}</span>
+                    <span className="row-meta">{event.label}</span>
+                    {event.mine ? <span className="row-yes">you were there</span> : null}
+                  </span>
+                  {/* Where somebody wrote it up afterwards, the way to read it. */}
+                  {event.story ? (
+                    <Link className="pill pill-small" href={`/stories/${event.story.slug}`}>
+                      read it
+                    </Link>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="band">
         <h2>Something of your own?</h2>

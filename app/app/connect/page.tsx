@@ -2,21 +2,45 @@ import AppHeader from "@/components/app/AppHeader";
 import Feed from "@/components/app/Feed";
 import { requireMember } from "@/lib/app/me";
 import { getMembers, getPosts } from "@/lib/source";
+import { supabaseServer } from "@/lib/supabase/server";
 
 export const metadata = { title: "Connect" };
 
-// A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
+/* Who is reading decides what is on this screen — what is theirs to take down,
+   and their own name in the composer. */
+export const dynamic = "force-dynamic";
 
 export default async function ConnectPage() {
-  await requireMember("/app/connect");
-  const posts = await getPosts();
-  const people = (await getMembers()).sort((a, b) => a.last.localeCompare(b.last));
+  const me = await requireMember("/app/connect");
+  const [posts, everybody] = await Promise.all([getPosts(), getMembers()]);
+  const people = everybody.sort((a, b) => a.last.localeCompare(b.last));
+
+  /* Who can actually be waved at, and who you have waved at already. The
+     community page keeps names; a wave needs the person behind one. */
+  const supabase = await supabaseServer();
+  const [{ data: rows }, { data: sent }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, name")
+      .not("user_id", "is", null)
+      .returns<{ id: string; name: string }[]>(),
+    supabase
+      .from("waves")
+      .select("to_profile, from_profile")
+      .returns<{ to_profile: string; from_profile: string }[]>(),
+  ]);
 
   return (
     <>
       <AppHeader eyebrow="connect" title="what everyone is up to" />
-      <Feed posts={posts} people={people} />
+      <Feed
+        posts={posts}
+        people={people}
+        meId={me.id}
+        meName={me.name}
+        wavable={rows ?? []}
+        waved={(sent ?? []).filter((one) => one.from_profile === me.id).map((one) => one.to_profile)}
+      />
     </>
   );
 }

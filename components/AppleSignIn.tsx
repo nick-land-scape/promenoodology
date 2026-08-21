@@ -20,7 +20,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
  * The redirect lands on /account/confirm, the same door the codes and the links
  * use — it trades what it is given for a session and knows where to put you.
  */
-export default function AppleSignIn({ back }: { back?: string }) {
+export default function AppleSignIn({ back, join }: { back?: string; join?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [trouble, setTrouble] = useState("");
 
@@ -51,9 +51,18 @@ export default function AppleSignIn({ back }: { back?: string }) {
             d="M14.9 11.6c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7 1.4 0 1.8.8 3 .7 1.2 0 2-1.1 2.8-2.2.6-.9.9-1.7 1.1-2.2-2.3-.9-2.3-3.4-2.3-3.4zM12.4 4.3c.6-.8 1-1.9.9-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2.1-.5 2.8-1.3z"
           />
         </svg>
-        {busy ? "asking Apple…" : "Sign in with Apple"}
+        {busy ? "asking Apple…" : join ? "Sign up with Apple" : "Sign in with Apple"}
       </button>
       {trouble ? <p className="auth-error">{trouble}</p> : null}
+
+      {/* Said once, here, rather than found out afterwards. */}
+      {join ? (
+        <p className="auth-switch" style={{ marginTop: 0 }}>
+          If you choose &ldquo;hide my email&rdquo;, Apple gives us a forwarding address instead of
+          yours. That works — it just means we cannot recognise you later by the address you
+          normally use.
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -1,10 +1,13 @@
 import Link from "next/link";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
-import MySettings from "@/components/app/MySettings";
+import Leaving from "@/components/app/Leaving";
+import MemberCard from "@/components/app/MemberCard";
+import { PhotoPreview, PostPreview } from "@/components/app/MyThings";
+import { signOut } from "@/app/(site)/account/actions";
 import { whenItIs } from "@/lib/app-data";
 import { pretty } from "@/lib/admin/when";
-import { myBookings, requireMember } from "@/lib/app/me";
+import { myBookings, myPhotos, myPosts, requireMember } from "@/lib/app/me";
 import { getEvents } from "@/lib/source";
 
 export const metadata = { title: "Account" };
@@ -12,68 +15,72 @@ export const metadata = { title: "Account" };
 /* Yours, and nobody else's, so there is nothing here worth caching. */
 export const dynamic = "force-dynamic";
 
-const ROWS = [
-  { label: "propose a new member", href: "mailto:info@promeNOODology.com" },
-  { label: "what we do with your data", href: "/about" },
-  { label: "leave the club", href: "mailto:info@promeNOODology.com" },
+/* Things this club has to say in writing, kept apart from the settings above
+   them: they are not things you change, they are things you are entitled to
+   read. */
+const LEGAL = [
+  { label: "what we do with your data", href: "/privacy" },
+  { label: "terms and conditions", href: "/terms" },
+  { label: "imprint", href: "/imprint" },
 ];
+
+const SHOWING = 2;
 
 export default async function AccountPage() {
   const me = await requireMember("/app/account");
-  const [mine, events] = await Promise.all([myBookings(), getEvents()]);
+  const [mine, events, photos, posts] = await Promise.all([
+    myBookings(),
+    getEvents(),
+    myPhotos(),
+    myPosts(),
+  ]);
 
   const byId = new Map(events.map((event) => [event.id, event]));
-  /* What you actually said yes to, newest first — it used to be "the first two
-     events stand in for things you said yes to", which is a drawing of an app. */
   const yes = mine
     .map((booking) => ({ booking, event: byId.get(booking.eventId) }))
-    .filter((pair): pair is { booking: (typeof mine)[number]; event: NonNullable<typeof pair.event> } =>
-      Boolean(pair.event),
-    )
-    .sort((a, b) => a.event.date.localeCompare(b.event.date));
+    .filter((pair) => Boolean(pair.event))
+    .sort((a, b) => (a.event?.date ?? "").localeCompare(b.event?.date ?? ""));
 
   return (
     <>
-      <AppHeader
-        eyebrow="your account"
-        title={me.name || "your account"}
-        aside={me.admin ? <Link href="/admin">look after the site ↗</Link> : null}
-      />
+      {/* The header stays, and it does not say your name: the card underneath it
+          says that, in bigger type, three lines lower. What the header is for is
+          telling you which of the four screens you are on. */}
+      <AppHeader eyebrow="you" title="your membership" />
 
-      <section className="app-section">
-        <div className="member-card">
-          <p className="member-name">{me.name || "no name yet"}</p>
-          <p className="member-since">
-            {[
-              me.since ? `member since ${pretty(me.since)}` : null,
-              me.country || null,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-          <p className="member-number">
-            {me.memberNo ? `NO ${String(me.memberNo).padStart(4, "0")}` : "not numbered yet"}
-          </p>
-        </div>
-      </section>
+      <div className="account-top">
+        <MemberCard
+          name={me.name}
+          number={me.memberNo}
+          since={me.since ? pretty(me.since) : ""}
+          country={me.country}
+          photo={me.photoPath}
+        />
+      </div>
 
       <section className="app-section">
         <div className="app-section-head">
           <h2 className="app-h2">you said yes to</h2>
-          <span className="app-label">{yes.length}</span>
+          {yes.length > SHOWING ? (
+            <Link className="app-more" href="/app/account/coming">
+              all {yes.length} ›
+            </Link>
+          ) : (
+            <span className="app-label">{yes.length}</span>
+          )}
         </div>
         {yes.length === 0 ? (
           <p className="app-note">
-            Nothing yet. <Link href="/app/book">Have a look at what is on</Link>.
+            Nothing yet. <Link href="/app/events">Have a look at what is on</Link>.
           </p>
         ) : (
           <ul className="row-list">
-            {yes.map(({ booking, event }) => (
+            {yes.slice(0, SHOWING).map(({ booking, event }) => (
               <li key={booking.id}>
                 <div className="row">
                   <span className="row-body">
-                    <span className="row-title">{event.title}</span>
-                    <span className="row-meta">{whenItIs(event)}</span>
+                    <span className="row-title">{event?.title}</span>
+                    <span className="row-meta">{event ? whenItIs(event) : ""}</span>
                     <span className="row-yes">
                       {booking.people} {booking.people === 1 ? "place" : "places"}
                       {booking.bringing ? ` · bringing ${booking.bringing}` : ""}
@@ -81,7 +88,7 @@ export default async function AccountPage() {
                       {booking.state === "declined" ? " · not this time" : ""}
                     </span>
                   </span>
-                  {event.photo ? (
+                  {event?.photo ? (
                     <span className="row-thumb">
                       <Photo src={event.photo.src} alt="" fill sizes="58px" />
                     </span>
@@ -93,17 +100,29 @@ export default async function AccountPage() {
         )}
       </section>
 
-      <MySettings
-        userId={me.userId}
-        name={me.name}
-        country={me.country}
-        email={me.email}
-        photo={me.photoPath}
-        listed={me.listed}
-      />
+      <PhotoPreview photos={photos} />
+      <PostPreview posts={posts} />
 
+      {/* The two screens that are about you. */}
       <section className="app-section">
-        {ROWS.map((row) => (
+        <Link className="wide-row" href="/app/account/details">
+          <span>your personal information</span>
+          <span aria-hidden="true">›</span>
+        </Link>
+        <Link className="wide-row" href="/app/account/signing-in">
+          <span>ways to sign in</span>
+          <span aria-hidden="true">›</span>
+        </Link>
+        <Link className="wide-row" href="/app/contact">
+          <span>get in touch, or report a bug</span>
+          <span aria-hidden="true">›</span>
+        </Link>
+      </section>
+
+      {/* And the things we have to say in writing, which are not settings. */}
+      <section className="app-section app-section-legal">
+        <p className="app-label app-label-alone">in writing</p>
+        {LEGAL.map((row) => (
           <Link key={row.label} className="wide-row" href={row.href}>
             <span>{row.label}</span>
             <span aria-hidden="true">›</span>
@@ -111,9 +130,15 @@ export default async function AccountPage() {
         ))}
       </section>
 
-      <p className="app-foot">
-        <Link href="/">Back to the website</Link>.
-      </p>
+      <form action={signOut} className="app-section">
+        <button type="submit" className="pill pill-wide">
+          sign out
+        </button>
+      </form>
+
+      <div className="app-section leaving-wrap">
+        <Leaving />
+      </div>
     </>
   );
 }

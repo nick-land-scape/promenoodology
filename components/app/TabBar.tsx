@@ -3,9 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+/* Five, which is as many as a phone's bar can hold and exactly as many as this
+   app has kinds of thing to do: see what is on, say you are coming, read what has
+   already happened, talk to people, and look after your own membership. */
 const TABS = [
   { href: "/app", label: "Home", icon: HomeIcon },
-  { href: "/app/book", label: "Book", icon: BookIcon },
+  { href: "/app/events", label: "What's on", icon: BookIcon },
+  { href: "/app/read", label: "Read", icon: ReadIcon },
   { href: "/app/connect", label: "Connect", icon: ConnectIcon },
   { href: "/app/account", label: "Account", icon: AccountIcon },
 ];
@@ -72,6 +76,20 @@ function BookIcon({ filled }: IconProps) {
       />
       <path d="M3.5 9.5h17" stroke={filled ? "var(--paper)" : "currentColor"} strokeWidth="1.4" />
       <path d="M8 3.5v3M16 3.5v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </>,
+  );
+}
+
+function ReadIcon({ filled }: IconProps) {
+  return frame(
+    <>
+      <path
+        d="M4 5.5h6.5A1.5 1.5 0 0 1 12 7v12a1.3 1.3 0 0 0-1.3-1.3H4zM20 5.5h-6.5A1.5 1.5 0 0 0 12 7v12a1.3 1.3 0 0 1 1.3-1.3H20z"
+        fill={filled ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
     </>,
   );
 }

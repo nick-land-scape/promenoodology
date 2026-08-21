@@ -1,41 +1,49 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { JoinForm } from "@/components/AuthForm";
+import { onlyAPath } from "@/lib/auth-code";
 import { currentProfile } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Join",
+  title: "Join us",
   robots: { index: false },
 };
 
 /**
- * Joining is closed for now: an account starts with an invitation from
- * /admin → people.
+ * Joining.
  *
- * The page stays rather than 404ing, because there are links to it in the wild
- * and a door that says "not this way, try here" is worth more than a page that
- * says nothing. The newsletter is the honest thing to offer instead — it is what
- * an account was mostly for anyway.
+ * This page used to say "not this way, for now": accounts started with an
+ * invitation from the back of the house, which was a reasonable rule for a club
+ * of sixty-five people and an impossible one for an app in a store — an app you
+ * cannot get into cannot be reviewed, let alone used.
+ *
+ * So it is a door. An address and a code, or Apple, and nothing to pay. What an
+ * account is *for* is worth saying plainly on it, because most of this site does
+ * not need one.
  */
-export default async function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
   if (await currentProfile()) redirect("/account");
+  const { from } = await searchParams;
+  const back = onlyAPath(from);
 
   return (
     <main className="page">
       <div className="auth">
-        <h1 className="page-title">not this way, for now</h1>
+        <h1 className="page-title">join us</h1>
         <p className="page-intro">
-          Accounts are closed at the moment. They start with an invitation from us, so there is
-          nothing to fill in here — and nothing you are missing: everything worth reading on this
-          site is open to everybody, with an account or without one.
+          There is no list to get on and nothing to pay. An account is for the members&rsquo; app:
+          what is coming up, saying you will be there, and the people who cook with us. Everything
+          worth reading on this site is open to everybody either way.
         </p>
-        <p className="page-intro">
-          Put your address on the <Link href="/newsletter">newsletter</Link> and you will hear when
-          there is something to come to. If you would rather just write,{" "}
-          <a href="mailto:info@promeNOODology.com">info@promeNOODology.com</a> reaches us.
-        </p>
+        <JoinForm back={back} />
         <p className="auth-switch">
-          Already have an account? <Link href="/account/sign-in">Sign in</Link>.
+          Only after the letters? The <Link href="/newsletter">newsletter</Link> needs no account at
+          all.
         </p>
       </div>
     </main>
