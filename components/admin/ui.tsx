@@ -233,6 +233,72 @@ export function Move({
   );
 }
 
+/* ------------------------------------------------------ leaving unsaved work */
+
+/**
+ * A word before you walk away from something you have not kept.
+ *
+ * Every screen back here writes when you say so and not before, which is the
+ * right way round — a change is a decision, not a keystroke. The cost of that is
+ * a page full of typing that a stray click on the menu throws away without
+ * comment, and until now there was nothing at all standing in the way of it.
+ *
+ * Two doors, and they are genuinely different:
+ *
+ * Leaving the site — a reload, a closed tab, an address typed over the top — is
+ * the browser's own dialog, and the browser will not let us word it. All we can
+ * do is say there is something to lose.
+ *
+ * Leaving for another page of the back of the house never reaches the browser at
+ * all: the router swaps the page out underneath us. So the click is caught on the
+ * way down, while it can still be stopped, and asked about in our own words.
+ * Anything opening in a new tab is left alone — that is not leaving.
+ */
+export function useUnsaved(dirty: boolean, what = "changes you have not kept") {
+  useEffect(() => {
+    if (!dirty) return;
+
+    const leaving = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      // The older browsers want this set; the newer ones only read the default
+      // being prevented, and none of them show a message we choose.
+      event.returnValue = "";
+    };
+
+    const clicking = (event: MouseEvent) => {
+      // A middle click, or one with a modifier held, opens somewhere else and
+      // leaves this page where it is.
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const link = (event.target as HTMLElement | null)?.closest?.("a");
+      if (!link) return;
+
+      const href = link.getAttribute("href");
+      if (!href || href.startsWith("#")) return;
+      if (link.target === "_blank" || link.hasAttribute("download")) return;
+      // Somewhere else entirely: the browser's own dialog has that covered.
+      if (!href.startsWith("/")) return;
+      // Where we already are.
+      if (href === window.location.pathname) return;
+
+      if (!window.confirm(`Leave without keeping the ${what}? They will be lost.`)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+
+    window.addEventListener("beforeunload", leaving);
+    // Capturing, so it is stopped before the router has been told.
+    document.addEventListener("click", clicking, true);
+
+    return () => {
+      window.removeEventListener("beforeunload", leaving);
+      document.removeEventListener("click", clicking, true);
+    };
+  }, [dirty, what]);
+}
+
 /* --------------------------------------------------------------- the strip */
 
 /**

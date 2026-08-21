@@ -24,6 +24,7 @@ import {
   Tag,
   Word,
   moved,
+  useUnsaved,
   useDragOrder,
 } from "@/components/admin/ui";
 import { LAYOUTS } from "@/lib/photo-layout";
@@ -110,6 +111,9 @@ export default function StoryEditor({
   /* Looking at one properly, and seeing the whole thing as a reader would. */
   const [looking, setLooking] = useState<number | null>(null);
   const [preview, setPreview] = useState(false);
+
+  /* A word before anybody walks away from this. */
+  useUnsaved(dirty || photosMoved, "changes to this story");
 
   function setLayout(id: string, layout: PhotoLayout | null) {
     setOrder((list) => list.map((one) => (one.id === id ? { ...one, layout } : one)));

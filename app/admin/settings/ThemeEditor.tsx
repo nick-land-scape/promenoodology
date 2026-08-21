@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import Picker from "@/components/admin/Picker";
-import { Field, Problem, SaveBar, Word } from "@/components/admin/ui";
+import { Field, Problem, SaveBar, Word, useUnsaved } from "@/components/admin/ui";
 import { COLOURS, FONTS, type Theme } from "@/lib/theme";
 import { saveTheme } from "./actions";
 
@@ -31,6 +31,9 @@ export default function ThemeEditor({ initial }: { initial: Theme }) {
     () => JSON.stringify(draft) !== JSON.stringify(kept),
     [draft, kept],
   );
+
+  /* A word before anybody walks away from this. */
+  useUnsaved(changed, "changes to the look of the site");
 
   function set(patch: Partial<Theme>) {
     setDraft((was) => ({ ...was, ...patch }));

@@ -19,6 +19,7 @@ import {
   Tick,
   Word,
   useChosen,
+  useUnsaved,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
 import { addPerson, invitePerson, savePeople, setPortrait } from "./actions";
@@ -97,6 +98,9 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
       );
     });
   }, [people, kept]);
+
+  /* A word before anybody walks away from this. */
+  useUnsaved(changed.length > 0, "changes to these people");
 
   /* Writing somebody down, and inviting somebody, are the same form with one
      more field — so it is one form, and the address is what decides. */

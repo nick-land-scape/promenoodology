@@ -2906,3 +2906,24 @@ html.admin-dragging * {
 .admin-fields-pair {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+
+/* A page's address: a fact at the foot of the row, not the headline it was. */
+.admin-slug {
+  display: block;
+  margin: 7px 0 0 14px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.74rem;
+  color: var(--admin-faint);
+}
+
+/* A block of a page's words, being dragged over. The rows have their own rule;
+   a section is a box, so the mark goes across its top edge. */
+.admin-section.admin-row-over {
+  box-shadow: inset 0 3px 0 var(--purple);
+}
+
+.admin-section.admin-row-dragging {
+  opacity: 0.5;
+  transform: rotate(-0.6deg) scale(0.99);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.13);
+}

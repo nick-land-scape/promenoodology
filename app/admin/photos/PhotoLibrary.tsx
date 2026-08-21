@@ -23,6 +23,7 @@ import {
   Word,
   moved,
   useChosen,
+  useUnsaved,
   useDragOrder,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
@@ -171,6 +172,9 @@ export default function PhotoLibrary({
     if (!name) return;
     edit(id, { person: personId, credit: name });
   }
+
+  /* A word before anybody walks away from this. */
+  useUnsaved(changed.length > 0 || reordered, "changes to the archive");
 
   function edit(id: string, patch: Partial<PhotoItem>) {
     setItems((list) => list.map((item) => (item.id === id ? { ...item, ...patch } : item)));

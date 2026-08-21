@@ -64,7 +64,7 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
      so their place in the list stands in for one. That is enough: it is only
      needed for the length of one drag. */
   const draggable = draft.blocks.map((block, index) => ({ ...block, id: String(index) }));
-  const { dropProps, handleProps, dragging } = useDragOrder(draggable, moveBlock);
+  const { dropProps, handleProps, stateOf } = useDragOrder(draggable, moveBlock);
 
   function setKnob(key: string, value: string | number | boolean) {
     setDraft((old) => ({ ...old, settings: { ...old.settings, [key]: value } }));
@@ -262,7 +262,10 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
         >
           {draft.blocks.map((block, index) => (
             <div
-              className={`admin-section${dragging === String(index) ? " admin-row-dragging" : ""}`}
+              /* stateOf rather than a check on the dragged id: it also says
+                 which block the one in your hand will land on, which is the
+                 half of dragging that was missing here. */
+              className={["admin-section", stateOf(draggable[index])].filter(Boolean).join(" ")}
               key={index}
               {...dropProps(draggable[index], index)}
             >
