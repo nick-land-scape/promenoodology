@@ -127,6 +127,9 @@ export function Some({
           empty={add}
           search={options.length > 8}
           label={add}
+          // A list you are adding several things to: it stays open, and what has
+          // been taken leaves the list as it is taken.
+          keepOpen
         />
       ) : (
         <p className="admin-chips-empty">that is everybody</p>

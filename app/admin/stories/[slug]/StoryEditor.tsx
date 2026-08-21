@@ -108,7 +108,7 @@ export default function StoryEditor({
   const { dropProps, handleProps, stateOf } = useDragOrder(order, movePhoto);
 
   /* Looking at one properly, and seeing the whole thing as a reader would. */
-  const [looking, setLooking] = useState<string | null>(null);
+  const [looking, setLooking] = useState<number | null>(null);
   const [preview, setPreview] = useState(false);
 
   function setLayout(id: string, layout: PhotoLayout | null) {
@@ -246,7 +246,14 @@ export default function StoryEditor({
               placeholder="August 2023"
             />
           </Field>
-          <Field label="with" hint="Who it was made with or within.">
+          {/*
+           * "with" sat directly above "made with", and "tag" directly above
+           * "tags" — the same word twice for two different things, which is a
+           * naming problem rather than a duplicate field. What this one actually
+           * holds is the thing a story happened inside: an assembly, a
+           * festival, a programme. So it says that.
+           */}
+          <Field label="part of" hint="An assembly, a festival, a programme it happened inside.">
             <input
               value={draft.made_with}
               onChange={(event) => set("made_with", event.target.value)}
@@ -254,7 +261,7 @@ export default function StoryEditor({
             />
           </Field>
           <Field
-            label="tag"
+            label="photo tag"
             hint="What its photographs and quotes look for. Change it and they are carried across with it."
           >
             <input
@@ -272,7 +279,7 @@ export default function StoryEditor({
            * silently break every link to a page does not belong next to a field
            * for the place it happened.
            */}
-          <Field label="tags" hint="What it was about. Several, and none of them is the tag above." wide>
+          <Field label="tags" hint="What it was about, in a few words." wide>
             <Tags
               value={draft.topics}
               onChange={(next) => set("topics", next)}
@@ -289,7 +296,7 @@ export default function StoryEditor({
               empty="nobody named yet"
             />
           </Field>
-          <Field label="made with" hint="Partners, from the list under Partners." wide>
+          <Field label="partners" hint="From the list under Partners in the menu." wide>
             <Some
               value={draft.partners}
               onChange={(next) => set("partners", next)}
@@ -450,7 +457,7 @@ export default function StoryEditor({
                   <button
                     type="button"
                     className="admin-thumb admin-thumb-look"
-                    onClick={() => setLooking(photo.url)}
+                    onClick={() => setLooking(index)}
                     title="Look at it properly"
                     aria-label="Look at it properly"
                   >
@@ -548,7 +555,21 @@ export default function StoryEditor({
           </span>
         ) : null}
       </SaveBar>
-      {looking ? <Look url={looking} onClose={() => setLooking(null)} /> : null}
+      {/* The whole story's photographs, so the arrows walk it in the order a
+          reader will see it. */}
+      {looking !== null ? (
+        <Look
+          items={order.map((one) => ({
+            id: one.id,
+            url: one.url,
+            width: one.width,
+            height: one.height,
+          }))}
+          index={looking}
+          onIndex={setLooking}
+          onClose={() => setLooking(null)}
+        />
+      ) : null}
 
       {/*
        * The page, as a reader gets it.

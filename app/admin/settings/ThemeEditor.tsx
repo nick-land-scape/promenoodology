@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import Picker from "@/components/admin/Picker";
 import { Field, Problem, SaveBar, Word } from "@/components/admin/ui";
 import { COLOURS, FONTS, type Theme } from "@/lib/theme";
 import { saveTheme } from "./actions";
@@ -66,22 +67,22 @@ export default function ThemeEditor({ initial }: { initial: Theme }) {
         </header>
         <div className="admin-fields">
           <Field label="what is read" hint="Headings, paragraphs, captions.">
-            <select value={draft.serif} onChange={(event) => set({ serif: event.target.value })}>
-              {FONTS.serif.map((font) => (
-                <option key={font.label} value={font.value}>
-                  {font.label}
-                </option>
-              ))}
-            </select>
+            <Picker
+              value={draft.serif}
+              onChange={(next) => set({ serif: next })}
+              options={FONTS.serif.map((font) => ({ value: font.value, label: font.label }))}
+              empty={null}
+              label="The typeface for what is read"
+            />
           </Field>
           <Field label="what is a label" hint="Small capitals: the menu, buttons, tags.">
-            <select value={draft.sans} onChange={(event) => set({ sans: event.target.value })}>
-              {FONTS.sans.map((font) => (
-                <option key={font.label} value={font.value}>
-                  {font.label}
-                </option>
-              ))}
-            </select>
+            <Picker
+              value={draft.sans}
+              onChange={(next) => set({ sans: next })}
+              options={FONTS.sans.map((font) => ({ value: font.value, label: font.label }))}
+              empty={null}
+              label="The typeface for labels"
+            />
           </Field>
         </div>
         {/* Set in the fonts themselves, so the choice is made by looking. */}

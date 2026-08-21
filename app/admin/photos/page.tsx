@@ -78,11 +78,11 @@ export default async function PhotosPage({
 
   return (
     <Head title="the archive">
+      {/* Was four lines explaining the wall, the credits and the cropping.
+          Everything it said is now visible on the cards themselves. */}
       <p className="admin-intro">
-        Photographs keep the shape they arrived in — the wall is not a grid — so there is nothing to
-        crop and nothing to line up. What matters is who took each one, the year, and which story it
-        belongs to. Pick the photographer from the community where you can — then their name follows
-        them if they ever change it.
+        Who took each one, which year, and which story it belongs to. Pick the photographer from the
+        community where you can — their name then follows them if they change it.
       </p>
       <PhotoLibrary initial={items} stories={options} people={persons} filter={story ?? ""} />
     </Head>

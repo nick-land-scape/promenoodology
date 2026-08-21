@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import InHead from "@/components/admin/InHead";
+import Picker from "@/components/admin/Picker";
 import Thumb from "@/components/admin/Thumb";
 import Uploader from "@/components/admin/Uploader";
 import {
@@ -43,6 +44,12 @@ export type Person = {
 
 /** The three answers to "is this person on the community page". */
 const SHOWING: Record<string, boolean | null> = { them: null, yes: true, no: false };
+
+const SHOWS = [
+  { value: "them", label: "up to them" },
+  { value: "yes", label: "always shown" },
+  { value: "no", label: "always hidden" },
+];
 
 /** The three the community page knows how to colour a name with. */
 const COLOURS = [
@@ -147,6 +154,14 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
      this page's state, and the save button below writes them — so taking a dozen
      names off the community page is as reviewable as taking one off. */
   const pick = useChosen(people);
+
+  /* What the whole selection already agrees on, so the bar shows a state
+     rather than an empty field. */
+  const picked = people.filter((one) => pick.has(one.id));
+  const theirColour =
+    picked.length > 0 && picked.every((one) => one.colour === picked[0].colour)
+      ? picked[0].colour ?? ""
+      : "";
 
   function applyToChosen(patch: Partial<Person>) {
     setPeople((list) => list.map((one) => (pick.has(one.id) ? { ...one, ...patch } : one)));
@@ -265,21 +280,13 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
 
       {pick.count > 0 ? (
         <Chosen count={pick.count} what="people" onAll={pick.all} onNone={pick.none}>
-          <select
-            defaultValue=""
-            aria-label="Put them on the community page, or take them off"
-            onChange={(event) => {
-              applyToChosen({ listedByAdmin: SHOWING[event.target.value] });
-              event.currentTarget.value = "";
-            }}
-          >
-            <option value="" disabled>
-              on the page
-            </option>
-            <option value="them">up to them</option>
-            <option value="yes">always shown</option>
-            <option value="no">always hidden</option>
-          </select>
+          <Picker
+            value=""
+            onChange={(next) => next && applyToChosen({ listedByAdmin: SHOWING[next] })}
+            options={SHOWS}
+            empty="on the page"
+            label="Put them on the community page, or take them off"
+          />
           <input
             placeholder="a country, then Enter"
             aria-label="Where they are all from"
@@ -290,23 +297,13 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
               event.currentTarget.value = "";
             }}
           />
-          <select
-            defaultValue=""
-            aria-label="Set the colour their names are printed in"
-            onChange={(event) => {
-              applyToChosen({ colour: event.target.value || null });
-              event.currentTarget.value = "";
-            }}
-          >
-            <option value="" disabled>
-              a colour
-            </option>
-            {COLOURS.map((colour) => (
-              <option key={colour.value} value={colour.value}>
-                {colour.label}
-              </option>
-            ))}
-          </select>
+          <Picker
+            value={theirColour}
+            onChange={(next) => applyToChosen({ colour: next || null })}
+            options={COLOURS.map((colour) => ({ value: colour.value, label: colour.label }))}
+            empty="a colour"
+            label="Set the colour their names are printed in"
+          />
         </Chosen>
       ) : null}
 
@@ -366,16 +363,16 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                   />
                 </Field>
                 <Field label="name in">
-                  <select
+                  <Picker
                     value={person.colour ?? ""}
-                    onChange={(event) => edit(person.id, { colour: event.target.value || null })}
-                  >
-                    {COLOURS.map((colour) => (
-                      <option key={colour.value} value={colour.value}>
-                        {colour.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(next) => edit(person.id, { colour: next || null })}
+                    options={COLOURS.filter((one) => one.value).map((colour) => ({
+                      value: colour.value,
+                      label: colour.label,
+                    }))}
+                    empty="black"
+                    label="The colour this name is printed in"
+                  />
                 </Field>
                 <Field label="since">
                   <input
@@ -385,19 +382,26 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                   />
                 </Field>
                 <Field label="may look after the site">
-                  <select
-                    value={person.role}
-                    onChange={(event) =>
-                      edit(person.id, { role: event.target.value === "admin" ? "admin" : "member" })
-                    }
-                    disabled={person.isMe}
-                  >
-                    {/* The label above says what the answer means; a select is
-                        as wide as its longest option, and "no — a member" was
-                        taking a third of the row to say "no". */}
-                    <option value="member">no</option>
-                    <option value="admin">yes</option>
-                  </select>
+                  {/* The label above says what the answer means: "no — a member"
+                      was taking a third of the row to say "no". Nobody may take
+                      the last door off themselves, so this one is a fact rather
+                      than a control on your own row. */}
+                  {person.isMe ? (
+                    <span className="admin-said">yes — that is you</span>
+                  ) : (
+                    <Picker
+                      value={person.role}
+                      onChange={(next) =>
+                        edit(person.id, { role: next === "admin" ? "admin" : "member" })
+                      }
+                      options={[
+                        { value: "member", label: "no" },
+                        { value: "admin", label: "yes" },
+                      ]}
+                      empty={null}
+                      label="Whether they may look after the site"
+                    />
+                  )}
                 </Field>
               </span>
 
@@ -437,21 +441,25 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                       something you worked out rather than read. "Up to them" is
                       genuinely a third answer, not the absence of the other
                       two — only it survives them changing their mind. */}
-                  <label className="admin-person-showing">
+                  <span className="admin-person-showing">
                     <span>on the page</span>
-                    <select
-                      value={person.listedByAdmin === null ? "them" : person.listedByAdmin ? "yes" : "no"}
-                      onChange={(event) =>
-                        edit(person.id, { listedByAdmin: SHOWING[event.target.value] })
+                    <Picker
+                      value={
+                        person.listedByAdmin === null ? "them" : person.listedByAdmin ? "yes" : "no"
                       }
-                    >
-                      <option value="them">
-                        up to them — {person.listed ? "shown" : "hidden"}
-                      </option>
-                      <option value="yes">always shown</option>
-                      <option value="no">always hidden</option>
-                    </select>
-                  </label>
+                      onChange={(next) => edit(person.id, { listedByAdmin: SHOWING[next] })}
+                      options={[
+                        {
+                          value: "them",
+                          label: `up to them — ${person.listed ? "shown" : "hidden"}`,
+                        },
+                        { value: "yes", label: "always shown" },
+                        { value: "no", label: "always hidden" },
+                      ]}
+                      empty={null}
+                      label="Whether they are on the community page"
+                    />
+                  </span>
                 </span>
               </span>
             </span>

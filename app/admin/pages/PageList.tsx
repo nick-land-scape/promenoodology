@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Picker from "@/components/admin/Picker";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import {
@@ -147,19 +148,18 @@ export default function PageList({ initial }: { initial: PageLine[] }) {
                   />
                 </Field>
                 <Field label="which group">
-                  <select
+                  <Picker
                     value={line.group}
-                    onChange={(event) =>
-                      edit(line.slug, { group: event.target.value as PageLine["group"] })
+                    onChange={(next) =>
+                      edit(line.slug, { group: next as PageLine["group"] })
                     }
-                    disabled={!line.navLabel.trim()}
-                  >
-                    {GROUPS.map((group) => (
-                      <option key={group.value} value={group.value}>
-                        {group.label}
-                      </option>
-                    ))}
-                  </select>
+                    options={GROUPS.map((group) => ({
+                      value: group.value,
+                      label: group.label,
+                    }))}
+                    empty={null}
+                    label="Which group in the menu"
+                  />
                 </Field>
               </span>
             </span>

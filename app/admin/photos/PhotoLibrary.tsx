@@ -103,7 +103,9 @@ export default function PhotoLibrary({
   const [items, setItems] = useState(initial);
   const [kept, setKept] = useState(initial);
   const [story, setStory] = useState(filter || ALL);
-  const [looking, setLooking] = useState<string | null>(null);
+  /* Which one is open, by its place in what is on screen — the arrows walk the
+     list you are actually looking at, not the whole archive. */
+  const [looking, setLooking] = useState<number | null>(null);
   const [editing, setEditing] = useState<PhotoItem | null>(null);
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
@@ -231,6 +233,7 @@ export default function PhotoLibrary({
   };
   const theirPerson = (agreed("person") as string | null) ?? "";
   const theirYear = agreed("year") as string;
+  const theirStory = (agreed("story") as string | null) ?? "";
   const allChosenShown = picked.length > 0 && picked.every((one) => one.published);
 
   function applyToChosen(patch: Partial<PhotoItem>) {
@@ -322,6 +325,10 @@ export default function PhotoLibrary({
     });
   }
 
+  /* What a photograph measures, said the same way everywhere. */
+  const measured = (item: PhotoItem) =>
+    item.width > 0 ? `${item.width}×${item.height}` : "size unknown";
+
   const label = (tag: string | null) => {
     if (!tag) return "loose";
     return stories.find((one) => one.tag === tag)?.title ?? tag;
@@ -335,20 +342,23 @@ export default function PhotoLibrary({
       <div className="admin-panel">
         <div className="admin-fields">
           <Field label="showing" hint={`${shown.length} of ${items.length} photographs`}>
-            <select value={story} onChange={(event) => setStory(event.target.value)}>
-              <option value={ALL}>everything</option>
-              <option value={LOOSE}>no story — loose in the archive</option>
-              {stories.map((one) => (
-                <option key={one.tag} value={one.tag}>
-                  {one.title}
-                </option>
-              ))}
-            </select>
+            <Picker
+              value={story}
+              onChange={setStory}
+              options={[
+                { value: ALL, label: "everything" },
+                { value: LOOSE, label: "no story — loose in the archive" },
+                ...toldStories,
+              ]}
+              empty={null}
+              search={stories.length > 8}
+              label="Which photographs to show"
+            />
           </Field>
-          <Field
-            label="new ones are by"
-            hint="Given to whatever you add next — not to what is already here."
-          >
+          {/* Three short things rather than three sentences: the label says
+              what the field is for, so the control underneath does not have to
+              say it again. */}
+          <Field label="new ones are by">
             <Picker
               value={person}
               onChange={(next) => {
@@ -358,7 +368,7 @@ export default function PhotoLibrary({
                 setCredit(named.get(next) ?? "");
               }}
               options={faces}
-              empty="a name, by hand"
+              empty="one of us"
               search
               label="Who took the next ones"
             />
@@ -366,11 +376,11 @@ export default function PhotoLibrary({
               <input
                 value={credit}
                 onChange={(event) => setCredit(event.target.value)}
-                placeholder="who took them"
+                placeholder="or a name"
               />
             )}
           </Field>
-          <Field label="and from" hint="Same — for new ones only.">
+          <Field label="and from">
             <Picker
               value={year}
               onChange={setYear}
@@ -438,24 +448,14 @@ export default function PhotoLibrary({
               story title, a face with a name and a four-figure year each say
               what they are without being told. The names are still there for
               anybody listening rather than looking. */}
-          <select
-            defaultValue=""
-            aria-label="Give them all a story"
-            onChange={(event) => {
-              applyToChosen({ story: event.target.value || null });
-              event.currentTarget.value = "";
-            }}
-          >
-            <option value="" disabled>
-              a story
-            </option>
-            <option value="">no story — loose</option>
-            {stories.map((one) => (
-              <option key={one.tag} value={one.tag}>
-                {one.title}
-              </option>
-            ))}
-          </select>
+          <Picker
+            value={theirStory}
+            onChange={(next) => applyToChosen({ story: next || null })}
+            options={[{ value: LOOSE, label: "no story — loose" }, ...toldStories]}
+            empty="a story"
+            search={stories.length > 8}
+            label="Give them all a story"
+          />
 
           <Picker
             value={theirPerson}
@@ -521,7 +521,7 @@ export default function PhotoLibrary({
               <button
                 type="button"
                 className="admin-photo-frame"
-                onClick={() => setLooking(item.url)}
+                onClick={() => setLooking(index)}
                 aria-label="Look at it properly"
               >
                 <Thumb
@@ -533,6 +533,24 @@ export default function PhotoLibrary({
                   // 1500px one on every card.
                   sizes="(max-width: 700px) 46vw, (max-width: 1100px) 30vw, 320px"
                 />
+
+                {/* On the picture rather than under it: it is a fact about the
+                    file, not a field, and there is no room in the footer for a
+                    sixth control's worth of text. Sixty-two of these are
+                    thumbnails somebody imported instead of the photograph, and
+                    that is worth seeing without opening anything. */}
+                <span
+                  className={[
+                    "admin-photo-size",
+                    item.width > 0 && Math.max(item.width, item.height) < 600
+                      ? "admin-photo-small"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {measured(item)}
+                </span>
               </button>
 
               {/* Top left, outside the button that opens it: choosing and
@@ -556,7 +574,7 @@ export default function PhotoLibrary({
                         else edit(item.id, { person: null });
                       }}
                       options={faces}
-                      empty="a name, by hand"
+                      empty="typed by hand"
                       search
                       wide
                       label="Who took this one"
@@ -609,6 +627,23 @@ export default function PhotoLibrary({
                       on={item.published}
                       onChange={(next) => edit(item.id, { published: next })}
                     />
+                    <Uploader
+                      folder="resources"
+                      many={false}
+                      trigger={(open, working) => (
+                        <button
+                          type="button"
+                          className="admin-icon-word"
+                          onClick={open}
+                          disabled={working}
+                          title="Put a different file in its place, keeping its credit, year and story"
+                          aria-label="Replace this photograph"
+                        >
+                          <Icon name={working ? "upload" : "swap"} />
+                        </button>
+                      )}
+                      onDone={async (uploaded) => swapped(item, uploaded)}
+                    />
                     <button
                       type="button"
                       className="admin-icon-word"
@@ -643,7 +678,50 @@ export default function PhotoLibrary({
         </SaveBar>
       ) : null}
 
-      {looking ? <Look url={looking} onClose={() => setLooking(null)} /> : null}
+      {looking !== null ? (
+        <Look
+          items={shown}
+          index={Math.min(looking, shown.length - 1)}
+          onIndex={setLooking}
+          onClose={() => setLooking(null)}
+          tools={(one) => {
+            const found = items.find((item) => item.id === one.id);
+            if (!found) return null;
+            return (
+              <Uploader
+                key={found.id}
+                folder="resources"
+                many={false}
+                trigger={(open, working) => (
+                  <button type="button" onClick={open} disabled={working}>
+                    <Icon name={working ? "upload" : "swap"} />
+                    {working ? "putting it away" : "replace it"}
+                  </button>
+                )}
+                onDone={async (uploaded) => {
+                  await swapped(found, uploaded);
+                  setLooking(null);
+                }}
+              />
+            );
+          }}
+          onEdit={(one) => {
+            const found = items.find((item) => item.id === one.id);
+            if (!found) return;
+            setLooking(null);
+            setEditing(found);
+          }}
+          onDelete={(one) => {
+            const found = items.find((item) => item.id === one.id);
+            if (!found) return;
+            // Closed first: the picture you are looking at is about to stop
+            // existing, and a lightbox showing a file that has gone is a black
+            // screen nobody can explain.
+            setLooking(null);
+            remove(found);
+          }}
+        />
+      ) : null}
 
       {editing ? (
         <ImageEditor

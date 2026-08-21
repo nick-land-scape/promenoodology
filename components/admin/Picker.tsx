@@ -36,6 +36,7 @@ export default function Picker({
   search,
   label,
   wide,
+  keepOpen,
 }: {
   value: string;
   onChange: (next: string) => void;
@@ -47,6 +48,15 @@ export default function Picker({
   /** For anybody who cannot see the thing it sits under. */
   label?: string;
   wide?: boolean;
+  /**
+   * Stay open after a choice.
+   *
+   * For a list you are adding several things to: naming four people who were
+   * there meant opening the same dropdown four times, and typing the same three
+   * letters again if you had been searching. What is chosen leaves the list as
+   * it is chosen, so it is obvious what has been taken.
+   */
+  keepOpen?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
@@ -87,7 +97,7 @@ export default function Picker({
 
   function take(next: string) {
     onChange(next);
-    setOpen(false);
+    if (!keepOpen) setOpen(false);
   }
 
   function keys(event: React.KeyboardEvent) {
@@ -106,10 +116,15 @@ export default function Picker({
       event.preventDefault();
       if (empty !== null && cursor === 0) take("");
       else take(shown[cursor - (empty === null ? 0 : 1)]?.value ?? value);
+      return;
     }
   }
 
   const rows: Choice[] = empty === null ? shown : [{ value: "", label: empty }, ...shown];
+
+  /* Choosing removes a row, so the keyboard's place can end up past the end of a
+     list it was in the middle of. */
+  const at = Math.min(cursor, Math.max(0, rows.length - 1));
 
   return (
     <div className={wide ? "admin-picker admin-picker-wide" : "admin-picker"} ref={box}>
@@ -162,7 +177,7 @@ export default function Picker({
                   className={[
                     "admin-picker-row",
                     one.value === value ? "admin-picker-on" : "",
-                    index === cursor ? "admin-picker-cursor" : "",
+                    index === at ? "admin-picker-cursor" : "",
                     one.value ? "" : "admin-picker-none",
                   ]
                     .filter(Boolean)
