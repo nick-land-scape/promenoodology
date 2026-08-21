@@ -37,7 +37,9 @@ export function SignInForm({ back }: { back?: string }) {
             inputMode="email"
             placeholder="the address you gave us"
             required
-            autoFocus
+            /* No autoFocus: in the app this is the first screen, and it opened
+               with the keyboard already up over half of it. On a phone that
+               reads as being shouted at. */
           />
         </label>
         <Says state={state} />

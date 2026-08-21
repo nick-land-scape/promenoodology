@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { liftTheCurtain } from "@/lib/native";
 import type { Film } from "@/lib/source";
 
 /**
@@ -33,6 +34,17 @@ export default function Splash({ films }: { films: Film[] }) {
   const [show, setShow] = useState<boolean | null>(null);
   const [going, setGoing] = useState(false);
   const [at, setAt] = useState(0);
+
+  /* The native launch screen, put away.
+   *
+   * It is told not to hide itself (see capacitor.config.ts) so that it can hold
+   * the screen until this is drawn and the join between the two is invisible.
+   * Which means something has to actually put it away — and until this line
+   * existed, nothing did: the app opened on a white screen for ever, with the
+   * whole thing loaded and running behind it. */
+  useEffect(() => {
+    void liftTheCurtain();
+  }, []);
 
   useEffect(() => {
     let seen = false;
