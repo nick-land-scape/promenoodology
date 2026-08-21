@@ -3,7 +3,22 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import Uploader from "@/components/admin/Uploader";
-import { Button, Empty, Field, Flag, Icon, Panel, Problem, SaveBar, Tag, Word, pretty } from "@/components/admin/ui";
+import {
+  Button,
+  Chosen,
+  Empty,
+  Field,
+  Flag,
+  Icon,
+  Panel,
+  Problem,
+  SaveBar,
+  Tag,
+  Tick,
+  Word,
+  pretty,
+  useChosen,
+} from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
 import { addPerson, invitePerson, savePeople, setPortrait } from "./actions";
 
@@ -123,6 +138,16 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
     });
   }
 
+  /* Choosing several. Nothing here writes: an action changes every chosen row in
+     this page's state, and the save button below writes them — so taking a dozen
+     names off the community page is as reviewable as taking one off. */
+  const pick = useChosen(people);
+
+  function applyToChosen(patch: Partial<Person>) {
+    setPeople((list) => list.map((one) => (pick.has(one.id) ? { ...one, ...patch } : one)));
+    setJustSaved(false);
+  }
+
   function edit(id: string, patch: Partial<Person>) {
     setPeople((list) => list.map((person) => (person.id === id ? { ...person, ...patch } : person)));
     setJustSaved(false);
@@ -220,9 +245,54 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
         </div>
       </Panel>
 
+      {pick.count > 0 ? (
+        <Chosen count={pick.count} what="people" onAll={pick.all} onNone={pick.none}>
+          <Word onClick={() => applyToChosen({ listedByAdmin: true })}>always shown</Word>
+          <Word onClick={() => applyToChosen({ listedByAdmin: false })}>always hidden</Word>
+          <Word onClick={() => applyToChosen({ listedByAdmin: null })}>up to them</Word>
+          <label>
+            from
+            <input
+              placeholder="a country, then Enter"
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                applyToChosen({ country: event.currentTarget.value.trim() });
+                event.currentTarget.value = "";
+              }}
+            />
+          </label>
+          <label>
+            name in
+            <select
+              defaultValue=""
+              onChange={(event) => {
+                applyToChosen({ colour: event.target.value || null });
+                event.currentTarget.value = "";
+              }}
+            >
+              <option value="" disabled>
+                a colour
+              </option>
+              {COLOURS.map((colour) => (
+                <option key={colour.value} value={colour.value}>
+                  {colour.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </Chosen>
+      ) : null}
+
       <ul className="admin-rows">
         {people.map((person) => (
           <li key={person.id} className="admin-row" style={{ flexWrap: "wrap" }}>
+            <Tick
+              on={pick.has(person.id)}
+              onChoose={(range) => pick.toggle(person.id, range)}
+              label={`Choose ${person.name || "this person"}`}
+            />
+
             <span className="admin-thumb admin-thumb-round">
               {person.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element

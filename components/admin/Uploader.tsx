@@ -9,8 +9,18 @@ import { Icon } from "./ui";
  * for — the whole window as a place to drop them.
  *
  * Files are handled one at a time on purpose: five phone photographs at once
- * would each want a canvas the size of the picture, and a laptop will run out
- * of memory before it runs out of patience.
+ * would each want a canvas the size of the picture, and a laptop will run out of
+ * memory before it runs out of patience.
+ *
+ * The one-at-a-time worker is a plain async loop kicked off by a ref, and it has
+ * to be. It used to be an effect that depended on `busy` and also set `busy` —
+ * so it re-ran itself, its own cleanup marked the first run as cancelled, and
+ * every result was thrown away behind a `!cancelled` guard. The queue stopped on
+ * the first file, for ever, saying "1 of 3" whether the upload had succeeded or
+ * been refused. Which is what it did: the server answered 400 and nobody was
+ * ever told.
+ *
+ * Nothing about the loop below may depend on state it also writes.
  */
 export default function Uploader({
   folder,
@@ -29,8 +39,8 @@ export default function Uploader({
   onDone: (photo: Uploaded, file: File) => Promise<void> | void;
 }) {
   const input = useRef<HTMLInputElement>(null);
-  const [queue, setQueue] = useState<File[]>([]);
-  const [busy, setBusy] = useState(false);
+  /** How many are still to go. Only for showing — the queue itself is a ref. */
+  const [left, setLeft] = useState(0);
   const [done, setDone] = useState(0);
   const [problems, setProblems] = useState<string[]>([]);
   const [hovering, setHovering] = useState(false);
@@ -42,46 +52,51 @@ export default function Uploader({
     latest.current = onDone;
   });
 
-  function take(files: FileList | File[] | null) {
-    const pictures = Array.from(files ?? []).filter((file) => file.type.startsWith("image/"));
-    if (pictures.length === 0) return;
-    setProblems([]);
-    setDone(0);
-    setQueue((rest) => [...rest, ...(many ? pictures : pictures.slice(0, 1))]);
-  }
+  /* The work itself lives in refs. State is only what the person sees. */
+  const waiting = useRef<File[]>([]);
+  const running = useRef(false);
 
-  /* One picture at a time, until the queue is empty. */
-  useEffect(() => {
-    if (busy || queue.length === 0) return;
-    const [next, ...rest] = queue;
-    let cancelled = false;
+  async function work() {
+    if (running.current) return;
+    running.current = true;
 
-    setBusy(true);
-    void (async () => {
-      try {
-        const uploaded = await uploadPhoto(next, folder);
-        if (!cancelled) await latest.current(uploaded, next);
-        if (!cancelled) setDone((count) => count + 1);
-      } catch (error) {
-        if (!cancelled) {
+    try {
+      while (waiting.current.length > 0) {
+        const next = waiting.current[0];
+        try {
+          const uploaded = await uploadPhoto(next, folder);
+          await latest.current(uploaded, next);
+          setDone((count) => count + 1);
+        } catch (error) {
           setProblems((list) => [
             ...list,
             error instanceof Error ? error.message : `${next.name} did not go up.`,
           ]);
-        }
-      } finally {
-        if (!cancelled) {
-          setQueue(rest);
-          setBusy(false);
-          if (input.current) input.current.value = "";
+        } finally {
+          // Off the front whatever happened, or one bad file blocks the rest.
+          waiting.current = waiting.current.slice(1);
+          setLeft(waiting.current.length);
         }
       }
-    })();
+    } finally {
+      running.current = false;
+      if (input.current) input.current.value = "";
+    }
+  }
 
-    return () => {
-      cancelled = true;
-    };
-  }, [queue, busy, folder]);
+  function take(files: FileList | File[] | null) {
+    const pictures = Array.from(files ?? []).filter(
+      (file) => file.type.startsWith("image/") || /\.(jpe?g|png|webp|avif)$/i.test(file.name),
+    );
+    if (pictures.length === 0) return;
+
+    const taking = many ? pictures : pictures.slice(0, 1);
+    setProblems([]);
+    setDone(0);
+    waiting.current = [...waiting.current, ...taking];
+    setLeft(waiting.current.length);
+    void work();
+  }
 
   /* Dropping files anywhere on the page. */
   useEffect(() => {
@@ -126,8 +141,8 @@ export default function Uploader({
     };
   }, [watchWindow]);
 
-  const working = busy || queue.length > 0;
-  const total = done + queue.length;
+  const working = left > 0;
+  const total = done + left;
 
   return (
     <>
@@ -152,7 +167,7 @@ export default function Uploader({
 
       {working ? (
         <span className="admin-note" style={{ margin: 0 }}>
-          shrinking and putting {queue.length === 1 ? "it" : "them"} away — stay on this page
+          shrinking and putting {left === 1 ? "it" : "them"} away — stay on this page
         </span>
       ) : null}
 

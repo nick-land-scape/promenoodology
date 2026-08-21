@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * The small pieces the back of the house is built out of.
@@ -416,5 +416,134 @@ export function Place({
         }
       }}
     />
+  );
+}
+
+/* ---------------------------------------------------------- choosing several
+
+   Sixty-five people and a hundred and sixty photographs. Giving forty of them
+   the same photographer, or taking a dozen names off the community page, is one
+   decision — and doing it forty times is not the same thing, it is the same
+   thing done badly.
+
+   Nothing here writes anything. Choosing marks rows; an action applies the
+   change to every marked row in the page's own state; the page's own save button
+   writes it. So a bulk change is reviewable before it is real, and it is undone
+   by reloading, like every other change in here. */
+
+export function useChosen<T extends { id: string }>(items: T[]) {
+  const [chosen, setChosen] = useState<Set<string>>(new Set());
+  const last = useRef<string | null>(null);
+
+  // Anything no longer on screen — filtered away, deleted — is no longer chosen
+  // either. Acting on rows you cannot see is how a bulk edit becomes a surprise.
+  // In an effect rather than during the render, because a render is not allowed
+  // to be the place where things change.
+  const ids = items.map((item) => item.id).join(",");
+  useEffect(() => {
+    const visible = new Set(ids ? ids.split(",") : []);
+    setChosen((before) => {
+      const live = [...before].filter((id) => visible.has(id));
+      return live.length === before.size ? before : new Set(live);
+    });
+  }, [ids]);
+
+  function toggle(id: string, range = false) {
+    // Worked out here, not inside the updater below. A state updater may be run
+    // more than once, or run and thrown away — so it is no place to record what
+    // was last touched, and recording it there is why shift-clicking chose two
+    // rows instead of the four between them.
+    const from = last.current ? items.findIndex((item) => item.id === last.current) : -1;
+    const to = items.findIndex((item) => item.id === id);
+    last.current = id;
+
+    setChosen((before) => {
+      const next = new Set(before);
+
+      // Shift takes everything between this and the last one touched, which is
+      // how a run of forty gets chosen without forty clicks.
+      if (range && from !== -1 && to !== -1) {
+        const [start, end] = from < to ? [from, to] : [to, from];
+        for (let i = start; i <= end; i += 1) next.add(items[i].id);
+        return next;
+      }
+
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  return {
+    chosen,
+    count: chosen.size,
+    has: (id: string) => chosen.has(id),
+    toggle,
+    all: () => setChosen(new Set(items.map((item) => item.id))),
+    none: () => setChosen(new Set()),
+    /** The chosen ones, in the order they are on screen. */
+    picked: () => items.filter((item) => chosen.has(item.id)),
+  };
+}
+
+/** The tick on a row. */
+export function Tick({
+  on,
+  onChoose,
+  label,
+}: {
+  on: boolean;
+  onChoose: (range: boolean) => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      className="admin-tick"
+      role="checkbox"
+      aria-checked={on}
+      aria-label={label}
+      title="Click to choose. Shift-click to choose everything in between."
+      onClick={(event) => onChoose(event.shiftKey)}
+    >
+      {on ? "✓" : ""}
+    </button>
+  );
+}
+
+/**
+ * What to do with the ones you chose. Appears only when something is chosen,
+ * and says how many — a bulk action with no count is a bulk action you cannot
+ * check before you take it.
+ */
+export function Chosen({
+  count,
+  what,
+  onNone,
+  onAll,
+  children,
+}: {
+  count: number;
+  /** "photographs", "people" — what is being counted. */
+  what: string;
+  onNone: () => void;
+  onAll: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="admin-chosen" role="group" aria-label={`${count} ${what} chosen`}>
+      <strong>
+        {count} {count === 1 ? what.replace(/s$/, "") : what}
+      </strong>
+      {children}
+      <span className="admin-chosen-end">
+        <button type="button" className="admin-word" onClick={onAll}>
+          choose all
+        </button>
+        <button type="button" className="admin-word" onClick={onNone}>
+          none
+        </button>
+      </span>
+    </div>
   );
 }

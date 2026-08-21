@@ -5,6 +5,7 @@ import { useMemo, useState, useTransition } from "react";
 import { Look } from "@/components/admin/Pick";
 import Uploader from "@/components/admin/Uploader";
 import {
+  Chosen,
   Empty,
   Field,
   Flag,
@@ -13,8 +14,10 @@ import {
   Place,
   Problem,
   SaveBar,
+  Tick,
   Word,
   moved,
+  useChosen,
   useDragOrder,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
@@ -131,6 +134,44 @@ export default function PhotoLibrary({
 
   /* Dragged, nudged, or told a number — all three go through the same move. */
   const { dropProps, handleProps, dragging } = useDragOrder(shown, move);
+
+  /* Choosing several. Nothing here writes: an action changes every chosen row in
+     this page's state, and the save button below writes them, so a change to
+     forty photographs is as reviewable as a change to one. */
+  const pick = useChosen(shown);
+
+  function applyToChosen(patch: Partial<PhotoItem>) {
+    setItems((list) => list.map((item) => (pick.has(item.id) ? { ...item, ...patch } : item)));
+    setJustSaved(false);
+  }
+
+  function removeChosen() {
+    const doomed = pick.picked();
+    if (
+      !confirm(
+        `Delete ${doomed.length} photograph${doomed.length === 1 ? "" : "s"}? The files go too, and there is no undo.`,
+      )
+    ) {
+      return;
+    }
+
+    setProblem("");
+    start(async () => {
+      const failed: string[] = [];
+      for (const item of doomed) {
+        const result = await deletePhoto(item.id);
+        if (!result.ok) failed.push(result.error ?? "one would not delete");
+        else {
+          setItems((list) => list.filter((one) => one.id !== item.id));
+          setKept((list) => list.filter((one) => one.id !== item.id));
+        }
+      }
+      pick.none();
+      // Only the first, or a wall of the same sentence.
+      if (failed.length) setProblem(`${failed.length} could not be deleted. ${failed[0]}`);
+      router.refresh();
+    });
+  }
 
   function keepOrder() {
     setProblem("");
@@ -249,6 +290,65 @@ export default function PhotoLibrary({
         </div>
       ) : null}
 
+      {pick.count > 0 ? (
+        <Chosen count={pick.count} what="photographs" onAll={pick.all} onNone={pick.none}>
+          <label>
+            story
+            <select
+              defaultValue=""
+              onChange={(event) => {
+                applyToChosen({ story: event.target.value || null });
+                event.currentTarget.value = "";
+              }}
+            >
+              <option value="" disabled>
+                give them one
+              </option>
+              <option value="">no story — loose</option>
+              {stories.map((one) => (
+                <option key={one.tag} value={one.tag}>
+                  {one.title}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            photo by
+            <input
+              placeholder="a name, then Enter"
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                applyToChosen({ credit: event.currentTarget.value.trim() });
+                event.currentTarget.value = "";
+              }}
+            />
+          </label>
+
+          <label>
+            year
+            <input
+              inputMode="numeric"
+              placeholder="then Enter"
+              style={{ minWidth: "4rem" }}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                applyToChosen({ year: event.currentTarget.value.trim() });
+                event.currentTarget.value = "";
+              }}
+            />
+          </label>
+
+          <Word onClick={() => applyToChosen({ published: true })}>show them</Word>
+          <Word onClick={() => applyToChosen({ published: false })}>hide them</Word>
+          <Word danger onClick={removeChosen} disabled={pending}>
+            delete them
+          </Word>
+        </Chosen>
+      ) : null}
+
       {shown.length === 0 ? (
         <Empty>
           {items.length === 0
@@ -279,6 +379,14 @@ export default function PhotoLibrary({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={item.url} alt="" loading="lazy" draggable={false} />
               </button>
+
+              {/* Outside the button that opens it, so choosing and looking are
+                  two different gestures on the same card. */}
+              <Tick
+                on={pick.has(item.id)}
+                onChoose={(range) => pick.toggle(item.id, range)}
+                label={`Choose photograph ${index + 1}`}
+              />
 
               <figcaption className="admin-photo-body">
                 <div className="admin-fields">
