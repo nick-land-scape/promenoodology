@@ -20,6 +20,28 @@ export const CODE_LENGTH = 8;
 /** The name of the cookie that remembers whose code we are waiting for. */
 export const CODE_COOKIE = "promenood-signin";
 
+/**
+ * And the page they were reading when they knocked.
+ *
+ * Signing in used to end on the profile page whatever you were doing — you
+ * knocked from the archive, typed a code, and arrived somewhere else entirely,
+ * with your own name in a form as though it had been asked for. This remembers
+ * where you were so you can be put back.
+ *
+ * A path only, and only ever a path on this site: checked at both ends, because
+ * a cookie is something a browser can be persuaded to send.
+ */
+export const BACK_COOKIE = "promenood-back";
+
+/** A path on this site, or nothing. Never an address somewhere else. */
+export function onlyAPath(said: string | undefined | null): string {
+  if (!said) return "";
+  // A single leading slash, and no "//host" or "/\host" smuggled past it.
+  if (!/^\/[^/\\]/.test(said) && said !== "/") return "";
+  if (said.length > 200) return "";
+  return said;
+}
+
 /** How long that cookie lives. The code itself expires within the hour. */
 export const CODE_COOKIE_MAX_AGE = 60 * 60;
 

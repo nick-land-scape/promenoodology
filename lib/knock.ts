@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 /** Knocks on the mark, and how long it waits for the next one. */
 const KNOCKS = 3;
@@ -32,6 +32,7 @@ export function useKnock(
   ordinary?: string,
 ) {
   const router = useRouter();
+  const here = usePathname();
   const knocks = useRef(0);
   const waiting = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -54,7 +55,13 @@ export function useKnock(
 
     if (knocks.current >= KNOCKS) {
       knocks.current = 0;
-      router.push(to);
+      /* Where the knock came from travels with it, so signing in ends where it
+         started. Only for the sign-in door — the app's door has its own. */
+      const where =
+        to === "/account/sign-in" && here && here !== "/account/sign-in"
+          ? `${to}?from=${encodeURIComponent(here)}`
+          : to;
+      router.push(where);
       return;
     }
 

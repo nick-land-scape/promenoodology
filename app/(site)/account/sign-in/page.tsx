@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { SignInForm } from "@/components/AuthForm";
+import { onlyAPath } from "@/lib/auth-code";
 import { currentProfile } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -19,11 +20,15 @@ const REASONS: Record<string, string> = {
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ link?: string }>;
+  searchParams: Promise<{ link?: string; from?: string }>;
 }) {
-  if (await currentProfile()) redirect("/account");
+  const { link, from } = await searchParams;
+  const back = onlyAPath(from);
 
-  const { link } = await searchParams;
+  // Already in. Back where they were, or the front page — not the profile
+  // form, which is not an answer to "sign me in" for somebody already signed in.
+  if (await currentProfile()) redirect(back && !back.startsWith("/account") ? back : "/");
+
   const trouble = link ? REASONS[link] : undefined;
 
   return (
@@ -35,7 +40,7 @@ export default async function SignInPage({
           on this site is open to everybody.
         </p>
         {trouble ? <p className="auth-error">{trouble}</p> : null}
-        <SignInForm />
+        <SignInForm back={back} />
       </div>
     </main>
   );
