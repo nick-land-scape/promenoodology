@@ -18,11 +18,17 @@ export const dynamic = "force-dynamic";
 /* Things this club has to say in writing, kept apart from the settings above
    them: they are not things you change, they are things you are entitled to
    read. */
+/* Inside the app, not on the website.
+ *
+ * The words are the same words — one file, read by both — but opening the
+ * website's copy from in here dropped a member into the website: its menu, its
+ * footer, and four ways to wander off into pages that are already in the app under
+ * Read. An app that leaks into a website is an app somebody leaves. */
 const LEGAL = [
-  { label: "help", href: "/support" },
-  { label: "what we do with your data", href: "/privacy" },
-  { label: "terms and conditions", href: "/terms" },
-  { label: "imprint", href: "/imprint" },
+  { label: "help", href: "/app/legal/support" },
+  { label: "what we do with your data", href: "/app/legal/privacy" },
+  { label: "terms and conditions", href: "/app/legal/terms" },
+  { label: "imprint", href: "/app/legal/imprint" },
 ];
 
 const SHOWING = 2;
