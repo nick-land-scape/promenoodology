@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Some, Tags } from "@/components/admin/Many";
+import { Some } from "@/components/admin/Many";
 import { Look } from "@/components/admin/Pick";
 import type { Choice } from "@/components/admin/Picker";
 import Thumb from "@/components/admin/Thumb";
@@ -279,15 +279,10 @@ export default function StoryEditor({
            * silently break every link to a page does not belong next to a field
            * for the place it happened.
            */}
-          <Field label="tags" hint="What it was about, in a few words." wide>
-            <Tags
-              value={draft.topics}
-              onChange={(next) => set("topics", next)}
-              placeholder="cooking, public space… then Enter"
-              empty="no tags — the story is still found by its title"
-            />
-          </Field>
-          <Field label="who was there" hint="From the community. They keep their own names." wide>
+          {/* Two lists side by side rather than stacked: they are the same
+              question asked of people and of organisations, and reading them
+              across is how anybody would check who is missing. */}
+          <Field label="who was there" hint="From the community. They keep their own names.">
             <Some
               value={draft.people}
               onChange={(next) => set("people", next)}
@@ -296,7 +291,7 @@ export default function StoryEditor({
               empty="nobody named yet"
             />
           </Field>
-          <Field label="partners" hint="From the list under Partners in the menu." wide>
+          <Field label="partners" hint="From the list under Partners in the menu.">
             <Some
               value={draft.partners}
               onChange={(next) => set("partners", next)}
@@ -421,7 +416,7 @@ export default function StoryEditor({
 
       <Panel
         name="its photographs"
-        hint={`Everything in the archive tagged “${draft.tag}”, in the order they are read in. Drag one, or type a number.`}
+        hint={`Everything tagged “${draft.tag}”, in the order they are read in.`}
         action={
           <Link href={`/admin/photos?story=${draft.tag}`} className="admin-btn">
             add or remove them →
@@ -609,13 +604,6 @@ export default function StoryEditor({
                     .filter(Boolean)
                     .join(" · ")}
                 </p>
-                {draft.topics.length > 0 ? (
-                  <ul className="story-topics">
-                    {draft.topics.map((topic) => (
-                      <li key={topic}>{topic}</li>
-                    ))}
-                  </ul>
-                ) : null}
               </header>
 
               <StoryBody

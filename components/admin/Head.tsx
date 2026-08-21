@@ -20,13 +20,17 @@ export default function Head({
   return (
     <>
       <header className="admin-head">
+        {/* The way back sits under the title, not over it. Above, it was the
+            first thing on the page and the title read as its subtitle — and on
+            a long list the sticky header showed the crumb where the name of the
+            section should be. */}
         <div>
+          <h1 className="admin-title">{title}</h1>
           {back ? (
-            <p className="admin-back" style={{ margin: 0 }}>
-              <Link href={back.href}>← {back.label}</Link>
+            <p className="admin-back">
+              <Link href={back.href}>← back to {back.label}</Link>
             </p>
           ) : null}
-          <h1 className="admin-title">{title}</h1>
         </div>
         {/*
          * Only what you can *do* here — the way out to the site is in the strip

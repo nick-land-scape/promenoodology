@@ -39,7 +39,15 @@ export function Chosen({
   );
 }
 
-/** Words you make up as you go. */
+/**
+ * Words you make up as you go.
+ *
+ * Nothing uses this at the moment: stories had a tags field for an afternoon
+ * and it came back off, because "photo tag" sat directly above it and the two
+ * read as one thing said twice. Left here rather than deleted — the column is
+ * still in the database and putting the field back is four lines — but nothing
+ * on any page calls it today.
+ */
 export function Tags({
   value,
   onChange,

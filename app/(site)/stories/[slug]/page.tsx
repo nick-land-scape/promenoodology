@@ -66,14 +66,6 @@ export default async function StoryPage({ params }: Params) {
             .filter(Boolean)
             .join(" · ")}
         </p>
-
-        {story.topics.length > 0 ? (
-          <ul className="story-topics">
-            {story.topics.map((topic) => (
-              <li key={topic}>{topic}</li>
-            ))}
-          </ul>
-        ) : null}
       </header>
 
       <StoryBody slides={slides} sections={story.sections} />

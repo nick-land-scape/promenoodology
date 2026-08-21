@@ -28,7 +28,14 @@ export default function DarkSwitch() {
   if (dark === null) return null;
 
   function flip() {
-    const next = !dark;
+    /* Read from the element rather than from state.
+     *
+     * The attribute is what is actually in force — it was put there before the
+     * first paint by the script in the layout, and it is what the stylesheet
+     * reads. State is only this component's copy of it, and two presses inside
+     * one render both saw the same stale copy: the second did nothing instead of
+     * turning the light back on. */
+    const next = document.documentElement.dataset.theme !== "dark";
     setDark(next);
     document.documentElement.dataset.theme = next ? "dark" : "light";
     try {

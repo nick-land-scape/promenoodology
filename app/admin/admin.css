@@ -294,7 +294,7 @@ body:has(.admin) {
 
 .admin-back {
   display: inline-block;
-  margin-bottom: 4px;
+  margin: 3px 0 0;
   font-size: 0.9em;
 }
 
@@ -2839,6 +2839,13 @@ html.admin-dragging * {
 
 .admin-photo-frame {
   position: relative;
+}
+
+/* Who was there and which partners: one row of two, because they are the same
+   question asked twice and reading them across is how you spot who is missing.
+   The grid's own auto-fit would give them a column each only by accident. */
+.admin-fields > .admin-field:has(.admin-many) {
+  grid-column: span 1;
 }
 
 /* A fact where a control would be, so the row keeps its shape. */
