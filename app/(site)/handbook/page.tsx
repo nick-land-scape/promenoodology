@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import SupportForm from "@/components/SupportForm";
+import QuoteThis from "@/components/QuoteThis";
 import { getPage, getPageHead } from "@/lib/source";
+import { siteUrl } from "@/lib/site";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -65,7 +67,11 @@ export default async function HandbookPage() {
           </p>
         </section>
       ) : null}
-    </main>
+    
+      {/* The same offer as on a story: the moment somebody takes the words is
+          the moment to hand them the source. */}
+      <QuoteThis title={head.title || "the handbook"} url={siteUrl("/handbook")} />
+</main>
   );
 }
 

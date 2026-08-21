@@ -5,6 +5,7 @@ import Cite from "@/components/Cite";
 import type { Slide } from "@/lib/content";
 import { siteUrl } from "@/lib/site";
 import Photo from "@/components/Photo";
+import QuoteThis from "@/components/QuoteThis";
 import StoryBody from "@/components/StoryBody";
 import { getNeighbours, getStories, getStory } from "@/lib/source";
 
@@ -117,6 +118,14 @@ export default async function StoryPage({ params }: Params) {
       ) : null}
 
       <Cite
+        title={story.title}
+        year={story.when}
+        url={siteUrl(`/stories/${story.slug}`)}
+      />
+
+      {/* Offered the moment anybody copies a passage, rather than on a page they
+          would have to come back to. */}
+      <QuoteThis
         title={story.title}
         year={story.when}
         url={siteUrl(`/stories/${story.slug}`)}

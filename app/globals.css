@@ -2494,8 +2494,14 @@ html.has-top-bar {
 }
 
 /* The words sit above it. Without this they share a stacking context with the
-   picture and the blend mode swallows them. */
-.page > *:not(.page-bg) {
+   picture and the blend mode swallows them.
+   
+   The exception is anything pinned to the window rather than laid out in the
+   page: this rule is two classes deep and beats a single class, so it quietly
+   turned the copy-a-passage offer from fixed into relative and left it two
+   thousand pixels down the page. Named here, beside the rule that does it,
+   rather than fought with a stronger selector somewhere else. */
+.page > *:not(.page-bg):not(.quoting) {
   position: relative;
   z-index: 1;
 }
@@ -2644,4 +2650,127 @@ body:has(.hero) .edit-this {
 .story-space {
   grid-column: span 4;
   height: 4rem;
+}
+
+/* ---------------------------------------------------------- quoting a passage */
+
+/*
+ * Offered the moment somebody copies something, bottom left — the one corner
+ * with nothing in it on a wide screen, and above the bar on a phone.
+ *
+ * Deliberately plain: it is an offer, not an announcement, and a website that
+ * throws a decorated card at you for pressing copy is a website that has
+ * misjudged what just happened.
+ */
+.quoting {
+  position: fixed;
+  left: var(--edge);
+  bottom: var(--edge);
+  z-index: 46;
+  width: min(23rem, calc(100vw - var(--edge) * 2));
+  padding: 13px 15px 12px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  /*
+   * Visible, and then it lifts — not the other way round.
+   *
+   * It arrived with `animation: fade-and-lift both` starting at opacity 0, and a
+   * fill of `both` holds the first frame until the animation runs. Anything that
+   * stops it running — a paused timeline, a background tab, a renderer that does
+   * not tick animations — leaves the thing invisible for ever, which is what
+   * happened: the box was in the page, correctly placed, at opacity 0 seven
+   * hundred milliseconds into a hundred-and-eighty millisecond animation.
+   *
+   * So opacity is stated here and the animation only moves it. Nothing that
+   * decides whether you can see a thing should depend on a frame arriving.
+   */
+  opacity: 1;
+  animation: quoting-in 0.18s ease-out;
+}
+
+@keyframes quoting-in {
+  from {
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quoting {
+    animation: none;
+  }
+}
+
+.quoting-said {
+  margin: 0 0 8px;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+/* What they would get, so the offer is a thing you can see rather than a
+   promise. */
+.quoting-shape {
+  margin: 0 0 10px;
+  padding-left: 9px;
+  border-left: 2px solid var(--purple);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--quiet);
+}
+
+.quoting-shape span {
+  display: block;
+}
+
+.quoting-shape em {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.82rem;
+}
+
+.quoting-does {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+
+.quoting-shut {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--quiet);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.quoting-shut:hover {
+  color: var(--pink);
+}
+
+/* On a phone it clears the menu bar, and the switch moves out of its way. */
+@media screen and (max-width: 767px) {
+  .quoting {
+    left: var(--edge);
+    right: var(--edge);
+    width: auto;
+    bottom: calc(var(--bar-height) + 12px);
+  }
+}
+
+/* When the clipboard is refused: the whole reference, selectable, so it can be
+   taken by hand rather than lost. */
+.quoting-all em {
+  margin-top: 0;
+  font-size: 0.86rem;
+  user-select: all;
 }
