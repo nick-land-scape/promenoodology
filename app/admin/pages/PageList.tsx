@@ -127,16 +127,17 @@ function PageRow({
           labels={["on the site", "off the site"]}
         />
 
-        {/* Two words and two arrows. A pair of buttons the same size reads as a
-            pair of choices, which is what they are; "edit the page" spelled out
-            was the biggest thing in the row and the arrow already says where it
-            goes. → stays here, ↗ leaves for the site. */}
+        {/* A matched pair: same border, same ink, same height. The quiet
+            variant was doing the distinguishing, and doing it with a smaller
+            font and less padding — so one of the two looked like an
+            afterthought rather than the other half of a choice. The words and
+            the arrows carry it instead: → stays here, ↗ leaves for the site. */}
         <Link
           href={`/admin/pages/${line.slug}`}
           className="admin-btn"
           title="Everything about this page you can change: the heading, the line under it, the words where it has any, and what it decides for itself"
         >
-          edit →
+          edit page →
         </Link>
 
         {line.visible ? (
@@ -144,7 +145,7 @@ function PageRow({
             href={`/${line.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="admin-btn admin-btn-quiet"
+            className="admin-btn"
             title="Opens the page itself, in a new tab"
           >
             view ↗

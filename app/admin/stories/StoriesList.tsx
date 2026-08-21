@@ -139,9 +139,11 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
             <Place index={index} total={rows.length} onMove={move} />
 
             <span className="admin-row-main">
-              <Link href={`/admin/stories/${row.slug}`} className="admin-row-name" style={{ fontStyle: "normal" }}>
+              {/* Not a link any more: "edit story →" is beside it, and a title
+                  that also went there was the same door twice. */}
+              <span className="admin-row-name" style={{ fontStyle: "normal" }}>
                 {row.title || "Untitled"}
-              </Link>
+              </span>
               <span className="admin-row-meta">
                 {[row.place, row.happened].filter(Boolean).join(" · ") || "no place or date yet"}
                 {" — "}
@@ -158,9 +160,28 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
             <span className="admin-row-side">
               <Tag>{row.tag}</Tag>
               <Flag on={row.published} onChange={(next) => show(row, next)} />
-              <Link href={`/admin/stories/${row.slug}`} className="admin-word">
-                edit
+
+              {/* The same matched pair as on the pages screen: same border, same
+                  ink, same height, and one arrow each — → stays in the back of
+                  the house, ↗ leaves for the front. A hidden story has no front
+                  to go to, so it says that instead. */}
+              <Link href={`/admin/stories/${row.slug}`} className="admin-btn">
+                edit story →
               </Link>
+              {row.published ? (
+                <a
+                  href={`/stories/${row.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="admin-btn"
+                  title="Opens the story itself, in a new tab"
+                >
+                  view ↗
+                </a>
+              ) : (
+                <Tag tone="warn">not on the site</Tag>
+              )}
+
               <Bin what={row.title || "this story"} onClick={() => remove(row)} disabled={pending} />
             </span>
           </li>
