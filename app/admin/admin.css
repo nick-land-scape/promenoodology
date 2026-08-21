@@ -463,6 +463,20 @@ body:has(.admin) {
   padding: 4px 0;
 }
 
+/*
+ * The double line above the first field.
+ *
+ * The panel's header draws a rule under itself, and every field draws one over
+ * itself — which is right between rows and wrong at the top, where the two land
+ * four pixels apart and read as a border somebody forgot to finish. The grid has
+ * an unknown number of columns, so there is no "first row" to select; pulling the
+ * whole grid up by exactly one pixel puts the two rules on top of each other,
+ * which is what one rule looks like.
+ */
+.admin-panel-body > .admin-fields:first-child {
+  margin-top: -5px;
+}
+
 /* ------------------------------------------------------------------- fields */
 
 /* Fields sit in a grid of cells divided by hairlines — the same idea as the
@@ -632,6 +646,32 @@ body:has(.admin) {
   cursor: default;
 }
 
+/* A button that is only a glyph: crop, and anything else that sits in a row of
+   controls where a word would be one word too many. */
+.admin-icon-word {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--admin-faint);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-icon-word svg {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-icon-word:hover {
+  color: var(--purple);
+  border-color: var(--purple);
+}
+
 /* The bin.
  *
  * The one irreversible button on any of these pages, and the only red thing —
@@ -689,20 +729,15 @@ body:has(.admin) {
   cursor: pointer;
 }
 
-.admin-flag::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  background: var(--admin-faint);
+.admin-flag svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
 }
 
 .admin-flag[aria-pressed="true"] {
   color: var(--purple);
   border-color: var(--purple);
-}
-
-.admin-flag[aria-pressed="true"]::before {
-  background: var(--purple);
 }
 
 /* ------------------------------------------------------------------- the rows */
@@ -1496,7 +1531,11 @@ html.admin-dragging * {
 
 /* On a photograph, over the corner of it: there is no room for a column of its
    own, and it sits beside the frame rather than inside it so that choosing and
-   opening stay two separate gestures. */
+   opening stay two separate gestures.
+
+   Top left, because that is where a checkbox goes — every list anybody has ever
+   ticked reads left to right, and the right-hand corner is where the thing you
+   are choosing usually keeps its own controls. */
 .admin-photo {
   position: relative;
 }
@@ -1504,7 +1543,7 @@ html.admin-dragging * {
 .admin-photo > .admin-tick {
   position: absolute;
   top: 6px;
-  right: 6px;
+  left: 6px;
   width: 24px;
   height: 24px;
   font-size: 0.85rem;
@@ -2485,4 +2524,80 @@ html.admin-dragging * {
 
 .admin-thumbnail-contain {
   object-fit: contain;
+}
+
+/* ------------------------------------------------------------ several things */
+
+.admin-many {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.admin-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 9px;
+  border: 1px solid var(--hairline);
+  background: var(--admin-tint);
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.admin-chips em {
+  font-size: 0.78em;
+  color: var(--admin-faint);
+}
+
+.admin-chips button {
+  border: 0;
+  background: none;
+  padding: 0 4px;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--admin-faint);
+  cursor: pointer;
+}
+
+.admin-chips button:hover {
+  color: var(--pink);
+}
+
+.admin-chips-empty {
+  margin: 0;
+  font-size: 0.9em;
+  font-style: italic;
+  color: var(--admin-faint);
+}
+
+.admin-many-add {
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: none;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 0.98rem;
+  color: var(--ink);
+  width: 100%;
+}
+
+.admin-many-add::placeholder {
+  color: var(--admin-faint);
+  font-style: italic;
+}
+
+.admin-many-add:focus {
+  outline: 0;
+  border-bottom-color: var(--purple);
 }

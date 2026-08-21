@@ -120,8 +120,8 @@ export const SECTIONS: Section[] = [
 
   {
     href: "/admin/settings",
-    label: "theme",
-    blurb: "The typefaces and the colours the whole site is drawn with.",
+    label: "settings",
+    blurb: "The typefaces and the colours the whole site is drawn with — and whether anything is broken.",
     icon: "theme",
     group: "settings",
   },

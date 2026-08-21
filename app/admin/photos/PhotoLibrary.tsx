@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import ArchiveCheck from "@/components/admin/ArchiveCheck";
 import Thumb from "@/components/admin/Thumb";
 import ImageEditor from "@/components/admin/ImageEditor";
 import InHead from "@/components/admin/InHead";
@@ -16,6 +15,7 @@ import {
   Field,
   Flag,
   Grip,
+  Icon,
   Place,
   Problem,
   SaveBar,
@@ -26,14 +26,7 @@ import {
   useDragOrder,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
-import {
-  addPhoto,
-  deletePhoto,
-  fixSizes,
-  reorderPhotos,
-  replacePhoto,
-  savePhotos,
-} from "./actions";
+import { addPhoto, deletePhoto, reorderPhotos, replacePhoto, savePhotos } from "./actions";
 
 export type PhotoItem = {
   id: string;
@@ -424,36 +417,6 @@ export default function PhotoLibrary({
         </div>
       </div>
 
-      {/* Only where the whole archive is on screen: a check of "everything" that
-          silently means "the eleven you have filtered to" is worse than none. */}
-      {story === ALL && items.length > 0 ? (
-        <ArchiveCheck
-          items={items}
-          onFix={async (fixes) => {
-            const result = await fixSizes(fixes);
-            if (!result.ok) return result.error ?? "The sizes did not save.";
-            setItems((list) =>
-              list.map((one) => {
-                const fix = fixes.find((f) => f.id === one.id);
-                return fix ? { ...one, width: fix.width, height: fix.height } : one;
-              }),
-            );
-            router.refresh();
-            return null;
-          }}
-          onDrop={async (ids) => {
-            for (const id of ids) {
-              const result = await deletePhoto(id);
-              if (!result.ok) return result.error ?? "One of them would not delete.";
-              setItems((list) => list.filter((one) => one.id !== id));
-              setKept((list) => list.filter((one) => one.id !== id));
-            }
-            router.refresh();
-            return null;
-          }}
-        />
-      ) : null}
-
       {reordered ? (
         <div className="admin-save" style={{ position: "static", marginTop: 0, marginBottom: 16 }}>
           <button type="button" className="admin-btn" onClick={keepOrder} disabled={pending}>
@@ -568,8 +531,9 @@ export default function PhotoLibrary({
                 />
               </button>
 
-              {/* Outside the button that opens it, so choosing and looking are
-                  two different gestures on the same card. */}
+              {/* Top left, outside the button that opens it: choosing and
+                  looking are two different gestures on the same card, and a
+                  checkbox belongs where a checkbox belongs. */}
               <Tick
                 on={pick.has(item.id)}
                 onChoose={(range) => pick.toggle(item.id, range)}
@@ -635,11 +599,19 @@ export default function PhotoLibrary({
                     <Place index={index} total={shown.length} onMove={move} />
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Word onClick={() => setEditing(item)}>crop</Word>
                     <Flag
                       on={item.published}
                       onChange={(next) => edit(item.id, { published: next })}
                     />
+                    <button
+                      type="button"
+                      className="admin-icon-word"
+                      onClick={() => setEditing(item)}
+                      title="Crop, turn or straighten it"
+                      aria-label="Crop this photograph"
+                    >
+                      <Icon name="crop" />
+                    </button>
                     <Bin what="this photograph" onClick={() => remove(item)} disabled={pending} />
                   </span>
                 </div>

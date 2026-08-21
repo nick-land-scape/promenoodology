@@ -31,6 +31,16 @@ export type StoryInput = {
   published: boolean;
   /** Which photograph stands for the story. Null: worked out from the photos. */
   featured_photo_id: string | null;
+  /**
+   * Labels. Not the tag above: that one is a key, and the photographs and
+   * quotes find their story through it. These are the words you would use to
+   * say what the story was about.
+   */
+  topics: string[];
+  /** Who was there, by profile. */
+  people: string[];
+  /** Which organisations it was made with. */
+  partners: string[];
 };
 
 /** A blank story, opened straight away so there is somewhere to type. */
@@ -117,12 +127,25 @@ export async function saveStory(input: StoryInput): Promise<Saved & { slug?: str
     .eq("id", input.id)
     .maybeSingle<{ tag: string }>();
 
+  // Labels, tidied: trimmed, emptied of blanks, de-duplicated case-blind, and
+  // capped — a tag list is a handful of words, and anything longer is somebody
+  // pasting a paragraph into the wrong field.
+  const topics: string[] = [];
+  for (const said of input.topics) {
+    const one = said.trim().replace(/\s+/g, " ").slice(0, 40);
+    if (!one) continue;
+    if (topics.some((have) => have.toLowerCase() === one.toLowerCase())) continue;
+    topics.push(one);
+    if (topics.length >= 12) break;
+  }
+
   const { error } = await supabase
     .from("stories")
     .update({
       slug,
       title,
       tag,
+      topics,
       subtitle: input.subtitle.trim() || null,
       featured_photo_id: input.featured_photo_id,
       place: input.place.trim() || null,
@@ -142,6 +165,45 @@ export async function saveStory(input: StoryInput): Promise<Saved & { slug?: str
       supabase.from("photos").update({ story_tag: tag }).eq("story_tag", before.tag),
       supabase.from("quotes").update({ story_tag: tag }).eq("story_tag", before.tag),
     ]);
+  }
+
+  /* Who was there, and who it was made with.
+   *
+   * Cleared and rewritten rather than compared row by row: the lists are a
+   * dozen rows at most, and working out the difference is more code and more
+   * ways to be wrong than simply saying what the answer is now. */
+  const only = (ids: string[]) => ids.filter((id, at) => id && ids.indexOf(id) === at);
+
+  const { error: clearedPeople } = await supabase
+    .from("story_people")
+    .delete()
+    .eq("story_id", input.id);
+  if (clearedPeople) return failed(clearedPeople);
+
+  const people = only(input.people).map((profile_id, at) => ({
+    story_id: input.id,
+    profile_id,
+    position: at + 1,
+  }));
+  if (people.length > 0) {
+    const { error: written } = await supabase.from("story_people").insert(people);
+    if (written) return failed(written);
+  }
+
+  const { error: clearedPartners } = await supabase
+    .from("story_partners")
+    .delete()
+    .eq("story_id", input.id);
+  if (clearedPartners) return failed(clearedPartners);
+
+  const partners = only(input.partners).map((association_id, at) => ({
+    story_id: input.id,
+    association_id,
+    position: at + 1,
+  }));
+  if (partners.length > 0) {
+    const { error: written } = await supabase.from("story_partners").insert(partners);
+    if (written) return failed(written);
   }
 
   refreshSite();

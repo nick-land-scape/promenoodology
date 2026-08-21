@@ -34,6 +34,9 @@ const ICONS: Record<string, string> = {
   turnright: "M16 5l3.5 3.5L16 12M19.5 8.5h-9A6 6 0 1 0 16.5 14.5",
   flipx: "M12 3v18M8 7 3.5 12 8 17V7M16 7l4.5 5-4.5 5V7",
   flipy: "M3 12h18M7 8l5-4.5L17 8H7M7 16l5 4.5L17 16H7",
+  crop: "M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14",
+  eyeoff:
+    "M4 4l16 16M9.9 5.9A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.6 7.7A17 17 0 0 0 2.5 12S6 18.5 12 18.5a9 9 0 0 0 3.4-.66M9.6 9.7a2.8 2.8 0 0 0 3.9 3.9",
   up: "M12 19V5M6 11l6-6 6 6",
   upload: "M12 16V4m0 0 4 4m-4-4-4 4M4 20h16",
   trash: "M4 7h16M9.5 7V5.5A1.5 1.5 0 0 1 11 4h2a1.5 1.5 0 0 1 1.5 1.5V7M6 7l1 12.5A1.5 1.5 0 0 0 8.5 21h7L18 7",
@@ -181,6 +184,9 @@ export function Flag({
   onChange: (next: boolean) => void;
   labels?: [string, string];
 }) {
+  /* An eye, open or struck through, rather than a small square that was purple
+     when on and grey when off — a colour is a thing you have to have been told,
+     and an eye with a line through it is a thing you already know. */
   return (
     <button
       type="button"
@@ -188,6 +194,7 @@ export function Flag({
       aria-pressed={on}
       onClick={() => onChange(!on)}
     >
+      <Icon name={on ? "eye" : "eyeoff"} />
       {on ? labels[0] : labels[1]}
     </button>
   );
