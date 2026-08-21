@@ -1,3 +1,4 @@
+import BinLink from "@/components/admin/BinLink";
 import Head from "@/components/admin/Head";
 import { Icon } from "@/components/admin/ui";
 import { requireAdmin } from "@/lib/admin/guard";
@@ -50,12 +51,15 @@ export default async function StoriesPage() {
     <Head
       title="stories"
       action={
-        <form action={createStory}>
+        <>
+          <BinLink table="stories" />
+          <form action={createStory}>
           <button type="submit" className="admin-btn">
             <Icon name="plus" />
             new story
           </button>
-        </form>
+          </form>
+        </>
       }
     >
       <p className="admin-intro">

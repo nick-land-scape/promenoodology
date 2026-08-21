@@ -19,6 +19,7 @@ export default async function EditStoryPage({
   const { data: story } = await supabase
     .from("stories")
     .select("*")
+    .is("deleted_at", null)
     .eq("slug", slug)
     .maybeSingle<StoryRow & { topics: string[] | null }>();
   if (!story) notFound();
@@ -38,6 +39,7 @@ export default async function EditStoryPage({
       supabase
         .from("photos")
         .select("id, path, credit, credit_profile_id, year, published, layout, width, height, story_tag")
+    .is("deleted_at", null)
         .order("position")
         .returns<
           {
@@ -89,6 +91,7 @@ export default async function EditStoryPage({
       supabase
         .from("associations")
         .select("id, name, logo_path")
+    .is("deleted_at", null)
         .order("position")
         .returns<{ id: string; name: string; logo_path: string | null }[]>(),
     ]);

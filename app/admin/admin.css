@@ -3657,3 +3657,48 @@ html.admin-dragging * {
   color: var(--admin-faint);
   font-style: italic;
 }
+
+/* ------------------------------------------------------------------ the bin */
+
+/* "3 in the bin", in a section's heading. Absent when the bin is empty, so it
+   never becomes furniture. */
+.admin-binlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 2px;
+}
+
+.admin-binlink svg {
+  width: 13px;
+  height: 13px;
+}
+
+.admin-binlink:hover {
+  color: var(--pink);
+  border-bottom-color: var(--pink);
+}
+
+/* How long a thing has left. Said in days, because "four days" is something to
+   act on and "20 September" is something to work out. */
+.admin-left {
+  font-family: var(--sans);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--admin-faint);
+  white-space: nowrap;
+}
+
+.admin-left-soon {
+  color: var(--pink);
+}

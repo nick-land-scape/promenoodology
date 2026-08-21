@@ -1,3 +1,4 @@
+import BinLink from "@/components/admin/BinLink";
 import Head from "@/components/admin/Head";
 import { requireAdmin } from "@/lib/admin/guard";
 import { mediaUrl } from "@/lib/supabase/config";
@@ -25,7 +26,7 @@ export default async function AssociationsPage() {
   }));
 
   return (
-    <Head title="partners">
+    <Head title="partners" action={<BinLink table="associations" />}>
       <p className="admin-intro">
         The people we do this with who are not people: schools, festivals, councils, the association
         that lent us a kitchen. A name and a logo, because that is how an organisation is recognised.

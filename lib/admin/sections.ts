@@ -120,6 +120,13 @@ export const SECTIONS: Section[] = [
   },
 
   {
+    href: "/admin/bin",
+    label: "the bin",
+    blurb: "Everything deleted in the last thirty days, and the day each one goes for good.",
+    icon: "trash",
+    group: "settings",
+  },
+  {
     href: "/admin/settings",
     label: "settings",
     blurb: "The typefaces and the colours the whole site is drawn with — and whether anything is broken.",

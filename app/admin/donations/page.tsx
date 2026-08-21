@@ -1,3 +1,4 @@
+import BinLink from "@/components/admin/BinLink";
 import Head from "@/components/admin/Head";
 import RowsEditor, { type Row } from "@/components/admin/RowsEditor";
 import { requireAdmin } from "@/lib/admin/guard";
@@ -14,7 +15,7 @@ export default async function DonationsPage() {
     .returns<Row[]>();
 
   return (
-    <Head title="the wall">
+    <Head title="the wall" action={<BinLink table="donations" />}>
       <p className="admin-intro">
         Every gift, one by one, newest first. There is deliberately no total on the page and none
         here either: it is a list of people who made something possible, not a thermometer.

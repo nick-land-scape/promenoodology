@@ -1,3 +1,4 @@
+import BinLink from "@/components/admin/BinLink";
 import Head from "@/components/admin/Head";
 import RowsEditor, { type Row } from "@/components/admin/RowsEditor";
 import { requireAdmin } from "@/lib/admin/guard";
@@ -23,7 +24,7 @@ export default async function NewsPage() {
   ]);
 
   return (
-    <Head title="news">
+    <Head title="news" action={<BinLink table="news" />}>
       <p className="admin-intro">
         Short notes on the front screen of the members&rsquo; app, newest first — or whichever one is
         pinned, which stays at the top until another one takes its place. They are for people who are

@@ -51,6 +51,7 @@ export async function createStory(): Promise<void> {
   const { data: last } = await supabase
     .from("stories")
     .select("position")
+    .is("deleted_at", null)
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle<{ position: number }>();
@@ -78,6 +79,10 @@ async function taken(
   exceptId: string,
 ): Promise<boolean> {
   const supabase = await supabaseServer();
+  /* The bin counts. A slug or a tag held by a story waiting in the bin is still
+     held — handing it to a new story would make restoring the old one put two
+     stories at one address, and the archive would not know whose photographs it
+     was holding. */
   const { data } = await supabase
     .from("stories")
     .select("id")
@@ -124,6 +129,7 @@ export async function saveStory(input: StoryInput): Promise<Saved & { slug?: str
   const { data: before } = await supabase
     .from("stories")
     .select("tag")
+    .is("deleted_at", null)
     .eq("id", input.id)
     .maybeSingle<{ tag: string }>();
 
@@ -332,7 +338,13 @@ export async function deleteStory(id: string): Promise<Saved> {
     .eq("id", id)
     .maybeSingle<{ tag: string }>();
 
-  const { error } = await supabase.from("stories").delete().eq("id", id);
+  /* Into the bin. A story is the most expensive thing to lose in here — an
+     evening's writing and an arrangement of thirty photographs — so it is the
+     last thing that should go on one press. */
+  const { error } = await supabase
+    .from("stories")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
   if (error) return failed(error);
 
   if (story?.tag) {
@@ -367,6 +379,7 @@ export async function saveStoryPhotos(
   const { data: current } = await supabase
     .from("photos")
     .select("id, position")
+    .is("deleted_at", null)
     .in("id", ids)
     .returns<{ id: string; position: number }[]>();
 

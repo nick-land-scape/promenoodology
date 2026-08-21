@@ -39,6 +39,7 @@ export async function addPhoto(input: {
   const { data: last } = await supabase
     .from("photos")
     .select("position")
+    .is("deleted_at", null)
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle<{ position: number }>();
@@ -174,6 +175,7 @@ export async function replacePhoto(input: {
   const { data: before } = await supabase
     .from("photos")
     .select("path")
+    .is("deleted_at", null)
     .eq("id", input.id)
     .maybeSingle<{ path: string }>();
 
@@ -227,6 +229,7 @@ export async function reorderPhotos(ids: string[]): Promise<Saved> {
   const { data: current } = await supabase
     .from("photos")
     .select("id, position")
+    .is("deleted_at", null)
     .in("id", ids)
     .returns<{ id: string; position: number }[]>();
 
@@ -262,6 +265,7 @@ export async function deletePhoto(id: string): Promise<Saved> {
   const { data: photo } = await supabase
     .from("photos")
     .select("path")
+    .is("deleted_at", null)
     .eq("id", id)
     .maybeSingle<{ path: string }>();
   if (!photo) return { ok: false, error: "That photograph is already gone." };
@@ -269,6 +273,7 @@ export async function deletePhoto(id: string): Promise<Saved> {
   const { data: used } = await supabase
     .from("events")
     .select("title")
+    .is("deleted_at", null)
     .eq("photo_path", photo.path)
     .returns<{ title: string }[]>();
 
@@ -279,12 +284,16 @@ export async function deletePhoto(id: string): Promise<Saved> {
     };
   }
 
-  const { error } = await supabase.from("photos").delete().eq("id", id);
+  /* Into the bin, not gone.
+   *
+   * The file stays where it is until the thirty days are up — a photograph that
+   * came back to a missing file would be a restore that restored nothing. The
+   * bucket is swept when a row is really destroyed, in bin-actions. */
+  const { error } = await supabase
+    .from("photos")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id);
   if (error) return failed(error);
-
-  // The row is what the site reads, so the row goes first; a file left behind
-  // is untidy, not broken.
-  await supabase.storage.from("media").remove([photo.path]);
 
   refreshSite();
   return { ok: true };

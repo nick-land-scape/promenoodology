@@ -388,7 +388,13 @@ export function moved<T>(list: T[], from: number, to: number): T[] {
 /** 12 August 2026, or the raw thing if it is not a date. */
 export function pretty(iso: string) {
   if (!iso) return "";
-  const date = new Date(`${iso}T00:00:00Z`);
+  /* A plain day, or a moment. "2026-08-21" needs a time bolted on to be read as
+     UTC rather than as local midnight; "2026-08-21T13:05:22Z" already is one,
+     and bolting a second time onto it produced the raw string back — which is
+     how a deletion came to be dated "2026-08-21T13:05:22.685+00:00" in the
+     bin. */
+  const moment = iso.includes("T");
+  const date = new Date(moment ? iso : `${iso}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return iso;
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }

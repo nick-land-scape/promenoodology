@@ -15,6 +15,7 @@ export default async function SettingsPage() {
     supabase
       .from("photos")
       .select("id, path, width, height")
+    .is("deleted_at", null)
       .order("position")
       .returns<{ id: string; path: string; width: number; height: number }[]>(),
   ]);

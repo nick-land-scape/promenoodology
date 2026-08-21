@@ -1,3 +1,4 @@
+import BinLink from "@/components/admin/BinLink";
 import Head from "@/components/admin/Head";
 import { requireAdmin } from "@/lib/admin/guard";
 import { mediaUrl } from "@/lib/supabase/config";
@@ -77,7 +78,7 @@ export default async function PhotosPage({
   }));
 
   return (
-    <Head title="the archive">
+    <Head title="the archive" action={<BinLink table="photos" />}>
       {/* Was four lines explaining the wall, the credits and the cropping.
           Everything it said is now visible on the cards themselves. */}
       <p className="admin-intro">
