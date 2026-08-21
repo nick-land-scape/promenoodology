@@ -9,10 +9,13 @@ export default async function EventsPage() {
   await requireAdmin();
   const supabase = await supabaseServer();
 
-  const [{ data: events }, { data: photos }, { data: bookings }] = await Promise.all([
+  const [{ data: events }, { data: photos }, { data: bookings }, { data: partners }] =
+    await Promise.all([
     supabase
       .from("events")
-      .select("id, happens_on, starts_at, title, place, spots, note, photo_path, published")
+      .select(
+        "id, happens_on, ends_on, starts_at, ends_at, title, place, spots, note, photo_path, partners, published",
+      )
       .order("happens_on")
       .returns<Row[]>(),
     supabase
@@ -21,8 +24,16 @@ export default async function EventsPage() {
       .eq("published", true)
       .order("position")
       .returns<{ path: string }[]>(),
-    supabase.from("bookings").select("event_id, people").returns<{ event_id: string; people: number }[]>(),
-  ]);
+    supabase
+      .from("bookings")
+      .select("event_id, people")
+      .returns<{ event_id: string; people: number }[]>(),
+    supabase
+      .from("associations")
+      .select("id, name, logo_path")
+      .order("position")
+      .returns<{ id: string; name: string; logo_path: string | null }[]>(),
+    ]);
 
   const pickable: Pickable[] = (photos ?? []).map((photo) => ({
     path: photo.path,
@@ -35,43 +46,25 @@ export default async function EventsPage() {
     asked.set(booking.event_id, (asked.get(booking.event_id) ?? 0) + (booking.people || 1));
   }
 
-  const taken = (events ?? []).filter((event) => asked.get(String(event.id)));
-
   return (
     <Head title="what's on">
       <p className="admin-intro">
         The evenings in the members&rsquo; app. A new one starts hidden: fill it in, then turn it on
-        when it is really happening. Hidden means nobody outside can see it at all.
+        when it is really happening. Hidden means nobody outside can see it at all. Where anybody has
+        asked to come, it says so under the name — answering them is not built yet.
       </p>
 
-      {taken.length > 0 ? (
-        <div className="admin-panel">
-          <header className="admin-panel-head">
-            <div>
-              <h2 className="admin-panel-name">places asked for</h2>
-              <p className="admin-panel-hint">
-                What members have asked for so far. Answering them is not built yet — this is only
-                so you know.
-              </p>
-            </div>
-          </header>
-          <table className="admin-table" style={{ border: 0 }}>
-            <tbody>
-              {taken.map((event) => (
-                <tr key={String(event.id)}>
-                  <td>{String(event.title)}</td>
-                  <td className="admin-table-quiet">
-                    {asked.get(String(event.id))} asked
-                    {Number(event.spots) > 0 ? ` of ${Number(event.spots)}` : ""}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      <RowsEditor table="events" initial={events ?? []} photos={pickable} />
+      <RowsEditor
+        table="events"
+        initial={events ?? []}
+        photos={pickable}
+        coming={Object.fromEntries(asked)}
+        partners={(partners ?? []).map((one) => ({
+          value: one.id,
+          label: one.name || "unnamed partner",
+          image: one.logo_path ? mediaUrl(one.logo_path) : undefined,
+        }))}
+      />
     </Head>
   );
 }

@@ -3000,3 +3000,96 @@ html.admin-dragging * {
 .admin-panel-night code {
   color: var(--ink);
 }
+
+/* ------------------------------------------------- the head of a list's row */
+
+/*
+ * The name, the picture, and what you can do — one line, and the name is an
+ * input rather than a heading with an input hidden further down the card.
+ */
+.admin-rowhead {
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-rowhead-photo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.admin-rowhead-name {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+/* Set like the heading it replaced, so the row still reads as a thing with a
+   name at the top rather than as a form. */
+.admin-rowhead-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.admin-rowhead-input::placeholder {
+  color: var(--admin-faint);
+  font-style: italic;
+}
+
+.admin-rowhead-input:hover {
+  border-bottom-color: var(--hairline);
+}
+
+.admin-rowhead-input:focus {
+  outline: 0;
+  border-bottom-color: var(--purple);
+}
+
+.admin-rowhead-does {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  margin-left: auto;
+}
+
+/* Smaller than a partner's logo box: this one sits in a row's header rather
+   than being the row. */
+.admin-rowhead-photo .admin-logo {
+  width: 66px;
+  height: 46px;
+  margin-top: 0;
+}
+
+/* A stretch: two native controls and an arrow between them, reading as one
+   field. The browser's own date and time pickers, because a phone gets a wheel
+   and a laptop a calendar and everybody the format their machine is set to. */
+.admin-range {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.admin-range input {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-range > span {
+  flex: none;
+  color: var(--admin-faint);
+  font-size: 0.9em;
+}
+
+/* A field holding two controls needs two columns of the grid. */
+.admin-field-two {
+  grid-column: span 2;
+}

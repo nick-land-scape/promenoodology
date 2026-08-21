@@ -36,6 +36,7 @@ const ICONS: Record<string, string> = {
   flipy: "M3 12h18M7 8l5-4.5L17 8H7M7 16l5 4.5L17 16H7",
   crop: "M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14",
   swap: "M4 8h13l-3.5-3.5M20 16H7l3.5 3.5",
+  pin: "M9 3h6l-1 6 4 4v2H6v-2l4-4-1-6zM12 15v6",
   eyeoff:
     "M4 4l16 16M9.9 5.9A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.6 7.7A17 17 0 0 0 2.5 12S6 18.5 12 18.5a9 9 0 0 0 3.4-.66M9.6 9.7a2.8 2.8 0 0 0 3.9 3.9",
   up: "M12 19V5M6 11l6-6 6 6",
@@ -70,14 +71,24 @@ type FieldProps = {
   hint?: string;
   /** A fact about the field, set beside its name rather than under it. */
   aside?: string;
+  /** Two columns' worth of room, for a field holding two controls. */
+  two?: boolean;
   wide?: boolean;
   children: React.ReactNode;
 };
 
 /** A labelled cell in a grid of fields. */
-export function Field({ label, hint, aside, wide, children }: FieldProps) {
+export function Field({ label, hint, aside, two, wide, children }: FieldProps) {
   return (
-    <label className={wide ? "admin-field admin-field-wide" : "admin-field"}>
+    <label
+      className={[
+        "admin-field",
+        wide ? "admin-field-wide" : "",
+        two ? "admin-field-two" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       {/* `aside` rides on the label's line, hard right: a count is a fact about
           the field, not an instruction under it, and under the control it read
           as a hint about what to type. */}

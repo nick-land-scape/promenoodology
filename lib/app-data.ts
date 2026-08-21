@@ -38,6 +38,10 @@ export function getNews(): NewsItem[] {
       date: date ?? "",
       title: title ?? "",
       text: text.join(", "),
+      // The files know nothing about authors or pinning: a copy of the site
+      // without a database simply has neither.
+      by: [],
+      pinned: false,
     }))
     .sort((a, b) => b.date.localeCompare(a.date));
 }

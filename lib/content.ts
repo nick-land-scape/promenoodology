@@ -45,6 +45,10 @@ export type NewsItem = {
   date: string;
   title: string;
   text: string;
+  /** Who wrote it. Empty for anything written before anybody was asked. */
+  by: string[];
+  /** Held at the top, whatever its date. At most one of these. */
+  pinned: boolean;
 };
 
 export type Post = {

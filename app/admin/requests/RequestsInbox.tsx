@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Empty, Problem, Word, pretty } from "@/components/admin/ui";
+import { Bin, Empty, Problem, Word, pretty } from "@/components/admin/ui";
 import type { ApplicationRow } from "@/lib/supabase/rows";
 import { deleteRequest, setRequestState } from "./actions";
 
@@ -125,9 +125,7 @@ export default function RequestsInbox({ initial }: { initial: ApplicationRow[] }
           </table>
 
           <p style={{ margin: "10px 14px 12px" }}>
-            <Word danger onClick={() => remove(row)} disabled={pending}>
-              delete this request
-            </Word>
+            <Bin what="this request" onClick={() => remove(row)} disabled={pending} />
           </p>
         </section>
       ))}

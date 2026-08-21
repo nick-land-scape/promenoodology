@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import InHead from "@/components/admin/InHead";
-import { Empty, Problem, Word, pretty } from "@/components/admin/ui";
+import { Bin, Empty, Problem, pretty } from "@/components/admin/ui";
 import type { NewsletterRow } from "@/lib/supabase/rows";
 import { removeSubscriber } from "./actions";
 
@@ -97,9 +97,7 @@ export default function SubscriberList({ initial }: { initial: NewsletterRow[] }
               </td>
               <td className="admin-table-quiet">{pretty(row.created_at.slice(0, 10))}</td>
               <td>
-                <Word danger onClick={() => remove(row)} disabled={pending}>
-                  take off
-                </Word>
+                <Bin what={`${row.email} from the list`} onClick={() => remove(row)} disabled={pending} />
               </td>
             </tr>
           ))}

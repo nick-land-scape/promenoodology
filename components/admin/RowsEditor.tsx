@@ -7,7 +7,9 @@ import { useMemo, useState, useTransition } from "react";
 import { addRow, deleteRow, type RowValues, saveRows } from "@/app/admin/rows-actions";
 import { type Column, TABLES, type TableName } from "@/lib/admin/tables";
 import { Picker, type Pickable } from "./Pick";
-import { Empty, Field, Flag, Icon, Problem, SaveBar, Word, pretty, today } from "./ui";
+import { Some } from "./Many";
+import type { Choice } from "./Picker";
+import { Bin, Empty, Field, Flag, Icon, Problem, SaveBar, Word, pretty, today } from "./ui";
 
 /**
  * One editor for the four tables that are lists: quotes, news, the wall, and
@@ -30,6 +32,9 @@ export default function RowsEditor({
   initial,
   stories = [],
   photos = [],
+  coming = {},
+  people = [],
+  partners = [],
   fresh,
 }: {
   table: TableName;
@@ -38,6 +43,12 @@ export default function RowsEditor({
   stories?: { tag: string; title: string }[];
   /** For a "picture" column. */
   photos?: Pickable[];
+  /** How many people have asked to come, by row id. Only evenings have these. */
+  coming?: Record<string, number>;
+  /** For a "written by" column. */
+  people?: Choice[];
+  /** For a "with" column. */
+  partners?: Choice[];
   /** Values a new row starts with, over the table's own blanks. */
   fresh?: RowValues;
 }) {
@@ -146,6 +157,62 @@ export default function RowsEditor({
       );
     }
 
+    /* A stretch, in one field. Two native controls side by side rather than a
+       calendar of our own: the browser's gives a phone a wheel, a laptop a
+       proper calendar, and everybody the date format their machine is set to,
+       and anything hand-built here would be a worse version of all three. */
+    if (column.kind === "dates" || column.kind === "times") {
+      const type = column.kind === "dates" ? "date" : "time";
+      const far = column.until ?? column.key;
+      return (
+        <span className="admin-range">
+          <input
+            type={type}
+            value={String(value ?? "")}
+            aria-label={`${column.label} — from`}
+            onChange={(event) => edit(row.id, column.key, event.target.value)}
+          />
+          <span aria-hidden="true">→</span>
+          <input
+            type={type}
+            value={String(row[far] ?? "")}
+            aria-label={`${column.label} — until`}
+            // Not before the beginning, where the browser can say so itself.
+            min={type === "date" ? String(value ?? "") || undefined : undefined}
+            onChange={(event) => edit(row.id, far, event.target.value)}
+          />
+        </span>
+      );
+    }
+
+    if (column.kind === "people" || column.kind === "partners") {
+      const options = column.kind === "people" ? people : partners;
+      const chosen = Array.isArray(value) ? (value as string[]) : [];
+      return (
+        <Some
+          value={chosen}
+          onChange={(next) => edit(row.id, column.key, next)}
+          options={options}
+          add={column.kind === "people" ? "add somebody" : "add a partner"}
+          empty={column.kind === "people" ? "nobody yet" : "nobody yet"}
+        />
+      );
+    }
+
+    if (column.kind === "time") {
+      /* The browser's own time control, and deliberately so: it gives a phone a
+         wheel, a laptop a pair of spinners, and everybody the 24-hour clock
+         their machine is set to. Anything hand-built here would be a worse
+         version of all three. */
+      return (
+        <input
+          type="time"
+          value={String(value ?? "")}
+          onChange={(event) => edit(row.id, column.key, event.target.value)}
+        />
+      );
+    }
+
     if (column.kind === "number") {
       return (
         <input
@@ -238,8 +305,10 @@ export default function RowsEditor({
         <Empty>Nothing here yet.</Empty>
       ) : (
         rows.map((row) => {
-          const grid = spec.columns.filter((column) => !column.wide);
-          const wide = spec.columns.filter((column) => column.wide);
+          const picture = spec.columns.find((column) => column.kind === "photo");
+          const inTheHead = new Set([spec.title, picture?.key].filter(Boolean) as string[]);
+          const grid = spec.columns.filter((column) => !column.wide && !inTheHead.has(column.key));
+          const wide = spec.columns.filter((column) => column.wide && !inTheHead.has(column.key));
           const shown = spec.publishable ? row.published !== false : true;
 
           return (
@@ -248,32 +317,119 @@ export default function RowsEditor({
               className="admin-panel"
               style={shown ? undefined : { borderColor: "var(--hairline)" }}
             >
-              <header className="admin-panel-head">
-                <div>
-                  <h2 className="admin-panel-name">
-                    {String(row[spec.title] ?? "").slice(0, 70) || <em>nothing yet</em>}
-                  </h2>
-                  {"given_on" in row || "happens_on" in row || "published_on" in row ? (
-                    <p className="admin-panel-hint">
-                      {pretty(
-                        String(row.given_on ?? row.happens_on ?? row.published_on ?? ""),
+              {/*
+               * The heading is the name, and typing in it changes the name.
+               *
+               * It used to be a heading *and*, separately, a field further down
+               * the grid — a name you could not change with the one you could
+               * hidden underneath it. Reported as "why is it not possible to
+               * change the event name", which is exactly how it read.
+               *
+               * The picture sits beside it for the same reason: it is what the
+               * row *is*, not one of its details, and clicking a picture is how
+               * anybody changes a picture.
+               */}
+              <header className="admin-panel-head admin-rowhead">
+                {picture ? (
+                  <span className="admin-rowhead-photo">
+                    <button
+                      type="button"
+                      className="admin-logo"
+                      onClick={() => setPicking({ id: row.id, key: picture.key })}
+                      title={photoUrl(row[picture.key]) ? "Choose another picture" : "Choose a picture from the archive"}
+                    >
+                      {photoUrl(row[picture.key]) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={photoUrl(row[picture.key]) as string} alt="" draggable={false} />
+                      ) : (
+                        <span className="admin-logo-none">no picture</span>
                       )}
-                    </p>
-                  ) : null}
+                      <em>{photoUrl(row[picture.key]) ? "replace" : "choose one"}</em>
+                    </button>
+                    {row[picture.key] ? (
+                      <Bin
+                        what="this picture"
+                        onClick={() => edit(row.id, picture.key, null)}
+                      />
+                    ) : null}
+                  </span>
+                ) : null}
+
+                <div className="admin-rowhead-name">
+                  <input
+                    className="admin-rowhead-input"
+                    value={String(row[spec.title] ?? "")}
+                    placeholder={spec.columns.find((c) => c.key === spec.title)?.placeholder ?? "a name"}
+                    aria-label={spec.columns.find((c) => c.key === spec.title)?.label ?? "name"}
+                    onChange={(event) => edit(row.id, spec.title, event.target.value)}
+                  />
+                  <p className="admin-panel-hint">
+                    {[
+                      "given_on" in row || "happens_on" in row || "published_on" in row
+                        ? pretty(String(row.given_on ?? row.happens_on ?? row.published_on ?? ""))
+                        : null,
+                      // Only evenings have anybody coming.
+                      coming[row.id]
+                        ? `${coming[row.id]} asked to come${
+                            Number(row.spots) > 0 ? ` of ${Number(row.spots)}` : ""
+                          }`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ") || "\u00a0"}
+                  </p>
                 </div>
-                <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+                <span className="admin-rowhead-does">
+                  {/* One of them at the top, and only one: pressing this on a
+                      second row takes it off the first, which the save enforces
+                      as well so the two can never disagree. */}
+                  {spec.pinned ? (
+                    <button
+                      type="button"
+                      className="admin-flag"
+                      aria-pressed={row[spec.pinned] === true}
+                      title={
+                        row[spec.pinned] === true
+                          ? "Held at the top of the app's front screen"
+                          : "Hold this one at the top, in place of whichever is there now"
+                      }
+                      onClick={() => {
+                        const on = row[spec.pinned as string] !== true;
+                        setRows((list) =>
+                          list.map((one) => ({
+                            ...one,
+                            [spec.pinned as string]: on ? one.id === row.id : false,
+                          })),
+                        );
+                        setJustSaved(false);
+                      }}
+                    >
+                      <Icon name="pin" />
+                      {row[spec.pinned] === true ? "at the top" : "pin it"}
+                    </button>
+                  ) : null}
                   {spec.publishable ? (
                     <Flag on={shown} onChange={(next) => edit(row.id, "published", next)} />
                   ) : null}
-                  <Word danger onClick={() => remove(row)} disabled={pending}>
-                    delete
-                  </Word>
+                  <Bin
+                    what={String(row[spec.title] ?? "") || `this ${spec.one.replace(/^an? /, "")}`}
+                    onClick={() => remove(row)}
+                    disabled={pending}
+                  />
                 </span>
               </header>
 
               <div className="admin-fields">
                 {grid.map((column) => (
-                  <Field key={column.key} label={column.label} hint={column.hint}>
+                  <Field
+                    key={column.key}
+                    label={column.label}
+                    hint={column.hint}
+                    /* A stretch needs two controls' worth of room; in one
+                       column the browser clips its own date format. */
+                    two={column.kind === "dates" || column.kind === "times"}
+                  >
                     {cell(row, column)}
                   </Field>
                 ))}
