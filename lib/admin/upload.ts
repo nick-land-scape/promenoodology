@@ -39,6 +39,16 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 const MAX_EDGE = 1800;
 /** What a photograph on this site should weigh, at most. */
 const MAX_MB = 0.6;
+
+/**
+ * The same two numbers, for anybody who has to check the result against them.
+ *
+ * The editor does: it crops, sends the crop through this file like any other
+ * upload, and then reads what came back. If the answer is over the line it takes
+ * the file back out of the bucket and says by how much, rather than leaving a
+ * photograph on the site that breaks the only rule this file has.
+ */
+export const LIMITS = { edge: MAX_EDGE, bytes: Math.round(MAX_MB * 1_000_000) };
 /** Small enough already: leave it alone rather than re-encoding for nothing. */
 const KEEP = 400_000;
 
@@ -138,6 +148,16 @@ const extensionOf = (type: string, name: string) => {
  * where somebody was and what they use — and so is the EXIF block, which says it
  * more precisely.
  */
+/**
+ * Take something back out of the bucket.
+ *
+ * For the one case where a file is written and then found wanting: the row is
+ * not touched, so nothing points at it, and a file nothing points at is a bill.
+ */
+export async function unupload(path: string): Promise<void> {
+  await supabaseBrowser().storage.from("media").remove([path]);
+}
+
 export async function uploadPhoto(file: File, folder: string): Promise<Uploaded> {
   let ready = file;
 

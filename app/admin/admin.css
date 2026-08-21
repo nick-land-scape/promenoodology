@@ -2108,3 +2108,308 @@ html.admin-dragging * {
   font-size: 0.78rem;
   color: var(--admin-quiet);
 }
+
+/* -------------------------------------------------------------- the editor */
+
+/*
+ * Editing a photograph, over the top of everything.
+ *
+ * Dark, unlike the rest of the back of the house, and for once that is not a
+ * style choice: you cannot judge a crop against paper. Every photo editor ever
+ * made puts the picture on something near-black, because the eye reads the edges
+ * of an image against a dark ground and invents them against a light one.
+ */
+.admin-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: var(--edge);
+  background: rgba(12, 11, 9, 0.86);
+}
+
+.admin-editor-sheet {
+  display: flex;
+  flex-direction: column;
+  width: min(1000px, 100%);
+  max-height: 100%;
+  background: #17150f;
+  color: #f2ece1;
+  border: 1px solid rgba(242, 236, 225, 0.18);
+}
+
+.admin-editor-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(242, 236, 225, 0.14);
+}
+
+.admin-editor-head strong {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.admin-editor-facts {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: rgba(242, 236, 225, 0.55);
+}
+
+.admin-editor-shut {
+  border: 0;
+  background: none;
+  padding: 0 2px;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: rgba(242, 236, 225, 0.6);
+  cursor: pointer;
+}
+
+.admin-editor-shut:hover {
+  color: #f2ece1;
+}
+
+/* The picture. A fixed height rather than the image's own, so the toolbar does
+   not jump up and down the screen as you turn a photograph on its side. */
+.admin-editor-stage {
+  position: relative;
+  height: min(58vh, 520px);
+  background: #0d0c0a;
+  overflow: hidden;
+}
+
+.admin-editor-stage img {
+  display: block;
+  max-width: 100%;
+}
+
+.admin-editor-waiting {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font-style: italic;
+  color: rgba(242, 236, 225, 0.5);
+}
+
+.admin-editor-problem {
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(242, 236, 225, 0.14);
+  background: rgba(232, 38, 135, 0.12);
+  color: #ff9ec6;
+}
+
+.admin-editor-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(242, 236, 225, 0.14);
+}
+
+/* Buttons that belong together sit in one bordered run, so the eye groups
+   "looking at it" apart from "turning it" without needing a label for each. */
+.admin-editor-set {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(242, 236, 225, 0.2);
+}
+
+.admin-editor-set button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-left: 1px solid rgba(242, 236, 225, 0.14);
+  background: none;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 225, 0.75);
+  cursor: pointer;
+}
+
+.admin-editor-set button:first-child {
+  border-left: 0;
+}
+
+.admin-editor-set button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.admin-editor-set button:hover {
+  background: rgba(242, 236, 225, 0.09);
+  color: #fff;
+}
+
+.admin-editor-straight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-style: italic;
+  color: rgba(242, 236, 225, 0.55);
+}
+
+.admin-editor-straight input {
+  width: 120px;
+  accent-color: var(--purple);
+}
+
+.admin-editor-straight em {
+  min-width: 2.6rem;
+  font-variant-numeric: tabular-nums;
+  font-style: normal;
+}
+
+/* The shape, behind one press. */
+.admin-editor-shape {
+  position: relative;
+  margin-left: auto;
+}
+
+.admin-editor-shape > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba(242, 236, 225, 0.2);
+  background: none;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(242, 236, 225, 0.75);
+  cursor: pointer;
+}
+
+.admin-editor-shape > button:hover,
+.admin-editor-shape > button.admin-editor-open {
+  border-color: var(--purple);
+  color: #fff;
+}
+
+.admin-editor-shapes {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 2;
+  min-width: 190px;
+  background: #201d16;
+  border: 1px solid rgba(242, 236, 225, 0.24);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+}
+
+.admin-editor-shapes button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-top: 1px solid rgba(242, 236, 225, 0.12);
+  background: none;
+  font: inherit;
+  font-size: 0.95rem;
+  color: #f2ece1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-editor-shapes button:first-child {
+  border-top: 0;
+}
+
+.admin-editor-shapes button:hover {
+  background: rgba(242, 236, 225, 0.08);
+}
+
+.admin-editor-shapes button.admin-editor-on {
+  color: var(--purple);
+}
+
+.admin-editor-shapes em {
+  font-size: 0.78em;
+  color: rgba(242, 236, 225, 0.45);
+}
+
+.admin-editor-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+}
+
+.admin-editor-gap {
+  flex: 1;
+}
+
+/* The editor is dark, so the words in it cannot be the paper ones. */
+.admin-editor .admin-word {
+  color: rgba(242, 236, 225, 0.6);
+}
+
+.admin-editor .admin-word:hover {
+  color: #fff;
+}
+
+.admin-editor .admin-note {
+  color: rgba(242, 236, 225, 0.45);
+}
+
+.admin-editor .admin-btn {
+  border-color: rgba(242, 236, 225, 0.5);
+  color: #f2ece1;
+}
+
+.admin-editor .admin-btn:hover {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: #fff;
+}
+
+.admin-editor .admin-btn[disabled] {
+  opacity: 0.4;
+}
+
+/* Cropper's own furniture, made to match: purple where it draws its lines. */
+.admin-editor .cropper-view-box {
+  outline-color: var(--purple);
+}
+
+.admin-editor .cropper-line,
+.admin-editor .cropper-point {
+  background-color: var(--purple);
+}
+
+@media screen and (max-width: 700px) {
+  .admin-editor-stage {
+    height: 46vh;
+  }
+
+  .admin-editor-shape {
+    margin-left: 0;
+  }
+}

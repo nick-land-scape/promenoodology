@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import ImageEditor from "@/components/admin/ImageEditor";
 import InHead from "@/components/admin/InHead";
 import { Look } from "@/components/admin/Pick";
 import Picker, { type Choice } from "@/components/admin/Picker";
@@ -17,12 +18,13 @@ import {
   Problem,
   SaveBar,
   Tick,
+  Word,
   moved,
   useChosen,
   useDragOrder,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
-import { addPhoto, deletePhoto, reorderPhotos, savePhotos } from "./actions";
+import { addPhoto, deletePhoto, reorderPhotos, replacePhoto, savePhotos } from "./actions";
 
 export type PhotoItem = {
   id: string;
@@ -100,6 +102,7 @@ export default function PhotoLibrary({
   const [kept, setKept] = useState(initial);
   const [story, setStory] = useState(filter || ALL);
   const [looking, setLooking] = useState<string | null>(null);
+  const [editing, setEditing] = useState<PhotoItem | null>(null);
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
   const [reordered, setReordered] = useState(false);
@@ -278,6 +281,38 @@ export default function PhotoLibrary({
       setItems((list) => list.filter((one) => one.id !== item.id));
       setKept((list) => list.filter((one) => one.id !== item.id));
       router.refresh();
+    });
+  }
+
+  /* An edited photograph is already in the bucket and already inside the rule by
+     the time this runs; all that is left is to point the row at it. */
+  function swapped(item: PhotoItem, next: { path: string; width: number; height: number }) {
+    return new Promise<void>((done, fail) => {
+      start(async () => {
+        const result = await replacePhoto({
+          id: item.id,
+          path: next.path,
+          width: next.width,
+          height: next.height,
+        });
+        if (!result.ok) {
+          fail(new Error(result.error ?? "The archive would not take the edited picture."));
+          return;
+        }
+
+        const patch = {
+          path: next.path,
+          // A cache-buster is not needed — the name is new — but the row and the
+          // <img> have to agree, or the card keeps showing the old crop.
+          url: mediaUrl(next.path),
+          width: next.width,
+          height: next.height,
+        };
+        setItems((list) => list.map((one) => (one.id === item.id ? { ...one, ...patch } : one)));
+        setKept((list) => list.map((one) => (one.id === item.id ? { ...one, ...patch } : one)));
+        router.refresh();
+        done();
+      });
     });
   }
 
@@ -554,6 +589,7 @@ export default function PhotoLibrary({
                     <Place index={index} total={shown.length} onMove={move} />
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Word onClick={() => setEditing(item)}>crop</Word>
                     <Flag
                       on={item.published}
                       onChange={(next) => edit(item.id, { published: next })}
@@ -584,6 +620,15 @@ export default function PhotoLibrary({
       ) : null}
 
       {looking ? <Look url={looking} onClose={() => setLooking(null)} /> : null}
+
+      {editing ? (
+        <ImageEditor
+          url={editing.url}
+          folder="resources"
+          onClose={() => setEditing(null)}
+          onDone={(next) => swapped(editing, next)}
+        />
+      ) : null}
     </>
   );
 }
