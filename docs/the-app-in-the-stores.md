@@ -58,19 +58,37 @@ Done in the code, off until somebody switches it on.
 - **Disconnecting** is refused while it is the only way into the account, because
   that is locking somebody out of their own account with one button.
 
-Yours to do, in this order:
+**Done in the Apple Developer account** (21 August 2026):
 
-1. **Apple Developer → Identifiers.** An App ID for the app, with the *Sign in
-   with Apple* capability. Then a **Services ID** for the website half, with
-   `promenoodology.com` as the domain and
-   `https://bqdtxqdmdtzffvkvrqpt.supabase.co/auth/v1/callback` as the return URL.
-2. **Keys → new key** with Sign in with Apple enabled. Download the `.p8` once —
-   Apple will not give it again.
-3. **Supabase → Authentication → Providers → Apple.** Switch it on, paste the
-   Services ID as the client id, and the team id, key id and `.p8` contents.
-4. **Supabase → Authentication → Advanced → manual linking.** On. Without it the
-   "connect it" button in the settings comes back with "joining accounts is
-   switched off", which is what it will say rather than failing quietly.
+| | |
+|---|---|
+| Team ID | `K35XLVJJ3T` |
+| App ID (bundle) | `com.promenoodology.community`, Sign in with Apple on |
+| Services ID | `com.promenoodology.community.signin` |
+| Key ID | `7327ATVLZ9`, the `.p8` downloaded |
+
+**Left to do, in Supabase → Authentication → Providers → Apple:**
+
+| field | what goes in it |
+|---|---|
+| Client IDs | `com.promenoodology.community.signin,com.promenoodology.community` |
+| Secret Key (for OAuth) | the token printed by `node scripts/apple-secret.mjs ~/Downloads/AuthKey_7327ATVLZ9.p8` |
+| Allow users without an email | **off** |
+| Callback URL | already registered in the Services ID |
+
+The two that catch everybody:
+
+- **Client IDs is not the Team ID.** It is a list of the things that will ask Apple
+  for a sign-in: the Services ID for the web, and the app's bundle ID for the
+  phone. Both, comma separated, no spaces.
+- **The secret is not the `.p8`.** Apple gives a private key; Supabase wants a
+  signed token *made with* it, which is what the script prints. Pasting the key
+  itself gets `invalid_client` from Apple and no explanation from anybody. The
+  script also prints the day the token dies — Apple caps it at six months, and when
+  it goes, signing in with Apple stops with no symptom but people not getting in.
+
+Then **Supabase → Authentication → Advanced → manual linking: on**. Without it the
+"connect it" button in the app's settings says so rather than failing quietly.
 
 ## The reviewers' way in
 

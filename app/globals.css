@@ -2098,6 +2098,13 @@ html.has-top-bar {
     z-index: 21;
     align-items: center;
     height: 34px;
+    /* Both of these belong to the column version, where this is the last line of
+       a menu and wants pushing to the foot of it with a rule's worth of air above
+       it. Up here it is a face in a 52-pixel strip, and fourteen pixels of
+       padding inside a 34-pixel box pushed it seven pixels below the middle and
+       out through the bottom of the strip. */
+    margin-top: 0;
+    padding-top: 0;
   }
 
   .session-face {
@@ -2166,18 +2173,38 @@ html.has-top-bar {
   }
 
   /*
-   * On a phone it stops floating.
+   * On a phone it goes up into the strip at the top, on the right, beside the
+   * face.
    *
-   * There is no corner to float in: the menu holds the bottom, the contact
-   * details now run across above it, and a button hovering over either covers
-   * something somebody is reading — it was sitting on the end of the email
-   * address. In the flow, right-aligned under the footer, it covers nothing. And
-   * it is open, because a phone has no hover to open it with.
+   * There is no corner to float in down there: the menu holds the bottom and the
+   * contact details run across above it, so a floating button covered something
+   * somebody was reading. It was then put in the flow under the footer, which
+   * covered nothing and also belonged to nothing — a control on its own at the
+   * end of a page. The top strip is where the other controls on a phone already
+   * are, so it sits with them.
+   *
+   * Only the glyph: there is no hover on a phone to open the words with, and the
+   * strip has room for a face, a mark and one more thing.
    */
   .dark-switch {
-    position: static;
-    max-width: none;
-    margin: 14px var(--edge) 0 auto;
+    position: fixed;
+    top: calc(9px + var(--bar-top));
+    /* Clear of the face, which is 34 wide and sits against the edge. */
+    right: calc(var(--edge) + 34px + 10px);
+    bottom: auto;
+    z-index: 21;
+    max-width: 34px;
+    width: 34px;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    border-color: transparent;
+    background: none;
+  }
+
+  /* The words stay away: on a phone the glyph is the whole button. */
+  .dark-switch span {
+    display: none;
   }
 
   .top-bar-who {

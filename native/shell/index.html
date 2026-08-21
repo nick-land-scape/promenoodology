@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>promeNOODology</title>
+    <!--
+      The one page that lives in the bundle.
+
+      Capacitor needs a local root even when it is pointed at a server, and this
+      is a better use for it than an empty folder: it is what there is to show
+      when there is no signal. No network, no fonts to fetch, nothing to load —
+      Times and Helvetica are on the phone already, which is why the whole site
+      is set in them.
+    -->
+    <style>
+      :root {
+        --paper: #fffcf6;
+        --ink: #000;
+        --purple: #8b3fff;
+        --quiet: #6f6a63;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #14120f;
+          --ink: #f2ece1;
+          --purple: #b98cff;
+          --quiet: #a9a196;
+        }
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: Times, "Times New Roman", Georgia, serif;
+      }
+
+      main {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 32px 26px calc(32px + env(safe-area-inset-bottom));
+        text-align: center;
+      }
+
+      p.mark {
+        margin: 0 0 8px;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 11px;
+        font-weight: bold;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: var(--purple);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: normal;
+        line-height: 1.1;
+      }
+
+      p.said {
+        margin: 0;
+        max-width: 22rem;
+        font-size: 17px;
+        line-height: 1.45;
+        color: var(--quiet);
+      }
+
+      button {
+        margin-top: 10px;
+        border: 1px solid var(--ink);
+        background: none;
+        padding: 13px 22px;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="mark">promeNOODology</p>
+      <h1>no signal</h1>
+      <p class="said">
+        This app is the club as it is right now — who is coming, who waved, what
+        was said this morning — so it needs a line to the outside. Nothing has
+        gone wrong.
+      </p>
+      <button type="button" onclick="location.replace('https://www.promenoodology.com/app')">
+        try again
+      </button>
+    </main>
+  </body>
+</html>
