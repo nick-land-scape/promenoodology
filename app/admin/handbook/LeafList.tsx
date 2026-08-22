@@ -11,8 +11,8 @@ import {
   Grip,
   Place,
   Problem,
+  Copy,
   Tag,
-  Word,
   moved,
   useDragOrder,
 } from "@/components/admin/ui";
@@ -198,13 +198,14 @@ export default function LeafList({ initial }: { initial: LeafRow[] }) {
                   {row.words} word{row.words === 1 ? "" : "s"}
                 </Tag>
                 <Flag on={row.published} onChange={(next) => show(row, next)} />
-                <Word onClick={() => copy(row)} title="The same again, just after it">
-                  duplicate
-                </Word>
-
                 <Link href={`/admin/handbook/${row.id}`} className="admin-btn">
                   edit page →
                 </Link>
+                <Copy
+                  what={row.title || "this page"}
+                  onClick={() => copy(row)}
+                  disabled={pending}
+                />
                 <Bin
                   what={row.title || "this page"}
                   onClick={() => remove(row)}

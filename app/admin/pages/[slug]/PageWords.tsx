@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
+  Bin,
+  Copy,
   Field,
   Fields,
   Flag,
@@ -366,7 +368,8 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
                   ) : null}
                 </span>
                 <Move index={index} total={draft.blocks.length} onMove={moveBlock} />
-                <Word
+                <Copy
+                  what={`part ${index + 1}`}
                   onClick={() =>
                     setBlocks([
                       ...draft.blocks.slice(0, index + 1),
@@ -374,17 +377,11 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
                       ...draft.blocks.slice(index + 1),
                     ])
                   }
-                  title="The same again, just below"
-                >
-                  duplicate
-                </Word>
-                <Word
-                  danger
+                />
+                <Bin
+                  what={`part ${index + 1}`}
                   onClick={() => setBlocks(draft.blocks.filter((_, i) => i !== index))}
-                  aria-label={`Remove part ${index + 1}`}
-                >
-                  remove
-                </Word>
+                />
               </header>
 
               <div className="admin-para">

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Picker, { type Choice } from "./Picker";
 import Thumb from "./Thumb";
-import { Bin, Grip, Icon, Place, Word, moved, useDragOrder } from "./ui";
+import { Bin, Copy, Grip, Icon, Place, Word, moved, useDragOrder } from "./ui";
 import { LAYOUTS } from "@/lib/photo-layout";
 import type { PhotoLayout } from "@/lib/supabase/rows";
 
@@ -281,9 +281,10 @@ export default function StoryPage({
               </span>
 
               <span className="admin-block-does">
-                <Word onClick={() => copy(block)} title="The same again, just below">
-                  duplicate
-                </Word>
+                <Copy
+                  what={`this ${block.kind === "text" ? "paragraph" : block.kind}`}
+                  onClick={() => copy(block)}
+                />
                 <Bin
                   what={`this ${block.kind === "text" ? "paragraph" : block.kind}`}
                   onClick={() => onChange(blocks.filter((one) => one.id !== block.id))}

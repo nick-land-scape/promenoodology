@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PageFlip } from "page-flip";
+import { pagesOf } from "@/lib/pdf-pages";
 
 /**
  * The flyer, looked through rather than downloaded.
@@ -64,42 +65,8 @@ export default function FlyerBook({
   /** The PDF, page by page, as pictures. Done once and kept. */
   const draw = useCallback(async () => {
     if (shots.current.length > 0) return shots.current;
-
-    const pdfjs = await import("pdfjs-dist");
-
-    /*
-     * The worker, handed over as a port rather than as an address.
-     *
-     * PDF.js ships its worker as an ES module and, given only a `workerSrc`,
-     * starts it as a classic one — the request hangs for ever and the pages
-     * never arrive, with nothing said in the console. Building the Worker here
-     * is the only way to be sure it is started as the kind of thing it is.
-     */
-    pdfjs.GlobalWorkerOptions.workerPort = new Worker(
-      new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url),
-      { type: "module" },
-    );
-
-    const file = await pdfjs.getDocument({ url: src }).promise;
-    const out: string[] = [];
-
-    for (let number = 1; number <= file.numPages; number += 1) {
-      const page = await file.getPage(number);
-      /* Twice the page's own size: it is read at up to half the width of a
-         laptop and a flyer is mostly type, which is the first thing to go soft. */
-      const view = page.getViewport({ scale: 2 });
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.floor(view.width);
-      canvas.height = Math.floor(view.height);
-      // A canvas that cannot give a 2D context cannot be drawn on, and asking
-      // now is a clearer failure than asking inside the renderer.
-      if (!canvas.getContext("2d")) continue;
-      await page.render({ canvas, viewport: view }).promise;
-      out.push(canvas.toDataURL("image/jpeg", 0.88));
-    }
-
-    shots.current = out;
-    return out;
+    shots.current = await pagesOf(src, { scale: 2 });
+    return shots.current;
   }, [src]);
 
   // Drawn, then turned. Both only once somebody has asked to look.

@@ -284,6 +284,34 @@ export default function EventEditor({
               placeholder={inFrench ? draft.subtitle : "with the promeNOODology collective"}
             />
           </Field>
+          {/* The picture is what the evening *is* as much as its name is — it
+              is the first thing anybody sees of it, in the app and at the top of
+              its own page — so it sits with the name rather than in a panel of
+              its own five screens down. */}
+          <Field
+            label="the picture"
+            hint="From the archive. At the top of the evening, in the app and on its own page."
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button
+                type="button"
+                className="admin-logo"
+                onClick={() => setPicking(true)}
+                title={pictureUrl ? "Choose another" : "Choose one from the archive"}
+              >
+                {pictureUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={pictureUrl} alt="" draggable={false} />
+                ) : (
+                  <span className="admin-logo-none">no picture</span>
+                )}
+                <em>{pictureUrl ? "replace" : "choose one"}</em>
+              </button>
+              {draft.photo_path ? (
+                <Bin what="this picture" onClick={() => set("photo_path", null)} />
+              ) : null}
+            </span>
+          </Field>
           <Field
             label="the paragraph it opens with"
             hint="Two or three lines. Everything longer belongs on the page below."
@@ -471,33 +499,6 @@ export default function EventEditor({
             />
           </Field>
         </Fields>
-      </Panel>
-
-      <Panel
-        name="the picture"
-        hint="At the top of the evening, in the app and on its own page. A flyer makes a good one."
-      >
-        <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <button
-            type="button"
-            className="admin-logo"
-            onClick={() => setPicking(true)}
-            title={pictureUrl ? "Choose another" : "Choose one from the archive"}
-          >
-            {pictureUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={pictureUrl} alt="" draggable={false} />
-            ) : (
-              <span className="admin-logo-none">no picture</span>
-            )}
-            <em>{pictureUrl ? "replace" : "choose one"}</em>
-          </button>
-          {draft.photo_path ? (
-            <Word danger onClick={() => set("photo_path", null)}>
-              take it off
-            </Word>
-          ) : null}
-        </span>
       </Panel>
 
       <Panel

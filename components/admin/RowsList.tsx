@@ -8,7 +8,7 @@ import { matches } from "@/lib/admin/find";
 import { fresh, TABLES, type TableName } from "@/lib/admin/tables";
 import Find from "./Find";
 import InHead from "./InHead";
-import { Bin, Empty, Flag, Icon, Problem, Tag, Word, today } from "./ui";
+import { Bin, Copy, Empty, Flag, Icon, Problem, Tag, today } from "./ui";
 
 /**
  * A section as a list of names, with each name a way in to its own page.
@@ -230,14 +230,15 @@ export default function RowsList({
 
                     <Flag on={row.published} onChange={(next) => show(row, next)} />
 
-                    <Word onClick={() => copy(row)} title="The same again, to change">
-                      duplicate
-                    </Word>
-
                     <Link href={`${at}/${row.id}`} className="admin-btn">
                       edit →
                     </Link>
 
+                    <Copy
+                      what={row.title || untitled}
+                      onClick={() => copy(row)}
+                      disabled={pending}
+                    />
                     <Bin
                       what={row.title || untitled}
                       onClick={() => remove(row)}

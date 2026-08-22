@@ -10,8 +10,8 @@ import {
   Grip,
   Place,
   Problem,
+  Copy,
   Tag,
-  Word,
   moved,
   useDragOrder,
 } from "@/components/admin/ui";
@@ -250,7 +250,12 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
                   <Tag tone="warn">not on the site</Tag>
                 )}
 
-                <Bin what={row.title || "this story"} onClick={() => remove(row)} disabled={pending} />
+                <Copy
+                what={row.title || "this story"}
+                onClick={() => copy(row)}
+                disabled={pending}
+              />
+              <Bin what={row.title || "this story"} onClick={() => remove(row)} disabled={pending} />
               </span>
             </li>
           );

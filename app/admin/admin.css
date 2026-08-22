@@ -262,10 +262,17 @@ body:has(.admin) {
   flex: 1;
   min-width: 0;
   margin-left: var(--admin-side);
-  /* Twice the edge on the right, for the same reason as the site's own pages:
-     the menu holds the left, so one edge on the right reads as a page sliding
-     off rather than as a column. The phone rule below puts it back. */
-  padding: var(--admin-top) calc(var(--edge) * 2) 90px var(--edge);
+  /*
+   * The same air on both sides.
+   *
+   * It used to be one edge on the left and two on the right, borrowed from the
+   * site's own pages — where it is right, because there the menu floats and the
+   * page needs to look like a column rather than something sliding off. In here
+   * the menu is a panel with a hard border down its side, and a panel of fields
+   * sitting one edge away from that border reads as squeezed against it while
+   * the other side has twice as much room.
+   */
+  padding: var(--admin-top) calc(var(--edge) * 1.6) 90px calc(var(--edge) * 1.6);
 }
 
 .admin-head {
@@ -747,6 +754,45 @@ body:has(.admin) {
 }
 
 .admin-bin[disabled]:hover {
+  color: var(--admin-faint);
+  border-color: transparent;
+  background: none;
+}
+
+/* The same again. Drawn exactly like the bin because it sits beside it and they
+   are the same kind of act — something done *to* a row rather than inside it —
+   and purple rather than red because it is the one of the two you can undo. */
+.admin-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--admin-faint);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.admin-copy svg {
+  width: 16px;
+  height: 16px;
+}
+
+.admin-copy:hover {
+  color: var(--purple);
+  border-color: var(--purple);
+  background: var(--admin-tint);
+}
+
+.admin-copy[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.admin-copy[disabled]:hover {
   color: var(--admin-faint);
   border-color: transparent;
   background: none;
@@ -4194,4 +4240,69 @@ html.admin-dragging * {
   .admin-words li {
     grid-template-columns: 1fr;
   }
+}
+
+/* ---------------------------------------------------------- a file on the page
+
+   The flyer, shown rather than named. Its first page is drawn in the browser by
+   the same PDF.js the reader on the site uses, so what an editor sees is what a
+   reader gets — and the three things you can do to it are three separate,
+   labelled things rather than a column of words pointing at something
+   invisible. */
+
+.admin-paper {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.admin-paper-sheet {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 128px;
+  min-height: 170px;
+  border: 1px solid var(--hairline);
+  background: var(--wash-soft);
+  overflow: hidden;
+}
+
+.admin-paper-sheet img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.admin-paper-none {
+  font-style: italic;
+  font-size: 0.9em;
+  color: var(--admin-faint);
+  padding: 0 10px;
+  text-align: center;
+}
+
+.admin-paper-does {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding-top: 4px;
+  min-width: 0;
+}
+
+.admin-paper-does strong {
+  font-weight: 400;
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 22rem;
+}
+
+.admin-paper-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

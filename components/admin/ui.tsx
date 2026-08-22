@@ -48,6 +48,9 @@ const ICONS: Record<string, string> = {
   trash: "M4 7h16M9.5 7V5.5A1.5 1.5 0 0 1 11 4h2a1.5 1.5 0 0 1 1.5 1.5V7M6 7l1 12.5A1.5 1.5 0 0 0 8.5 21h7L18 7",
   theme: "M12 3a9 9 0 1 0 0 18c1.7 0 2-1.2 1.2-2.2-.8-1-.2-2.3 1.1-2.3H18a3 3 0 0 0 3-3A9 9 0 0 0 12 3zM7.5 11.5h.01M10.5 8h.01M14.5 8h.01",
   search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM16 16l4.5 4.5",
+  /* Two sheets, one behind the other. The mark for "the same again" everywhere
+     anybody has ever seen one, which is the whole reason to use it. */
+  copy: "M9 9h11v11H9zM5 15H4V4h11v1",
   sun: "M12 5V2m0 20v-3m7-7h3M2 12h3m12.5-5.5 2-2m-15 15 2-2m0-11-2-2m15 15-2-2M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z",
   film: "M3 5h18v14H3zM3 9.5h18M3 14.5h18M7.5 5v14M16.5 5v14",
   /* Partners are the ones who are not people: a school, a festival, a council,
@@ -199,6 +202,31 @@ export function Bin({
       title={what ? `Delete ${what}` : "Delete"}
     >
       <Icon name="trash" />
+    </button>
+  );
+}
+
+/**
+ * The same again.
+ *
+ * Beside the bin, and drawn like it: they are the two things you can do *to* a
+ * row rather than inside it, and a word among words was not read as one of them
+ * — it sat in the line of labels and got skipped. Two sheets, one behind the
+ * other, which is the mark for this everywhere.
+ */
+export function Copy({
+  what,
+  ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { what?: string }) {
+  return (
+    <button
+      type="button"
+      {...rest}
+      className="admin-copy"
+      aria-label={what ? `Duplicate ${what}` : "Duplicate"}
+      title={what ? `Duplicate ${what}` : "The same again"}
+    >
+      <Icon name="copy" />
     </button>
   );
 }

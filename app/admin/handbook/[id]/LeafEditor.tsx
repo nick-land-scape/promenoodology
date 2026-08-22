@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   Bin,
+  Copy,
   Field,
   Fields,
   Grip,
@@ -154,8 +155,9 @@ export default function LeafEditor({
                   </button>
                 ))}
               </span>
-              <span style={{ display: "flex", gap: 12 }}>
-                <Word
+              <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <Copy
+                  what={`this ${block.kind === "heading" ? "heading" : "paragraph"}`}
                   onClick={() =>
                     setBlocks([
                       ...draft.blocks.slice(0, index + 1),
@@ -163,17 +165,11 @@ export default function LeafEditor({
                       ...draft.blocks.slice(index + 1),
                     ])
                   }
-                  title="The same again, just below"
-                >
-                  duplicate
-                </Word>
-                <Word
-                  danger
+                />
+                <Bin
+                  what={`this ${block.kind === "heading" ? "heading" : "paragraph"}`}
                   onClick={() => setBlocks(draft.blocks.filter((_, at) => at !== index))}
-                  aria-label={`Remove part ${index + 1}`}
-                >
-                  remove
-                </Word>
+                />
               </span>
             </header>
 
