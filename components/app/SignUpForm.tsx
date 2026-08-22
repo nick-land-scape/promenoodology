@@ -10,7 +10,6 @@ import {
   signUpForEvent,
 } from "@/app/app/actions";
 import { buzz } from "@/lib/native";
-import Mark from "./Mark";
 
 export type Joinable = ClubEvent & {
   /** When it is, said the way the row says it. */
@@ -159,7 +158,9 @@ export default function SignUpForm({
             </Link>
             <span className="row-meta">{event.label}</span>
             {event.partners.length > 0 ? (
-              <span className="row-meta">with {event.partners.map((one) => one.name).join(", ")}</span>
+              <span className="row-meta">
+                with {event.partners.map((one) => one.name).join(", ")}
+              </span>
             ) : null}
             {event.note ? <span className="row-meta">{event.note}</span> : null}
 
@@ -332,10 +333,7 @@ export default function SignUpForm({
       {view === "list" ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">
-              <Mark is="calendar" />
-              still to come
-            </h2>
+            <h2 className="app-h2">still to come</h2>
             <span className="app-label">
               {shown.length} {shown.length === 1 ? "evening" : "evenings"}
             </span>
@@ -393,10 +391,7 @@ export default function SignUpForm({
       {view === "list" && past.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">
-              <Mark is="calendar" />
-              already happened
-            </h2>
+            <h2 className="app-h2">already happened</h2>
             <span className="app-label">{past.length}</span>
           </div>
           <ul className="row-list">
@@ -409,7 +404,10 @@ export default function SignUpForm({
                     </span>
                   ) : null}
                   <span className="row-body">
-                    <Link href={`/app/events/${event.id}`} className="row-title">
+                    <Link
+                      href={`/app/events/${event.id}`}
+                      className="row-title"
+                    >
                       {event.title}
                     </Link>
                     <span className="row-meta">{event.label}</span>

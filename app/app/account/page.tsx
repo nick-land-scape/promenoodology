@@ -9,7 +9,7 @@ import { signOut } from "@/app/(site)/account/actions";
 import { whenItIs } from "@/lib/app-data";
 import { pretty } from "@/lib/admin/when";
 import { myBookings, myPhotos, myPosts, requireMember } from "@/lib/app/me";
-import { getEvents } from "@/lib/source";
+import { sharedEvents } from "@/lib/shared";
 
 export const metadata = { title: "Account" };
 
@@ -38,7 +38,7 @@ export default async function AccountPage() {
   const me = await requireMember("/app/account");
   const [mine, events, photos, posts] = await Promise.all([
     myBookings(),
-    getEvents(),
+    sharedEvents(),
     myPhotos(),
     myPosts(),
   ]);

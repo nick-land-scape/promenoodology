@@ -153,18 +153,6 @@ body:has(.app-shell) {
   margin: 0;
   font: inherit;
   font-size: 1.2rem;
-  /* The mark sits on the heading's own line, at the height of its capitals. */
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Hairline, muted, the size of a capital letter: enough to find a section by
-   without competing with the words that name it. */
-.mark {
-  flex: none;
-  color: var(--muted);
-  opacity: 0.85;
 }
 
 .app-label {

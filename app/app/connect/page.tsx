@@ -1,7 +1,8 @@
 import AppHeader from "@/components/app/AppHeader";
 import Feed from "@/components/app/Feed";
 import { requireMember } from "@/lib/app/me";
-import { getMembers, getPosts } from "@/lib/source";
+import { getPosts } from "@/lib/source";
+import { sharedMembers } from "@/lib/shared";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export const metadata = { title: "Connect" };
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ConnectPage() {
   const me = await requireMember("/app/connect");
-  const [posts, everybody] = await Promise.all([getPosts(), getMembers()]);
+  const [posts, everybody] = await Promise.all([getPosts(), sharedMembers()]);
   const people = everybody.sort((a, b) => a.last.localeCompare(b.last));
 
   /* Who can actually be waved at, and who you have waved at already. The

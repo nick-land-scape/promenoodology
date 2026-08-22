@@ -13,7 +13,6 @@ import {
 import { buzz } from "@/lib/native";
 import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
 import { mediaUrl } from "@/lib/supabase/config";
-import Mark from "./Mark";
 
 type Props = {
   posts: Post[];
@@ -109,10 +108,7 @@ export default function Feed({
       ) : (
         <div className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">
-              <Mark is="hand" />
-              who is around
-            </h2>
+            <h2 className="app-h2">who is around</h2>
             <span className="app-label">{people.length} people</span>
           </div>
           {/* Two columns of these on a tablet: a name and a country in a row a

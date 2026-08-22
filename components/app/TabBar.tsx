@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { buzz } from "@/lib/native";
 
 /* Five, which is as many as a phone's bar can hold and exactly as many as this
    app has kinds of thing to do: see what is on, say you are coming, read what has
@@ -31,6 +32,15 @@ export default function TabBar() {
             href={href}
             className="tab"
             aria-current={active ? "page" : undefined}
+            /* Pressing the tab you are already on goes to the top of it, which is
+               what every other app on the phone does and the one gesture people
+               try without being told. */
+            onClick={(press) => {
+              if (!active) return;
+              press.preventDefault();
+              void buzz("light");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
           >
             <Icon filled={active} />
             <span>{label}</span>

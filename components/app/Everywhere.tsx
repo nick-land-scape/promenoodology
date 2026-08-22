@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Photo from "../Photo";
+import { buzz } from "@/lib/native";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type Pin = {
@@ -331,6 +332,8 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
       ? Math.min(2, Math.max(0, nearest + (grab.speed > 0 ? 1 : -1)))
       : nearest;
 
+    // The sheet answers when it catches, the way a real one would.
+    if (next !== stop) void buzz("light");
     setStop(next);
     setHeld(null);
   };
