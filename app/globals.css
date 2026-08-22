@@ -1928,6 +1928,15 @@ body:has(.hero) .contact {
   filter: invert(1) hue-rotate(180deg);
 }
 
+/* Multiply is a technique for light paper: it removes the white of a scan by
+   darkening, and on dark paper it darkens the ink into the ground — which is why
+   inverting the app's mark was not enough on its own to make it visible. On dark
+   paper the ink is simply drawn. */
+:root[data-theme="dark"] .app-mark,
+:root[data-theme="dark"] .curtain-mark {
+  mix-blend-mode: normal;
+}
+
 /* A tick, a face, a portrait: images that are meant to look like themselves and
    must not be inverted with the marks above. */
 :root[data-theme="dark"] .session-face img,
