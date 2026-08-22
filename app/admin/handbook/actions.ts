@@ -116,3 +116,57 @@ export async function deleteLeaf(id: string): Promise<Saved> {
   refreshSite();
   return { ok: true };
 }
+
+/**
+ * The same page again, directly after it.
+ *
+ * A handbook is written a page at a time and most pages are the shape of the one
+ * before: a heading and two paragraphs. This makes the shape, and everything
+ * after it moves down one so the copy lands where somebody expects it rather
+ * than at the back of the book.
+ */
+export async function duplicateLeaf(id: string): Promise<Saved & { id?: string }> {
+  await requireAdminAction();
+  const supabase = await supabaseServer();
+
+  const { data: was } = await supabase
+    .from("handbook_pages")
+    .select("position, title, blocks, fr")
+    .is("deleted_at", null)
+    .eq("id", id)
+    .maybeSingle<{ position: number; title: string; blocks: unknown; fr: unknown }>();
+  if (!was) return { ok: false, error: "That page is not there any more." };
+
+  const { data: after } = await supabase
+    .from("handbook_pages")
+    .select("id, position")
+    .is("deleted_at", null)
+    .gt("position", was.position)
+    .order("position")
+    .returns<{ id: string; position: number }[]>();
+
+  for (const one of after ?? []) {
+    const { error } = await supabase
+      .from("handbook_pages")
+      .update({ position: one.position + 1 })
+      .eq("id", one.id);
+    if (error) return failed(error);
+  }
+
+  const called = (was.title ?? "").trim();
+  const { data, error } = await supabase
+    .from("handbook_pages")
+    .insert({
+      position: was.position + 1,
+      title: called ? `${called} (copy)` : "",
+      blocks: was.blocks ?? [],
+      fr: was.fr ?? {},
+      published: true,
+    })
+    .select("id")
+    .single<{ id: string }>();
+  if (error) return failed(error);
+
+  refreshSite();
+  return { ok: true, id: data.id };
+}

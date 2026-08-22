@@ -107,6 +107,23 @@ export default function StoryPage({
   const setWords = (block: Block, said: string) =>
     set(block.id, inFrench ? { fr: { ...(block.fr ?? {}), words: said } } : { words: said });
 
+  /**
+   * The same block again, directly under this one.
+   *
+   * Writing is mostly making one more of something you have already got the
+   * shape of: three paragraphs under a heading, four headings that all say
+   * roughly the same kind of thing. Copying by hand means selecting, copying,
+   * adding, pasting, and dragging it back up to where it belonged.
+   *
+   * A copy is a new block, so it gets a new id of its own — sharing one would
+   * make React draw the two of them as one.
+   */
+  const copy = (block: Block) => {
+    const at = blocks.indexOf(block);
+    const again: Block = { ...block, id: blankBlock(block.kind).id };
+    onChange([...blocks.slice(0, at + 1), again, ...blocks.slice(at + 1)]);
+  };
+
   const add = (kind: Block["kind"], after?: number) => {
     const fresh = blankBlock(kind);
     if (after === undefined) onChange([...blocks, fresh]);
@@ -264,6 +281,9 @@ export default function StoryPage({
               </span>
 
               <span className="admin-block-does">
+                <Word onClick={() => copy(block)} title="The same again, just below">
+                  duplicate
+                </Word>
                 <Bin
                   what={`this ${block.kind === "text" ? "paragraph" : block.kind}`}
                   onClick={() => onChange(blocks.filter((one) => one.id !== block.id))}

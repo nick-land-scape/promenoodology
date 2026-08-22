@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { addRow, deleteRow, saveRows } from "@/app/admin/rows-actions";
+import { addRow, deleteRow, duplicateRow, saveRows } from "@/app/admin/rows-actions";
 import { matches } from "@/lib/admin/find";
 import { fresh, TABLES, type TableName } from "@/lib/admin/tables";
 import Find from "./Find";
 import InHead from "./InHead";
-import { Bin, Empty, Flag, Icon, Problem, Tag, today } from "./ui";
+import { Bin, Empty, Flag, Icon, Problem, Tag, Word, today } from "./ui";
 
 /**
  * A section as a list of names, with each name a way in to its own page.
@@ -132,6 +132,19 @@ export default function RowsList({
     });
   }
 
+  /** The same again, hidden, opened so it can be made different. */
+  function copy(row: Listed) {
+    setProblem("");
+    start(async () => {
+      const result = await duplicateRow(table, row.id);
+      if (!result.ok || !result.id) {
+        setProblem(result.error ?? "That did not copy.");
+        return;
+      }
+      router.push(`${at}/${result.id}`);
+    });
+  }
+
   function remove(row: Listed) {
     const name = row.title || untitled;
     if (!confirm(`Delete “${name}”? It goes to the bin for thirty days.`)) return;
@@ -216,6 +229,10 @@ export default function RowsList({
                     ) : null}
 
                     <Flag on={row.published} onChange={(next) => show(row, next)} />
+
+                    <Word onClick={() => copy(row)} title="The same again, to change">
+                      duplicate
+                    </Word>
 
                     <Link href={`${at}/${row.id}`} className="admin-btn">
                       edit →

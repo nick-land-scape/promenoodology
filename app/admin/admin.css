@@ -4159,7 +4159,9 @@ html.admin-dragging * {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px 22px;
   align-items: start;
-  padding: 10px 0;
+  /* The same air down the left as every other field in a panel has. The English
+     was sitting flat against the rule. */
+  padding: 10px 14px;
   border-top: 1px solid var(--hairline);
 }
 

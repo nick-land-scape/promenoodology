@@ -100,15 +100,28 @@ export const PAGES: PageSpec[] = [
   {
     slug: "handbook",
     name: "the handbook",
-    blurb: "How to put on your own. Headings are numbered 01, 02, 03 in the order they appear.",
+    blurb:
+      "The book we give away: its title, the line under it, how it turns, and whether the form at the foot is there.",
     view: "/handbook",
     usesTitle: true,
     usesLead: true,
-    addLabel: "another block",
-    kinds: [
-      { value: "heading", label: "heading", hint: "Numbered automatically." },
-      { value: "text", label: "paragraph", hint: "The words under it." },
-    ],
+    addLabel: "",
+    /* Not made of blocks any more. It is made of pages, each written on its own
+       — see /admin/handbook — and a second flat list of words here would be a
+       different handbook nobody could see. */
+    kinds: [],
+    madeOf: "The pages of it are written under The handbook.",
+  },
+  {
+    slug: "do-it-yourself",
+    name: "do it yourself",
+    blurb: "The sheets: the heading over them, and the line under it.",
+    view: "/do-it-yourself",
+    usesTitle: true,
+    usesLead: true,
+    kinds: [],
+    addLabel: "",
+    madeOf: "The sheets themselves are under Do it yourself.",
   },
   {
     slug: "newsletter",

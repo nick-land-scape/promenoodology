@@ -11,12 +11,13 @@ import {
   Place,
   Problem,
   Tag,
+  Word,
   moved,
   useDragOrder,
 } from "@/components/admin/ui";
 import Find from "@/components/admin/Find";
 import { hay, matches } from "@/lib/admin/find";
-import { deleteStory, reorderStories, showStory } from "./actions";
+import { deleteStory, duplicateStory, reorderStories, showStory } from "./actions";
 
 export type StoryRow = {
   id: string;
@@ -94,6 +95,19 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
           list.map((one) => (one.id === row.id ? { ...one, published: !published } : one)),
         );
       }
+    });
+  }
+
+  /** The same story again, hidden, opened so it can be made different. */
+  function copy(row: StoryRow) {
+    setProblem("");
+    start(async () => {
+      const result = await duplicateStory(row.id);
+      if (!result.ok || !result.slug) {
+        setProblem(result.error ?? "That did not copy.");
+        return;
+      }
+      router.push(`/admin/stories/${result.slug}`);
     });
   }
 

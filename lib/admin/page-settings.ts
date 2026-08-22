@@ -196,6 +196,13 @@ export const PAGE_SETTINGS: Record<string, Setting[]> = {
       fallback: true,
     },
     {
+      key: "showSheets",
+      kind: "toggle",
+      label: "the “or take a sheet” block",
+      hint: "Off takes the whole block away — heading, words and the link. The sheets themselves stay where they are.",
+      fallback: true,
+    },
+    {
       key: "showForm",
       kind: "toggle",
       label: "the “ask us for a hand” form",

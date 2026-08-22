@@ -12,11 +12,12 @@ import {
   Place,
   Problem,
   Tag,
+  Word,
   moved,
   useDragOrder,
 } from "@/components/admin/ui";
 import { hay, matches } from "@/lib/admin/find";
-import { deleteLeaf, reorderLeaves, showLeaf } from "./actions";
+import { deleteLeaf, duplicateLeaf, reorderLeaves, showLeaf } from "./actions";
 
 export type LeafRow = {
   id: string;
@@ -79,6 +80,19 @@ export default function LeafList({ initial }: { initial: LeafRow[] }) {
           list.map((one) => (one.id === row.id ? { ...one, published: !published } : one)),
         );
       }
+    });
+  }
+
+  /** The same page again, directly after it. */
+  function copy(row: LeafRow) {
+    setProblem("");
+    start(async () => {
+      const result = await duplicateLeaf(row.id);
+      if (!result.ok || !result.id) {
+        setProblem(result.error ?? "That did not copy.");
+        return;
+      }
+      router.push(`/admin/handbook/${result.id}`);
     });
   }
 
@@ -184,6 +198,10 @@ export default function LeafList({ initial }: { initial: LeafRow[] }) {
                   {row.words} word{row.words === 1 ? "" : "s"}
                 </Tag>
                 <Flag on={row.published} onChange={(next) => show(row, next)} />
+                <Word onClick={() => copy(row)} title="The same again, just after it">
+                  duplicate
+                </Word>
+
                 <Link href={`/admin/handbook/${row.id}`} className="admin-btn">
                   edit page →
                 </Link>

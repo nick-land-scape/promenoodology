@@ -446,3 +446,92 @@ function onlyWhatIsWritten(fr: Record<string, unknown>): Record<string, unknown>
   }
   return out;
 }
+
+/**
+ * The same story again, hidden, with its page and its people.
+ *
+ * A story is the heaviest thing in here to make: the words, the arrangement,
+ * who was there, who it was made with. A second one about the same evening in
+ * another town starts from all of that and changes half of it.
+ *
+ * Its address and its tag are minted fresh, because both are unique and the tag
+ * is what photographs look for — a copy sharing a tag would quietly claim the
+ * original's photographs. Which means the copy has no photographs, and should
+ * not: they are of the thing that happened, and this is about a different one.
+ */
+export async function duplicateStory(id: string): Promise<Saved & { slug?: string }> {
+  await requireAdminAction();
+  const supabase = await supabaseServer();
+
+  const { data: was } = await supabase
+    .from("stories")
+    .select("*")
+    .is("deleted_at", null)
+    .eq("id", id)
+    .maybeSingle<Record<string, unknown>>();
+  if (!was) return { ok: false, error: "That story is not there any more." };
+
+  const { data: last } = await supabase
+    .from("stories")
+    .select("position")
+    .is("deleted_at", null)
+    .order("position", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ position: number }>();
+
+  const stub = `untitled-${suffix()}`;
+  const called = String(was.title ?? "").trim();
+
+  const { data: made, error } = await supabase
+    .from("stories")
+    .insert({
+      slug: stub,
+      tag: stub,
+      title: called ? `${called} (copy)` : "Untitled",
+      subtitle: was.subtitle ?? null,
+      place: was.place ?? null,
+      lat: was.lat ?? null,
+      lng: was.lng ?? null,
+      people_fed: was.people_fed ?? null,
+      happened: was.happened ?? null,
+      made_with: was.made_with ?? null,
+      sections: was.sections ?? [],
+      topics: was.topics ?? [],
+      fr: was.fr ?? {},
+      position: (last?.position ?? 0) + 1,
+      // A copy is a draft. One that went live the moment it was made would be
+      // the site publishing something nobody had finished writing.
+      published: false,
+      /* No cover: it names a photograph of the original, and the copy has none
+         of its own until somebody tags them across. */
+      featured_photo_id: null,
+    })
+    .select("id, slug")
+    .single<{ id: string; slug: string }>();
+  if (error) return failed(error);
+
+  // The page as it was arranged, and who was there. The photographs the blocks
+  // point at still belong to the original, which is right: a block is a place on
+  // a page, and the picture in it is the archive's.
+  for (const [child, key] of [
+    ["story_blocks", "story_id"],
+    ["story_people", "story_id"],
+    ["story_partners", "story_id"],
+  ] as const) {
+    const { data: parts } = await supabase
+      .from(child)
+      .select("*")
+      .eq(key, id)
+      .order("position")
+      .returns<Record<string, unknown>[]>();
+
+    const rows = (parts ?? []).map((part) => {
+      const { id: _was, created_at: _made, ...rest } = part;
+      return { ...rest, [key]: made.id };
+    });
+    if (rows.length > 0) await supabase.from(child).insert(rows);
+  }
+
+  refreshSite();
+  return { ok: true, slug: made.slug };
+}

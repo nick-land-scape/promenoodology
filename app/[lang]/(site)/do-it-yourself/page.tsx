@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Photo from "@/components/Photo";
-import { getSheets } from "@/lib/source";
+import { at, isLang, PLAIN } from "@/lib/lang";
+import { getPageHead, getSheets } from "@/lib/source";
 
 export const metadata: Metadata = {
   title: "Do it yourself",
@@ -20,19 +21,30 @@ export const revalidate = 60;
  * in the second person. No account and no login anywhere near it: a sheet you
  * cannot hand to somebody is not an invitation, it is a brochure.
  */
-export default async function DoItYourselfPage() {
-  const sheets = await getSheets();
+export default async function DoItYourselfPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang: asked } = await params;
+  const lang = isLang(asked) ? asked : PLAIN;
+
+  const [sheets, head] = await Promise.all([getSheets(lang), getPageHead("do-it-yourself", lang)]);
 
   return (
     <main className="page">
-      <h1 className="page-title">do it yourself</h1>
-      <p className="page-intro">
-        None of this is ours to keep. Every sheet here is about the same thing —
-        getting people who do not know each other into the same place, on purpose,
-        and giving them something to do together once they are there. Cooking is how
-        we usually manage it, because a pot is the most obvious job in the world to
-        share, but the food is the means and never the point.
-      </p>
+      <h1 className="page-title">{head.title || "do it yourself"}</h1>
+      {head.lead ? (
+        <p className="page-intro">{head.lead}</p>
+      ) : (
+        <p className="page-intro">
+          None of this is ours to keep. Every sheet here is about the same thing —
+          getting people who do not know each other into the same place, on purpose,
+          and giving them something to do together once they are there. Cooking is how
+          we usually manage it, because a pot is the most obvious job in the world to
+          share, but the food is the means and never the point.
+        </p>
+      )}
       <p className="page-intro">
         Pick the kind of place you have. Each sheet says what it takes, what to do in
         what order, and shows it having worked somewhere else. Then tell us how it
@@ -49,7 +61,7 @@ export default async function DoItYourselfPage() {
         <ul className="sheets">
           {sheets.map((sheet) => (
             <li key={sheet.slug}>
-              <Link className="sheet-card" href={`/do-it-yourself/${sheet.slug}`}>
+              <Link className="sheet-card" href={at(lang, `/do-it-yourself/${sheet.slug}`)}>
                 {sheet.photo ? (
                   <span className="sheet-card-shot">
                     <Photo src={sheet.photo} alt="" width={900} height={600} sizes="(max-width: 700px) 100vw, 460px" />

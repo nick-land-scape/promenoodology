@@ -1,7 +1,9 @@
 import BinLink from "@/components/admin/BinLink";
 import Head from "@/components/admin/Head";
+import PageWords from "@/app/admin/pages/[slug]/PageWords";
 import RowsList, { type Listed } from "@/components/admin/RowsList";
 import { requireAdmin } from "@/lib/admin/guard";
+import { headOfPage } from "@/lib/admin/head-of-page";
 import { hay } from "@/lib/admin/find";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -16,6 +18,8 @@ import { supabaseServer } from "@/lib/supabase/server";
 export default async function SheetsPage() {
   await requireAdmin();
   const supabase = await supabaseServer();
+
+  const top = await headOfPage("do-it-yourself");
 
   const { data: sheets } = await supabase
     .from("sheets")
@@ -63,6 +67,10 @@ export default async function SheetsPage() {
         possible. A new one starts hidden, and its address is the thing people paste into messages,
         so pick it once and leave it alone.
       </p>
+
+      {/* The heading over the sheets and the line under it, where the sheets are
+          rather than on a screen of its own. */}
+      {top ? <PageWords spec={top.spec} initial={top.initial} /> : null}
 
       <RowsList
         table="sheets"

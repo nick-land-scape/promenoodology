@@ -3,6 +3,7 @@
 import { requireAdminAction } from "@/lib/admin/guard";
 import { failed, refreshSite, type Saved } from "@/lib/admin/revalidate";
 import { kindOf, TABLES, type TableName, writableColumns } from "@/lib/admin/tables";
+import { suffix } from "@/lib/admin/slug";
 import { supabaseServer } from "@/lib/supabase/server";
 
 /**
@@ -227,4 +228,77 @@ export async function deleteRow(table: string, id: string): Promise<Saved> {
 
   refreshSite();
   return { ok: true };
+}
+
+/**
+ * The same row again, hidden, with "copy" on the end of its name.
+ *
+ * Most of what gets made in here is a variation on something already made — the
+ * fourth long table, next month's version of the same evening, a sheet for a
+ * courtyard that is nearly the sheet for a car park. Starting from blank means
+ * retyping the place, the partners, the picture and the practical sentence that
+ * were right the first time.
+ *
+ * Three things are deliberately not copied. Whether it is on: a copy is a draft
+ * by definition, and one that quietly went live on the day it was made would be
+ * the site announcing something nobody had finished writing. Whatever has to be
+ * unique — an address the database will not have twice. And, for an evening,
+ * anybody who asked to come, which is a promise made to the original and not to
+ * this.
+ */
+export async function duplicateRow(table: string, id: string): Promise<Saved & { id?: string }> {
+  await requireAdminAction();
+  const name = known(table);
+  const spec = TABLES[name];
+  const supabase = await supabaseServer();
+
+  const { data: was, error: reading } = await supabase
+    .from(name)
+    .select("*")
+    .eq("id", id)
+    .maybeSingle<Record<string, unknown>>();
+  if (reading) return failed(reading);
+  if (!was) return { ok: false, error: "That is not there any more." };
+
+  const again: RowValues = {};
+  for (const key of writableColumns(name)) {
+    if (key in was) again[key] = was[key] as RowValues[string];
+  }
+  // The French comes with it: a copy of a translated thing is a translated copy.
+  if (spec.translates && was.fr) again.fr = was.fr as RowValues[string];
+
+  const called = String(was[spec.title] ?? "").trim();
+  again[spec.title] = called ? `${called} (copy)` : "";
+  if (spec.publishable) again.published = false;
+  if (spec.mints) again[spec.mints] = `untitled-${suffix()}`;
+
+  const { data, error } = await supabase
+    .from(name)
+    .insert(again)
+    .select("id")
+    .single<{ id: string }>();
+  if (error) return failed(error);
+
+  /* An evening is not only its row: the days it runs and the page somebody
+     wrote are what took the time, and a copy without them is a blank form with
+     a familiar name on it. */
+  if (name === "events") {
+    for (const child of ["event_sessions", "event_blocks"] as const) {
+      const { data: parts } = await supabase
+        .from(child)
+        .select("*")
+        .eq("event_id", id)
+        .order("position")
+        .returns<Record<string, unknown>[]>();
+
+      const rows = (parts ?? []).map((part) => {
+        const { id: _was, created_at: _made, ...rest } = part;
+        return { ...rest, event_id: data.id };
+      });
+      if (rows.length > 0) await supabase.from(child).insert(rows);
+    }
+  }
+
+  refreshSite();
+  return { ok: true, id: data.id };
 }

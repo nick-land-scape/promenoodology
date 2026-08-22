@@ -1,6 +1,8 @@
 import Head from "@/components/admin/Head";
+import PageWords from "@/app/admin/pages/[slug]/PageWords";
 import { Icon } from "@/components/admin/ui";
 import { requireAdmin } from "@/lib/admin/guard";
+import { headOfPage } from "@/lib/admin/head-of-page";
 import { supabaseServer } from "@/lib/supabase/server";
 import { createLeaf } from "./actions";
 import LeafList, { type LeafRow } from "./LeafList";
@@ -17,6 +19,8 @@ type Block = { kind: string; text: string };
 export default async function HandbookPage() {
   await requireAdmin();
   const supabase = await supabaseServer();
+
+  const top = await headOfPage("handbook");
 
   const { data: leaves } = await supabase
     .from("handbook_pages")
@@ -57,6 +61,14 @@ export default async function HandbookPage() {
         laptop it is one half of the open book — so a page that runs long is a page that will need
         splitting.
       </p>
+
+      {/* The title, the line under it, and the handful of things the book decides
+          about itself — how it turns, what its paper is, whether the sheets and
+          the form are offered underneath. They were on a second screen under
+          Pages, which meant two places for one handbook and no way of telling
+          which one you were meant to be on. */}
+      {top ? <PageWords spec={top.spec} initial={top.initial} /> : null}
+
       <LeafList initial={rows} />
     </Head>
   );

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Head from "@/components/admin/Head";
 import { requireAdmin } from "@/lib/admin/guard";
 import { pageSpec } from "@/lib/admin/pages";
@@ -27,6 +27,16 @@ export default async function EditPagePage({
 
   const spec = pageSpec(slug);
   if (!spec) notFound();
+
+  /* The two that are looked after in their own sections, because that is where
+     their writing is. Sending rather than drawing a second copy: two editors for
+     one page is how a change gets made on the screen that is not the one being
+     saved. */
+  const elsewhere: Record<string, string> = {
+    handbook: "/admin/handbook",
+    "do-it-yourself": "/admin/do-it-yourself",
+  };
+  if (elsewhere[slug]) redirect(elsewhere[slug]);
 
   // Whatever is on the page right now — from the database if it has been saved,
   // otherwise the words the site shipped with, so editing starts from something

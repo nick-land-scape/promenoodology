@@ -7,7 +7,7 @@ import Handbook from "@/components/Handbook";
 import { getFrench, getHandbookPages, getPage, getPageHead } from "@/lib/source";
 import { speaking } from "@/lib/words";
 import { siteUrl } from "@/lib/site";
-import { isLang, PLAIN } from "@/lib/lang";
+import { at, isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -83,7 +83,11 @@ export default async function HandbookPage({ params }: { params: Promise<{ lang:
       {/* Straight after the method, before the offer of help: the sheets.
           Somebody who has read this far has already asked "could I do this", and
           the sheets are the version of the answer they can take away and hand to
-          somebody else. */}
+          somebody else.
+
+          Taken away as a whole in /admin, like the form under it: there are
+          weeks when what we have to offer is one of these and not the other. */}
+      {head.settings.showSheets !== false ? (
       <section className="handbook-sheets">
         <h2 className="page-title" style={{ fontSize: "1.6rem" }}>
           or take a sheet
@@ -92,9 +96,10 @@ export default async function HandbookPage({ params }: { params: Promise<{ lang:
           One page per kind of place — a square, a car park, a courtyard, a queue —
           for getting people who do not know each other into the same place and
           giving them something to do together. No account and nothing to join:{" "}
-          <Link href="/do-it-yourself">do it yourself</Link>.
+          <Link href={at(lang, "/do-it-yourself")}>do it yourself</Link>.
         </p>
       </section>
+      ) : null}
 
       {/* The whole section can be taken away in /admin — heading, form and all.
           The handbook above it is the page; this is an invitation, and there are

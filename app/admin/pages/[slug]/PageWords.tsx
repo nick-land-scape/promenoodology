@@ -367,6 +367,18 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
                 </span>
                 <Move index={index} total={draft.blocks.length} onMove={moveBlock} />
                 <Word
+                  onClick={() =>
+                    setBlocks([
+                      ...draft.blocks.slice(0, index + 1),
+                      { ...block },
+                      ...draft.blocks.slice(index + 1),
+                    ])
+                  }
+                  title="The same again, just below"
+                >
+                  duplicate
+                </Word>
+                <Word
                   danger
                   onClick={() => setBlocks(draft.blocks.filter((_, i) => i !== index))}
                   aria-label={`Remove part ${index + 1}`}

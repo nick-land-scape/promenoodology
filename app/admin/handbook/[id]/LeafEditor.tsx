@@ -154,13 +154,27 @@ export default function LeafEditor({
                   </button>
                 ))}
               </span>
-              <Word
-                danger
-                onClick={() => setBlocks(draft.blocks.filter((_, at) => at !== index))}
-                aria-label={`Remove part ${index + 1}`}
-              >
-                remove
-              </Word>
+              <span style={{ display: "flex", gap: 12 }}>
+                <Word
+                  onClick={() =>
+                    setBlocks([
+                      ...draft.blocks.slice(0, index + 1),
+                      { ...block },
+                      ...draft.blocks.slice(index + 1),
+                    ])
+                  }
+                  title="The same again, just below"
+                >
+                  duplicate
+                </Word>
+                <Word
+                  danger
+                  onClick={() => setBlocks(draft.blocks.filter((_, at) => at !== index))}
+                  aria-label={`Remove part ${index + 1}`}
+                >
+                  remove
+                </Word>
+              </span>
             </header>
 
             <div className="admin-para">
