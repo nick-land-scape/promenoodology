@@ -10,7 +10,6 @@ import { whenItIs } from "@/lib/app-data";
 import { pretty } from "@/lib/admin/when";
 import { myBookings, myPhotos, myPosts, requireMember } from "@/lib/app/me";
 import { getEvents } from "@/lib/source";
-import Mark from "@/components/app/Mark";
 
 export const metadata = { title: "Account" };
 
@@ -77,10 +76,7 @@ export default async function AccountPage() {
 
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">
-            <Mark is="tick" />
-            you said yes to
-          </h2>
+          <h2 className="app-h2">you said yes to</h2>
           {yes.length > SHOWING ? (
             <Link className="app-more" href="/app/account/coming">
               all {yes.length} ›

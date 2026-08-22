@@ -1736,23 +1736,24 @@ body:has(.app-shell) {
 }
 
 /*
- * The archive wall, laid out by column.
+ * The archive wall, the one the website has.
  *
  * `columns` rather than a grid, because a grid has rows and rows mean every
  * photograph in a row is cropped to the same height — which is a contact sheet.
- * Down a column instead, each one keeps the shape it was taken in, and the
- * columns simply end where they end.
+ * Down a column instead, each one keeps the shape it was taken in, each falls
+ * into whatever gap is above it, and the nine widths below (the website's own)
+ * stop the columns reading as three neat stacks.
  */
 .wall {
   columns: 2;
-  column-gap: 4px;
+  column-gap: 10px;
   list-style: none;
   margin: 0;
   padding: 0 var(--gutter) 8px;
 }
 
 .wall li {
-  margin: 0 0 4px;
+  margin: 0 0 14px;
   /* A photograph is not split across the fold of two columns. */
   break-inside: avoid;
 }
@@ -1763,12 +1764,52 @@ body:has(.app-shell) {
   padding: 0;
   border: 0;
   background: none;
+  line-height: 0;
 }
 
 .wall img {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* Who took it, and when. */
+.wall-said {
+  display: block;
+  padding-top: 4px;
+  font-size: 0.72em;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* The nine widths and indents, as on the website. */
+.wall li[data-v="0"],
+.wall li[data-v="4"] {
+  width: 100%;
+}
+.wall li[data-v="1"] {
+  width: 82%;
+  margin-left: 18%;
+}
+.wall li[data-v="2"] {
+  width: 93%;
+}
+.wall li[data-v="3"] {
+  width: 72%;
+}
+.wall li[data-v="5"] {
+  width: 88%;
+  margin-left: 12%;
+}
+.wall li[data-v="6"] {
+  width: 78%;
+  margin-left: 8%;
+}
+.wall li[data-v="7"] {
+  width: 96%;
+}
+.wall li[data-v="8"] {
+  width: 84%;
 }
 
 .told-card {

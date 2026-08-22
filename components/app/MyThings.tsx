@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Photo from "../Photo";
 import type { MyPhoto, MyPost } from "@/lib/app/me";
-import Mark from "./Mark";
 
 /**
  * The three things that are yours, in preview.
@@ -24,10 +23,7 @@ export function PhotoPreview({
   return (
     <section className="app-section">
       <div className="app-section-head">
-        <h2 className="app-h2">
-          <Mark is="camera" />
-          your photographs
-        </h2>
+        <h2 className="app-h2">your photographs</h2>
         {photos.length > most ? (
           <Link className="app-more" href="/app/account/photographs">
             all {photos.length} ›
@@ -71,10 +67,7 @@ export function PostPreview({
   return (
     <section className="app-section">
       <div className="app-section-head">
-        <h2 className="app-h2">
-          <Mark is="speech" />
-          what you have said
-        </h2>
+        <h2 className="app-h2">what you have said</h2>
         {posts.length > most ? (
           <Link className="app-more" href="/app/account/posts">
             all {posts.length} ›

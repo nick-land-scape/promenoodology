@@ -241,13 +241,15 @@ export default function Reading({
             ))}
           </div>
 
-          {/* The wall, laid out by column rather than by row: every photograph
-              keeps its own proportions and the columns fill to whatever height
-              they come to. A square crop of somebody's cooking is a thumbnail of
-              a photograph rather than the photograph. */}
+          {/* The wall the website has, in the app.
+              Columns rather than rows, so every photograph keeps the shape it
+              arrived in and each one falls into whatever gap is above it. The
+              nine widths are the website's own — a wall of identical rectangles
+              is a contact sheet — and each carries who took it and when, which
+              is half of what an archive is for. */}
           <ul className="wall">
             {wall.map((photo, index) => (
-              <li key={photo.src}>
+              <li key={photo.src} data-v={index % 9}>
                 <button
                   type="button"
                   onClick={() => setAt(index)}
@@ -261,6 +263,11 @@ export default function Reading({
                     sizes="(max-width: 833px) 50vw, 33vw"
                   />
                 </button>
+                {photo.credit || photo.year ? (
+                  <span className="wall-said">
+                    {[photo.credit, photo.year].filter(Boolean).join(" · ")}
+                  </span>
+                ) : null}
               </li>
             ))}
           </ul>
