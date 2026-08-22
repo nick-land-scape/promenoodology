@@ -8,6 +8,8 @@ import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { breadcrumbs, graph, pageMetadata, picture, trim, US } from "@/lib/seo";
 import { getSheet, getSheets, type Sheet } from "@/lib/source";
 import { SITE_URL, siteUrl } from "@/lib/site";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 export const revalidate = 60;
 
@@ -96,6 +98,8 @@ export default async function SheetPage({
   // In the language it is being read in. Asked without one, the French address
   // served the English sheet — a translated page nobody could get to.
   const sheet = await getSheet(slug, lang);
+  // What the page says on its own behalf, in the language it is read in.
+  const say = speaking(lang, await getFrench());
   if (!sheet) notFound();
 
   return (
@@ -110,7 +114,7 @@ export default async function SheetPage({
           ]),
         )}
       />
-      <p className="sheet-eyebrow">do it yourself</p>
+      <p className="sheet-eyebrow">{say("sheet.eyebrow")}</p>
       <h1 className="page-title">{sheet.title}</h1>
       {sheet.hook ? <p className="story-hook sheet-hook">{sheet.hook}</p> : null}
       {sheet.words ? <p className="page-intro">{sheet.words}</p> : null}
@@ -126,8 +130,8 @@ export default async function SheetPage({
           />
           <figcaption>
             {sheet.fed
-              ? `Somewhere else, on a day like the one you are planning. About ${sheet.fed} people stayed and ate.`
-              : "Somewhere else, on a day like the one you are planning."}
+              ? `${say("sheet.somewhereElse")} ${say("sheet.howManyStayed").replace("{n}", String(sheet.fed))}`
+              : say("sheet.somewhereElse")}
           </figcaption>
         </figure>
       ) : null}
@@ -135,24 +139,19 @@ export default async function SheetPage({
       <div className="sheet-two">
         {sheet.needs.length > 0 ? (
           <section className="sheet-needs">
-            <h2>what it takes</h2>
+            <h2>{say("sheet.whatItTakes")}</h2>
             <ul>
               {sheet.needs.map((thing) => (
                 <li key={thing}>{thing}</li>
               ))}
             </ul>
-            <p className="sheet-aside">
-              Borrowed beats bought, every time, and nothing on this list has to
-              match anything else on it. Half of it is not cooking equipment: the
-              chalk, the game, the one light and the spare seat are what turn a
-              place into an evening.
-            </p>
+            <p className="sheet-aside">{say("sheet.borrowed")}</p>
           </section>
         ) : null}
 
         {sheet.steps.length > 0 ? (
           <section className="sheet-steps">
-            <h2>what to do</h2>
+            <h2>{say("sheet.whatToDo")}</h2>
             {/* Each step at its own address. The structured data points at
                 these, and somebody sending a friend "the bit about the tables"
                 has something to send. */}
@@ -169,15 +168,16 @@ export default async function SheetPage({
 
       {/* The one thing this page asks for, and it is not money or an account. */}
       <section className="sheet-foot">
-        <h2>and then</h2>
+        <h2>{say("sheet.andThen")}</h2>
         <p>
-          Send us a photograph of the people, not of the food. That is the whole ask
-          — no forms, no affiliation, nothing to join. If you want a hand first, the{" "}
-          <Link href={at(lang, "/handbook")}>handbook</Link> is the long version of this, and{" "}
-          <Link href={`${at(lang, "/handbook")}#ask`}>asking us</Link> costs nothing.
+          {say("sheet.ask")}{" "}
+          <Link href={at(lang, "/handbook")}>{say("book.theHandbook")}</Link>{" "}
+          {say("sheet.longVersion")}{" "}
+          <Link href={`${at(lang, "/handbook")}#ask`}>{say("sheet.askingUs")}</Link>{" "}
+          {say("sheet.costsNothing")}
         </p>
         <p className="sheet-pass">
-          This page is meant to be passed on. Its address is{" "}
+          {say("sheet.passItOn")}{" "}
           <span className="sheet-address">
             {SITE_URL.replace(/^https?:\/\//, "")}
             {at(lang, `/do-it-yourself/${sheet.slug}`)}

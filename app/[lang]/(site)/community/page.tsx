@@ -6,6 +6,8 @@ import { getMembers, getPageHead, getPartners } from "@/lib/source";
 import { isLang, PLAIN, type Lang } from "@/lib/lang";
 import { pageMetadata, say, type Bilingual } from "@/lib/seo";
 import { pageIsVisible } from "@/lib/site-pages";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 const TITLE: Bilingual = { en: "Community", fr: "La communauté" };
 const ABOUT: Bilingual = {
@@ -51,6 +53,7 @@ function Logo({ partner }: { partner: Partner }) {
 export default async function CommunityPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang: asked } = await params;
   const lang = isLang(asked) ? asked : PLAIN;
+  const say = speaking(lang, await getFrench());
 
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("community"))) notFound();
@@ -75,7 +78,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ lang
           decided — a row of logos says the least and assumes the least. */}
       {partners.length > 0 ? (
         <section className="partners">
-          <h2 className="partners-label">with</h2>
+          <h2 className="partners-label">{say("site.with")}</h2>
           <ul className="partners-row">
             {partners.map((partner) => (
               <li key={partner.id}>

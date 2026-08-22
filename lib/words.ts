@@ -102,6 +102,48 @@ export const PHRASES: Phrase[] = [
   { key: "book.pageBefore", en: "The page before", fr: "La page précédente", where: "front" },
   { key: "book.nextPage", en: "The next page", fr: "La page suivante", where: "front" },
 
+  /* ------------------------------------------------------------------- a sheet */
+  { key: "sheet.eyebrow", en: "do it yourself", fr: "faites-le vous-même", where: "front", note: "The small line above a sheet's title." },
+  { key: "sheet.whatItTakes", en: "what it takes", fr: "ce qu’il faut", where: "front" },
+  { key: "sheet.whatToDo", en: "what to do", fr: "quoi faire", where: "front" },
+  { key: "sheet.andThen", en: "and then", fr: "et ensuite", where: "front", note: "Over the one thing a sheet asks for." },
+  {
+    key: "sheet.borrowed",
+    en: "Borrowed beats bought, every time, and nothing on this list has to match anything else on it. Half of it is not cooking equipment: the chalk, the game, the one light and the spare seat are what turn a place into an evening.",
+    fr: "Emprunté vaut toujours mieux qu’acheté, et rien sur cette liste n’a besoin d’aller avec le reste. La moitié n’est pas du matériel de cuisine : la craie, le jeu, la lampe et la chaise en trop sont ce qui transforme un lieu en soirée.",
+    where: "front",
+  },
+  {
+    key: "sheet.ask",
+    en: "Send us a photograph of the people, not of the food. That is the whole ask — no forms, no affiliation, nothing to join. If you want a hand first, the",
+    fr: "Envoyez-nous une photographie des gens, pas de la nourriture. C’est tout ce que nous demandons — pas de formulaire, pas d’adhésion, rien à rejoindre. Si vous voulez un coup de main d’abord, le",
+    where: "front",
+    note: "Followed by a link to the handbook.",
+  },
+  { key: "sheet.longVersion", en: "is the long version of this, and", fr: "en est la version longue, et", where: "front" },
+  { key: "sheet.askingUs", en: "asking us", fr: "nous demander", where: "front", note: "A link." },
+  { key: "sheet.costsNothing", en: "costs nothing.", fr: "ne coûte rien.", where: "front" },
+  { key: "sheet.passItOn", en: "This page is meant to be passed on. Its address is", fr: "Cette page est faite pour être transmise. Son adresse est", where: "front" },
+  {
+    key: "sheet.somewhereElse",
+    en: "Somewhere else, on a day like the one you are planning.",
+    fr: "Ailleurs, un jour comme celui que vous préparez.",
+    where: "front",
+    note: "Under the photograph on a sheet.",
+  },
+
+  {
+    key: "sheet.howManyStayed",
+    en: "About {n} people stayed and ate.",
+    fr: "Environ {n} personnes sont restées et ont mangé.",
+    where: "front",
+    note: "{n} is the number; leave it in.",
+  },
+  { key: "book.theHandbook", en: "handbook", fr: "manuel", where: "front", note: "The word, in a sentence, as a link." },
+
+  /* ------------------------------------------------------------------ elsewhere */
+  { key: "site.with", en: "with", fr: "avec", where: "front", note: "Over the partners' logos on the community page." },
+
   /* ------------------------------------------------------------- a story's page */
   { key: "story.eveningItCameFrom", en: "the evening it came from", fr: "la soirée dont il est issu", where: "front" },
   { key: "story.eveningsItCameFrom", en: "the evenings it came from", fr: "les soirées dont il est issu", where: "front" },
