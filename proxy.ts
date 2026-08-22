@@ -198,6 +198,19 @@ async function refreshSession(request: NextRequest, response: NextResponse) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return false; // no database yet: nobody is signed in
 
+  /*
+   * Nobody is signed in unless there is a token to refresh, and asking anyway
+   * costs a round trip to Supabase before a single byte of the page is sent.
+   *
+   * Every request goes through here — every page, every language switch, every
+   * visitor who has never had an account — and for the overwhelming majority of
+   * them the answer is a network call to be told "no". A visitor with no
+   * Supabase cookie has no session by definition, so the call is skipped and the
+   * answer is the same one it would have given.
+   */
+  const hasToken = request.cookies.getAll().some((cookie) => cookie.name.startsWith("sb-"));
+  if (!hasToken) return false;
+
   const supabase = createServerClient(url, key, {
     cookies: {
       getAll() {

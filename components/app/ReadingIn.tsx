@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { LANGS, NAMED, type Lang } from "@/lib/lang";
 import { chooseLanguage } from "@/lib/site-actions/language";
@@ -21,6 +22,7 @@ import { chooseLanguage } from "@/lib/site-actions/language";
  * see what the noise was.
  */
 export default function ReadingIn({ chosen }: { chosen: Lang | null }) {
+  const router = useRouter();
   const [now, setNow] = useState<Lang | null>(chosen);
   const [pending, start] = useTransition();
 
@@ -29,7 +31,14 @@ export default function ReadingIn({ chosen }: { chosen: Lang | null }) {
     setNow(lang);
     start(async () => {
       const answer = await chooseLanguage(lang);
-      if (!answer.ok) setNow(before);
+      if (!answer.ok) {
+        setNow(before);
+        return;
+      }
+      /* This screen, again, rather than the whole site: every screen in the app
+         is worked out per request anyway, so the only one that is stale is the
+         one you are looking at. */
+      router.refresh();
     });
   }
 

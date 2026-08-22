@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTransition } from "react";
 import { chooseLanguage } from "@/lib/site-actions/language";
 import { LANGS, NAMED, PLAIN, at, plainly, type Lang } from "@/lib/lang";
@@ -13,31 +14,28 @@ import { LANGS, NAMED, PLAIN, at, plainly, type Lang } from "@/lib/lang";
  * the people this collective works with — and with two of anything a list you
  * can read is better than a control you have to open.
  *
- * It goes to *this* page in the other language rather than to the front, because
- * somebody reading about an evening who switches language wants that evening in
- * French, not the home page. And it writes down what was chosen, so the guess the
- * proxy makes from the browser is only ever made once — a choice said out loud
- * beats anything inferred, for ever.
+ * They are links, not buttons, and that is what makes the switch instant: Next
+ * prefetches a link that comes into view, so the other language is already in
+ * the browser before anybody presses it. As buttons — router.push inside a
+ * transition — the page was fetched from the beginning on every switch, and it
+ * showed.
  *
- * Written down twice, where there is somewhere to write it twice. The cookie is
- * what the proxy reads on the next request. For a member it also goes on their
- * account, so the choice follows them to the app and to whatever they open the
- * site on next — see lib/site-actions/language. The page turns straight away
- * either way; the account catches up behind it.
+ * Each one goes to *this* page in its language rather than to the front, because
+ * somebody reading about an evening who switches wants that evening in French.
+ *
+ * The choice is written down twice. The cookie, by hand and immediately, so the
+ * proxy stops guessing from the browser on the very next request. And, for a
+ * member, their account — so it follows them to the app and to whatever they
+ * open the site on next. Neither one holds the navigation up.
  */
 export default function LanguageSwitch({ lang }: { lang: Lang }) {
   const pathname = usePathname();
-  const router = useRouter();
-
   const here = plainly(pathname);
   const [, start] = useTransition();
 
-  function choose(next: Lang) {
-    /* The cookie now, by hand, so the very next request already knows — the
-       action below sets it too, and waiting for a round trip before turning the
-       page would make a language switch feel like a form. */
+  function remember(next: Lang) {
+    // A year, and the whole site: this is a preference, not a session.
     document.cookie = `lang=${next}; path=/; max-age=31536000; samesite=lax`;
-    router.push(at(next, here));
     start(async () => {
       await chooseLanguage(next);
     });
@@ -45,20 +43,22 @@ export default function LanguageSwitch({ lang }: { lang: Lang }) {
 
   return (
     <div className="nav-langs" role="group" aria-label="Language">
-      {LANGS.map((one) => (
-        <button
-          key={one}
-          type="button"
-          className={one === lang ? "is-here" : undefined}
-          aria-current={one === lang ? "true" : undefined}
-          onClick={() => choose(one)}
-          // The name of a language, in that language: nobody looking for French
-          // is looking for the word "French".
-          lang={one === PLAIN ? "en" : one}
-        >
-          {NAMED[one]}
-        </button>
-      ))}
+      {LANGS.map((one) =>
+        one === lang ? (
+          <span key={one} className="is-here" aria-current="true" lang={one === PLAIN ? "en" : one}>
+            {NAMED[one]}
+          </span>
+        ) : (
+          <Link
+            key={one}
+            href={at(one, here)}
+            lang={one === PLAIN ? "en" : one}
+            onClick={() => remember(one)}
+          >
+            {NAMED[one]}
+          </Link>
+        ),
+      )}
     </div>
   );
 }

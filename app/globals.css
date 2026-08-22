@@ -4290,10 +4290,9 @@ body:has(.hero) .edit-this {
   border-top: 1px solid var(--hairline);
 }
 
-.nav-langs button {
-  border: 0;
-  background: none;
-  padding: 0;
+.nav-langs a,
+.nav-langs span {
+  text-decoration: none;
   font-family: var(--sans);
   font-size: 0.56rem;
   font-weight: 700;
@@ -4303,14 +4302,14 @@ body:has(.hero) .edit-this {
   cursor: pointer;
 }
 
-.nav-langs button:hover {
+.nav-langs a:hover {
   color: var(--ink);
 }
 
 /* The one you are reading in. Marked the way the menu marks the section you are
    in, rather than by taking the button away: a switch with one side missing is
    a switch nobody can tell the state of. */
-.nav-langs button.is-here {
+.nav-langs .is-here {
   color: var(--purple);
   cursor: default;
 }

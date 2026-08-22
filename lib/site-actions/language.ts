@@ -1,7 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
 import { isLang, type Lang } from "@/lib/lang";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -39,8 +38,20 @@ export async function chooseLanguage(lang: string): Promise<{ ok: boolean }> {
     await supabase.from("profiles").update({ reads_in: lang }).eq("user_id", user.id);
   }
 
-  // Every page is in a language, so every page is now possibly wrong.
-  revalidatePath("/", "layout");
+  /*
+   * Nothing is revalidated, and that is the point.
+   *
+   * This used to clear the whole site — revalidatePath("/", "layout") — on the
+   * reasoning that every page is in a language. It is the wrong reasoning and it
+   * made switching languages slow enough to notice: the two languages are two
+   * different addresses with two different cached pages, so changing which one
+   * you are reading does not make either of them wrong. All the clearing did was
+   * throw away every prerendered page on the site, so the next visit to *any* of
+   * them went back to the database — and it did it again on the way back.
+   *
+   * The screens that genuinely depend on the account rather than the address are
+   * the app's, and every one of those is already force-dynamic.
+   */
   return { ok: true };
 }
 
