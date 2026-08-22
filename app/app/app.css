@@ -3028,4 +3028,12 @@ body:has(.app-shell) {
   .app-book-lead {
     max-width: 34rem;
   }
+
+  /* Stories go two abreast. One cover per screen is a phone's answer to a small
+     screen; on a tablet it is a slideshow nobody asked for. */
+  .told {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 var(--gutter);
+  }
 }
