@@ -1918,7 +1918,13 @@ body:has(.hero) .contact {
 /* The mark is a purple scribble on white. On dark paper it needs turning
    inside out rather than blending. */
 :root[data-theme="dark"] .nav-mark img,
-:root[data-theme="dark"] .admin-mark img {
+:root[data-theme="dark"] .admin-mark img,
+/* The members' app draws the same scribble in its header and on its opening
+   curtain, and both were left out of this — so on dark paper the mark was a dark
+   smudge in the corner of every screen. */
+:root[data-theme="dark"] .app-mark img,
+:root[data-theme="dark"] .curtain-mark,
+:root[data-theme="dark"] .member-card-logo {
   filter: invert(1) hue-rotate(180deg);
 }
 
