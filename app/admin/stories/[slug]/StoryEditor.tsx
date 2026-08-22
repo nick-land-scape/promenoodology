@@ -33,7 +33,7 @@ import type { PhotoLayout } from "@/lib/supabase/rows";
 import { saveStory, saveStoryPage, saveStoryPhotos, tagPhotos, untagPhoto } from "../actions";
 import { addPhoto, deletePhoto } from "@/app/admin/photos/actions";
 import AddPhotos, { type Addable } from "@/components/admin/AddPhotos";
-import StoryPage, { type Block, blankBlock } from "./StoryPage";
+import Build, { type Block, blankBlock } from "@/components/admin/Build";
 
 /**
  * One story: what it was, and the text as it is written.
@@ -433,7 +433,7 @@ export default function StoryEditor({
           </Button>
         }
       >
-        <StoryPage
+        <Build
           blocks={page}
           onChange={setPage}
           photos={order.map((one) => ({

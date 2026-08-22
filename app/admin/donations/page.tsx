@@ -11,6 +11,8 @@ export default async function DonationsPage() {
   const { data: donations } = await supabase
     .from("donations")
     .select("id, given_on, who, amount, note, published")
+    // The bin is a place of its own; what is deleted is not in this list.
+    .is("deleted_at", null)
     .order("given_on", { ascending: false })
     .returns<Row[]>();
 

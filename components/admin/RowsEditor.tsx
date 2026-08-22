@@ -5,7 +5,7 @@ import Dropdown from "./Picker";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { addRow, deleteRow, type RowValues, saveRows } from "@/app/admin/rows-actions";
-import { type Column, TABLES, type TableName } from "@/lib/admin/tables";
+import { type Column, fresh, TABLES, type TableName } from "@/lib/admin/tables";
 import { Picker, type Pickable } from "./Pick";
 import { Some } from "./Many";
 import When from "./When";
@@ -25,6 +25,11 @@ import { Bin, Empty, Field, Flag, Icon, Problem, SaveBar, Word, pretty, today } 
  * Everything is edited in place and written when you say so. Changes are worked
  * out by comparing what is on screen with what came from the database, so only
  * the rows that actually moved are sent.
+ *
+ * It draws whatever rows it is handed, which is now one of two things: all of
+ * them — quotes and the wall, which are short and read as a page of one-liners —
+ * or exactly one, on a page of its own reached from a list of names. See
+ * `alone`.
  */
 
 export type Row = RowValues & { id: string };
@@ -38,7 +43,8 @@ export default function RowsEditor({
   people = [],
   partners = [],
   told = [],
-  fresh,
+  begins,
+  alone,
 }: {
   table: TableName;
   initial: Row[];
@@ -55,7 +61,15 @@ export default function RowsEditor({
   /** For a "what came of it" column: the stories, by id. */
   told?: { id: string; title: string }[];
   /** Values a new row starts with, over the table's own blanks. */
-  fresh?: RowValues;
+  begins?: RowValues;
+  /**
+   * One row, on its own page: where the list it came from is.
+   *
+   * With it there is no "add" — you arrived here from the place that adds
+   * things — and deleting the row goes back there, because there is nothing
+   * left on this page to stay for.
+   */
+  alone?: string;
 }) {
   const spec = TABLES[table];
   const router = useRouter();
@@ -96,13 +110,9 @@ export default function RowsEditor({
 
   function add() {
     setProblem("");
-    // A date column starts on today rather than empty: it is nearly always
-    // right, and an empty one is refused.
-    const dates = Object.fromEntries(
-      spec.columns.filter((column) => column.kind === "date").map((column) => [column.key, today()]),
-    );
-    const values: RowValues = { ...spec.blank, ...dates, ...fresh };
-    if (spec.publishable) values.published = spec.startsShown;
+    // What a new row is made of lives with the description of the table, so the
+    // list that makes one and the editor that makes one make the same thing.
+    const values: RowValues = fresh(table, today(), begins);
 
     start(async () => {
       const result = await addRow(table, values);
@@ -126,6 +136,11 @@ export default function RowsEditor({
       const result = await deleteRow(table, row.id);
       if (!result.ok) {
         setProblem(result.error ?? "That did not delete.");
+        return;
+      }
+      if (alone) {
+        // Nothing left here to look at.
+        router.push(alone);
         return;
       }
       setRows((list) => list.filter((one) => one.id !== row.id));
@@ -356,12 +371,14 @@ export default function RowsEditor({
       {/* Beside the page's title, where every other section's one action is.
           It sat above the list, which put the way to make something in the
           same place as the first of the things already made. */}
-      <InHead>
-        <button type="button" className="admin-btn" onClick={add} disabled={pending}>
-          <Icon name="plus" />
-          add {spec.one}
-        </button>
-      </InHead>
+      {alone ? null : (
+        <InHead>
+          <button type="button" className="admin-btn" onClick={add} disabled={pending}>
+            <Icon name="plus" />
+            add {spec.one}
+          </button>
+        </InHead>
+      )}
 
       {rows.length === 0 ? (
         <Empty>Nothing here yet.</Empty>

@@ -87,28 +87,35 @@ function clean(table: TableName, values: RowValues): RowValues {
 }
 
 /**
- * The columns a row cannot be without — the ones the database refuses as null,
- * said in words instead of as a constraint violation.
+ * The columns a row cannot be without, said in words instead of as a constraint
+ * violation.
  *
  * Only columns that were actually sent are checked, so this is as true of a
- * change to one field as it is of a brand-new row.
+ * change to one field as it is of a whole row.
+ *
+ * `atBirth` is the difference between the two moments a row is written. A date
+ * the database refuses as null is refused here at every turn, brand-new rows
+ * included. A *name* is not: a new evening is a stub with a page of its own
+ * waiting to be filled in, and insisting on its name before it exists means the
+ * "add" button refuses to add anything — which is exactly what it did.
  */
-const NEEDED: Record<TableName, [string, string][]> = {
+const NEEDED: Record<TableName, { key: string; say: string; atBirth: boolean }[]> = {
   events: [
-    ["happens_on", "An evening needs a day."],
-    ["title", "An evening needs a name."],
+    { key: "happens_on", say: "An evening needs a day.", atBirth: true },
+    { key: "title", say: "An evening needs a name.", atBirth: false },
   ],
   news: [
-    ["published_on", "A note needs a date."],
-    ["title", "A note needs a title."],
+    { key: "published_on", say: "A note needs a date.", atBirth: true },
+    { key: "title", say: "A note needs a title.", atBirth: false },
   ],
-  quotes: [["text", "A quote needs some words."]],
-  donations: [["given_on", "A gift needs a date."]],
+  quotes: [{ key: "text", say: "A quote needs some words.", atBirth: false }],
+  donations: [{ key: "given_on", say: "A gift needs a date.", atBirth: true }],
 };
 
-function missing(table: TableName, values: RowValues): string | null {
-  for (const [key, complaint] of NEEDED[table]) {
-    if (key in values && !values[key]) return complaint;
+function missing(table: TableName, values: RowValues, brandNew = false): string | null {
+  for (const needs of NEEDED[table]) {
+    if (brandNew && !needs.atBirth) continue;
+    if (needs.key in values && !values[needs.key]) return needs.say;
   }
   return null;
 }
@@ -118,7 +125,7 @@ export async function addRow(table: string, values: RowValues): Promise<Saved & 
   const name = known(table);
   const row = clean(name, values);
 
-  const wrong = missing(name, row);
+  const wrong = missing(name, row, true);
   if (wrong) return { ok: false, error: wrong };
 
   const supabase = await supabaseServer();

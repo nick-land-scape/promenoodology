@@ -97,6 +97,34 @@ export type EventRow = {
   partners: string[];
   /** The story written about it afterwards. See migration 0016. */
   story_id: string | null;
+  /* Everything a flyer has on it that a row did not. See migration 0027. */
+  /** Its address on the site. */
+  slug: string | null;
+  /** The line under the name: "avec le collectif promeNOODology". */
+  subtitle: string;
+  /** The paragraph it opens with. */
+  lead: string;
+  /** The street, where `place` is the name of a place. */
+  address: string;
+  /** "gratuit", "£5 on the door". */
+  cost: string;
+  /** Where to write to come, where somebody else takes the names. */
+  sign_up_email: string;
+  /** The larger project or festival it belongs to. */
+  part_of: string;
+  part_of_url: string;
+};
+
+/** One day of an event that runs over several. See migration 0027. */
+export type EventSessionRow = {
+  id: string;
+  event_id: string;
+  position: number;
+  happens_on: string;
+  starts_at: string;
+  ends_at: string;
+  title: string;
+  what: string;
 };
 
 export type NewsRow = {

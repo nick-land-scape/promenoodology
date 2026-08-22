@@ -44,6 +44,14 @@ export const SECTIONS: Section[] = [
     group: "content",
   },
   {
+    href: "/admin/handbook",
+    label: "the handbook",
+    blurb: "The book we give away, a page at a time — and the order they are read in.",
+    icon: "book",
+    group: "content",
+    view: "/handbook",
+  },
+  {
     href: "/admin/news",
     label: "news",
     blurb: "Short notes on the app's front screen.",
@@ -54,7 +62,8 @@ export const SECTIONS: Section[] = [
   {
     href: "/admin/events",
     label: "events",
-    blurb: "The evenings in the members' app: date, place, how many can come.",
+    blurb:
+      "The evenings: when and where, the days a long one runs, and the page each of them has.",
     icon: "calendar",
     group: "content",
     view: "/app",

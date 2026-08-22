@@ -14,6 +14,8 @@ export default async function StoriesPage() {
     supabase
       .from("stories")
       .select("id, slug, title, tag, position, place, happened, published")
+      // The bin is a place of its own; what is deleted is not in this list.
+      .is("deleted_at", null)
       .order("position")
       .returns<
         {

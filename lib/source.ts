@@ -1,6 +1,7 @@
 import type {
   ClubEvent,
   Donation,
+  EventPage,
   Member,
   NewsItem,
   Photo,
@@ -394,6 +395,68 @@ export async function getPage(slug: string): Promise<{
   return null;
 }
 
+/** One leaf of the handbook: what it is called, and the words on it. */
+export type Leaf = { id: string; title: string; blocks: PageBlock[] };
+
+/**
+ * The handbook, page by page.
+ *
+ * A handbook that is given away is a thing somebody has to be able to hold a
+ * piece of at a time, so the words are kept in leaves and turned rather than
+ * scrolled. A handbook with no leaves — before anybody has made one, or with no
+ * database to ask — falls back to the one long column it always was, cut at its
+ * own headings, which is exactly where a reader would have turned the page
+ * anyway.
+ */
+export async function getHandbookPages(): Promise<Leaf[]> {
+  if (hasSupabase()) {
+    const supabase = supabasePublic();
+    const { data } = await supabase
+      .from("handbook_pages")
+      .select("id, title, blocks")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .order("position")
+      .returns<{ id: string; title: string; blocks: PageBlock[] | null }[]>();
+
+    if (data && data.length > 0) {
+      return data.map((leaf) => ({
+        id: leaf.id,
+        title: leaf.title ?? "",
+        blocks: (leaf.blocks ?? []).filter((block) => block.text?.trim()),
+      }));
+    }
+  }
+
+  const page = await getPage("handbook");
+  return page ? intoLeaves(page.blocks) : [];
+}
+
+/** One long column cut into pages, at the headings it already has. */
+export function intoLeaves(blocks: PageBlock[]): Leaf[] {
+  const leaves: Leaf[] = [];
+  let leaf: PageBlock[] = [];
+
+  const keep = () => {
+    if (leaf.length === 0) return;
+    const opening = leaf[0];
+    leaves.push({
+      id: `leaf-${leaves.length + 1}`,
+      title: opening.kind === "heading" ? opening.text : "",
+      blocks: leaf,
+    });
+    leaf = [];
+  };
+
+  for (const block of blocks) {
+    if (block.kind === "heading") keep();
+    leaf.push(block);
+  }
+  keep();
+
+  return leaves;
+}
+
 /* -------------------------------------------------------------- the app */
 
 /**
@@ -415,7 +478,8 @@ export async function getEvents(): Promise<ClubEvent[]> {
   if (!hasSupabase()) return appFiles.getEvents();
 
   const supabase = supabasePublic();
-  const [{ data }, { data: partners }, { data: stories }, { data: bookings }] = await Promise.all([
+  const [{ data }, { data: programme }, { data: partners }, { data: stories }, { data: bookings }] =
+    await Promise.all([
     supabase
       .from("events")
       .select("*")
@@ -423,6 +487,24 @@ export async function getEvents(): Promise<ClubEvent[]> {
       .eq("published", true)
       .order("happens_on")
       .returns<EventRow[]>(),
+    /* The days each one runs, in one query for all of them. What may be read of
+       these is decided by the event they belong to — see the policies in
+       migration 0027 — so this returns the programmes of exactly the evenings
+       above and nothing else. */
+    supabase
+      .from("event_sessions")
+      .select("event_id, happens_on, starts_at, ends_at, title, what")
+      .order("happens_on")
+      .returns<
+        {
+          event_id: string;
+          happens_on: string;
+          starts_at: string | null;
+          ends_at: string | null;
+          title: string;
+          what: string;
+        }[]
+      >(),
     supabase
       .from("associations")
       .select("id, name")
@@ -469,8 +551,93 @@ export async function getEvents(): Promise<ClubEvent[]> {
       fed: row.people_fed ?? null,
       asked: asked.get(row.id) ?? 0,
       story: story ? { slug: story.slug, title: story.title } : null,
+      slug: row.slug ?? "",
+      subtitle: row.subtitle ?? "",
+      lead: row.lead ?? "",
+      address: row.address ?? "",
+      cost: row.cost ?? "",
+      signUpEmail: row.sign_up_email ?? "",
+      partOf: row.part_of ?? "",
+      partOfUrl: row.part_of_url ?? "",
+      days: (programme ?? [])
+        .filter((day) => day.event_id === row.id)
+        .map((day) => ({
+          date: day.happens_on,
+          time: day.starts_at ?? "",
+          endTime: day.ends_at ?? "",
+          title: day.title ?? "",
+          what: day.what ?? "",
+        })),
     };
   });
+}
+
+/**
+ * One evening, at its own address, with the page somebody wrote for it.
+ *
+ * The list is read whole anyway — it is a few dozen rows and every screen that
+ * shows evenings shows several — so the evening itself comes from there, and the
+ * only thing asked for separately is the page, which nothing else needs.
+ */
+export async function getEvent(slug: string): Promise<EventPage | undefined> {
+  const event = (await getEvents()).find((one) => one.slug === slug);
+  if (!event) return undefined;
+  if (!hasSupabase()) return { ...event, blocks: [] };
+
+  const supabase = supabasePublic();
+  const [{ data: built }, photos] = await Promise.all([
+    supabase
+      .from("event_blocks")
+      .select("kind, words, photo_id, layout")
+      .eq("event_id", event.id)
+      .order("position")
+      .returns<
+        {
+          kind: "heading" | "text" | "photo" | "space";
+          words: string;
+          photo_id: string | null;
+          layout: string | null;
+        }[]
+      >(),
+    getResources(),
+  ]);
+
+  if (!built || built.length === 0) return { ...event, blocks: [] };
+
+  /* Which file each chosen photograph is, so a block can be matched to the
+     picture the archive already knows how to draw. */
+  const ids = built.map((block) => block.photo_id).filter(Boolean) as string[];
+  const chosen = new Map<string, string>();
+  if (ids.length > 0) {
+    const { data: rows } = await supabase
+      .from("photos")
+      .select("id, path")
+      .in("id", ids)
+      .returns<{ id: string; path: string }[]>();
+    for (const row of rows ?? []) chosen.set(row.id, row.path);
+  }
+  const byPath = new Map(photos.map((photo) => [photo.file, photo]));
+
+  const blocks = built
+    .map((block) => {
+      if (block.kind === "photo") {
+        const path = block.photo_id ? chosen.get(block.photo_id) : undefined;
+        const found = path ? byPath.get(path) : undefined;
+        if (!found) return null;
+        return {
+          kind: "photo" as const,
+          photo: found.photo,
+          caption: [found.credit, found.year].filter(Boolean).join(", "),
+          layout: ((block.layout ?? found.layout) as Resource["layout"]) ?? null,
+        };
+      }
+      if (block.kind === "space") return { kind: "space" as const };
+      if (!block.words.trim()) return null;
+      return { kind: block.kind, words: block.words };
+    })
+    .filter((block): block is NonNullable<typeof block> => block !== null);
+
+  return { ...event, blocks };
 }
 
 export async function getNews(): Promise<NewsItem[]> {

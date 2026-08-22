@@ -315,3 +315,31 @@ export function kindOf(table: TableName, key: string): Column["kind"] | "boolean
   if (pair.kind === "times") return "time";
   return pair.kind;
 }
+
+/** The values a row holds. The same shape as `blank`, said once. */
+export type Values = Record<string, string | number | boolean | null | string[]>;
+
+/**
+ * What a brand-new row starts out as.
+ *
+ * Lived in the editor until the list needed it too — both of them make rows now,
+ * and two copies of "what a new evening is" would be two answers to the question
+ * within a week.
+ *
+ * The first day a row asks for starts on today: it is nearly always right, and
+ * an empty one is refused outright by the database. A *second* day — the one
+ * where something ends — is left alone, because "it ends today as well" is a
+ * decision rather than a default.
+ */
+export function fresh(table: TableName, day: string, over?: Values): Values {
+  const spec = TABLES[table];
+  const values: Values = { ...spec.blank };
+
+  const first = spec.columns.find(
+    (column) => column.kind === "date" || column.kind === "when" || column.kind === "dates",
+  );
+  if (first) values[first.key] = day;
+
+  if (spec.publishable) values.published = spec.startsShown;
+  return { ...values, ...over };
+}

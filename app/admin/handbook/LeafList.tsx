@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import Find from "@/components/admin/Find";
 import {
   Bin,
   Empty,
@@ -14,31 +15,27 @@ import {
   moved,
   useDragOrder,
 } from "@/components/admin/ui";
-import Find from "@/components/admin/Find";
 import { hay, matches } from "@/lib/admin/find";
-import { deleteStory, reorderStories, showStory } from "./actions";
+import { deleteLeaf, reorderLeaves, showLeaf } from "./actions";
 
-export type StoryRow = {
+export type LeafRow = {
   id: string;
-  slug: string;
   title: string;
-  tag: string;
-  place: string;
-  happened: string;
+  /** The first words on it, so a page with no heading is still recognisable. */
+  opening: string;
+  words: number;
   published: boolean;
-  photos: number;
 };
 
 /**
- * The stories, in the order visitors read them.
+ * The book, as a list of its pages.
  *
- * The order is dragged, or typed into the number, and is only written when you
- * say so — dragging a row is a decision in progress, not five saves. The pair of
- * arrows that used to sit in every row is gone: with seven stories it was a
- * third way to do the same thing, and with sixty photographs it was never the
- * way anybody would choose.
+ * The order is the whole point of a book, so it is dragged and kept exactly as
+ * the stories' order is — and while you are searching it is put away, because a
+ * number that says "page 7 of 24" over a list with sixteen of them hidden is a
+ * number that is lying.
  */
-export default function StoriesList({ initial }: { initial: StoryRow[] }) {
+export default function LeafList({ initial }: { initial: LeafRow[] }) {
   const router = useRouter();
   const [rows, setRows] = useState(initial);
   const [reordered, setReordered] = useState(false);
@@ -46,21 +43,9 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
   const [problem, setProblem] = useState("");
   const [pending, start] = useTransition();
 
-  /*
-   * Searching and ordering are the same list looked at two ways, and only one of
-   * them can be true at a time.
-   *
-   * A number beside a row means "third of seven". Over a list with four of the
-   * seven hidden it would mean nothing, and dragging one row past another when
-   * you cannot see what is between them is a change made blind. So while there
-   * is something typed the handles and the numbers go, and the list says why.
-   */
   const searching = looking.trim().length > 0;
   const found = useMemo(
-    () =>
-      rows.filter((row) =>
-        matches(hay(row.title, row.place, row.happened, row.tag, row.slug), looking),
-      ),
+    () => rows.filter((row) => matches(hay(row.title, row.opening), looking)),
     [rows, looking],
   );
 
@@ -77,17 +62,17 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
   function keepOrder() {
     setProblem("");
     start(async () => {
-      const result = await reorderStories(rows.map((row) => row.id));
+      const result = await reorderLeaves(rows.map((row) => row.id));
       if (!result.ok) setProblem(result.error ?? "The order did not save.");
       else setReordered(false);
     });
   }
 
-  function show(row: StoryRow, published: boolean) {
+  function show(row: LeafRow, published: boolean) {
     setProblem("");
     setRows((list) => list.map((one) => (one.id === row.id ? { ...one, published } : one)));
     start(async () => {
-      const result = await showStory(row.id, published);
+      const result = await showLeaf(row.id, published);
       if (!result.ok) {
         setProblem(result.error ?? "That did not change.");
         setRows((list) =>
@@ -97,18 +82,13 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
     });
   }
 
-  function remove(row: StoryRow) {
-    const warning =
-      row.photos > 0
-        ? `Delete “${row.title}”? It goes to the bin for thirty days. Its ${row.photos} photograph${
-            row.photos === 1 ? "" : "s"
-          } stay in the archive, with no story to belong to.`
-        : `Delete “${row.title}”? It goes to the bin for thirty days.`;
-    if (!confirm(warning)) return;
-
+  function remove(row: LeafRow) {
+    if (!confirm(`Delete “${row.title || row.opening || "this page"}”? It goes to the bin for thirty days.`)) {
+      return;
+    }
     setProblem("");
     start(async () => {
-      const result = await deleteStory(row.id);
+      const result = await deleteLeaf(row.id);
       if (!result.ok) setProblem(result.error ?? "That did not delete.");
       else {
         setRows((list) => list.filter((one) => one.id !== row.id));
@@ -118,7 +98,7 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
   }
 
   if (rows.length === 0) {
-    return <Empty>No stories yet. “New story” starts one.</Empty>;
+    return <Empty>No pages yet. “New page” starts the book.</Empty>;
   }
 
   return (
@@ -143,12 +123,11 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
         </div>
       ) : null}
 
-      {/* Not over a list short enough to read at a glance. */}
       {rows.length > 5 ? (
         <Find
           value={looking}
           onChange={setLooking}
-          what="a story"
+          what="a page"
           showing={found.length}
           total={rows.length}
         />
@@ -156,8 +135,8 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
 
       {searching ? (
         <p className="admin-note" style={{ marginBottom: 12 }}>
-          Ordering is put away while you are looking for something — clear the field to drag them
-          about again.
+          The order is put away while you are looking for something — clear the field to drag the
+          pages about again.
         </p>
       ) : null}
 
@@ -188,55 +167,31 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
               )}
 
               <span className="admin-row-main">
-                {/* The name is a link into the story as well as the button being
-                    one. Two ways to the same place, and that is fine here: a list
-                    of names is a thing people click the names of. */}
                 <Link
-                  href={`/admin/stories/${row.slug}`}
+                  href={`/admin/handbook/${row.id}`}
                   className="admin-row-name"
                   style={{ fontStyle: "normal" }}
                 >
-                  {row.title || "Untitled"}
+                  {row.title || "no heading"}
                 </Link>
                 <span className="admin-row-meta">
-                  {[row.place, row.happened].filter(Boolean).join(" · ") || "no place or date yet"}
-                  {" — "}
-                  {row.photos === 0 ? (
-                    <Link href={`/admin/photos?story=${row.tag}`}>no photographs yet</Link>
-                  ) : (
-                    <Link href={`/admin/photos?story=${row.tag}`}>
-                      {row.photos} photograph{row.photos === 1 ? "" : "s"}
-                    </Link>
-                  )}
+                  {row.opening || "nothing written on it yet"}
                 </span>
               </span>
 
               <span className="admin-row-side">
-                <Tag>{row.tag}</Tag>
+                <Tag>
+                  {row.words} word{row.words === 1 ? "" : "s"}
+                </Tag>
                 <Flag on={row.published} onChange={(next) => show(row, next)} />
-
-                {/* The same matched pair as on the pages screen: same border, same
-                    ink, same height, and one arrow each — → stays in the back of
-                    the house, ↗ leaves for the front. A hidden story has no front
-                    to go to, so it says that instead. */}
-                <Link href={`/admin/stories/${row.slug}`} className="admin-btn">
-                  edit story →
+                <Link href={`/admin/handbook/${row.id}`} className="admin-btn">
+                  edit page →
                 </Link>
-                {row.published ? (
-                  <a
-                    href={`/stories/${row.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="admin-btn"
-                    title="Opens the story itself, in a new tab"
-                  >
-                    view ↗
-                  </a>
-                ) : (
-                  <Tag tone="warn">not on the site</Tag>
-                )}
-
-                <Bin what={row.title || "this story"} onClick={() => remove(row)} disabled={pending} />
+                <Bin
+                  what={row.title || "this page"}
+                  onClick={() => remove(row)}
+                  disabled={pending}
+                />
               </span>
             </li>
           );
@@ -244,8 +199,8 @@ export default function StoriesList({ initial }: { initial: StoryRow[] }) {
       </ul>
 
       <p className="admin-note" style={{ marginTop: 16 }}>
-        A hidden story is not on the site at all — not in the list, not at its own address, not in
-        the archive&rsquo;s filters.
+        A hidden page is not in the book at all, and the pages after it move up. The heading, the
+        line under it and the form at the foot are under <Link href="/admin/pages/handbook">pages</Link>.
       </p>
     </>
   );

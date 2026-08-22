@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { ClubEvent, NewsItem, Photo, Post } from "./content";
 import { readRows } from "./data";
+import { slugify } from "./admin/slug";
 import { imageSize } from "./image-size";
 
 /**
@@ -41,6 +42,7 @@ export function getEvents(): ClubEvent[] {
       const [date, time, title, place, spots, photo, ...note] = columns;
       return {
         id: `${date}-${title}`,
+        slug: slugify(`${title}-${date}`),
         date,
         // The file the site shipped with knows about one day and one time; the
         // rest are things only the database keeps.
@@ -57,6 +59,16 @@ export function getEvents(): ClubEvent[] {
         fed: null,
         asked: 0,
         story: null,
+        // Everything a flyer says beyond a name and a day is something only the
+        // database keeps; the file the site shipped with never had it.
+        subtitle: "",
+        lead: "",
+        address: "",
+        cost: "",
+        signUpEmail: "",
+        partOf: "",
+        partOfUrl: "",
+        days: [],
       };
     })
     .sort((a, b) => a.date.localeCompare(b.date));

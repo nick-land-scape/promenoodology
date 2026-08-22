@@ -1,7 +1,27 @@
 import type { Metadata, Viewport } from "next";
+import { Permanent_Marker } from "next/font/google";
 import { SITE_URL } from "@/lib/site";
 import { getTheme, themeAsCss } from "@/lib/theme";
 import "./globals.css";
+
+/**
+ * The one handwritten face on the site, and it has exactly one job.
+ *
+ * Everything here is Times and Gotham and stays that way. The handbook's cover
+ * is the exception: it is the cover of a thing we print and give away, with the
+ * mark on it, and the mark is a marker scrawl — so the word underneath it is
+ * written in the same hand rather than set in the site's own type, which would
+ * read as a label stuck on a book.
+ *
+ * Fetched at build time and served from our own domain by next/font, so this
+ * costs the reader no request to anybody else.
+ */
+const hand = Permanent_Marker({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--hand",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -58,7 +78,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     // The script below sets data-theme before React arrives, so the attribute it
     // finds is not the one the server sent. That is the intended sequence rather
     // than a bug, and this is the one thing suppressHydrationWarning is for.
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html lang="en" data-theme="light" className={hand.variable} suppressHydrationWarning>
       <head>
         <script
           // eslint-disable-next-line react/no-danger

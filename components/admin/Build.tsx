@@ -1,14 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import Picker, { type Choice } from "@/components/admin/Picker";
-import Thumb from "@/components/admin/Thumb";
-import { Bin, Grip, Icon, Place, Word, moved, useDragOrder } from "@/components/admin/ui";
+import Picker, { type Choice } from "./Picker";
+import Thumb from "./Thumb";
+import { Bin, Grip, Icon, Place, Word, moved, useDragOrder } from "./ui";
 import { LAYOUTS } from "@/lib/photo-layout";
 import type { PhotoLayout } from "@/lib/supabase/rows";
 
 /**
  * The page, built by hand.
+ *
+ * A story's, and now an evening's: the two are the same act — a heading, a
+ * paragraph, a photograph, a deliberate gap, in the order a reader gets them —
+ * so this lives with the rest of the kit rather than in the stories folder it
+ * grew up in. What only a story has (which photograph is its cover, and the two
+ * different ways of taking one away) is passed in, and where it is not passed
+ * in those buttons are simply not there.
  *
  * What it replaces: the words were typed in one panel as sections and
  * paragraphs, the photographs were arranged in another, and the page wove the
@@ -54,21 +61,25 @@ export default function StoryPage({
   blocks,
   onChange,
   photos,
-  cover,
+  cover = null,
   onCover,
   onUnlink,
   onDelete,
+  empty = "Nothing on the page yet. Add a heading or a paragraph below.",
 }: {
   blocks: Block[];
   onChange: (next: Block[]) => void;
   /** The story's photographs, to choose from. */
   photos: (Choice & { width: number; height: number })[];
-  cover: string | null;
-  onCover: (id: string | null) => void;
+  /** What to say when there is nothing on the page. */
+  empty?: string;
+  /** Which one stands for the whole thing. Only a story has one. */
+  cover?: string | null;
+  onCover?: (id: string | null) => void;
   /** Take a photograph out of the story but leave it in the archive. */
-  onUnlink: (photoId: string) => void;
+  onUnlink?: (photoId: string) => void;
   /** Destroy it: the row and the file. */
-  onDelete: (photoId: string) => void;
+  onDelete?: (photoId: string) => void;
 }) {
   const [adding, setAdding] = useState(false);
 
@@ -93,7 +104,7 @@ export default function StoryPage({
     <div className="admin-build">
       {blocks.length === 0 ? (
         <p className="admin-empty" style={{ padding: "18px 14px" }}>
-          Nothing on the page yet. Add a heading or a paragraph below.
+          {empty}
         </p>
       ) : null}
 
@@ -192,16 +203,18 @@ export default function StoryPage({
                             {choice.label}
                           </button>
                         ))}
-                        <button
-                          type="button"
-                          className="admin-flag"
-                          aria-pressed={cover === block.photoId}
-                          disabled={!block.photoId}
-                          onClick={() => onCover(cover === block.photoId ? null : block.photoId)}
-                          title="The one that stands for this story in the list and in a link preview"
-                        >
-                          cover
-                        </button>
+                        {onCover ? (
+                          <button
+                            type="button"
+                            className="admin-flag"
+                            aria-pressed={cover === block.photoId}
+                            disabled={!block.photoId}
+                            onClick={() => onCover(cover === block.photoId ? null : block.photoId)}
+                            title="The one that stands for this story in the list and in a link preview"
+                          >
+                            cover
+                          </button>
+                        ) : null}
                       </span>
 
                       {/* Three different acts, and they are genuinely different:
@@ -210,7 +223,7 @@ export default function StoryPage({
                           out of the story and leaves it in the archive; deleting
                           destroys it everywhere. Naming them the same would be
                           the kindest-looking way to lose a photograph. */}
-                      {block.photoId ? (
+                      {block.photoId && onUnlink && onDelete ? (
                         <span className="admin-block-fate">
                           <Word
                             onClick={() => onUnlink(block.photoId as string)}

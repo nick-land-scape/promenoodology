@@ -152,6 +152,49 @@ export const PAGE_SETTINGS: Record<string, Setting[]> = {
   about: [...BACKGROUND],
 
   handbook: [
+    /*
+     * The handbook is a book, and these are the few things about a book that a
+     * person who cannot read CSS has a genuine opinion about: whether it turns
+     * at all, what its paper looks like, whether it counts its own pages, and
+     * whether turning one makes a sound.
+     *
+     * "As a book" is first and is a real switch, not a decoration: somebody
+     * reading on a slow phone, or printing the thing, wants the column of words
+     * it always was, and a page that can only be had one way is a page somebody
+     * eventually has to be apologised to for.
+     */
+    {
+      key: "asABook",
+      kind: "toggle",
+      label: "as a book",
+      hint: "Off gives the plain column of words it always was. On a phone the book shows one page at a time.",
+      fallback: true,
+    },
+    {
+      key: "bookPaper",
+      kind: "choice",
+      label: "the paper",
+      fallback: "site",
+      options: [
+        { value: "site", label: "the site’s own", hint: "The same paper as every other page." },
+        { value: "warm", label: "warmer", hint: "A shade towards cream, as a printed handbook is." },
+        { value: "white", label: "plain white", hint: "Flat white, as a photocopy is." },
+      ],
+    },
+    {
+      key: "bookNumbers",
+      kind: "toggle",
+      label: "page numbers",
+      hint: "Off for something read straight through rather than referred back to.",
+      fallback: true,
+    },
+    {
+      key: "bookSound",
+      kind: "toggle",
+      label: "offer a page-turn sound",
+      hint: "It is offered, never on by itself: a page that makes a noise nobody asked for is a page people close.",
+      fallback: true,
+    },
     {
       key: "showForm",
       kind: "toggle",

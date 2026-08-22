@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { getSitePages } from "@/lib/site-pages";
-import { getStories } from "@/lib/source";
+import { getEvents, getStories } from "@/lib/source";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Only what is actually on the site. A page turned off in /admin is a 404, and
@@ -19,7 +19,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ? (await getStories()).map((story) => `/stories/${story.slug}`)
     : [];
 
-  return [...pages, ...stories].map((route) => ({
+  /* Every evening that is on and has an address. Not behind the "stories"
+     switch: an evening's page is a flyer, and turning off the stories does not
+     cancel what is on. */
+  const events = (await getEvents())
+    .filter((event) => event.slug)
+    .map((event) => `/events/${event.slug}`);
+
+  return [...pages, ...stories, ...events].map((route) => ({
     url: `${SITE_URL}${route}`,
     changeFrequency: "monthly",
     priority: route === "/" ? 1 : 0.7,

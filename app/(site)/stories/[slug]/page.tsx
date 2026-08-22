@@ -7,7 +7,8 @@ import { siteUrl } from "@/lib/site";
 import Photo from "@/components/Photo";
 import QuoteThis from "@/components/QuoteThis";
 import StoryBody from "@/components/StoryBody";
-import { getNeighbours, getStories, getStory } from "@/lib/source";
+import { pretty } from "@/lib/admin/when";
+import { getEvents, getNeighbours, getStories, getStory } from "@/lib/source";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -46,6 +47,16 @@ export default async function StoryPage({ params }: Params) {
   if (!story) notFound();
 
   const { previous, next } = await getNeighbours(story.slug);
+
+  /* The evenings this is the story of.
+   *
+   * More than one, often: a summer of Saturdays on the same piece of ground is
+   * five afternoons and one thing that happened, and the writing about it is the
+   * one thing. Each of them keeps its own page — what it was called, who came,
+   * what was still wanted that week — and this is the way back to them. */
+  const evenings = (await getEvents())
+    .filter((event) => event.story?.slug === story.slug && event.slug)
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   const slides: Slide[] = story.photos.map((item) => ({
     key: item.file,
@@ -115,6 +126,31 @@ export default async function StoryPage({ params }: Params) {
             </section>
           ) : null}
         </footer>
+      ) : null}
+
+      {evenings.length > 0 ? (
+        <section className="story-evenings">
+          <h2 className="story-label">
+            {evenings.length === 1 ? "the evening it came from" : "the evenings it came from"}
+          </h2>
+          <ul>
+            {evenings.map((evening) => (
+              <li key={evening.id}>
+                <Link href={`/events/${evening.slug}`}>{evening.title}</Link>
+                <span>
+                  {[
+                    evening.until
+                      ? `${pretty(evening.date)} – ${pretty(evening.until)}`
+                      : pretty(evening.date),
+                    evening.place,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
       <Cite

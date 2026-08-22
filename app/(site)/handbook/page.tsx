@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import SupportForm from "@/components/SupportForm";
 import QuoteThis from "@/components/QuoteThis";
-import { getPage, getPageHead } from "@/lib/source";
+import Handbook from "@/components/Handbook";
+import { getHandbookPages, getPage, getPageHead } from "@/lib/source";
 import { siteUrl } from "@/lib/site";
 import { pageIsVisible } from "@/lib/site-pages";
 
@@ -21,28 +22,48 @@ export default async function HandbookPage() {
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("handbook"))) notFound();
 
-  const [handbook, head] = await Promise.all([getPage("handbook"), getPageHead("handbook")]);
+  const [handbook, head, leaves] = await Promise.all([
+    getPage("handbook"),
+    getPageHead("handbook"),
+    getHandbookPages(),
+  ]);
   if (!handbook) notFound();
+
+  /* A book, unless somebody has said otherwise, or unless there is not enough of
+     it to be one. Turning it off in /admin gives back the column of words this
+     page always was — see the note in the settings about why that switch is
+     there at all. */
+  const asABook = head.settings.asABook !== false && leaves.length > 1;
 
   return (
     <main className="page">
       <h1 className="page-title">{handbook.title}</h1>
       {handbook.lead ? <p className="page-intro">{handbook.lead}</p> : null}
 
-      <div className="handbook">
-        {handbook.blocks.map((block, index) =>
-          block.kind === "heading" ? (
-            <h2 key={index} className="handbook-heading">
-              <span className="handbook-number">{number(handbook.blocks, index)}</span>
-              {block.text}
-            </h2>
-          ) : (
-            <p key={index} className="handbook-text">
-              {block.text}
-            </p>
-          ),
-        )}
-      </div>
+      {asABook ? (
+        <Handbook
+          leaves={leaves}
+          title={handbook.title}
+          paper={String(head.settings.bookPaper ?? "site")}
+          numbers={head.settings.bookNumbers !== false}
+          offerSound={head.settings.bookSound !== false}
+        />
+      ) : (
+        <div className="handbook">
+          {handbook.blocks.map((block, index) =>
+            block.kind === "heading" ? (
+              <h2 key={index} className="handbook-heading">
+                <span className="handbook-number">{number(handbook.blocks, index)}</span>
+                {block.text}
+              </h2>
+            ) : (
+              <p key={index} className="handbook-text">
+                {block.text}
+              </p>
+            ),
+          )}
+        </div>
+      )}
 
       {/* The whole section can be taken away in /admin — heading, form and all.
           The handbook above it is the page; this is an invitation, and there are

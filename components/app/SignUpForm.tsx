@@ -151,7 +151,12 @@ export default function SignUpForm({
             </span>
           ) : null}
           <span className="row-body">
-            <span className="row-title">{event.title}</span>
+            {/* The name opens the evening itself — the programme, what was
+                written about it, who is bringing what. The row keeps the one
+                thing you came to the list for, which is saying you are coming. */}
+            <Link href={`/app/events/${event.id}`} className="row-title">
+              {event.title}
+            </Link>
             <span className="row-meta">{event.label}</span>
             {event.partners.length > 0 ? (
               <span className="row-meta">with {event.partners.join(", ")}</span>
@@ -404,7 +409,9 @@ export default function SignUpForm({
                     </span>
                   ) : null}
                   <span className="row-body">
-                    <span className="row-title">{event.title}</span>
+                    <Link href={`/app/events/${event.id}`} className="row-title">
+                      {event.title}
+                    </Link>
                     <span className="row-meta">{event.label}</span>
                     {event.mine ? (
                       <span className="row-yes">you were there</span>

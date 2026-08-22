@@ -4057,3 +4057,81 @@ html.admin-dragging * {
   font-size: 0.9em;
   line-height: 1.35;
 }
+
+/* ------------------------------------------------------ finding one of them */
+
+/*
+ * A line to type into, over a list.
+ *
+ * Built like the rest of the back of the house rather than like a search box:
+ * one hairline rule under it, the words in the same Times as everything else,
+ * and no rounded grey pill. It is a field on a page of fields, and what it does
+ * happens directly underneath it.
+ */
+.admin-find {
+  margin: 0 0 16px;
+  max-width: 34rem;
+}
+
+.admin-find-box {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-bottom: 1px solid var(--ink);
+  padding: 6px 2px;
+}
+
+.admin-find-box svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: var(--admin-faint);
+}
+
+.admin-find-box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.admin-find-box input:focus {
+  outline: none;
+}
+
+.admin-find-box input::placeholder {
+  color: var(--admin-faint);
+  font-style: italic;
+}
+
+/* The one that empties it. A cross, because it is the only mark that means
+   "take this away" without also meaning "delete the thing itself". */
+.admin-find-clear {
+  flex: none;
+  border: 0;
+  background: none;
+  padding: 0 2px;
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--admin-faint);
+  cursor: pointer;
+}
+
+.admin-find-clear:hover {
+  color: var(--ink);
+}
+
+.admin-find-count {
+  margin: 5px 0 0;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+}

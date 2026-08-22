@@ -3063,3 +3063,373 @@ body:has(.hero) .edit-this {
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
+
+/* --------------------------------------------------------- an evening's page
+
+   The flyer, at an address anybody can open. It borrows the story page's
+   typography wholesale — the same labels, the same paragraphs, the same
+   photographs on the same twelve columns — because it is the same site talking
+   about the same kind of thing, a fortnight earlier. What it adds is the handful
+   of shapes a flyer has and a story does not: a programme, and the practical
+   corner at the foot. */
+
+.event-lead {
+  margin: 14px 0 0;
+  font-size: 1.15rem;
+  line-height: 1.45;
+  max-width: 34em;
+  text-wrap: pretty;
+}
+
+.event-cover {
+  margin: 0 0 40px;
+  max-width: 42rem;
+}
+
+.event-cover img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* The days, numbered, because a programme is read in order and the order is
+   the days themselves. */
+.event-days {
+  margin: 40px 0;
+  max-width: 40rem;
+}
+
+.event-days ol {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 22px;
+}
+
+.event-days li {
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+}
+
+.event-day-when {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+.event-day-name {
+  margin: 4px 0 6px;
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+/* When, where, what it costs, how to come: the four questions somebody has
+   before they decide, in the one place they can be answered together. */
+.event-practical {
+  margin: 46px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--hairline);
+  max-width: 40rem;
+}
+
+.event-practical dl {
+  margin: 12px 0 0;
+  display: grid;
+  gap: 12px;
+}
+
+.event-practical dl > div {
+  display: grid;
+  grid-template-columns: 10rem 1fr;
+  gap: 4px 16px;
+  align-items: baseline;
+}
+
+.event-practical dt {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+.event-practical dd {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+.event-wanted {
+  margin-top: 26px;
+}
+
+.event-wanted ul {
+  margin: 10px 0 0;
+  padding-left: 1.1em;
+  display: grid;
+  gap: 4px;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  /* On a phone the label sits over its answer rather than beside it: ten
+     characters of "asking to come" and a column of white space is not a layout,
+     it is a table pretending to be one. */
+  .event-practical dl > div {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The evenings a story came from. Often several: a summer of Saturdays is one
+   thing that happened and five afternoons it happened on. */
+.story-evenings {
+  margin: 46px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--hairline);
+  max-width: 40rem;
+}
+
+.story-evenings ul {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.story-evenings li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 1.05rem;
+}
+
+.story-evenings span {
+  font-style: italic;
+  font-size: 0.86em;
+  color: var(--quiet);
+}
+
+/* ------------------------------------------------------------- the handbook,
+   as a book
+
+   Two states, and the first one has to be good on its own: before the turning
+   is put on top — and for ever, for a reader who has asked for less movement or
+   is not running any of this — the pages are simply the pages, stacked, with a
+   rule between them. That is the handbook. `.is-open` is what the library adds
+   to, not what makes it readable. */
+
+.handbook-book {
+  max-width: 44rem;
+  margin-top: 8px;
+}
+
+.handbook-leaf {
+  padding: 0 0 26px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.handbook-leaf:last-child {
+  border-bottom: 0;
+}
+
+.handbook-leaf .handbook-heading {
+  margin-top: 0;
+}
+
+/* The folio is the book's own page number, so it is not there until there is a
+   book. */
+.handbook-folio {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- turned on */
+
+.handbook-book.is-open {
+  /* The book wants the width it can get; the library keeps the proportions. */
+  max-width: 62rem;
+}
+
+.handbook-book.is-open .handbook-leaves {
+  margin: 0 auto;
+}
+
+.handbook-book.is-open .handbook-leaf {
+  /* Now a leaf of paper rather than a section of a column. */
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: var(--book-paper, var(--paper));
+  color: var(--ink);
+  box-shadow: inset 0 0 42px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.handbook-book.is-open .handbook-leaf-in {
+  height: 100%;
+  padding: 40px 34px 44px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  position: relative;
+}
+
+.handbook-book.is-open .handbook-heading {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+}
+
+.handbook-book.is-open .handbook-text {
+  font-size: 1.02rem;
+  line-height: 1.5;
+  padding-left: 0;
+}
+
+.handbook-book.is-open .handbook-folio {
+  display: block;
+  position: absolute;
+  left: 34px;
+  right: 34px;
+  bottom: 16px;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--quiet);
+}
+
+/* The paper, as the handbook's settings in /admin choose it. The default is the
+   site's own, which is the honest answer nine times in ten. */
+.handbook-book.paper-warm {
+  --book-paper: #f6f0e4;
+}
+
+.handbook-book.paper-white {
+  --book-paper: #ffffff;
+}
+
+.handbook-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.handbook-controls button {
+  border: 1px solid var(--ink);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+
+.handbook-controls button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.handbook-where {
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  min-width: 8ch;
+  text-align: center;
+}
+
+/* Off by default and it says which it is, because a page that makes a noise
+   nobody asked for is a page people close. */
+.handbook-sound {
+  font-family: var(--sans);
+  font-size: 0.56rem !important;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-color: var(--hairline) !important;
+  color: var(--quiet);
+}
+
+.handbook-sound.is-on {
+  border-color: var(--purple) !important;
+  color: var(--purple);
+}
+
+@media (max-width: 640px) {
+  .handbook-book.is-open .handbook-leaf-in {
+    padding: 28px 22px 38px;
+  }
+}
+
+/* A book has an edge. Without one, a page of plain white paper on the site's
+   own near-white simply stops somewhere, and the shadow the library draws down
+   the spine is left doing the whole job of saying "this is a book". */
+.handbook-book.is-open .handbook-leaf {
+  border: 1px solid var(--hairline);
+}
+
+/* The cover: the mark, and the name of the thing under it in the same hand the
+   mark is drawn in. */
+.handbook-cover .handbook-leaf-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.handbook-cover img {
+  width: min(58%, 220px);
+  height: auto;
+}
+
+.handbook-cover-name {
+  font-family: var(--hand), var(--serif);
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.handbook-book.is-open .handbook-cover {
+  border-color: var(--ink);
+}
+
+/* Before the book exists — no JavaScript, or less movement asked for — the
+   cover is the top of the page rather than a leaf of its own, and it should not
+   pretend to be a whole page of nothing. */
+.handbook-book:not(.is-open) .handbook-cover .handbook-leaf-in {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+.handbook-book:not(.is-open) .handbook-cover img {
+  width: 74px;
+}
+
+/* Paper in the dark.
+ *
+ * "Warmer" and "plain white" are choices about paper, and paper is a light-room
+ * idea: a white leaf under dark-room ink is the one combination on this site
+ * that cannot be read at all. So in the dark the book is made of whatever the
+ * rest of the page is made of, and the choice quietly waits for the light. */
+:root[data-theme="dark"] .handbook-book.paper-warm,
+:root[data-theme="dark"] .handbook-book.paper-white {
+  --book-paper: var(--paper);
+}

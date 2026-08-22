@@ -52,6 +52,9 @@ const ICONS: Record<string, string> = {
      the two-faces mark with the people, which is the one thing they are not. */
   partners: "M3 20V6l6-2.5V20M9 20v-8.5l6 2.5V20M15 20v-5h5.5v5M2 20h20M6 8.5h.01M6 12h.01M6 15.5h.01",
   moon: "M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z",
+  /* A book, open, with a spine down the middle — the handbook is the one thing
+     here that is really a book, and it is drawn as one. */
+  book: "M12 6.5C10.5 5 8 4.5 4 4.5v13c4 0 6.5.5 8 2 1.5-1.5 4-2 8-2v-13c-4 0-6.5.5-8 2zM12 6.5v14",
 };
 
 export function Icon({ name }: { name: string }) {

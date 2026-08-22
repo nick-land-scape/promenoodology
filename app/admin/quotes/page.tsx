@@ -12,6 +12,8 @@ export default async function QuotesPage() {
     supabase
       .from("quotes")
       .select("id, who, place, year, story_tag, text, published")
+      // The bin is a place of its own; what is deleted is not in this list.
+      .is("deleted_at", null)
       .order("created_at")
       .returns<Row[]>(),
     supabase

@@ -29,8 +29,28 @@ export type Resource = {
 
 /* ------------------------------------------------- the members' app (/app) */
 
+/**
+ * One day of something that runs over several.
+ *
+ * "Ateliers olfactifs" is four Saturdays and a Sunday, each with its own name
+ * and its own hours. An evening on one afternoon has none of these, and says
+ * when it is with its own date and time like it always did.
+ */
+export type EventDay = {
+  /** ISO day. */
+  date: string;
+  time: string;
+  endTime: string;
+  /** "La cuisine du buisson". */
+  title: string;
+  /** The sentence under it, as the flyer has one. */
+  what: string;
+};
+
 export type ClubEvent = {
   id: string;
+  /** Its address on the site: /events/<slug>. */
+  slug: string;
   /** ISO day, e.g. 2026-08-22. */
   date: string;
   /** The last day, where it runs over more than one. Empty for an evening. */
@@ -53,7 +73,32 @@ export type ClubEvent = {
   asked: number;
   /** The story written about it afterwards, if there is one. */
   story: { slug: string; title: string } | null;
+  /** The line under the name: "avec le collectif promeNOODology". */
+  subtitle: string;
+  /** The paragraph it opens with, before the programme. */
+  lead: string;
+  /** The street, where "place" is a name rather than a way of getting there. */
+  address: string;
+  /** "gratuit", "£5 on the door". */
+  cost: string;
+  /** Where to write to come, for the ones somebody else takes the names for. */
+  signUpEmail: string;
+  /** The larger project or festival it belongs to. */
+  partOf: string;
+  partOfUrl: string;
+  /** The days it runs. Empty for something that happens once. */
+  days: EventDay[];
 };
+
+/**
+ * An evening with its own page: everything above, plus what somebody wrote.
+ *
+ * The same blocks a story's page is built from, so the same component draws
+ * both — an evening that deserves more than a flyer's worth of words gets the
+ * page a story gets, and one that does not has an empty list here and loses
+ * nothing.
+ */
+export type EventPage = ClubEvent & { blocks: StoryBlock[] };
 
 export type NewsItem = {
   date: string;
