@@ -21,7 +21,17 @@ import type { PageFlip } from "page-flip";
  * putting them back where it thinks they belong is what silently returns a book
  * to page one on every turn. Nothing React draws is ever inside the book.
  */
-export default function FlyerBook({ src, title }: { src: string; title: string }) {
+export default function FlyerBook({
+  src,
+  title,
+  words,
+}: {
+  src: string;
+  title: string;
+  /* Handed in rather than held here: this is a client component, and the words
+     the site says are looked up on the server where the language is known. */
+  words: { open: string; take: string; before: string; after: string };
+}) {
   const [open, setOpen] = useState(false);
   const [pages, setPages] = useState<string[]>([]);
   const [at, setAt] = useState(0);
@@ -185,7 +195,7 @@ export default function FlyerBook({ src, title }: { src: string; title: string }
             strokeLinejoin="round"
           />
         </svg>
-        look through the flyer
+        {words.open}
       </button>
 
       {open ? (
@@ -208,7 +218,7 @@ export default function FlyerBook({ src, title }: { src: string; title: string }
               <span className="flyer-name">{title}</span>
               <span className="flyer-does">
                 <a href={src} download target="_blank" rel="noopener noreferrer">
-                  take it as a PDF ↓
+                  {words.take}
                 </a>
                 <button type="button" onClick={() => setOpen(false)} aria-label="Close">
                   ×
@@ -235,7 +245,7 @@ export default function FlyerBook({ src, title }: { src: string; title: string }
                   type="button"
                   onClick={() => book.current?.flipPrev()}
                   disabled={at === 0}
-                  aria-label="The page before"
+                  aria-label={words.before}
                 >
                   ←
                 </button>
@@ -264,7 +274,7 @@ export default function FlyerBook({ src, title }: { src: string; title: string }
                   type="button"
                   onClick={() => book.current?.flipNext()}
                   disabled={at >= pages.length - 1}
-                  aria-label="The next page"
+                  aria-label={words.after}
                 >
                   →
                 </button>

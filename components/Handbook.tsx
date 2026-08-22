@@ -41,6 +41,7 @@ export default function Handbook({
   paper,
   numbers,
   offerSound,
+  words,
 }: {
   leaves: Leaf[];
   /** What is written on the cover, under the mark. */
@@ -49,6 +50,16 @@ export default function Handbook({
   paper: string;
   numbers: boolean;
   offerSound: boolean;
+  /* Handed in rather than held here: the words the site says are looked up on
+     the server, where the language is known. */
+  words: {
+    cover: string;
+    of: string;
+    soundOn: string;
+    soundOff: string;
+    before: string;
+    after: string;
+  };
 }) {
   const holder = useRef<HTMLDivElement>(null);
   const book = useRef<PageFlip | null>(null);
@@ -215,17 +226,17 @@ export default function Handbook({
           handbook, and buttons that turned nothing would be a lie. */}
       {open ? (
         <div className="handbook-controls">
-          <button type="button" onClick={() => go("back")} disabled={at === 0} aria-label="The page before">
+          <button type="button" onClick={() => go("back")} disabled={at === 0} aria-label={words.before}>
             ←
           </button>
 
           <span className="handbook-where" aria-live="polite">
             {numbers
               ? at === 0
-                ? "the cover"
+                ? words.cover
                 : spread && at + 1 <= total
-                  ? `${at}–${Math.min(at + 1, total)} of ${total}`
-                  : `${at} of ${total}`
+                  ? `${at}–${Math.min(at + 1, total)} ${words.of} ${total}`
+                  : `${at} ${words.of} ${total}`
               : null}
           </span>
 
@@ -233,7 +244,7 @@ export default function Handbook({
             type="button"
             onClick={() => go("on")}
             disabled={at >= sheets - (spread ? 2 : 1)}
-            aria-label="The next page"
+            aria-label={words.after}
           >
             →
           </button>
@@ -254,7 +265,7 @@ export default function Handbook({
               }}
               title={sound ? "Turning a page makes a sound" : "Turning a page is silent"}
             >
-              {sound ? "sound on" : "sound off"}
+              {sound ? words.soundOn : words.soundOff}
             </button>
           ) : null}
         </div>

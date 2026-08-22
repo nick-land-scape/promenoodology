@@ -22,7 +22,24 @@ import { pretty } from "@/lib/admin/when";
  * calendar where every square invites a tap and thirty of them answer "nothing"
  * is a calendar that wastes thirty taps.
  */
-export default function EventsCalendar({ events }: { events: ClubEvent[] }) {
+export default function EventsCalendar({
+  events,
+  lang,
+  words,
+}: {
+  events: ClubEvent[];
+  lang: "en" | "fr";
+  /* Handed in rather than held here: the words the site says are looked up on
+     the server, where the language is known. */
+  words: {
+    open: string;
+    shut: string;
+    pressOne: string;
+    nothing: string;
+    before: string;
+    after: string;
+  };
+}) {
   const today = new Date().toISOString().slice(0, 10);
 
   /* Which month is on screen. It opens on the one the next evening is in rather
@@ -79,7 +96,7 @@ export default function EventsCalendar({ events }: { events: ClubEvent[] }) {
             strokeLinejoin="round"
           />
         </svg>
-        see it as a month
+        {words.open}
       </button>
     );
   }
@@ -87,19 +104,25 @@ export default function EventsCalendar({ events }: { events: ClubEvent[] }) {
   return (
     <div className="cal">
       <div className="cal-head">
-        <button type="button" onClick={() => step(-1)} aria-label="The month before">
+        <button type="button" onClick={() => step(-1)} aria-label={words.before}>
           ‹
         </button>
         <strong>
-          {first.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+          {first.toLocaleDateString(lang === "fr" ? "fr-CH" : "en-GB", {
+            month: "long",
+            year: "numeric",
+          })}
         </strong>
-        <button type="button" onClick={() => step(1)} aria-label="The month after">
+        <button type="button" onClick={() => step(1)} aria-label={words.after}>
           ›
         </button>
       </div>
 
       <div className="cal-week" aria-hidden="true">
-        {["M", "T", "W", "T", "F", "S", "S"].map((letter, index) => (
+        {(lang === "fr"
+          ? ["L", "M", "M", "J", "V", "S", "D"]
+          : ["M", "T", "W", "T", "F", "S", "S"]
+        ).map((letter, index) => (
           <span key={`${letter}-${index}`}>{letter}</span>
         ))}
       </div>
@@ -138,12 +161,14 @@ export default function EventsCalendar({ events }: { events: ClubEvent[] }) {
         <div className="cal-said" aria-live="polite">
           <p className="cal-said-day">{pretty(chosen)}</p>
           {showing.length === 0 ? (
-            <p>Nothing on that day.</p>
+            <p>{words.nothing}</p>
           ) : (
             <ul>
               {showing.map((event) => (
                 <li key={event.id}>
-                  <Link href={`/events/${event.slug}`}>{event.title}</Link>
+                  <Link href={lang === "fr" ? `/fr/events/${event.slug}` : `/events/${event.slug}`}>
+                    {event.title}
+                  </Link>
                   {/* Which part of it, where it is one of several. */}
                   {dayName(event, chosen) ? <span> — {dayName(event, chosen)}</span> : null}
                 </li>
@@ -152,11 +177,11 @@ export default function EventsCalendar({ events }: { events: ClubEvent[] }) {
           )}
         </div>
       ) : (
-        <p className="cal-hint">The marked days have something on. Press one.</p>
+        <p className="cal-hint">{words.pressOne}</p>
       )}
 
       <button type="button" className="cal-shut" onClick={() => setOpen(false)}>
-        back to the list
+        {words.shut}
       </button>
     </div>
   );

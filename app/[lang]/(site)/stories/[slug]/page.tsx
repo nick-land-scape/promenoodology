@@ -9,7 +9,8 @@ import QuoteThis from "@/components/QuoteThis";
 import StoryBody from "@/components/StoryBody";
 import { pretty } from "@/lib/admin/when";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
-import { getEvents, getNeighbours, getStories, getStory } from "@/lib/source";
+import { getEvents, getFrench, getNeighbours, getStories, getStory } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 type Params = { params: Promise<{ slug: string; lang: string }> };
 
@@ -59,6 +60,8 @@ export default async function StoryPage({ params }: Params) {
    * five afternoons and one thing that happened, and the writing about it is the
    * one thing. Each of them keeps its own page — what it was called, who came,
    * what was still wanted that week — and this is the way back to them. */
+  const say = speaking(lang, await getFrench());
+
   const evenings = (await getEvents(lang))
     .filter((event) => event.story?.slug === story.slug && event.slug)
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -136,7 +139,9 @@ export default async function StoryPage({ params }: Params) {
       {evenings.length > 0 ? (
         <section className="story-evenings">
           <h2 className="story-label">
-            {evenings.length === 1 ? "the evening it came from" : "the evenings it came from"}
+            {evenings.length === 1
+              ? say("story.eveningItCameFrom")
+              : say("story.eveningsItCameFrom")}
           </h2>
           <ul>
             {evenings.map((evening) => (

@@ -7,7 +7,8 @@ import type { ClubEvent } from "@/lib/content";
 import { pretty } from "@/lib/admin/when";
 import { at, isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
-import { getEvents, getPageHead } from "@/lib/source";
+import { getEvents, getFrench, getPageHead } from "@/lib/source";
+import { speaking, type Said } from "@/lib/words";
 
 export const metadata: Metadata = {
   title: "What's on",
@@ -37,7 +38,12 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
   const { lang: asked } = await params;
   const lang = isLang(asked) ? asked : PLAIN;
 
-  const [events, head] = await Promise.all([getEvents(lang), getPageHead("events", lang)]);
+  const [events, head, french] = await Promise.all([
+    getEvents(lang),
+    getPageHead("events", lang),
+    getFrench(),
+  ]);
+  const say = speaking(lang, french);
 
   const today = new Date().toISOString().slice(0, 10);
   const listed = events.filter((event) => event.slug);
@@ -71,17 +77,17 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
 
   const groups = [
     {
-      label: "today",
+      label: say("on.today"),
       events: withNext.filter((one) => one.next === today).map((one) => one.event),
     },
     {
-      label: "this week",
+      label: say("on.thisWeek"),
       events: withNext
         .filter((one) => one.next && one.next > today && one.next <= inAWeek)
         .map((one) => one.event),
     },
     {
-      label: "later on",
+      label: say("on.later"),
       events: withNext.filter((one) => one.next && one.next > inAWeek).map((one) => one.event),
     },
   ].filter((group) => group.events.length > 0);
@@ -118,23 +124,36 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
       {/* The list answers "what is coming up"; the month answers "is anything on
           the weekend I am free". Folded away, because it is the second question
           and the list is the first — see the button inside it. */}
-      {marked > 1 ? <EventsCalendar events={listed} /> : null}
+      {marked > 1 ? (
+        <EventsCalendar
+          events={listed}
+          lang={lang}
+          words={{
+            open: say("on.asMonth"),
+            shut: say("on.backToList"),
+            pressOne: say("cal.pressOne"),
+            nothing: say("cal.nothingThatDay"),
+            before: say("cal.monthBefore"),
+            after: say("cal.monthAfter"),
+          }}
+        />
+      ) : null}
 
       {groups.length === 0 && been.length === 0 ? (
-        <p className="empty">Nothing is on just now. There will be.</p>
+        <p className="empty">{say("on.nothing")}</p>
       ) : null}
 
       {groups.map((group) => (
         <section key={group.label} className="events-group">
           <h2 className="story-label">{group.label}</h2>
-          <Evenings events={group.events} nextOn={nextOn} lang={lang} />
+          <Evenings events={group.events} nextOn={nextOn} lang={lang} say={say} />
         </section>
       ))}
 
       {been.length > 0 ? (
         <section className="events-group events-been">
-          <h2 className="story-label">and what has been</h2>
-          <Evenings events={been} nextOn={nextOn} lang={lang} past />
+          <h2 className="story-label">{say("on.been")}</h2>
+          <Evenings events={been} nextOn={nextOn} lang={lang} say={say} past />
         </section>
       ) : null}
     </main>
@@ -145,11 +164,13 @@ function Evenings({
   events,
   nextOn,
   lang,
+  say,
   past,
 }: {
   events: ClubEvent[];
   nextOn: (event: ClubEvent) => string | null;
   lang: "en" | "fr";
+  say: Said;
   past?: boolean;
 }) {
   return (
@@ -174,7 +195,9 @@ function Evenings({
                 {[
                   // Where an evening runs over days, the day it is next on is
                   // more use than the day it began.
-                  next && event.days.length > 1 ? `next on ${pretty(next)}` : when(event),
+                  next && event.days.length > 1
+                    ? `${say("on.nextOn")} ${pretty(next)}`
+                    : when(event),
                   event.place,
                 ]
                   .filter(Boolean)
@@ -183,7 +206,7 @@ function Evenings({
               <span className="story-lead">
                 {event.lead ||
                   (event.days.length > 1
-                    ? `${event.days.length} days, from ${pretty(event.days[0].date)}`
+                    ? `${event.days.length} ${say("on.days")} ${pretty(event.days[0].date)}`
                     : event.note)}
               </span>
             </Link>

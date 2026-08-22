@@ -4,7 +4,8 @@ import Link from "next/link";
 import SupportForm from "@/components/SupportForm";
 import QuoteThis from "@/components/QuoteThis";
 import Handbook from "@/components/Handbook";
-import { getHandbookPages, getPage, getPageHead } from "@/lib/source";
+import { getFrench, getHandbookPages, getPage, getPageHead } from "@/lib/source";
+import { speaking } from "@/lib/words";
 import { siteUrl } from "@/lib/site";
 import { isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
@@ -26,11 +27,13 @@ export default async function HandbookPage({ params }: { params: Promise<{ lang:
   const { lang: asked } = await params;
   const lang = isLang(asked) ? asked : PLAIN;
 
-  const [handbook, head, leaves] = await Promise.all([
+  const [handbook, head, leaves, french] = await Promise.all([
     getPage("handbook", lang),
     getPageHead("handbook", lang),
     getHandbookPages(lang),
+    getFrench(),
   ]);
+  const say = speaking(lang, french);
   if (!handbook) notFound();
 
   /* A book, unless somebody has said otherwise, or unless there is not enough of
@@ -51,6 +54,14 @@ export default async function HandbookPage({ params }: { params: Promise<{ lang:
           paper={String(head.settings.bookPaper ?? "site")}
           numbers={head.settings.bookNumbers !== false}
           offerSound={head.settings.bookSound !== false}
+          words={{
+            cover: say("book.theCover"),
+            of: say("book.of"),
+            soundOn: say("book.soundOn"),
+            soundOff: say("book.soundOff"),
+            before: say("book.pageBefore"),
+            after: say("book.nextPage"),
+          }}
         />
       ) : (
         <div className="handbook">

@@ -8,7 +8,8 @@ import StoryBody from "@/components/StoryBody";
 import type { Slide } from "@/lib/content";
 import { pretty } from "@/lib/admin/when";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
-import { getEvent, getEvents } from "@/lib/source";
+import { getEvent, getEvents, getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 type Params = { params: Promise<{ slug: string; lang: string }> };
 
@@ -58,8 +59,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function EventPage({ params }: Params) {
   const { slug, lang: asked } = await params;
   const lang: Lang = isLang(asked) ? asked : PLAIN;
-  const event = await getEvent(slug, lang);
+  const [event, french] = await Promise.all([getEvent(slug, lang), getFrench()]);
   if (!event) notFound();
+
+  // What the page says on its own behalf, in whichever language it is being
+  // read in. See lib/words.
+  const say = speaking(lang, french);
 
   const slides: Slide[] = event.blocks
     .filter((block) => block.kind === "photo")
@@ -82,14 +87,14 @@ export default async function EventPage({ params }: Params) {
             wherever the browser happened to be. Top left, where a back is. */}
         <p className="crumb">
           <Link href={at(lang, "/events")} className="event-back">
-            ← all events
+            ← {say("event.allEvents")}
           </Link>
         </p>
         <h1 className="page-title">{event.title}</h1>
         {event.subtitle ? <p className="story-hook">{event.subtitle}</p> : null}
         <p className="story-meta">
           {[when(event), event.place, event.address].filter(Boolean).join(" · ")}
-          {over ? " · it has been" : null}
+          {over ? ` · ${say("event.itHasBeen")}` : null}
         </p>
         {event.lead ? <p className="event-lead">{event.lead}</p> : null}
       </header>
@@ -111,7 +116,7 @@ export default async function EventPage({ params }: Params) {
           rule: one of them is a Sunday and one of them starts at nine. */}
       {event.days.length > 0 ? (
         <section className="event-days">
-          <h2 className="story-label">the programme</h2>
+          <h2 className="story-label">{say("event.programme")}</h2>
           <ol>
             {event.days.map((day) => (
               <li key={`${day.date}-${day.title}`}>
@@ -135,34 +140,35 @@ export default async function EventPage({ params }: Params) {
       ) : null}
 
       <section className="event-practical">
-        <h2 className="story-label">coming</h2>
+        <h2 className="story-label">{say("event.coming")}</h2>
         <dl>
           <div>
-            <dt>when</dt>
-            <dd>{when(event) || "still being arranged"}</dd>
+            <dt>{say("event.when")}</dt>
+            <dd>{when(event) || say("event.stillArranged")}</dd>
           </div>
           {event.place || event.address ? (
             <div>
-              <dt>where</dt>
+              <dt>{say("event.where")}</dt>
               <dd>{[event.place, event.address].filter(Boolean).join(", ")}</dd>
             </div>
           ) : null}
           {event.cost ? (
             <div>
-              <dt>what it costs</dt>
+              <dt>{say("event.cost")}</dt>
               <dd>{event.cost}</dd>
             </div>
           ) : null}
           {!over ? (
             <div>
-              <dt>asking to come</dt>
+              <dt>{say("event.howToCome")}</dt>
               <dd>
                 {event.signUpEmail ? (
                   <a href={`mailto:${event.signUpEmail}`}>{event.signUpEmail}</a>
                 ) : (
                   <>
-                    In the members&rsquo; app — <Link href="/app/events">what&rsquo;s on</Link>
-                    {event.spots > 0 ? `, ${event.spots} places` : null}
+                    {say("event.inTheApp")}{" "}
+                    <Link href="/app/events">{say("event.whatsOn")}</Link>
+                    {event.spots > 0 ? `, ${event.spots} ${say("event.places")}` : null}
                   </>
                 )}
               </dd>
@@ -170,7 +176,7 @@ export default async function EventPage({ params }: Params) {
           ) : null}
           {event.fed ? (
             <div>
-              <dt>how many ate</dt>
+              <dt>{say("event.howManyAte")}</dt>
               <dd>{event.fed}</dd>
             </div>
           ) : null}
@@ -183,7 +189,7 @@ export default async function EventPage({ params }: Params) {
             in a launderette are not the same person. */}
         {event.flyer ? (
           <div className="event-flyer">
-            <FlyerBook src={event.flyer} title={event.title} />
+            <FlyerBook src={event.flyer} title={event.title} words={{ open: say("event.lookThrough"), take: say("event.takeAsPdf"), before: say("book.pageBefore"), after: say("book.nextPage") }} />
             <a
               className="event-flyer-take"
               href={event.flyer}
@@ -191,13 +197,13 @@ export default async function EventPage({ params }: Params) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              take it as a PDF ↓
+              {say("event.takeAsPdf")}
             </a>
           </div>
         ) : null}
 
         {/* What a member could do about this, and what it takes to be one. */}
-        {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} /> : null}
+        {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} /> : null}
 
         {event.note ? <p className="story-text">{event.note}</p> : null}
 
@@ -205,7 +211,7 @@ export default async function EventPage({ params }: Params) {
             page is exactly the person who owns a pot big enough for forty. */}
         {!over && event.needs.trim() ? (
           <div className="event-wanted">
-            <h2 className="story-label">still wanted</h2>
+            <h2 className="story-label">{say("event.stillWanted")}</h2>
             <ul>
               {event.needs
                 .split("\n")
@@ -223,7 +229,7 @@ export default async function EventPage({ params }: Params) {
         <footer className="story-credits">
           {event.partOf ? (
             <section>
-              <h2 className="story-label">part of</h2>
+              <h2 className="story-label">{say("event.partOf")}</h2>
               <p className="story-text">
                 {event.partOfUrl ? (
                   <a href={event.partOfUrl} target="_blank" rel="noopener noreferrer">
@@ -241,7 +247,7 @@ export default async function EventPage({ params }: Params) {
               one, which is why the name is the fallback rather than the label. */}
           {event.partners.length > 0 ? (
             <section>
-              <h2 className="story-label">with</h2>
+              <h2 className="story-label">{say("event.with")}</h2>
               <ul className="story-partners">
                 {event.partners.map((partner) => (
                   <li key={partner.name}>
@@ -268,7 +274,7 @@ export default async function EventPage({ params }: Params) {
               point: a summer of Saturdays is one thing that happened. */}
           {event.story ? (
             <section>
-              <h2 className="story-label">what came of it</h2>
+              <h2 className="story-label">{say("event.whatCameOfIt")}</h2>
               <p className="story-text">
                 <Link href={at(lang, `/stories/${event.story.slug}`)}>{event.story.title}</Link>
               </p>
@@ -280,9 +286,9 @@ export default async function EventPage({ params }: Params) {
       {/* Where somebody who has just read about one evening actually wants to go
           next: everything else we have done, and the photographs of it. */}
       <nav className="event-onward" aria-label="The rest of the site">
-        <Link href={at(lang, "/events")}>← all events</Link>
-        <Link href={at(lang, "/stories")}>the stories</Link>
-        <Link href={at(lang, "/archive")}>the archive</Link>
+        <Link href={at(lang, "/events")}>← {say("event.allEvents")}</Link>
+        <Link href={at(lang, "/stories")}>{say("event.theStories")}</Link>
+        <Link href={at(lang, "/archive")}>{say("event.theArchive")}</Link>
       </nav>
     </main>
   );

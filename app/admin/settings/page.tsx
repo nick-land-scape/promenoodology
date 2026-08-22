@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Head from "@/components/admin/Head";
 import { requireAdmin } from "@/lib/admin/guard";
 import { mediaUrl } from "@/lib/supabase/config";
@@ -28,6 +29,22 @@ export default async function SettingsPage() {
         with, not a blank.
       </p>
       <ThemeEditor initial={theme} />
+
+      {/* The words the site says on its own behalf. Its own page: it is a long
+          list, it is edited rarely, and it has nothing to do with the colours. */}
+      <section className="admin-panel">
+        <header className="admin-panel-head">
+          <div>
+            <h2 className="admin-panel-name">translation</h2>
+            <p className="admin-panel-hint">
+              The French of the words the site says itself, kept apart from the words anybody wrote.
+            </p>
+          </div>
+          <Link href="/admin/settings/translation" className="admin-btn">
+            the words →
+          </Link>
+        </header>
+      </section>
 
       {/* Housekeeping rather than daily work, which is why it is down here and
           not at the top of the archive: it earns its keep after an import and

@@ -79,6 +79,7 @@ export const PHRASES: Phrase[] = [
   { key: "event.lookThrough", en: "look through the flyer", fr: "feuilleter le flyer", where: "front", note: "Opens the flyer as a book." },
   { key: "event.inTheApp", en: "In the members’ app —", fr: "Dans l’app des membres —", where: "front" },
   { key: "event.places", en: "places", fr: "places", where: "front", note: "As in “, 20 places”." },
+  { key: "event.whatsOn", en: "what’s on", fr: "ce qui se passe", where: "front", note: "The link into the members’ app." },
 
   /* ------------------------------------------------ taking part, on the website */
   { key: "part.countMeIn", en: "count me in", fr: "je viens", where: "front" },

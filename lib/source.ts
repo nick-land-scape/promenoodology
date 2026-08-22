@@ -408,6 +408,31 @@ export async function getPage(
   return null;
 }
 
+/**
+ * The French of the words the site says itself, by key.
+ *
+ * Whatever the back of the house has written down, and nothing else — an empty
+ * answer is perfectly normal and means every phrase falls back to the French in
+ * lib/words.ts. Read once per request wherever it is needed; it is one small
+ * table and the alternative is threading a dictionary through every component
+ * on the site.
+ */
+export async function getFrench(): Promise<Record<string, string>> {
+  if (!hasSupabase()) return {};
+
+  try {
+    const { data } = await supabasePublic()
+      .from("phrases")
+      .select("key, fr")
+      .returns<{ key: string; fr: string }[]>();
+
+    return Object.fromEntries((data ?? []).filter((one) => one.fr?.trim()).map((one) => [one.key, one.fr]));
+  } catch {
+    // A site that cannot reach the table still has words: its own.
+    return {};
+  }
+}
+
 /** One leaf of the handbook: what it is called, and the words on it. */
 export type Leaf = { id: string; title: string; blocks: PageBlock[] };
 

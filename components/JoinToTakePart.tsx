@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { at, type Lang } from "@/lib/lang";
+import type { Said } from "@/lib/words";
 
 /**
  * The two things a member can do about an evening, shown to everybody and
@@ -14,12 +16,20 @@ import Link from "next/link";
  * it is the shape of the thing you are being told about — you can see what you
  * would press, and the line under it says what it takes to press it.
  */
-export default function JoinToTakePart({ signUpEmail }: { signUpEmail?: string }) {
+export default function JoinToTakePart({
+  signUpEmail,
+  lang,
+  say,
+}: {
+  signUpEmail?: string;
+  lang: Lang;
+  say: Said;
+}) {
   return (
     <section className="taking-part">
       <span className="taking-part-does">
         <button type="button" className="pill pill-solid" disabled aria-disabled="true">
-          count me in
+          {say("part.countMeIn")}
         </button>
         <button type="button" className="pill" disabled aria-disabled="true">
           <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15">
@@ -31,19 +41,18 @@ export default function JoinToTakePart({ signUpEmail }: { signUpEmail?: string }
               strokeLinejoin="round"
             />
           </svg>
-          save this evening
+          {say("part.save")}
         </button>
       </span>
 
       <p className="taking-part-why">
-        Asking to come and keeping an evening on your list are for members —{" "}
-        <Link href="/app/enter">join the community</Link> and both of these work, here and in the
-        app.
+        {say("part.why")}{" "}
+        <Link href="/app/enter">{say("part.join")}</Link> {say("part.bothWork")}
         {signUpEmail ? (
           <>
             {" "}
-            Or write to <a href={`mailto:${signUpEmail}`}>{signUpEmail}</a>, who are taking the
-            names for this one.
+            {say("part.orWrite")} <a href={`mailto:${signUpEmail}`}>{signUpEmail}</a>,{" "}
+            {say("part.takingNames")}
           </>
         ) : null}
       </p>

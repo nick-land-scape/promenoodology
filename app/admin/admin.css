@@ -4142,3 +4142,54 @@ html.admin-dragging * {
   display: flex;
   gap: 6px;
 }
+
+/* ------------------------------------------------- the words, in two columns
+
+   The English and the French of one phrase are one thing, so they sit on one
+   line: what is being asked is "how would you say that", not "fill this in". */
+
+.admin-words {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-words li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px 22px;
+  align-items: start;
+  padding: 10px 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-words li:first-child {
+  border-top: 0;
+}
+
+.admin-words-en em {
+  display: block;
+  font-style: normal;
+  font-size: 1.02rem;
+  line-height: 1.35;
+}
+
+/* Where it appears, for whoever is translating it out of context — which is
+   everybody, because a word on its own is not a sentence. */
+.admin-words-en span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85em;
+  font-style: italic;
+  color: var(--admin-faint);
+}
+
+.admin-words input {
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .admin-words li {
+    grid-template-columns: 1fr;
+  }
+}
