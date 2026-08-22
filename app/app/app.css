@@ -24,8 +24,13 @@ body:has(.app-shell) {
 html:has(.app-shell),
 body:has(.app-shell) {
   overscroll-behavior-y: none;
-  overflow-x: hidden;
 }
+
+/* And no `overflow-x: hidden` on either of them, however tempting it looks next
+   to the line above. Overflow on the root makes the root the scrolling container,
+   and a `position: sticky` header inside a container that does not scroll simply
+   stops sticking — it scrolled away with the page and left the first heading of
+   the screen printed across the clock. */
 
 .app-shell {
   --gutter: 18px;

@@ -9,7 +9,6 @@ import {
   sharedEvents,
   sharedNews,
   sharedPage,
-  sharedResources,
   sharedStories,
 } from "@/lib/shared";
 
@@ -20,20 +19,19 @@ export const metadata = { title: "Home" };
 export const dynamic = "force-dynamic";
 
 /** How many of each thing a front screen can hold without becoming a list. */
-const FEW = { stories: 2, photographs: 6, news: 3 };
+const FEW = { stories: 2, news: 3 };
 
 export default async function AppHome() {
   const me = await requireMember("/app");
   // Their own language: their account first, then whatever the browser was told
   // to remember by the website's switcher. See lib/app/me.
   const lang = await readingIn();
-  const [all, mine, news, stories, photos, handbook, count] = await Promise.all(
+  const [all, mine, news, stories, handbook, count] = await Promise.all(
     [
       sharedEvents(lang),
       myBookings(),
       sharedNews(lang),
       sharedStories(lang),
-      sharedResources(),
       sharedPage("handbook", lang),
       sharedCount(),
     ],
@@ -144,32 +142,6 @@ export default async function AppHome() {
                   <span className="row-meta">
                     {[story.where, story.when].filter(Boolean).join(" · ")}
                   </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {photos.length > 0 ? (
-        <section className="app-section">
-          <div className="app-section-head">
-            <h2 className="app-h2">the archive</h2>
-            <Link className="app-more" href="/app/read?of=archive">
-              all {photos.length} ›
-            </Link>
-          </div>
-          <ul className="peek-photos">
-            {photos.slice(0, FEW.photographs).map((photo) => (
-              <li key={photo.photo.src}>
-                <Link href="/app/read?of=archive">
-                  <Photo
-                    src={photo.photo.src}
-                    alt=""
-                    width={photo.photo.width}
-                    height={photo.photo.height}
-                    sizes="(max-width: 833px) 33vw, 25vw"
-                  />
                 </Link>
               </li>
             ))}
