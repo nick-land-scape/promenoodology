@@ -3075,8 +3075,9 @@ body:has(.hero) .edit-this {
    of shapes a flyer has and a story does not: a programme, and the practical
    corner at the foot. */
 
+/* First thing under the header, above the picture, where a flyer opens. */
 .event-lead {
-  margin: 14px 0 0;
+  margin: 0 0 28px;
   font-size: 1.15rem;
   line-height: 1.45;
   max-width: 34em;
@@ -4317,9 +4318,21 @@ body:has(.hero) .edit-this {
   z-index: 30;
   /* The paper behind it, or the words underneath show through as it passes. */
   background: var(--paper);
-  padding-bottom: 12px;
-  margin-bottom: 28px;
+  padding-bottom: 10px;
+  /* Only what has to stay: the way back and the things you can press. Anything
+     else kept up here is kept there for ever. */
+  margin-bottom: 22px;
   border-bottom: 1px solid var(--hairline);
+}
+
+/* The name of the evening, the line under it and the dates — the opening of the
+   page rather than part of the bar above it. */
+.event-said {
+  margin-bottom: 18px;
+}
+
+.event-said .page-title {
+  margin-bottom: 0;
 }
 
 .event-top-row {

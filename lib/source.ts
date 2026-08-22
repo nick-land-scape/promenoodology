@@ -518,8 +518,14 @@ export async function getEvents(lang: Lang = PLAIN): Promise<ClubEvent[]> {
   if (!hasSupabase()) return appFiles.getEvents();
 
   const supabase = supabasePublic();
-  const [{ data }, { data: programme }, { data: partners }, { data: stories }, { data: bookings }] =
-    await Promise.all([
+  const [
+    { data },
+    { data: programme },
+    { data: partners },
+    { data: stories },
+    { data: bookings },
+    { data: sizes },
+  ] = await Promise.all([
     supabase
       .from("events")
       .select("*")
@@ -562,9 +568,22 @@ export async function getEvents(lang: Lang = PLAIN): Promise<ClubEvent[]> {
       .from("bookings")
       .select("event_id, people")
       .returns<{ event_id: string; people: number }[]>(),
+    /* How big each picture actually is.
+     *
+     * It used to say 1500×1000 for every evening, whatever the picture was —
+     * and a flyer is a portrait page, so the shape was wrong by a factor of
+     * two. Next sizes what it serves from the ratio it is given, which is how a
+     * 1127-wide flyer came to be served at 383 and drawn at 654: upscaled, and
+     * soft, from a source that was fine. */
+    supabase
+      .from("photos")
+      .select("path, width, height")
+      .is("deleted_at", null)
+      .returns<{ path: string; width: number; height: number }[]>(),
   ]);
 
   const named = new Map((partners ?? []).map((one) => [one.id, one]));
+  const big = new Map((sizes ?? []).map((one) => [one.path, one]));
   const told = new Map((stories ?? []).map((one) => [one.id, one]));
   const asked = new Map<string, number>();
   for (const booking of bookings ?? []) {
@@ -588,7 +607,13 @@ export async function getEvents(lang: Lang = PLAIN): Promise<ClubEvent[]> {
       spots: row.spots ?? 0,
       note: say(fr, "note", lang, row.note ?? ""),
       photo: row.photo_path
-        ? { src: mediaUrl(row.photo_path), width: 1500, height: 1000 }
+        ? {
+            src: mediaUrl(row.photo_path),
+            // Its real shape, and a landscape guess only where the archive has
+            // somehow lost it.
+            width: big.get(row.photo_path)?.width || 1500,
+            height: big.get(row.photo_path)?.height || 1000,
+          }
         : null,
       partners: (row.partners ?? [])
         .map((id) => named.get(id))

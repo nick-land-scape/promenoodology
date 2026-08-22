@@ -119,18 +119,33 @@ export default async function EventPage({ params }: Params) {
             {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} tight /> : null}
           </span>
         </div>
+      </header>
+
+      {/*
+       * What the evening is called, and when and where — under the bar rather
+       * than in it.
+       *
+       * The bar stays on screen the whole way down the page, and everything kept
+       * in it is kept there for ever: a title, a hook and a line of dates read
+       * once and then permanently eating the top of the page. What has to stay
+       * is the way back and the things you can press. The rest is the opening of
+       * the page, and it opens the way a flyer does — the name, the line under
+       * it, the dates, the paragraph, the picture.
+       */}
+      <div className="event-said">
         <h1 className="page-title">{event.title}</h1>
         {event.subtitle ? <p className="story-hook">{event.subtitle}</p> : null}
         <p className="story-meta">
           {[when(event), event.place, event.address].filter(Boolean).join(" · ")}
           {over ? ` · ${say("event.itHasBeen")}` : null}
         </p>
-        {event.lead ? (
-          <p className="event-lead">
-            <Linked>{event.lead}</Linked>
-          </p>
-        ) : null}
-      </header>
+      </div>
+
+      {event.lead ? (
+        <p className="event-lead">
+          <Linked>{event.lead}</Linked>
+        </p>
+      ) : null}
 
       {event.photo ? (
         <figure className="event-cover">
