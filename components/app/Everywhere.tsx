@@ -446,42 +446,47 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           <ul className="row-list">
             {pins.map((pin) => (
               <li key={pin.id}>
-                <div className="row">
-                  <button
-                    type="button"
-                    className="row-body everywhere-jump"
-                    onClick={() => {
-                      setChosen(pin);
-                      setStop(2);
-                      flyTo.current?.(pin);
-                    }}
-                  >
+                {/* The photograph first, then the words: a list you read from the
+                    left, where the picture is the thing that tells you which
+                    evening this was before the title does. */}
+                <button
+                  type="button"
+                  className="everywhere-row"
+                  onClick={() => {
+                    setChosen(pin);
+                    setStop(2);
+                    flyTo.current?.(pin);
+                  }}
+                >
+                  {pin.cover ? (
+                    <span className="everywhere-row-shot">
+                      <Photo src={pin.cover} alt="" fill sizes="88px" />
+                    </span>
+                  ) : (
+                    <span
+                      className="everywhere-row-shot everywhere-row-none"
+                      aria-hidden="true"
+                    />
+                  )}
+
+                  <span className="everywhere-row-words">
                     <span className="row-title">
                       {pin.title}
                       {pin.ahead ? (
                         <span className="everywhere-soon">to come</span>
                       ) : null}
                     </span>
+                    {pin.hook ? (
+                      <span className="everywhere-row-hook">{pin.hook}</span>
+                    ) : null}
                     <span className="row-meta">
                       {[pin.where, pin.when].filter(Boolean).join(" · ")}
                     </span>
-                  </button>
-                  {/* The photograph, where there is one. A list of places with no
-                      pictures in it is a table of contents. */}
-                  {pin.cover ? (
-                    <span className="row-thumb">
-                      <Photo src={pin.cover} alt="" fill sizes="58px" />
-                    </span>
-                  ) : null}
-                  {pin.slug ? (
-                    <Link
-                      className="pill pill-small"
-                      href={`/app/read/${pin.slug}`}
-                    >
-                      read it
-                    </Link>
-                  ) : null}
-                </div>
+                    {pin.lead ? (
+                      <span className="everywhere-row-lead">{pin.lead}</span>
+                    ) : null}
+                  </span>
+                </button>
               </li>
             ))}
           </ul>
