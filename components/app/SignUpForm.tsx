@@ -149,6 +149,34 @@ export default function SignUpForm({
               <Photo src={event.photo.src} alt="" fill sizes="58px" />
             </span>
           ) : null}
+
+          {/* The bookmark, top right of the row.
+              It is the smallest decision on the screen — no promise, no number,
+              nobody told — so it belongs in a corner rather than in a line of
+              buttons under the evening, where it took a third of the width and
+              read as the equal of saying you are coming. */}
+          <button
+            type="button"
+            className={marked(event) ? "mark mark-on" : "mark"}
+            onClick={() => mark(event, !marked(event))}
+            disabled={pending}
+            aria-pressed={marked(event)}
+            aria-label={
+              marked(event) ? "Take it off your list" : "Keep it on your list"
+            }
+            title={marked(event) ? "On your list" : "Keep it on your list"}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M6.5 3.5h11v17l-5.5-4-5.5 4z"
+                fill={marked(event) ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
           <span className="row-body">
             {/* The name opens the evening itself — the programme, what was
                 written about it, who is bringing what. The row keeps the one
@@ -204,32 +232,8 @@ export default function SignUpForm({
             ) : null}
           </span>
 
+          {/* One button, under the evening it is about. */}
           <span className="row-does">
-            {/* A bookmark. No promise, no number, no message to anybody — it is
-                for the evening you have not decided about, which is most of them
-                three weeks out. */}
-            <button
-              type="button"
-              className={marked(event) ? "mark mark-on" : "mark"}
-              onClick={() => mark(event, !marked(event))}
-              disabled={pending}
-              aria-pressed={marked(event)}
-              aria-label={
-                marked(event) ? "Take it off your list" : "Keep it on your list"
-              }
-              title={marked(event) ? "On your list" : "Keep it on your list"}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M6.5 3.5h11v17l-5.5-4-5.5 4z"
-                  fill={marked(event) ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-
             {coming(event) ? (
               <button
                 type="button"

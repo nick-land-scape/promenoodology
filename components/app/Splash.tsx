@@ -1,39 +1,31 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { inTheApp, liftTheCurtain, reloadWhenStale } from "@/lib/native";
-import type { Film } from "@/lib/source";
+import { useEffect, useState } from "react";
+import { liftTheCurtain, reloadWhenStale } from "@/lib/native";
 
 /**
- * The curtain the app opens with.
+ * The curtain the app opens with: the mark on paper, and nothing else on it.
  *
- * The same films as the front page of the website, full screen, with the mark
- * multiplied over them — multiply is what makes it look like ink on the picture
- * rather than a sticker over it, because the white of the scan disappears and only
- * the purple stays.
+ * It had a film in it, and the film was the problem. A web page cannot begin until
+ * the web view has fetched it, so the earliest the film could start was about a
+ * second in — by which time the screen behind was ready and the film had time for
+ * half of one before it was dismissed. The app opened on three states (mark on
+ * paper, film, app) where there should have been one continuous picture. A native
+ * player was tried in its place and works, but it is a second copy of the same
+ * opening, in another language, needing a build for every change to it.
  *
- * Why it is written the way it is:
+ * So: the mark, on the same paper as the launch screen, at the same size and in
+ * the same position — which means the still iOS draws before this app is running
+ * and the first frame of this component are the same picture. Nothing is seen
+ * happening at the join. Then the ink deepens, a light crosses it, and the app is
+ * underneath.
  *
- * **It waits for the film, but not for long.** The first version held the screen
- * for a flat second and a half and then left, which on any real connection meant
- * the film had not started and nobody ever saw one — the answer to "why isn't the
- * video loading" was that it was, just not in time to be looked at. Now the
- * curtain stays until the film actually has a frame to show, and gives up after
- * two and a half seconds if it does not. An app that waits on a video is worse
- * than an app with no video.
- *
- * **It asks the film to play out loud.** Muted autoplay is allowed in a WebView,
- * but "allowed" is not "always", so play() is called and its refusal is caught
- * rather than left to be silence.
- *
- * **The ink arrives.** The mark is revealed by a sweep across it rather than faded
- * in, so it reads as being painted on — which is what it is, a scan of a brush.
- *
- * **Once a session**, remembered per tab, so it is a way of opening the app rather
- * than a thing that happens between screens.
+ * Once a session, remembered per tab, so it is a way of opening the app rather
+ * than something that happens between screens.
  */
-/**
+
+/*
  * Decided once per page load, outside the component.
  *
  * The effect below used to read sessionStorage and write it in the same breath,
@@ -41,8 +33,7 @@ import type { Film } from "@/lib/source";
  * twice in development on purpose. First run: nothing seen, show the curtain,
  * write "yes". Second run, immediately after: reads its own "yes", concludes the
  * curtain has already been shown, and takes it away before a single frame of it
- * has been drawn. Which is exactly what "the video isn't loading" looked like:
- * the film was fine, the curtain it lives in was being dismissed by itself.
+ * has been drawn.
  *
  * A module-scope answer survives the second mount and any remount inside the same
  * page life, and starts again from storage on a real load — which is what "once a
@@ -50,42 +41,23 @@ import type { Film } from "@/lib/source";
  */
 let decided: boolean | null = null;
 
-export default function Splash({ films }: { films: Film[] }) {
-  const film = useRef<HTMLVideoElement>(null);
-  /* Null until it is known: the answer lives in sessionStorage and reading that on
-     the server would be guessing, so nothing is drawn until it is known and the
-     curtain never flashes at somebody who has already seen it. */
+export default function Splash() {
+  /* Null until it is known: the answer lives in sessionStorage and reading that
+     on the server would be guessing, so nothing is drawn until it is known and
+     the curtain never flashes at somebody who has already seen it. */
   const [show, setShow] = useState<boolean | null>(null);
   const [going, setGoing] = useState(false);
-  const [rolling, setRolling] = useState(false);
-  const [at, setAt] = useState(0);
   const [still, setStill] = useState(false);
-  /** When the film actually began, so it is given a beat before the lift. */
-  const rolled = useRef<number | null>(null);
 
-  /* Come back to a fresh copy after a long time away. A WebView keeps its page
-     for days, so an app left in the background sits on a version of itself that
-     was published before whatever changed — which is how somebody ends up looking
-     at yesterday's screen and reasonably concluding nothing was fixed. */
-  useEffect(() => reloadWhenStale(30), []);
-
-  /*
-   * The native launch screen leaves when the film is ready, not when this mounts.
-   *
-   * It used to be lifted the instant this component appeared — which is before
-   * the film has a frame — so the app opened on the mark over paper, jumped to the
-   * mark over a film a second later, and then left. Three states, and the middle
-   * one looked like a mistake.
-   *
-   * Hooked to the film instead: the launch screen holds its mark on paper, the
-   * film starts underneath this curtain, and only then is the native screen taken
-   * away — so the change a person sees is a picture arriving behind a mark that
-   * never moved. If the film never comes, the launch screen's own auto-hide (see
-   * capacitor.config.ts) ends it, which is why nothing here is load-bearing.
-   */
+  /* The launch screen can go the moment this is on the screen: it is the same
+     mark on the same paper, so there is nothing to wait for. And come back to a
+     fresh copy after a long time away — a web view keeps its page for days, so an
+     app left in the background sits on a version of itself that was published
+     before whatever changed. */
   useEffect(() => {
-    if (show === false || rolling || still) void liftTheCurtain();
-  }, [show, rolling, still]);
+    void liftTheCurtain();
+    return reloadWhenStale(30);
+  }, []);
 
   useEffect(() => {
     setStill(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -93,7 +65,6 @@ export default function Splash({ films }: { films: Film[] }) {
     // Already answered in this page life — including by a second mount.
     if (decided !== null) {
       setShow(decided);
-      if (decided && films.length > 1) setAt(Math.floor(Math.random() * films.length));
       return;
     }
 
@@ -112,9 +83,8 @@ export default function Splash({ films }: { films: Film[] }) {
       } catch {
         /* nothing to remember with */
       }
-      if (films.length > 1) setAt(Math.floor(Math.random() * films.length));
     }
-  }, [films.length]);
+  }, []);
 
   /*
    * When to leave.
@@ -124,9 +94,10 @@ export default function Splash({ films }: { films: Film[] }) {
    * curtain, a flash of grey blocks, and then the app. Three states where there
    * should have been one.
    *
-   * So it waits for something real to be there: a header, or the door. Bounded at
-   * both ends, because neither extreme is acceptable — never less than long
-   * enough to see (900ms), never more than three seconds however slow the line is.
+   * So it waits for something real: a header, or the door. Bounded at both ends,
+   * because neither extreme is acceptable — never less than long enough for the
+   * mark to have moved, never more than two and a half seconds however slow the
+   * line is.
    */
   useEffect(() => {
     if (show !== true) return;
@@ -137,28 +108,20 @@ export default function Splash({ films }: { films: Film[] }) {
           document.querySelector(".app-column .doorway"),
       );
 
-    /* Long enough to be an opening rather than a flash.
-     *
-       A film that appears for six hundred milliseconds and leaves is worse than
-       no film: it reads as something that went wrong. So the clock starts again
-       when the film starts — a beat and a bit of it, always — and the whole thing
-       is still capped, because an app that will not open is worse than both. */
+    const earliest = 1100;
+    const latest = 2600;
     const from = performance.now();
-    const enough = 1250;
-    const latest = 3600;
 
     let watching = 0;
     const look = () => {
       const waited = performance.now() - from;
-      const seen = rolled.current ? performance.now() - rolled.current : 0;
-      const long = rolled.current ? seen >= enough : waited >= 900;
-      if (waited >= latest || (long && ready())) {
+      if (waited >= latest || (waited >= earliest && ready())) {
         setGoing(true);
         return;
       }
       watching = window.setTimeout(look, 90);
     };
-    watching = window.setTimeout(look, 600);
+    watching = window.setTimeout(look, earliest);
 
     return () => window.clearTimeout(watching);
   }, [show]);
@@ -171,17 +134,11 @@ export default function Splash({ films }: { films: Film[] }) {
 
   if (!show) return null;
 
-  const chosen = films[at] ?? films[0];
-
   return (
     <div
       className={[
         "curtain",
-        /* In the app the launch screen has already drawn this mark, in this place.
-           Painting it on again with a sweep would be the same mark arriving twice. */
-        inTheApp() ? "curtain-carried" : "",
         going ? "curtain-going" : "",
-        rolling ? "curtain-rolling" : "",
         still ? "curtain-still" : "",
       ]
         .filter(Boolean)
@@ -191,49 +148,21 @@ export default function Splash({ films }: { films: Film[] }) {
       // Impatience is allowed.
       onClick={() => setGoing(true)}
     >
-      {chosen?.poster ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img className="curtain-still-frame" src={chosen.poster} alt="" fetchPriority="high" />
-      ) : null}
-
-      {chosen && !still ? (
-        <video
-          ref={film}
-          className="curtain-film"
-          src={chosen.src}
-          poster={chosen.poster ?? undefined}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          tabIndex={-1}
-          onCanPlay={() => {
-            rolled.current ??= performance.now();
-            setRolling(true);
-            // Asked out loud: muted autoplay is allowed in a WebView, and
-            // "allowed" is not "always".
-            film.current?.play().catch(() => {
-              /* Refused. The still underneath is doing the job. */
-            });
-          }}
-        />
-      ) : null}
-
-      {/* Two multiplied copies, exactly as the front page does it: the ink doubles
-          over the busy parts of the picture and the white of the scan disappears. */}
-      {[0, 1].map((layer) => (
+      {/* The mark, and a light that crosses it. The light is masked to the ink
+          rather than laid over the whole screen: a band travelling across paper is
+          a lens flare, and this club does not own one. */}
+      <span className="curtain-ink">
         <Image
-          key={layer}
-          className={layer === 0 ? "curtain-mark" : "curtain-mark curtain-mark-ink"}
+          className="curtain-mark"
           src="/logo.png"
           alt=""
           width={1600}
           height={1600}
-          priority={layer === 0}
+          priority
           sizes="74vmin"
         />
-      ))}
+        <span className="curtain-sheen" aria-hidden="true" />
+      </span>
     </div>
   );
 }

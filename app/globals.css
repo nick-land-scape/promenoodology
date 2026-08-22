@@ -1750,10 +1750,13 @@ body:has(.hero) .contact {
 
 /* --------------------------------------------------------------- large photo */
 
+/* Above everything, including the app's own bar.
+   Thirty was the same layer as the bar in the members' app, so a photograph
+   opened with five tabs still sitting on top of it. */
 .lightbox {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: 80;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1769,14 +1772,19 @@ body:has(.hero) .contact {
   cursor: default;
 }
 
-/* The way to keep a photograph: top left of the frame, with the arrow every
-   download in the world has. It was a text button at the end of the caption —
-   which is a sentence about who took the picture, so the one thing on the screen
-   that did something read as part of a credit. */
-.lightbox-save {
+/* Keep it, or close it: one pair above the photograph's top right corner. They
+   were at opposite corners, which read as a caption on the wrong side. */
+.lightbox-tools {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* The arrow every download in the world has. */
+.lightbox-save {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1802,11 +1810,7 @@ body:has(.hero) .contact {
   color: var(--purple);
 }
 
-/* Just above the photo's top-right corner, never on top of the photo. */
 .lightbox-close {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
   line-height: 1;
   font-style: normal;
 }
@@ -1819,10 +1823,16 @@ body:has(.hero) .contact {
   text-align: left;
 }
 
+/* Fixed to the bottom of the screen, not to the bottom of the photograph.
+   Hung off the frame, they moved with every picture — a tall one put them at the
+   bottom edge, a wide one halfway up the screen — so the one control you use
+   repeatedly was never twice in the same place. */
 .lightbox-controls {
-  position: absolute;
-  top: calc(100% + 10px);
+  position: fixed;
+  left: 0;
   right: 0;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  justify-content: center;
 }
 
 /* The photographs are small originals, so they are never blown up much past
@@ -1830,7 +1840,7 @@ body:has(.hero) .contact {
    height cap keeps proportions) are set per photo in Lightbox. */
 .lightbox-frame img {
   max-width: none;
-  width: min(88vw, var(--limit), calc(72vh * var(--ar)));
+  width: min(88vw, var(--limit), calc(64vh * var(--ar)));
   height: auto;
 }
 

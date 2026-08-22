@@ -58,7 +58,19 @@ const config: CapacitorConfig = {
     /* Paper, not white: the app's own background shows for an instant during
        rotation and while the WebView is coming up, and white flashes. */
     backgroundColor: "#fffcf6",
-    contentInset: "always",
+    /* Never, and this is the fix for "the bar gets taller at the bottom".
+     *
+     * `always` tells WKWebView to add the safe areas to its scroll view as a
+     * content *inset* — so the page is laid out inside a shorter viewport and the
+     * scroll view lets you scroll into the inset at the end, which is the band of
+     * paper that appears under the tab bar when you reach the bottom. Worse, this
+     * app also handles the same insets itself in CSS, with `viewport-fit=cover`
+     * and `env(safe-area-inset-*)`: two mechanisms accounting for one strip of
+     * glass, each unaware of the other.
+     *
+     * `never` gives the page the whole screen and leaves the insets to the CSS,
+     * which is where every rule about them in this app already lives. */
+    contentInset: "never",
     /* A link opened from an email or a message goes to the app rather than to
        Safari; the two-way half of that is the apple-app-site-association file. */
     limitsNavigationsToAppBoundDomains: false,
@@ -70,27 +82,17 @@ const config: CapacitorConfig = {
 
   plugins: {
     SplashScreen: {
-      /* It hides itself, and that is not the elegant option — it is the safe one.
+      /* It holds the mark until the web curtain is drawing the same mark.
        *
-       * The elegant version holds the launch screen until the app's own film
-       * curtain is drawn and hides it from JavaScript, so the join is invisible.
-       * Tried, and the app opened on a launch screen that never left: the whole
-       * thing had loaded and was running behind it, keyboard and all, waiting for
-       * a call that never arrived. A native curtain that depends on web code to
-       * lift is a white screen one deploy away, and no amount of elegance is
-       * worth that. The JavaScript call is still there and still lifts it early
-       * when it works; this is what happens when it does not.
-       *
-       * The gap it leaves is paper — the same paper the launch screen and the
-       * curtain behind it are painted in, so there is nothing to see except the
-       * mark going missing for a moment. Which it did: at a second and a fifth
-       * the launch screen left before the WebView had painted anything at all,
-       * and the app opened on an empty sheet. Two and a half seconds is longer
-       * than the page takes on any real connection, and if it is ever slower
-       * than that the curtain behind takes over with the film. */
+       * The two pictures are identical — paper, ink, size, position (see
+       * scripts/launch-screen.py) — so this is not a splash screen waiting to be
+       * replaced by another one, it is the first second of one opening, held by
+       * the only thing that can draw before the app is running. The curtain lifts
+       * it as soon as it is up; this number is what happens if that call never
+       * arrives, and 1.6s is longer than the page takes on any real line. */
       launchAutoHide: true,
-      launchShowDuration: 2500,
-      launchFadeOutDuration: 300,
+      launchShowDuration: 1600,
+      launchFadeOutDuration: 220,
       backgroundColor: "#fffcf6",
       showSpinner: false,
       androidScaleType: "CENTER_CROP",

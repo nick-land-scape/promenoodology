@@ -7,6 +7,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    /*
+     * Where the window actually is.
+     *
+     * This app is scene-based: SceneDelegate makes the window and holds it, so
+     * `AppDelegate.window` is nil for the whole life of the process. Everything
+     * here that reached for `window?.rootViewController` therefore reached for
+     * nothing and returned quietly — which is why the left-edge swipe never
+     * worked, the home-screen shortcuts went nowhere, and the film did not play.
+     * A guard that never fires is worse than a crash: nothing to read anywhere.
+     */
+    private var stage: UIView? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow }?
+            .rootViewController?
+            .view
+            ?? UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.windows.first }
+                .first?
+                .rootViewController?
+                .view
+    }
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         return true
@@ -45,9 +69,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // because that would mean a new file in the Xcode project and a storyboard
         // pointing at it — three things to keep in step instead of one line that
         // is idempotent and runs whenever the app comes forward.
-        if let web = Self.webView(in: window?.rootViewController?.view) {
+        if let web = Self.webView(in: stage) {
             web.allowsBackForwardNavigationGestures = true
             web.allowsLinkPreview = true
+
+            /* No rubber band, and this is the last piece of "the header moves and
+             * the bar grows".
+             *
+             * A web view bounces its whole document past the ends of the page.
+             * Nothing in this app wants that: the header is meant to be the one
+             * fixed thing on the screen, and during a bounce it is dragged with
+             * everything else — which is what "pull to refresh pulls the header
+             * down" is. At the other end the same bounce opens a band of paper
+             * under the bar, which reads as the bar having grown.
+             *
+             * The pull-to-refresh gesture does not need the bounce: it watches the
+             * touches itself and moves its own strip of paper (see
+             * components/app/PullDown.tsx), which is why it can be turned off here
+             * without taking the gesture with it. CSS `overscroll-behavior` says
+             * the same thing to a browser; this says it to the web view. */
+            web.scrollView.bounces = false
+            web.scrollView.alwaysBounceVertical = false
         }
 
         // A shortcut pressed on the home screen, if the app was already running.
@@ -84,7 +126,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func handShared() {
         guard
             let folder = Self.shared,
-            let web = Self.webView(in: window?.rootViewController?.view),
+            let web = Self.webView(in: stage),
             let note = try? Data(contentsOf: folder.appendingPathComponent("shared.json")),
             let read = try? JSONSerialization.jsonObject(with: note) as? [String: Any],
             let names = read["files"] as? [String],
@@ -141,7 +183,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
          * moment the app becomes active.
          */
         let where_ = (shortcutItem.userInfo?["where"] as? String) ?? "/app"
-        if Self.webView(in: window?.rootViewController?.view) == nil {
+        if Self.webView(in: stage) == nil {
             Self.waiting = where_
         } else {
             go(to: where_)
@@ -151,7 +193,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// Send the app's own screens somewhere, without reloading the whole thing.
     private func go(to path: String) {
-        guard let web = Self.webView(in: window?.rootViewController?.view) else { return }
+        guard let web = Self.webView(in: stage) else { return }
         /* history.pushState and a popstate, rather than location.href: the second
            would throw away the loaded app and start it again from the network,
            which for a shortcut meant to be a shortcut is the wrong end of the

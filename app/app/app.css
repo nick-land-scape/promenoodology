@@ -18,8 +18,8 @@ body:has(.app-shell) {
  * rubber-banding the document, the fixed bar and the sticky header stay where
  * they are, and what appears between them and the content is paper — which reads
  * exactly like the furniture inflating. Nothing about this app wants the bounce:
- * it is a set of screens, not a long page, and the pull-to-refresh gesture is
- * handled by hand anyway.
+ * it is a set of screens, not a long page. The web view is told the same thing
+ * natively, in AppDelegate, because a browser rule cannot reach a scroll view.
  */
 html:has(.app-shell),
 body:has(.app-shell) {
@@ -425,6 +425,8 @@ body:has(.app-shell) {
 }
 
 .row {
+  /* Relative, because the bookmark sits in its top right corner. */
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -910,6 +912,13 @@ body:has(.app-shell) {
 }
 
 .member-card {
+  /* A card's proportions, everywhere.
+     85.6 by 54 millimetres is the size of every card in anybody's pocket, and a
+     rectangle a third of that height is a ticket. It was only held to the ratio
+     on a tablet, where it was obvious; on a phone the content decided the height
+     and the thing came out short. */
+  aspect-ratio: 85.6 / 54;
+
   /* The edge is milled metal, not a black line.
      A gradient cannot be a border colour, so the border is transparent and the
      gradient is the last background layer, painted to the border box while
@@ -1206,6 +1215,29 @@ body:has(.app-shell) {
 
 .tab[aria-current="page"] {
   color: var(--ink);
+}
+
+/* You, in the last tab. A ring when it is the tab you are on, because a
+   photograph cannot go bold. */
+.tab-face {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--hair);
+  line-height: 0;
+}
+
+.tab-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tab-face-on {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
 }
 
 /* A single quiet line, only where it is actually needed. */
@@ -2168,18 +2200,16 @@ body:has(.app-shell) {
 
 /* ------------------------------------------------------------------- opening */
 
-/* The curtain the app opens with: the front page's film, full screen, with the
-   mark multiplied over it. Once a session, then it lets go of the screen entirely.
+/* The curtain the app opens with: the mark on paper, which is the same picture
+   the launch screen is already showing — so the join between the two is not a
+   transition anybody can see. Then the ink deepens and a light crosses it. */
 
-   Everything here is a transform or an opacity — nothing that costs a layout — so
-   it stays smooth on a phone that is also busy fetching the app behind it. */
 .curtain {
   position: fixed;
   inset: 0;
   z-index: 90;
   display: grid;
   place-items: center;
-  isolation: isolate; /* keeps the multiply inside the curtain */
   background: var(--paper);
   transition:
     opacity 0.6s ease,
@@ -2194,123 +2224,95 @@ body:has(.app-shell) {
   pointer-events: none;
 }
 
-.curtain-still-frame,
-.curtain-film {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Held back, so the ink over it stays readable. */
-  opacity: 0;
-  transition: opacity 0.9s ease;
-}
-
-/* The still comes up first — it is one file and it is already cached — and the
-   film fades over it the moment it has a frame of its own. */
-.curtain-still-frame {
-  opacity: 0.8;
-  animation: curtain-breathe 9s ease-in-out infinite alternate;
-}
-
-.curtain-rolling .curtain-film {
-  opacity: 0.82;
-}
-
-.curtain-rolling .curtain-still-frame {
-  opacity: 0;
-}
-
-/* A slow drift on the picture, so a still frame is not a dead one. */
-@keyframes curtain-breathe {
-  from {
-    transform: scale(1.04);
-  }
-  to {
-    transform: scale(1.1);
-  }
-}
-
-/* The mark, painted on rather than faded in: a sweep across it reveals the ink
-   the way a brush would put it there. */
-.curtain-mark {
+/* The ink and the light are one object, so the light can be masked to the ink. */
+.curtain-ink {
   position: relative;
+  display: block;
   width: 74vmin;
   max-width: 460px;
+  isolation: isolate;
+  animation: curtain-breath 2.6s cubic-bezier(0.4, 0, 0.35, 1) both;
+}
+
+.curtain-mark {
+  display: block;
+  width: 100%;
   height: auto;
+  /* Ink on paper rather than a picture of ink on paper: the white of the scan
+     disappears and the purple stays, which is how the mark is drawn everywhere
+     else in this project. */
   mix-blend-mode: multiply;
-  -webkit-mask-image: linear-gradient(
-    104deg,
-    #000 0%,
-    #000 34%,
-    rgba(0, 0, 0, 0.35) 46%,
-    transparent 58%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    104deg,
-    #000 0%,
-    #000 34%,
-    rgba(0, 0, 0, 0.35) 46%,
-    transparent 58%,
-    transparent 100%
-  );
-  -webkit-mask-size: 260% 100%;
-  mask-size: 260% 100%;
-  -webkit-mask-position: 100% 0;
-  mask-position: 100% 0;
-  animation:
-    curtain-ink 1.15s cubic-bezier(0.33, 0, 0.2, 1) 0.1s both,
-    curtain-settle 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* The second copy, doubling the ink where the picture is busy. */
-.curtain-mark-ink {
+/*
+ * The light, masked to the mark itself.
+ *
+ * A band travelling across the whole screen is a lens flare, and this club does
+ * not own one. Masked to the ink, the same band reads as a wet brushstroke
+ * catching the light — which is what the mark is a photograph of.
+ */
+.curtain-sheen {
   position: absolute;
-  opacity: 0.72;
-  animation-delay: 0.22s, 0s;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.9) 48%,
+    transparent 62%
+  );
+  mask-image: url("/logo.png");
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: url("/logo.png");
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mix-blend-mode: screen;
+  animation: curtain-cross 1.9s cubic-bezier(0.5, 0, 0.4, 1) 0.45s both;
 }
 
-@keyframes curtain-ink {
-  from {
-    -webkit-mask-position: 100% 0;
-    mask-position: 100% 0;
-  }
-  to {
-    -webkit-mask-position: 0% 0;
-    mask-position: 0% 0;
-  }
-}
-
-@keyframes curtain-settle {
-  from {
-    transform: scale(1.09);
-  }
-  to {
+/* It arrives at its own size rather than growing into it: a mark that scales up
+   from nothing is an animation, and this is a mark that is already there when the
+   screen turns on. So the movement is a breath, a per cent and a half. */
+@keyframes curtain-breath {
+  0% {
     transform: scale(1);
+    opacity: 0.94;
+  }
+  55% {
+    transform: scale(1.015);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
-/* Carried over from the launch screen: the mark is already on the screen, in this
-   place, at this size — so it does not arrive, it stays. Drawing it on again with
-   a sweep is the same mark appearing twice, which is what made the opening look
-   like three separate screens. */
-.curtain-carried .curtain-mark {
-  animation: none;
-  opacity: 1;
-  clip-path: none;
+@keyframes curtain-cross {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(120%);
+  }
 }
 
 /* Anybody who has asked for less movement gets the mark, the paper, and nothing
    that moves. */
+.curtain-still .curtain-ink,
+.curtain-still .curtain-sheen {
+  animation: none;
+}
+
+.curtain-still .curtain-sheen {
+  display: none;
+}
+
 .curtain-still .curtain-mark {
   animation: none;
   -webkit-mask-image: none;
   mask-image: none;
-}
-
-.curtain-still .curtain-still-frame {
-  animation: none;
 }
 
 .curtain-still {
@@ -3018,13 +3020,23 @@ body:has(.app-shell) {
   flex-wrap: wrap;
 }
 
+/* The one decision, under the evening it is about and starting where its words
+   start — not in a line of buttons pushed to the right, which is where it was
+   competing with a bookmark for a third of the row each. */
 .row-does {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 8px;
   width: 100%;
-  padding-top: 4px;
+  padding-top: 8px;
+}
+
+/* And the bookmark in the corner, out of the way of both. */
+.row .mark {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  z-index: 2;
 }
 
 /* With room, they go back beside the words where they started. */
@@ -3905,73 +3917,6 @@ body:has(.app-shell) {
   display: flex;
   gap: 10px;
   padding: 4px 0 2px;
-/* ------------------------------------------------------------- pull to ask
-
-   The paper that appears above the screen while it is being pulled. Fixed rather
-   than in the flow, so nothing below it moves and no layout is recalculated
-   sixty times a second while a thumb is on the glass. */
-.pulldown {
-  position: fixed;
-  /* Under the header, and only ever under it. The header is the one thing on the
-     screen that never moves — putting the pull indicator over it made the app
-     look like it had two headers for half a second. */
-  top: var(--app-head, 96px);
-  left: 0;
-  right: 0;
-  z-index: 20;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 10px;
-  pointer-events: none;
-  background: var(--paper);
-  overflow: hidden;
-}
-
-.pulldown:not(.is-drawn) {
-  transition:
-    height 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.2s ease;
-}
-
-.pulldown-mark {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--hair);
-  border-radius: 999px;
-  font-family: var(--sans);
-  font-size: 0.8rem;
-  color: var(--muted);
-  background: var(--paper);
-  transition: transform 0.18s ease;
-}
-
-/* Turning, while the answer is on its way. One ring rather than a spinner with
-   spokes: the app has hairlines and no other weights. */
-.pulldown-turning {
-  display: block;
-  width: 15px;
-  height: 15px;
-  border: 1.5px solid var(--hair);
-  border-top-color: var(--ink);
-  border-radius: 999px;
-  animation: pulldown-turn 0.7s linear infinite;
-}
-
-@keyframes pulldown-turn {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pulldown-turning {
-    animation-duration: 2s;
-  }
-}
-
 /* --------------------------------------------------------- one screen to the next
 
    The browser's own view transitions, used for exactly two things: the header and

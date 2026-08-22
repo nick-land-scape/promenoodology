@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { buzz } from "@/lib/native";
@@ -15,7 +16,7 @@ const TABS = [
   { href: "/app/account", label: "Account", icon: AccountIcon },
 ];
 
-export default function TabBar() {
+export default function TabBar({ face }: { face?: string | null }) {
   const pathname = usePathname();
 
   /* Not on the door. There is nothing to switch between until somebody is in,
@@ -42,7 +43,16 @@ export default function TabBar() {
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
-            <Icon filled={active} />
+            {/* The last tab is you, so it shows you.
+                A drawing of a person where a photograph could be is the app not
+                knowing who is holding it. */}
+            {href === "/app/account" && face ? (
+              <span className={active ? "tab-face tab-face-on" : "tab-face"}>
+                <Image src={face} alt="" width={44} height={44} sizes="22px" />
+              </span>
+            ) : (
+              <Icon filled={active} />
+            )}
             <span>{label}</span>
           </Link>
         );
