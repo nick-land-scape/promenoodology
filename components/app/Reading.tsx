@@ -247,7 +247,7 @@ export default function Reading({
               nine widths are the website's own — a wall of identical rectangles
               is a contact sheet — and each carries who took it and when, which
               is half of what an archive is for. */}
-          <ul className="wall">
+          <ul className="arch-wall">
             {wall.map((photo, index) => (
               <li key={photo.src} data-v={index % 9}>
                 <button
@@ -264,7 +264,7 @@ export default function Reading({
                   />
                 </button>
                 {photo.credit || photo.year ? (
-                  <span className="wall-said">
+                  <span className="arch-wall-said">
                     {[photo.credit, photo.year].filter(Boolean).join(" · ")}
                   </span>
                 ) : null}

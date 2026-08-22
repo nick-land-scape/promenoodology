@@ -1916,13 +1916,19 @@ body:has(.app-shell) {
 /*
  * The archive wall, the one the website has.
  *
+ * Called `arch-wall` and not `wall`, which is the whole reason this looked like
+ * fixed rows for a day: the website's donation wall is `.wall`, it is a grid, and
+ * globals.css loads after this file — so `display: grid` won over `columns`, every
+ * photograph took the full width of a single grid column, and the cluster became a
+ * stack. Two things called the same thing in one stylesheet always end this way.
+ *
  * `columns` rather than a grid, because a grid has rows and rows mean every
  * photograph in a row is cropped to the same height — which is a contact sheet.
  * Down a column instead, each one keeps the shape it was taken in, each falls
  * into whatever gap is above it, and the nine widths below (the website's own)
  * stop the columns reading as three neat stacks.
  */
-.wall {
+.arch-wall {
   columns: 2;
   column-gap: 10px;
   list-style: none;
@@ -1930,13 +1936,13 @@ body:has(.app-shell) {
   padding: 0 var(--gutter) 8px;
 }
 
-.wall li {
+.arch-wall li {
   margin: 0 0 14px;
   /* A photograph is not split across the fold of two columns. */
   break-inside: avoid;
 }
 
-.wall button {
+.arch-wall button {
   display: block;
   width: 100%;
   padding: 0;
@@ -1945,14 +1951,14 @@ body:has(.app-shell) {
   line-height: 0;
 }
 
-.wall img {
+.arch-wall img {
   display: block;
   width: 100%;
   height: auto;
 }
 
 /* Who took it, and when. */
-.wall-said {
+.arch-wall-said {
   display: block;
   padding-top: 4px;
   font-size: 0.72em;
@@ -3634,37 +3640,37 @@ body:has(.app-shell) {
   }
 
   /* And the walls get another column each. */
-  .wall {
+  .arch-wall {
     columns: 3;
   }
 
   /* The nine widths and indents, as on the website. */
-  .wall li[data-v="0"],
-  .wall li[data-v="4"] {
+  .arch-wall li[data-v="0"],
+  .arch-wall li[data-v="4"] {
     width: 100%;
   }
-  .wall li[data-v="1"] {
+  .arch-wall li[data-v="1"] {
     width: 82%;
     margin-left: 18%;
   }
-  .wall li[data-v="2"] {
+  .arch-wall li[data-v="2"] {
     width: 93%;
   }
-  .wall li[data-v="3"] {
+  .arch-wall li[data-v="3"] {
     width: 72%;
   }
-  .wall li[data-v="5"] {
+  .arch-wall li[data-v="5"] {
     width: 88%;
     margin-left: 12%;
   }
-  .wall li[data-v="6"] {
+  .arch-wall li[data-v="6"] {
     width: 78%;
     margin-left: 8%;
   }
-  .wall li[data-v="7"] {
+  .arch-wall li[data-v="7"] {
     width: 96%;
   }
-  .wall li[data-v="8"] {
+  .arch-wall li[data-v="8"] {
     width: 84%;
   }
 
