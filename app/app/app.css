@@ -2842,13 +2842,15 @@ body:has(.app-shell) {
   color: var(--muted);
 }
 
-/* The list itself scrolls, inside the sheet, without moving the map under it. */
+/* The list itself scrolls, inside the sheet, without moving the map under it.
+   Rows take the page's gutter from here: elsewhere they sit inside a section that
+   has one, and a sheet is not a section. */
 .everywhere-roll {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding-bottom: 18px;
+  padding: 0 var(--gutter) 18px;
 }
 
 /* A row that flies the map somewhere is a button, not a link: it changes what you
@@ -2910,13 +2912,12 @@ body:has(.app-shell) {
   color: var(--muted);
 }
 
-/* The zoom buttons clear the floating switcher. */
-.everywhere .maplibregl-ctrl-top-right {
-  top: 52px;
-}
-
-.everywhere .maplibregl-ctrl-top-left .maplibregl-ctrl-attrib {
-  margin-top: 52px;
+/* Both corners clear the floating switcher: the zoom buttons on the right, and
+   OpenStreetMap's credit on the left, which is owed to them and should not be
+   read through a row of tabs. */
+.everywhere .maplibregl-ctrl-top-right,
+.everywhere .maplibregl-ctrl-top-left {
+  margin-top: 46px;
 }
 
 /* The library's own furniture, in this club's materials rather than its own. */

@@ -39,16 +39,16 @@ const PEEK = 128;
  * which is the point — a map in somebody else's blue with somebody else's roads
  * in it would be the one screen in this app that belongs to a stranger.
  *
- * Pinned to MapLibre 5. Six is ESM-only and loads its tile worker as a separate
- * module chunk, which the app's bundle did not carry across: the canvas came up,
- * the pins landed, and not one tile was ever parsed — a perfectly good empty map.
- * Five carries its worker inside itself, and drew on the first try.
+ * Pinned to MapLibre 5, which is not why it works — that was the box below, and
+ * the pin was a wrong guess made while the screen was still blank. Left in place
+ * anyway: 5 carries its tile worker inside itself, 6 loads it as a separate
+ * module chunk, and one less moving part in a bundle is worth having.
  *
  * It is loaded only on this screen. The library is two hundred kilobytes and the
  * other four screens have no business paying for it, so both the code and the
  * stylesheet arrive when somebody actually presses "the map".
  */
-export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean }) {
+export default function Everywhere({ pins }: { pins: Pin[] }) {
   const holder = useRef<HTMLDivElement>(null);
   const sheet = useRef<HTMLDivElement>(null);
   const flyTo = useRef<((pin: Pin) => void) | null>(null);
@@ -58,10 +58,6 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
   const [up, setUp] = useState(false);
   /** Where the sheet is while a thumb is on it, in pixels from the top of its run. */
   const [held, setHeld] = useState<number | null>(null);
-  /* A running account of what the map did, shown only where it is asked for.
-     Temporary, with the /maptest page it belongs to. */
-  const [went, setWent] = useState<string[]>([]);
-  const say = useCallback((line: string) => setWent((was) => [...was, line]), []);
 
   /* How tall the header actually is on this phone, so the map can be exactly the
      rest of the screen. Measured rather than guessed: the header carries the
@@ -102,8 +98,6 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
       }
     }, 6000);
 
-    say(`starting, ${pins.length} pins`);
-
     void (async () => {
       try {
         const [
@@ -114,7 +108,6 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
           // every page's CSS.
           import("maplibre-gl/dist/maplibre-gl.css"),
         ]);
-        say("library here");
         if (dead || !holder.current) return;
 
         const made = new Map({
@@ -134,7 +127,6 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
           pitchWithRotate: false,
         });
         map = made;
-        say(`map made in ${holder.current.clientWidth}×${holder.current.clientHeight}`);
 
         /* The map is told when its own box changes size.
          *
@@ -142,7 +134,9 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
          * of it reported success: the library arrived, the style loaded, the
          * tiles parsed, the pins went on, and the canvas was three hundred
          * pixels tall in a screen-high box — MapLibre's fallback for a container
-         * that had no height when it was handed over. It watches the window for
+         * with no height, which this one had, because MapLibre's own stylesheet
+         * lands after this app's and sets `position: relative` on it. It watches
+         * the window for
          * resizes and nothing else, so a box that grows underneath it after the
          * first frame — which is exactly what a screen-high stage does while the
          * header is still being measured — leaves a map drawn for a box that no
@@ -191,12 +185,10 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
 
         /* Everything in view, with room around the edges for the pins — and for
            the sheet, which covers the bottom of the map even when it is down. */
-        say(`${pins.length} markers on`);
 
         made.once("load", () => {
           if (dead) return;
           drew = true;
-          say("drew");
           made.fitBounds(edges, {
             padding: { top: 76, right: 48, bottom: PEEK + 32, left: 48 },
             maxZoom: 9,
@@ -208,7 +200,6 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
           made.flyTo({ center: [pin.lng, pin.lat], zoom: 8.5, duration: 900 });
         };
       } catch (error) {
-        say(`threw: ${error instanceof Error ? error.message : "?"}`);
         /* The library itself did not arrive. Which one it was matters when
            somebody has to fix it, so it is in the line rather than in a console
            nobody on a phone can open. */
@@ -283,25 +274,6 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
   return (
     <div className="everywhere">
       <div className="everywhere-map" ref={holder} />
-
-      {loud ? (
-        <pre
-          style={{
-            position: "absolute",
-            top: 8,
-            left: 8,
-            zIndex: 9,
-            margin: 0,
-            font: "11px ui-monospace, monospace",
-            background: "rgba(255,255,255,0.9)",
-            padding: "6px 8px",
-            maxWidth: "80%",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {went.join("\n")}
-        </pre>
-      ) : null}
 
       {/* What was pressed. Above the sheet rather than on the pin: a bubble on a
           phone covers the thing it is about. */}
