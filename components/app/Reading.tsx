@@ -41,9 +41,15 @@ export default function Reading({
   /** Which view to open on, when something linked straight to one. */
   openAt?: "stories" | "archive" | "handbook" | "map";
 }) {
-  const [view, setView] = useState<"stories" | "archive" | "handbook" | "map">(
-    openAt ?? "stories",
+  /* Three ways of reading. The map used to be a fourth, which put "where" beside
+     "the handbook" as if they were the same kind of question — and made a row of
+     four tabs out of a row of three. It belongs inside the stories: a story and
+     its place are one thing looked at two ways. */
+  const [view, setView] = useState<"stories" | "archive" | "handbook">(
+    openAt === "map" || openAt === undefined ? "stories" : openAt,
   );
+  /** Stories as a list, or the same stories as pins. */
+  const [asMap, setAsMap] = useState(openAt === "map");
   /* Which photograph is open. An index rather than the photograph itself, so the
      arrows have somewhere to go. */
   const [at, setAt] = useState<number | null>(null);
@@ -75,16 +81,12 @@ export default function Reading({
     return order;
   }, [photos, year, shuffle]);
 
-  /* Four ways of looking at the same five years. The map is a way of looking,
-     not a replacement for the list: one answers "what happened", the other
-     answers "where has this been".
-
-     Held in a variable because on the map it does not sit above the screen — it
+  /* Held in a variable because on the map it does not sit above the screen — it
      floats on it, and the map runs underneath. Same buttons either way: a second
      copy of them for the map would be a second copy that drifts. */
   const chooser = (
-    <div className="segmented segmented-four" role="tablist" aria-label="What to read">
-      {(["stories", "map", "archive", "handbook"] as const).map((option) => (
+    <div className="segmented" role="tablist" aria-label="What to read">
+      {(["stories", "archive", "handbook"] as const).map((option) => (
         <button
           key={option}
           type="button"
@@ -98,13 +100,28 @@ export default function Reading({
     </div>
   );
 
-  /* The map takes the whole screen: header above it, bar below it, nothing else.
-     A map in a box on a scrolling page is a picture of a map. */
-  if (view === "map") {
+  /* The two ways of looking at the stories, and one of them takes the whole
+     screen: header above it, bar below it, nothing else. A map in a box on a
+     scrolling page is a picture of a map. */
+  const bothWays = (
+    <div className="segmented segmented-small" role="tablist" aria-label="Stories how">
+      <button type="button" role="tab" aria-selected={!asMap} onClick={() => setAsMap(false)}>
+        as a list
+      </button>
+      <button type="button" role="tab" aria-selected={asMap} onClick={() => setAsMap(true)}>
+        on the map
+      </button>
+    </div>
+  );
+
+  if (view === "stories" && asMap) {
     return (
       <div className="reading-stage">
         <Everywhere pins={pins} />
-        <div className="reading-over">{chooser}</div>
+        <div className="reading-over">
+          {chooser}
+          {bothWays}
+        </div>
       </div>
     );
   }
@@ -112,6 +129,8 @@ export default function Reading({
   return (
     <>
       {chooser}
+
+      {view === "stories" ? bothWays : null}
 
       {view === "stories" ? (
         <ul className="told">
@@ -168,11 +187,21 @@ export default function Reading({
             ))}
           </div>
 
-          <ul className="mine-grid">
+          {/* The wall, laid out by column rather than by row: every photograph
+              keeps its own proportions and the columns fill to whatever height
+              they come to. A square crop of somebody's cooking is a thumbnail of
+              a photograph rather than the photograph. */}
+          <ul className="wall">
             {wall.map((photo, index) => (
               <li key={photo.src}>
                 <button type="button" onClick={() => setAt(index)} aria-label="Open">
-                  <Photo src={photo.src} alt="" width={photo.width} height={photo.height} sizes="33vw" />
+                  <Photo
+                    src={photo.src}
+                    alt=""
+                    width={photo.width}
+                    height={photo.height}
+                    sizes="(max-width: 833px) 50vw, 33vw"
+                  />
                 </button>
               </li>
             ))}

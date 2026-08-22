@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Photo from "../Photo";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type Pin = {
@@ -15,6 +16,8 @@ export type Pin = {
   /** Still to come, or already done. */
   ahead: boolean;
   fed: number | null;
+  /** Something to look at in the list. */
+  cover: string | null;
 };
 
 /** How much of the sheet stays in sight when it is down. */
@@ -54,8 +57,10 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
   const flyTo = useRef<((pin: Pin) => void) | null>(null);
   const [chosen, setChosen] = useState<Pin | null>(null);
   const [trouble, setTrouble] = useState("");
-  /** Up or down. Down is the peek; up is most of the screen. */
-  const [up, setUp] = useState(false);
+  /* Where the sheet is resting: 0 is all the way up, 1 is halfway, 2 is the peek.
+     Three stops rather than two, because two means every drag is a commitment to
+     either a list or a map and there is no position where you can see both. */
+  const [stop, setStop] = useState(2);
   /** Where the sheet is while a thumb is on it, in pixels from the top of its run. */
   const [held, setHeld] = useState<number | null>(null);
 
@@ -94,7 +99,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
         setTrouble(
           "The map would not draw here. The places are all still listed.",
         );
-        setUp(true);
+        setStop(0);
       }
     }, 6000);
 
@@ -158,7 +163,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           setTrouble(
             `The map: ${bad?.error?.message ?? "something went wrong"}`,
           );
-          setUp(true);
+          setStop(0);
         });
         made.addControl(new AttributionControl({ compact: true }), "top-left");
         made.addControl(
@@ -175,7 +180,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           dot.addEventListener("click", (press) => {
             press.stopPropagation();
             setChosen(pin);
-            setUp(false);
+            setStop(2);
           });
           new Marker({ element: dot })
             .setLngLat([pin.lng, pin.lat])
@@ -208,7 +213,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
             ? "The map needs a line to the outside. The list works without one."
             : `The map would not open: ${error instanceof Error ? error.message : "unknown"}`,
         );
-        setUp(true);
+        setStop(0);
       }
     })();
 
@@ -221,21 +226,61 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
     };
   }, [pins]);
 
-  /* Dragging the sheet. Pointer events rather than touch events, so a mouse on a
-     desk and a thumb on a phone are the same gesture, and the pointer is captured
-     so it keeps reporting after it leaves the handle. */
-  const grabbed = useRef<{ from: number; at: number; now: number } | null>(
-    null,
-  );
+  /* Dragging the sheet.
+   *
+   * Pointer events rather than touch events, so a thumb and a mouse are one
+   * gesture and the pointer keeps reporting after it leaves the handle. What
+   * makes it feel like an object rather than a menu is the last few
+   * milliseconds: where it lands is decided by how fast it was moving, not only
+   * by where it was let go. A slow drag settles at the nearest stop; a flick
+   * carries to the next one in the direction it was thrown, the way every sheet
+   * on this phone behaves.
+   */
+  const grabbed = useRef<{
+    from: number;
+    at: number;
+    now: number;
+    last: number;
+    when: number;
+    speed: number;
+  } | null>(null);
 
+  /** How far the sheet can travel: its own height, less the peek that stays. */
   const run = useCallback(() => {
     const node = sheet.current;
     return node ? Math.max(0, node.offsetHeight - PEEK) : 0;
   }, []);
 
+  /** The three resting places, in pixels from the top of the run. */
+  const stops = useCallback(() => {
+    const far = run();
+    return [0, Math.round(far * 0.46), far];
+  }, [run]);
+
+  const where = useCallback(
+    (which: number) => stops()[Math.min(2, Math.max(0, which))],
+    [stops],
+  );
+
   const take = (event: React.PointerEvent) => {
-    const at = up ? 0 : run();
-    grabbed.current = { from: event.clientY, at, now: at };
+    /* All the way up, the list is a list and a drag inside it scrolls. Anywhere
+       else, a drag anywhere on the sheet moves the sheet — which is the only way
+       a half-open sheet stops fighting the thumb that is trying to open it. */
+    if (
+      stop === 0 &&
+      (event.target as HTMLElement).closest(".everywhere-roll")
+    ) {
+      return;
+    }
+    const at = where(stop);
+    grabbed.current = {
+      from: event.clientY,
+      at,
+      now: at,
+      last: event.clientY,
+      when: event.timeStamp,
+      speed: 0,
+    };
     setHeld(at);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
@@ -247,6 +292,15 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
       run(),
       Math.max(0, grab.at + (event.clientY - grab.from)),
     );
+    const since = event.timeStamp - grab.when;
+    // Pixels a millisecond, smoothed a little so one stuttering frame does not
+    // read as a flick.
+    if (since > 0) {
+      const now = (event.clientY - grab.last) / since;
+      grab.speed = grab.speed * 0.4 + now * 0.6;
+      grab.last = event.clientY;
+      grab.when = event.timeStamp;
+    }
     grab.now = next;
     setHeld(next);
   };
@@ -255,8 +309,22 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
     const grab = grabbed.current;
     if (!grab) return;
     grabbed.current = null;
-    // Nearer the top than the bottom: it stays up. A flick counts as a decision.
-    setUp(grab.now < run() / 2);
+
+    const places = stops();
+    const nearest = places.reduce(
+      (best, place, index) =>
+        Math.abs(place - grab.now) < Math.abs(places[best] - grab.now)
+          ? index
+          : best,
+      0,
+    );
+    // A throw of half a pixel a millisecond is a throw, not a nudge.
+    const thrown = Math.abs(grab.speed) > 0.45;
+    const next = thrown
+      ? Math.min(2, Math.max(0, nearest + (grab.speed > 0 ? 1 : -1)))
+      : nearest;
+
+    setStop(next);
     setHeld(null);
   };
 
@@ -312,24 +380,27 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
       {/* The places, as a sheet over the map. */}
       <div
         ref={sheet}
-        className={`everywhere-sheet${up ? " is-up" : ""}${held === null ? "" : " is-held"}`}
+        className={`everywhere-sheet at-${stop}${held === null ? "" : " is-held"}`}
         style={
-          held === null ? undefined : { transform: `translateY(${held}px)` }
+          held === null
+            ? { transform: `translateY(var(--stop-${stop}))` }
+            : { transform: `translateY(${held}px)` }
         }
+        onPointerDown={take}
+        onPointerMove={move}
+        onPointerUp={letGo}
+        onPointerCancel={letGo}
       >
-        <div
-          className="everywhere-grab"
-          onPointerDown={take}
-          onPointerMove={move}
-          onPointerUp={letGo}
-          onPointerCancel={letGo}
-        >
+        <div className="everywhere-grab">
           <span className="everywhere-bar" aria-hidden="true" />
           <button
             type="button"
             className="everywhere-count"
-            onClick={() => setUp((was) => !was)}
-            aria-expanded={up}
+            /* A tap goes to the other end rather than one stop along: a tap is
+               "show me the list" or "show me the map", and the middle is
+               something you only ever want by dragging to it. */
+            onClick={() => setStop(stop === 2 ? 0 : 2)}
+            aria-expanded={stop !== 2}
           >
             <span>{pins.length} places</span>
             <span className="everywhere-of">
@@ -349,7 +420,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
                     className="row-body everywhere-jump"
                     onClick={() => {
                       setChosen(pin);
-                      setUp(false);
+                      setStop(2);
                       flyTo.current?.(pin);
                     }}
                   >
@@ -363,6 +434,13 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
                       {[pin.where, pin.when].filter(Boolean).join(" · ")}
                     </span>
                   </button>
+                  {/* The photograph, where there is one. A list of places with no
+                      pictures in it is a table of contents. */}
+                  {pin.cover ? (
+                    <span className="row-thumb">
+                      <Photo src={pin.cover} alt="" fill sizes="58px" />
+                    </span>
+                  ) : null}
                   {pin.slug ? (
                     <Link
                       className="pill pill-small"

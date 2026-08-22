@@ -39,6 +39,8 @@ export default async function ReadPage({
     getEverywhere(),
   ]);
 
+  const covers = new Map(stories.map((story) => [story.slug, story.cover?.src ?? null]));
+
   return (
     <>
       <AppHeader eyebrow="read" title="what we have done" />
@@ -74,6 +76,9 @@ export default async function ReadPage({
           slug: pin.slug,
           ahead: pin.ahead,
           fed: pin.fed,
+          /* A story's cover, taken from the stories this screen has already read
+             rather than fetched again for the map's sake. */
+          cover: pin.cover ?? (pin.slug ? (covers.get(pin.slug) ?? null) : null),
         }))}
       />
     </>

@@ -1688,6 +1688,42 @@ body:has(.app-shell) {
   padding: 0;
 }
 
+/*
+ * The archive wall, laid out by column.
+ *
+ * `columns` rather than a grid, because a grid has rows and rows mean every
+ * photograph in a row is cropped to the same height — which is a contact sheet.
+ * Down a column instead, each one keeps the shape it was taken in, and the
+ * columns simply end where they end.
+ */
+.wall {
+  columns: 2;
+  column-gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--gutter) 8px;
+}
+
+.wall li {
+  margin: 0 0 4px;
+  /* A photograph is not split across the fold of two columns. */
+  break-inside: avoid;
+}
+
+.wall button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.wall img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .told-card {
   display: block;
   padding: 0 0 18px;
@@ -2749,9 +2785,14 @@ body:has(.app-shell) {
 
 /* ------------------------------------------------------------- everywhere */
 
-.segmented-four button {
-  font-size: 0.82em;
-  letter-spacing: 0.06em;
+/* The little one: two words inside a view, rather than a choice between views. */
+.segmented-small {
+  margin: 0 var(--gutter) 14px;
+}
+
+.segmented-small button {
+  font-size: 0.62em;
+  padding: 7px 10px;
 }
 
 /*
@@ -2841,23 +2882,38 @@ body:has(.app-shell) {
   right: 0;
   bottom: 0;
   z-index: 5;
-  height: 78%;
+  /* The run: its own height, and three places to rest inside it. The stops are
+     variables so the markup can name one rather than compute pixels — CSS knows
+     the sheet's height and JavaScript would have to ask for it. */
+  --stop-0: 0px;
+  --stop-1: calc((100% - 128px) * 0.46);
+  --stop-2: calc(100% - 128px);
+  height: 82%;
   display: flex;
   flex-direction: column;
   background: var(--paper);
   border-top: 1px solid var(--hair);
-  transform: translateY(calc(100% - 128px));
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.everywhere-sheet.is-up {
-  transform: translateY(0);
+  border-radius: 14px 14px 0 0;
+  /* Above the map rather than lying on it: the shadow is what makes the map read
+     as something the sheet is covering. */
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.13);
+  transform: translateY(var(--stop-2));
+  transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* While a thumb is on it there is no transition: it follows the thumb, which is
    the only thing that makes a sheet feel like an object rather than a menu. */
 .everywhere-sheet.is-held {
   transition: none;
+}
+
+/* Only the list at the top of the run scrolls. Halfway up or down, a drag on the
+   list is a drag on the sheet — the same rule Maps and Music follow, and the
+   reason a half-open sheet does not fight your thumb. */
+.everywhere-sheet.at-1 .everywhere-roll,
+.everywhere-sheet.at-2 .everywhere-roll {
+  overflow: hidden;
+  touch-action: none;
 }
 
 .everywhere-grab {
@@ -3120,12 +3176,20 @@ body:has(.app-shell) {
     max-width: 34rem;
   }
 
-  /* Stories go two abreast. One cover per screen is a phone's answer to a small
-     screen; on a tablet it is a slideshow nobody asked for. */
+  /* Stories go two abreast, with paper down both sides: edge to edge, a cover
+     that wide is a poster and the screen has no margins left to read in. One
+     cover per screen was a phone's answer to a small screen; on a tablet it is a
+     slideshow nobody asked for. */
   .told {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0 var(--gutter);
+    gap: 0 calc(var(--gutter) * 1.4);
+    padding: 0 calc(var(--gutter) * 2);
+  }
+
+  /* And the wall gets a third column. */
+  .wall {
+    columns: 3;
   }
 
   /* And so do people: sixty-four names down the left of a thirteen-inch screen

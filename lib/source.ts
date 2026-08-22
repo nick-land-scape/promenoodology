@@ -729,6 +729,8 @@ export type Placed = {
   slug: string | null;
   ahead: boolean;
   fed: number | null;
+  /** Something to look at in the list beside the map. */
+  cover: string | null;
 };
 
 /**
@@ -746,7 +748,7 @@ export async function getEverywhere(): Promise<Placed[]> {
   const [{ data: events }, { data: stories }] = await Promise.all([
     supabase
       .from("events")
-      .select("id, title, place, happens_on, lat, lng, people_fed, story_id")
+      .select("id, title, place, happens_on, lat, lng, people_fed, story_id, photo_path")
       .is("deleted_at", null)
       .eq("published", true)
       .not("lat", "is", null)
@@ -760,6 +762,7 @@ export async function getEverywhere(): Promise<Placed[]> {
           lng: number;
           people_fed: number | null;
           story_id: string | null;
+          photo_path: string | null;
         }[]
       >(),
     supabase
@@ -796,6 +799,10 @@ export async function getEverywhere(): Promise<Placed[]> {
     slug: story.slug,
     ahead: false,
     fed: story.people_fed,
+    /* A story's cover comes from its photographs, which are already read by the
+       screen that asks for this — so it is filled in there rather than fetched a
+       second time here. */
+    cover: null,
   }));
 
   for (const event of events ?? []) {
@@ -812,6 +819,7 @@ export async function getEverywhere(): Promise<Placed[]> {
       slug: event.story_id ? (told.get(event.story_id) ?? null) : null,
       ahead: event.happens_on >= today,
       fed: event.people_fed,
+      cover: event.photo_path ? mediaUrl(event.photo_path) : null,
     });
   }
 
