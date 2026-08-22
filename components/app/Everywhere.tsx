@@ -83,6 +83,7 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
   useEffect(() => {
     if (!holder.current || pins.length === 0) return;
     let map: { remove: () => void } | null = null;
+    let watchBox: ResizeObserver | null = null;
     let dead = false;
     let drew = false;
 
@@ -133,7 +134,26 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
           pitchWithRotate: false,
         });
         map = made;
-        say("map made");
+        say(`map made in ${holder.current.clientWidth}×${holder.current.clientHeight}`);
+
+        /* The map is told when its own box changes size.
+         *
+         * This is the whole bug, and it took a while to find because every part
+         * of it reported success: the library arrived, the style loaded, the
+         * tiles parsed, the pins went on, and the canvas was three hundred
+         * pixels tall in a screen-high box — MapLibre's fallback for a container
+         * that had no height when it was handed over. It watches the window for
+         * resizes and nothing else, so a box that grows underneath it after the
+         * first frame — which is exactly what a screen-high stage does while the
+         * header is still being measured — leaves a map drawn for a box that no
+         * longer exists, off the top of the screen and mostly outside it.
+         *
+         * An observer on the box itself fixes it for good, whatever the reason:
+         * rotation, the keyboard, a font that landed late, or a header measured
+         * a frame after the map was built. */
+        const eye = new ResizeObserver(() => made.resize());
+        eye.observe(holder.current);
+        watchBox = eye;
         /* What the map says when it goes wrong, said out loud.
          *
          * The library reports a missing style, a refused source and a tile that
@@ -203,6 +223,7 @@ export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean
 
     return () => {
       dead = true;
+      watchBox?.disconnect();
       window.clearTimeout(watch);
       flyTo.current = null;
       map?.remove();

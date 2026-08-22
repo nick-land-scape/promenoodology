@@ -2732,9 +2732,20 @@ body:has(.app-shell) {
   inset: 0;
 }
 
-.everywhere-map {
+/* The box the map lives in.
+ *
+ * Written as two class names on purpose. MapLibre's own stylesheet arrives after
+ * this file — it is imported by the component at the moment the map is asked for
+ * — and it sets `position: relative` on the container it is handed. A single
+ * class name loses that argument on specificity, the box stops being stretched by
+ * `inset`, and its height falls to zero: a map three hundred pixels tall in a
+ * screen-high hole, which is exactly the blank screen this was. The explicit
+ * width and height are the belt to that braces. */
+.everywhere .everywhere-map {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* The pins. A dot in the club's purple, and a hollow one for something still to
