@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  How the archive leaves this machine.
+
+  app-store-connect is the only method that reaches TestFlight and review; the
+  others (ad-hoc, development, enterprise) put a build on a phone and nowhere
+  near Apple. Signing is automatic because the profile is made on the spot by
+  xcodebuild with the App Store Connect key — nothing here is checked in that
+  expires or has to be renewed by hand.
+
+  uploadSymbols on, so a crash in review comes back as a stack rather than as an
+  address. manageAppVersionAndBuildNumber off: the build number is set by the
+  ship script from the clock, and Apple silently rewriting it underneath that
+  would make two builds with the same name.
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>teamID</key>
+	<string>K35XLVJJ3T</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+	<key>destination</key>
+	<string>export</string>
+</dict>
+</plist>
