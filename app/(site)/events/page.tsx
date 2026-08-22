@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import EventsCalendar from "@/components/EventsCalendar";
 import Photo from "@/components/Photo";
 import { pretty } from "@/lib/admin/when";
 import { pageIsVisible } from "@/lib/site-pages";
@@ -38,6 +39,11 @@ export default async function EventsPage() {
   const coming = listed.filter((event) => (event.until || event.date) >= today);
   const been = listed.filter((event) => (event.until || event.date) < today).reverse();
 
+  // How many days have anything on them at all.
+  const marked = new Set(
+    listed.flatMap((event) => (event.days.length > 0 ? event.days.map((day) => day.date) : [event.date])),
+  ).size;
+
   return (
     <main className="page">
       <h1 className="page-title">{head.title || "what's on"}</h1>
@@ -57,6 +63,13 @@ export default async function EventsPage() {
       {coming.length === 0 && been.length === 0 ? (
         <p className="empty">Nothing is on just now. There will be.</p>
       ) : null}
+
+      {/* The list answers "what is coming up"; the month answers "is anything on
+          the weekend I am free". Counted in days rather than in evenings, because
+          one evening with a programme is five afternoons and exactly the thing a
+          calendar is for — while a calendar of a single afternoon is a worse way
+          of saying its date. */}
+      {marked > 1 ? <EventsCalendar events={listed} /> : null}
 
       {coming.length > 0 ? <Evenings events={coming} /> : null}
 

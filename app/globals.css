@@ -3455,3 +3455,161 @@ body:has(.hero) .edit-this {
 .story-list-past .story-card:focus-within {
   opacity: 1;
 }
+
+/* ------------------------------------------------------------- a small month
+
+   On the what's-on page, beside the list. The list answers "what is coming up";
+   this answers "is anything on the weekend I am free", which is the other
+   question and a different shape. Drawn in the site's own hairlines rather than
+   as a widget: it is a table of numbers on paper. */
+
+.cal {
+  max-width: 22rem;
+  margin: 0 0 40px;
+  border: 1px solid var(--ink);
+  padding: 12px 14px 14px;
+}
+
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cal-head strong {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.cal-head button {
+  border: 1px solid var(--hairline);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+
+.cal-head button:hover {
+  border-color: var(--ink);
+}
+
+.cal-week,
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-week {
+  margin-bottom: 4px;
+  font-family: var(--sans);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--quiet);
+}
+
+.cal-day {
+  position: relative;
+  aspect-ratio: 1;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  /* A day with nothing on it is still a day, and still readable. It simply is
+     not a button. */
+  opacity: 0.42;
+}
+
+.cal-day-on {
+  opacity: 1;
+  cursor: pointer;
+  border: 1px solid var(--hairline);
+}
+
+.cal-day-on:hover {
+  border-color: var(--ink);
+}
+
+/* The mark. A dot under the number rather than a filled square: the number is
+   the thing being read, and a filled square makes it the thing being fought. */
+.cal-day-on em {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--purple);
+}
+
+.cal-day-today {
+  font-weight: 700;
+}
+
+.cal-day-chosen {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: var(--paper);
+}
+
+.cal-day-chosen em {
+  background: var(--paper);
+}
+
+.cal-said {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.cal-said-day {
+  margin: 0 0 4px;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+.cal-said ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.cal-said span {
+  font-style: italic;
+  color: var(--quiet);
+}
+
+.cal-hint {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline);
+  font-style: italic;
+  font-size: 0.88rem;
+  color: var(--quiet);
+}

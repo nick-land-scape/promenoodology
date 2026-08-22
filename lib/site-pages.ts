@@ -26,11 +26,14 @@ export type SitePage = {
 
 /** The menu as it was before there was anywhere to change it. */
 const SHIPPED: SitePage[] = [
-  { slug: "stories", navLabel: "STORIES", group: "main", position: 1, visible: true },
-  { slug: "archive", navLabel: "ARCHIVE", group: "main", position: 2, visible: true },
-  { slug: "community", navLabel: "COMMUNITY", group: "main", position: 3, visible: true },
-  { slug: "about", navLabel: "ABOUT US", group: "main", position: 4, visible: true },
-  { slug: "events", navLabel: "WHAT'S ON", group: "main", position: 5, visible: true },
+  /* What is on comes first, and it is the only one of these whose place is an
+     argument rather than a habit: everything else on the site is a record of
+     something that has happened, and this is the one page you can still act on. */
+  { slug: "events", navLabel: "WHAT'S ON", group: "main", position: 1, visible: true },
+  { slug: "stories", navLabel: "STORIES", group: "main", position: 2, visible: true },
+  { slug: "archive", navLabel: "ARCHIVE", group: "main", position: 3, visible: true },
+  { slug: "community", navLabel: "COMMUNITY", group: "main", position: 4, visible: true },
+  { slug: "about", navLabel: "ABOUT US", group: "main", position: 5, visible: true },
   { slug: "handbook", navLabel: "handbook", group: "more", position: 6, visible: true },
   /* Two pages that are not in the menu. The newsletter has its own place — the
      last line of the menu is the session link, which reads "newsletter" until
