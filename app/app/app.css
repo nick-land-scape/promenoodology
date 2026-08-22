@@ -716,40 +716,47 @@ body:has(.app-shell) {
 
 .member-card {
   border: 1px solid var(--ink);
-  /* A card has corners. Small — this is a printed card, not a phone icon. */
-  border-radius: 10px;
+  /* A card has corners, and these ones are nearly square: a milled edge rather
+     than a phone icon's. The two inset hairlines are the bevel — light along the
+     top, shade along the bottom — which is what makes an edge read as metal
+     rather than as a border drawn around paper. */
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    inset 1px 0 0 rgba(255, 255, 255, 0.35),
+    inset -1px 0 0 rgba(0, 0, 0, 0.06);
   isolation: isolate;
   /* Dragging on the card tilts it and does nothing else. Without this a drag up
      or down tilts it *and* scrolls the page underneath, which feels like the card
      is fighting you. Anywhere else on the screen still scrolls normally. */
   touch-action: none;
-  /* Not flat paper. Three layers, and each one is doing something: a hard
-     highlight down the top left, a wash of the club's purple coming up from the
-     bottom right, and a fine diagonal grain that makes the surface read as
-     something pressed rather than printed. The glare the tilt library draws moves
-     over the top of all of it. */
+  /* Not flat paper. Three layers, and each one is doing something: a cool sheen
+     across the whole face, a wash of the club's purple coming up from the bottom
+     right, and a brushed grain finer than the eye resolves. The band of light
+     that crosses it on its own moves over the top of all three. */
   background:
-    linear-gradient(148deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0) 44%),
-    linear-gradient(210deg, rgba(139, 63, 255, 0.09), rgba(139, 63, 255, 0) 48%),
+    /* A cool sheen crossing the face, the way rolled metal takes the light. */
+    linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(203, 208, 220, 0.3) 26%,
+      rgba(255, 255, 255, 0.66) 46%,
+      rgba(188, 182, 204, 0.26) 66%,
+      rgba(255, 255, 255, 0.6) 100%
+    ),
+    /* The club's purple, coming up out of the bottom right corner. */
+    linear-gradient(210deg, rgba(139, 63, 255, 0.12), rgba(139, 63, 255, 0) 52%),
+    /* Brushed, not woven: the grain is finer than the eye resolves, so the
+       surface reads as metal that has been drawn under a wheel. */
     repeating-linear-gradient(
-      112deg,
-      rgba(0, 0, 0, 0.028) 0px,
-      rgba(0, 0, 0, 0.028) 1px,
-      rgba(255, 255, 255, 0.05) 2px,
-      rgba(255, 255, 255, 0.05) 4px
+      100deg,
+      rgba(0, 0, 0, 0.022) 0px,
+      rgba(0, 0, 0, 0.022) 0.5px,
+      rgba(255, 255, 255, 0.06) 1px,
+      rgba(255, 255, 255, 0.06) 2px
     ),
     var(--paper);
-  cursor: pointer;
-  -webkit-user-select: none;
-  user-select: none;
-  /* The glare is a corner-to-corner sheet inside the card; without this it
-     spills out over the page. */
-  overflow: hidden;
-  /* Something under it, so it sits on the page rather than being printed on it.
-     It deepens while the card is being held, which is most of what makes a tilt
-     read as a lift rather than as a skew. */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
-  transition: box-shadow 0.4s ease;
 }
 
 .member-card-lifted {
@@ -783,9 +790,9 @@ body:has(.app-shell) {
   background: linear-gradient(
     104deg,
     transparent 38%,
-    rgba(255, 255, 255, 0.14) 46%,
-    rgba(255, 255, 255, 0.75) 50%,
-    rgba(255, 255, 255, 0.14) 54%,
+    rgba(255, 255, 255, 0.2) 45%,
+    rgba(255, 255, 255, 0.92) 50%,
+    rgba(255, 255, 255, 0.2) 55%,
     transparent 62%
   );
   mix-blend-mode: overlay;
@@ -3045,9 +3052,18 @@ body:has(.app-shell) {
     column-gap: calc(var(--gutter) * 1.5);
   }
 
-  /* The card does not stretch. It is a card: a thing the size of a thing you
-     would carry, and a metre of it is a banner. */
+  /* The card does not stretch, and it keeps a card's proportions — 85.6 by 54
+     millimetres, the size of every card in anybody's pocket. A metre of it is a
+     banner, and a banner is not a membership. */
   .member-card {
-    max-width: 520px;
+    max-width: 480px;
+    aspect-ratio: 85.6 / 54;
+  }
+
+  .member-card-face {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 }

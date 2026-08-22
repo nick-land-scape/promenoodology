@@ -366,19 +366,6 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
         </section>
       ) : null}
 
-      <section className="band">
-        <h2>Something of your own?</h2>
-        <p>
-          A room, a whole evening, eight people or five hundred. Tell us roughly what you have in
-          mind and we will work the rest out together.
-        </p>
-        {/* The handbook's form is on the website, and following it from in here
-            would drop somebody into the website's menu. The same conversation
-            starts on the app's own screen. */}
-        <Link className="pill" href="/app/contact">
-          ask us for a hand
-        </Link>
-      </section>
     </>
   );
 }
