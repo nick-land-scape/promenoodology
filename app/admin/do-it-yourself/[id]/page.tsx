@@ -37,12 +37,12 @@ export default async function SheetPage({ params }: { params: Promise<{ id: stri
   return (
     <Head
       title={String(sheet.title || "") || "Untitled sheet"}
-      back={{ href: "/admin/do-it-yourself", label: "do it yourself" }}
+      back={{ href: "/admin/pages/do-it-yourself", label: "do it yourself" }}
     >
       <RowsEditor
         table="sheets"
         initial={[sheet]}
-        alone="/admin/do-it-yourself"
+        alone="/admin/pages/do-it-yourself"
         photos={pickable}
       />
     </Head>

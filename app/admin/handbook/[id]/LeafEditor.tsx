@@ -95,7 +95,7 @@ export default function LeafEditor({
         setProblem(result.error ?? "That did not delete.");
         return;
       }
-      router.push("/admin/handbook");
+      router.push("/admin/pages/handbook");
     });
   }
 

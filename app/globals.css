@@ -2793,9 +2793,11 @@ html.has-top-bar {
    The exception is anything pinned to the window rather than laid out in the
    page: this rule is two classes deep and beats a single class, so it quietly
    turned the quote mark from fixed into relative and left it two thousand pixels
-   down the page. Named here, beside the rule that does it, rather than fought
-   with a stronger selector somewhere else. */
-.page > *:not(.page-bg):not(.quote-mark) {
+   down the page. It did the same to an evening's header, which is sticky and was
+   silently made relative — the same bug, the second time, which is why both are
+   named here beside the rule that does it rather than fought with a stronger
+   selector somewhere else. Anything that positions itself must say so here. */
+.page > *:not(.page-bg):not(.quote-mark):not(.event-top) {
   position: relative;
   z-index: 1;
 }

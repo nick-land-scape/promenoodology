@@ -106,11 +106,11 @@ export const PAGES: PageSpec[] = [
     usesTitle: true,
     usesLead: true,
     addLabel: "",
-    /* Not made of blocks any more. It is made of pages, each written on its own
-       — see /admin/handbook — and a second flat list of words here would be a
-       different handbook nobody could see. */
+    /* Not made of blocks. It is made of pages, each written on its own, listed
+       under this panel — and a second flat list of words here would be a
+       different handbook nobody could see. Which was exactly the bug: the
+       column read one set of words and the book another. */
     kinds: [],
-    madeOf: "The pages of it are written under The handbook.",
   },
   {
     slug: "do-it-yourself",
@@ -121,7 +121,6 @@ export const PAGES: PageSpec[] = [
     usesLead: true,
     kinds: [],
     addLabel: "",
-    madeOf: "The sheets themselves are under Do it yourself.",
   },
   {
     slug: "newsletter",
