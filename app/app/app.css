@@ -3044,4 +3044,10 @@ body:has(.app-shell) {
     grid-template-columns: 1fr 1fr;
     column-gap: calc(var(--gutter) * 1.5);
   }
+
+  /* The card does not stretch. It is a card: a thing the size of a thing you
+     would carry, and a metre of it is a banner. */
+  .member-card {
+    max-width: 520px;
+  }
 }
