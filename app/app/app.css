@@ -3763,3 +3763,11 @@ body:has(.app-shell) {
   font-style: italic;
   opacity: 0.7;
 }
+
+/* The language you read us in. Two words, both always there: a switch with one
+   side missing is a switch nobody can tell the state of. */
+.reading-in {
+  display: flex;
+  gap: 10px;
+  padding: 4px 0 2px;
+}

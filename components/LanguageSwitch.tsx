@@ -1,6 +1,8 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { chooseLanguage } from "@/lib/site-actions/language";
 import { LANGS, NAMED, PLAIN, at, plainly, type Lang } from "@/lib/lang";
 
 /**
@@ -16,17 +18,29 @@ import { LANGS, NAMED, PLAIN, at, plainly, type Lang } from "@/lib/lang";
  * French, not the home page. And it writes down what was chosen, so the guess the
  * proxy makes from the browser is only ever made once — a choice said out loud
  * beats anything inferred, for ever.
+ *
+ * Written down twice, where there is somewhere to write it twice. The cookie is
+ * what the proxy reads on the next request. For a member it also goes on their
+ * account, so the choice follows them to the app and to whatever they open the
+ * site on next — see lib/site-actions/language. The page turns straight away
+ * either way; the account catches up behind it.
  */
 export default function LanguageSwitch({ lang }: { lang: Lang }) {
   const pathname = usePathname();
   const router = useRouter();
 
   const here = plainly(pathname);
+  const [, start] = useTransition();
 
   function choose(next: Lang) {
-    // A year, and the whole site: this is a preference, not a session.
+    /* The cookie now, by hand, so the very next request already knows — the
+       action below sets it too, and waiting for a round trip before turning the
+       page would make a language switch feel like a form. */
     document.cookie = `lang=${next}; path=/; max-age=31536000; samesite=lax`;
     router.push(at(next, here));
+    start(async () => {
+      await chooseLanguage(next);
+    });
   }
 
   return (

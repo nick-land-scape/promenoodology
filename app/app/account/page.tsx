@@ -5,10 +5,11 @@ import AppHeader from "@/components/app/AppHeader";
 import Leaving from "@/components/app/Leaving";
 import MemberCard from "@/components/app/MemberCard";
 import { PhotoPreview, PostPreview } from "@/components/app/MyThings";
+import ReadingIn from "@/components/app/ReadingIn";
 import { signOut } from "@/lib/site-actions/account";
 import { whenItIs } from "@/lib/app-data";
 import { pretty } from "@/lib/admin/when";
-import { myBookings, myPhotos, myPosts, requireMember } from "@/lib/app/me";
+import { myBookings, myPhotos, myPosts, readingIn, requireMember } from "@/lib/app/me";
 import { sharedEvents } from "@/lib/shared";
 
 export const metadata = { title: "Account" };
@@ -36,9 +37,10 @@ const SHOWING = 2;
 
 export default async function AccountPage() {
   const me = await requireMember("/app/account");
+  const lang = await readingIn();
   const [mine, events, photos, posts] = await Promise.all([
     myBookings(),
-    sharedEvents(),
+    sharedEvents(lang),
     myPhotos(),
     myPosts(),
   ]);
@@ -140,6 +142,11 @@ export default async function AccountPage() {
           <span aria-hidden="true">›</span>
         </Link>
       </section>
+
+      {/* How you would rather be spoken to, which is a fact about you of much
+          the same kind as your name — so it sits with the screens that are
+          about you rather than under a heading called settings. */}
+      <ReadingIn chosen={me.readsIn} />
 
       {/* And the things we have to say in writing, which are not settings. */}
       <section className="app-section app-section-legal">

@@ -3,7 +3,7 @@ import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
 import UpcomingEvents from "@/components/app/UpcomingEvents";
 import { dateParts, shortDate, weekday, whenItIs } from "@/lib/app-data";
-import { myBookings, requireMember } from "@/lib/app/me";
+import { myBookings, readingIn, requireMember } from "@/lib/app/me";
 import {
   sharedCount,
   sharedEvents,
@@ -24,14 +24,17 @@ const FEW = { stories: 2, photographs: 6, news: 3 };
 
 export default async function AppHome() {
   const me = await requireMember("/app");
+  // Their own language: their account first, then whatever the browser was told
+  // to remember by the website's switcher. See lib/app/me.
+  const lang = await readingIn();
   const [all, mine, news, stories, photos, handbook, count] = await Promise.all(
     [
-      sharedEvents(),
+      sharedEvents(lang),
       myBookings(),
-      sharedNews(),
-      sharedStories(),
+      sharedNews(lang),
+      sharedStories(lang),
       sharedResources(),
-      sharedPage("handbook"),
+      sharedPage("handbook", lang),
       sharedCount(),
     ],
   );

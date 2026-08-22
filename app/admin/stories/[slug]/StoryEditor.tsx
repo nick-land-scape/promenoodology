@@ -68,6 +68,8 @@ type Draft = {
   partners: string[];
   /** The page, block by block, as somebody arranged it. */
   page: Block[];
+  /** The French of this story, keyed by the column it translates. */
+  fr: Record<string, string>;
 };
 
 type PhotoLine = {
@@ -104,6 +106,15 @@ export default function StoryEditor({
   const [pending, start] = useTransition();
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
+
+  /*
+   * Which language you are typing in. One toggle for the whole story rather
+   * than two of every field: the field stays where it is and changes what it is
+   * holding, with the English showing through as the placeholder — which is
+   * what the site does with it when the French is left empty.
+   */
+  const [saying, setSaying] = useState<"en" | "fr">("en");
+  const inFrench = saying === "fr";
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(kept);
 
@@ -187,6 +198,28 @@ export default function StoryEditor({
     setJustSaved(false);
   }
 
+  function setFrench(key: string, value: string) {
+    setDraft((old) => ({ ...old, fr: { ...old.fr, [key]: value } }));
+    setJustSaved(false);
+  }
+
+  /** A field that is one thing in English and another in French. */
+  function both(key: "title" | "subtitle" | "place" | "happened" | "made_with") {
+    const english = String(draft[key] ?? "");
+    if (!inFrench) {
+      return {
+        value: english,
+        onChange: (event: { target: { value: string } }) => set(key, event.target.value),
+      };
+    }
+    return {
+      value: draft.fr[key] ?? "",
+      placeholder: english,
+      lang: "fr",
+      onChange: (event: { target: { value: string } }) => setFrench(key, event.target.value),
+    };
+  }
+
   function setSections(sections: Draft["sections"]) {
     set("sections", sections);
   }
@@ -225,6 +258,7 @@ export default function StoryEditor({
         topics: draft.topics,
         people: draft.people,
         partners: draft.partners,
+        fr: draft.fr,
       });
 
       if (!result.ok) {
@@ -240,6 +274,7 @@ export default function StoryEditor({
             words: block.words,
             photo_id: block.photoId,
             layout: block.layout,
+            fr: block.fr,
           })),
         );
         if (!built.ok) {
@@ -283,6 +318,24 @@ export default function StoryEditor({
       {/* Beside the title: the one thing you want from this page that is not
           typing into it. */}
       <InHead>
+        <span className="admin-saying">
+          {(["en", "fr"] as const).map((one) => (
+            <button
+              key={one}
+              type="button"
+              className="admin-flag"
+              aria-pressed={saying === one}
+              onClick={() => setSaying(one)}
+              title={
+                one === "en"
+                  ? "The words the site is written in"
+                  : "The French. Anything left empty shows the English instead."
+              }
+            >
+              {one === "en" ? "English" : "Français"}
+            </button>
+          ))}
+        </span>
         <Button tone="quiet" onClick={() => setPreview(true)}>
           <Icon name="eye" />
           see the page
@@ -303,9 +356,9 @@ export default function StoryEditor({
         <Fields>
           <Field label="title" hint="Shown as the heading, and as the filter button in the archive.">
             <input
-              value={draft.title}
-              onChange={(event) => set("title", event.target.value)}
-              placeholder="dinner for 500"
+              {...both("title")}
+              placeholder={inFrench ? draft.title : "dinner for 500"}
+              
             />
           </Field>
           <Field
@@ -314,16 +367,16 @@ export default function StoryEditor({
             wide
           >
             <input
-              value={draft.subtitle}
-              onChange={(event) => set("subtitle", event.target.value)}
-              placeholder="what makes somebody want to read this"
+              {...both("subtitle")}
+              placeholder={inFrench ? draft.subtitle : "what makes somebody want to read this"}
+              
             />
           </Field>
           <Field label="where">
             <input
-              value={draft.place}
-              onChange={(event) => set("place", event.target.value)}
-              placeholder="Sheffield, England"
+              {...both("place")}
+              placeholder={inFrench ? draft.place : "Sheffield, England"}
+              
             />
           </Field>
           {/* Two numbers nobody has to know: press find it and it looks up
@@ -354,9 +407,9 @@ export default function StoryEditor({
           </Field>
           <Field label="when" hint="Left empty, the years come from the photographs.">
             <input
-              value={draft.happened}
-              onChange={(event) => set("happened", event.target.value)}
-              placeholder="August 2023"
+              {...both("happened")}
+              placeholder={inFrench ? draft.happened : "August 2023"}
+              
             />
           </Field>
           {/*
@@ -368,9 +421,9 @@ export default function StoryEditor({
            */}
           <Field label="part of" hint="An assembly, a festival, a programme it happened inside.">
             <input
-              value={draft.made_with}
-              onChange={(event) => set("made_with", event.target.value)}
-              placeholder="EASA COMMONS"
+              {...both("made_with")}
+              placeholder={inFrench ? draft.made_with : "EASA COMMONS"}
+              
             />
           </Field>
           <Field
@@ -435,6 +488,7 @@ export default function StoryEditor({
       >
         <Build
           blocks={page}
+          inFrench={inFrench}
           onChange={setPage}
           photos={order.map((one) => ({
             value: one.id,

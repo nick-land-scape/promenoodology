@@ -11,6 +11,7 @@ import {
   getStories,
   getTheCount,
 } from "./source";
+import { PLAIN, type Lang } from "./lang";
 
 /**
  * The things that are the same for everybody, kept for a minute.
@@ -36,17 +37,36 @@ import {
 
 const A_MINUTE = { revalidate: 60, tags: ["content"] };
 
+/*
+ * The language is part of the key, and has to be said out loud.
+ *
+ * These are shared caches: what one member's request puts in, the next member's
+ * request takes out. An answer in French handed to somebody reading English
+ * would not be a slow page, it would be the wrong page — so every one of these
+ * is keyed on the language as well as on what it is asking for.
+ */
+const inEach = <T,>(
+  read: (lang: Lang) => Promise<T>,
+  key: string,
+): ((lang?: Lang) => Promise<T>) => {
+  const cached = {
+    en: unstable_cache(() => read("en"), [key, "en"], A_MINUTE),
+    fr: unstable_cache(() => read("fr"), [key, "fr"], A_MINUTE),
+  };
+  return (lang: Lang = PLAIN) => cached[lang]();
+};
+
 /** Every story, with its photographs and cover. */
-export const sharedStories = unstable_cache(getStories, ["stories"], A_MINUTE);
+export const sharedStories = inEach(getStories, "stories");
 
 /** The whole archive. The heaviest read in the app, and the least personal. */
 export const sharedResources = unstable_cache(getResources, ["resources"], A_MINUTE);
 
 /** What is on. Bookings are read separately and never cached. */
-export const sharedEvents = unstable_cache(getEvents, ["events"], A_MINUTE);
+export const sharedEvents = inEach(getEvents, "events");
 
 /** The notes on the front screen. */
-export const sharedNews = unstable_cache(getNews, ["news"], A_MINUTE);
+export const sharedNews = inEach(getNews, "news");
 
 /** Who is around, for the community list. */
 export const sharedMembers = unstable_cache(getMembers, ["members"], A_MINUTE);
@@ -58,14 +78,14 @@ export const sharedEverywhere = unstable_cache(getEverywhere, ["everywhere"], A_
 export const sharedCount = unstable_cache(getTheCount, ["count"], A_MINUTE);
 
 /** The sheets. */
-export const sharedSheets = unstable_cache(getSheets, ["sheets"], A_MINUTE);
+export const sharedSheets = inEach(getSheets, "sheets");
 
 /** The films behind the curtain, read on every single screen by the layout. */
 export const sharedFilms = unstable_cache(getHeroVideos, ["films"], A_MINUTE);
 
 /** One of the written pages, by slug. */
 export const sharedPage = unstable_cache(
-  async (slug: string) => getPage(slug),
+  async (slug: string, lang: Lang = PLAIN) => getPage(slug, lang),
   ["page"],
   A_MINUTE,
 );

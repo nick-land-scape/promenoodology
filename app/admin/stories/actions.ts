@@ -46,6 +46,8 @@ export type StoryInput = {
   lng: number | null;
   /** Roughly how many people ate. The evidence for the whole argument. */
   people_fed: number | null;
+  /** The French of this story, keyed by the column it translates. */
+  fr?: Record<string, unknown>;
 };
 
 /** A blank story, opened straight away so there is somewhere to type. */
@@ -169,6 +171,7 @@ export async function saveStory(input: StoryInput): Promise<Saved & { slug?: str
       made_with: input.made_with.trim() || null,
       sections,
       published: input.published,
+      fr: onlyWhatIsWritten(input.fr ?? {}),
       updated_by: admin.id,
     })
     .eq("id", input.id);
@@ -231,6 +234,7 @@ export type BlockInput = {
   words: string;
   photo_id: string | null;
   layout: string | null;
+  fr?: Record<string, string>;
 };
 
 /**
@@ -257,6 +261,7 @@ export async function saveStoryPage(storyId: string, blocks: BlockInput[]): Prom
       words: block.kind === "heading" || block.kind === "text" ? block.words.trim() : "",
       photo_id: block.kind === "photo" ? block.photo_id : null,
       layout: block.kind === "photo" && block.layout && LAYOUTS.has(block.layout) ? block.layout : null,
+      fr: onlyWhatIsWritten(block.fr ?? {}),
     }))
     // A block with nothing in it is a block somebody started and left; it should
     // not reach the page, and it should not be saved either.
@@ -415,4 +420,29 @@ export async function saveStoryPhotos(
 
   refreshSite();
   return { ok: true };
+}
+
+/**
+ * The French, with the fields nobody has filled in taken out.
+ *
+ * The whole of the fallback rests on absence meaning "not translated", so an
+ * empty box has to leave nothing behind: an empty string saved would put a blank
+ * on the French page where the English would have stood in, and there would be
+ * no way back to it from the form.
+ */
+function onlyWhatIsWritten(fr: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fr)) {
+    if (typeof value === "string") {
+      const said = value.trim();
+      if (said) out[key] = said;
+      continue;
+    }
+    if (Array.isArray(value)) {
+      if (value.length > 0) out[key] = value;
+      continue;
+    }
+    if (value !== null && value !== undefined) out[key] = value;
+  }
+  return out;
 }

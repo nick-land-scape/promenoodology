@@ -1,7 +1,7 @@
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
 import { whenItIs } from "@/lib/app-data";
-import { myBookings, requireMember } from "@/lib/app/me";
+import { myBookings, readingIn, requireMember } from "@/lib/app/me";
 import { getEvents } from "@/lib/source";
 
 export const metadata = { title: "What you said yes to" };
@@ -9,7 +9,8 @@ export const dynamic = "force-dynamic";
 
 export default async function ComingPage() {
   await requireMember("/app/account/coming");
-  const [mine, events] = await Promise.all([myBookings(), getEvents()]);
+  const lang = await readingIn();
+  const [mine, events] = await Promise.all([myBookings(), getEvents(lang)]);
   const byId = new Map(events.map((event) => [event.id, event]));
 
   const yes = mine

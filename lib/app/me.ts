@@ -1,5 +1,7 @@
 import "server-only";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { PLAIN, isLang, type Lang } from "@/lib/lang";
 import { supabaseServer } from "@/lib/supabase/server";
 
 /**
@@ -40,6 +42,15 @@ export type Me = {
   cannotEat: string;
   phone: string;
   admin: boolean;
+  /**
+   * The language they read us in, or null where nobody has said.
+   *
+   * Not `languages`, just above, which is what they *speak* — that is for the
+   * community page and for knowing who can talk to whom on the night. This one
+   * is a setting, and it follows the account rather than the browser: a member
+   * who chose French on their phone should not be asked again on a laptop.
+   */
+  readsIn: "en" | "fr" | null;
 };
 
 export type MyBooking = {
@@ -61,7 +72,7 @@ export async function whoIsThis(): Promise<Me | null> {
   const { data } = await supabase
     .from("profiles")
     .select(
-      "id, name, country, city, does, skills, languages, instagram, birthday, birthday_shown, cannot_eat, phone, email, photo_path, member_no, joined_on, listed, settled_in, role",
+      "id, name, country, city, does, skills, languages, instagram, birthday, birthday_shown, cannot_eat, phone, email, photo_path, member_no, joined_on, listed, settled_in, role, reads_in",
     )
     .eq("user_id", user.id)
     .maybeSingle<{
@@ -84,6 +95,7 @@ export async function whoIsThis(): Promise<Me | null> {
       cannot_eat: string;
       phone: string;
       role: string;
+      reads_in: string | null;
     }>();
   if (!data) return null;
 
@@ -111,7 +123,27 @@ export async function whoIsThis(): Promise<Me | null> {
     cannotEat: data.cannot_eat ?? "",
     phone: data.phone ?? "",
     admin: data.role === "admin",
+    readsIn: data.reads_in === "en" || data.reads_in === "fr" ? data.reads_in : null,
   };
+}
+
+/**
+ * Which language to read this screen in.
+ *
+ * The account first, because a member has said it once and meant it everywhere.
+ * Then whatever the browser was told to remember, which is what a visitor's
+ * choice on the website leaves behind. Then English.
+ *
+ * The app has no /fr addresses of its own and does not need any: it is behind a
+ * sign-in, nothing in it is shared or indexed, and an address that says "fr" in
+ * an app nobody can link into would be a segment for its own sake.
+ */
+export async function readingIn(): Promise<Lang> {
+  const me = await whoIsThis();
+  if (me?.readsIn) return me.readsIn;
+
+  const said = (await cookies()).get("lang")?.value;
+  return isLang(said) ? said : PLAIN;
 }
 
 /**

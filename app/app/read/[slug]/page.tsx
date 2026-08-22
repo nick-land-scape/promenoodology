@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
-import { requireMember } from "@/lib/app/me";
+import { readingIn, requireMember } from "@/lib/app/me";
 import { getStory } from "@/lib/source";
 
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const story = await getStory(slug);
+  const story = await getStory(slug, await readingIn());
   return { title: story?.title ?? "Story" };
 }
 
@@ -23,8 +23,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
  */
 export default async function AppStoryPage({ params }: { params: Promise<{ slug: string }> }) {
   await requireMember("/app/read");
+  const lang = await readingIn();
   const { slug } = await params;
-  const story = await getStory(slug);
+  const story = await getStory(slug, lang);
   if (!story) notFound();
 
   return (

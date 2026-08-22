@@ -4,7 +4,7 @@ import AppHeader from "@/components/app/AppHeader";
 import Evening from "@/components/app/Evening";
 import Photo from "@/components/Photo";
 import { whenItIs } from "@/lib/app-data";
-import { myBookings, requireMember, whoIsBringingWhat } from "@/lib/app/me";
+import { myBookings, readingIn, requireMember, whoIsBringingWhat } from "@/lib/app/me";
 import { pretty } from "@/lib/admin/when";
 import { getEvent, getEvents } from "@/lib/source";
 
@@ -26,16 +26,17 @@ export const dynamic = "force-dynamic";
  */
 export default async function EveningPage({ params }: { params: Promise<{ id: string }> }) {
   await requireMember("/app/events");
+  const lang = await readingIn();
   const { id } = await params;
 
   /* By slug or by id, because both are addresses somebody may have been given:
      the website's link carries the slug, and the app's own list carries the id. */
-  const all = await getEvents();
+  const all = await getEvents(lang);
   const found = all.find((one) => one.id === id || one.slug === id);
   if (!found) notFound();
 
   const [event, mine, bringing] = await Promise.all([
-    getEvent(found.slug),
+    getEvent(found.slug, lang),
     myBookings(),
     whoIsBringingWhat(found.id),
   ]);

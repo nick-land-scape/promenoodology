@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
 import HandItOn from "@/components/app/HandItOn";
-import { requireMember } from "@/lib/app/me";
+import { readingIn, requireMember } from "@/lib/app/me";
 import { siteUrl } from "@/lib/site";
 import { getSheet } from "@/lib/source";
 
@@ -23,7 +23,8 @@ export default async function AppSheetPage({
 }) {
   const { slug } = await params;
   await requireMember(`/app/do-it-yourself/${slug}`);
-  const sheet = await getSheet(slug);
+  const lang = await readingIn();
+  const sheet = await getSheet(slug, lang);
   if (!sheet) notFound();
 
   const where = siteUrl(`/do-it-yourself/${sheet.slug}`);

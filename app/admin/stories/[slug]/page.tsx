@@ -21,7 +21,7 @@ export default async function EditStoryPage({
     .select("*")
     .is("deleted_at", null)
     .eq("slug", slug)
-    .maybeSingle<StoryRow & { topics: string[] | null }>();
+    .maybeSingle<StoryRow & { topics: string[] | null; fr: Record<string, string> | null }>();
   if (!story) notFound();
 
   // Its photographs, in the order they will be read in — so the editor is where
@@ -57,7 +57,7 @@ export default async function EditStoryPage({
         >(),
       supabase
         .from("story_blocks")
-        .select("id, position, kind, words, photo_id, layout")
+        .select("id, position, kind, words, photo_id, layout, fr")
         .eq("story_id", story.id)
         .order("position")
         .returns<
@@ -68,6 +68,7 @@ export default async function EditStoryPage({
             words: string;
             photo_id: string | null;
             layout: string | null;
+            fr: Record<string, string> | null;
           }[]
         >(),
       supabase
@@ -125,6 +126,7 @@ export default async function EditStoryPage({
           published: story.published,
           featured: story.featured_photo_id ?? null,
           topics: story.topics ?? [],
+          fr: story.fr ?? {},
           people: (theirs ?? []).map((one) => one.profile_id),
           partners: (made ?? []).map((one) => one.association_id),
           /* The page as it stands. A story with none has never been arranged by
@@ -136,6 +138,7 @@ export default async function EditStoryPage({
             words: block.words ?? "",
             photoId: block.photo_id,
             layout: (block.layout ?? null) as PhotoLayout | null,
+            fr: block.fr ?? {},
           })),
         }}
         photos={(photos ?? []).filter((photo) => photo.story_tag === story.tag).map((photo) => ({

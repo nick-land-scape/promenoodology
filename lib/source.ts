@@ -669,7 +669,7 @@ export async function getEvent(slug: string, lang: Lang = PLAIN): Promise<EventP
   return { ...event, blocks };
 }
 
-export async function getNews(): Promise<NewsItem[]> {
+export async function getNews(lang: Lang = PLAIN): Promise<NewsItem[]> {
   if (!hasSupabase()) return appFiles.getNews();
 
   const supabase = supabasePublic();
@@ -682,14 +682,14 @@ export async function getNews(): Promise<NewsItem[]> {
       // save enforces.
       .order("pinned", { ascending: false })
       .order("published_on", { ascending: false })
-      .returns<(NewsRow & { authors?: string[] | null; pinned?: boolean })[]>(),
+      .returns<(NewsRow & { authors?: string[] | null; pinned?: boolean; fr?: unknown })[]>(),
     photographerNames(),
   ]);
 
   return (data ?? []).map((row) => ({
     date: row.published_on,
-    title: row.title,
-    text: row.text ?? "",
+    title: say(row.fr, "title", lang, row.title),
+    text: say(row.fr, "text", lang, row.text ?? ""),
     /* Names looked up now rather than stored. The authors are ids in an array
        with no foreign key behind them, so one that no longer answers is simply
        dropped — a deleted person leaves the byline rather than a hole in it. */
@@ -1054,12 +1054,12 @@ export type Sheet = {
  * migration; an empty list is the right answer to that rather than a broken
  * page, which is why the error is swallowed here.
  */
-export async function getSheets(): Promise<Sheet[]> {
+export async function getSheets(lang: Lang = PLAIN): Promise<Sheet[]> {
   if (!hasSupabase()) return [];
 
   const { data, error } = await supabasePublic()
     .from("sheets")
-    .select("slug, title, hook, words, needs, steps, photo_path, people_fed")
+    .select("slug, title, hook, words, needs, steps, photo_path, people_fed, fr")
     .is("deleted_at", null)
     .eq("published", true)
     .order("position")
@@ -1073,24 +1073,25 @@ export async function getSheets(): Promise<Sheet[]> {
         steps: string;
         photo_path: string | null;
         people_fed: number | null;
+        fr: unknown;
       }[]
     >();
   if (error) return [];
 
   return (data ?? []).map((row) => ({
     slug: row.slug,
-    title: row.title,
-    hook: row.hook,
-    words: row.words,
-    needs: lines(row.needs),
-    steps: lines(row.steps),
+    title: say(row.fr, "title", lang, row.title),
+    hook: say(row.fr, "hook", lang, row.hook),
+    words: say(row.fr, "words", lang, row.words),
+    needs: lines(say(row.fr, "needs", lang, row.needs)),
+    steps: lines(say(row.fr, "steps", lang, row.steps)),
     photo: row.photo_path ? mediaUrl(row.photo_path) : null,
     fed: row.people_fed,
   }));
 }
 
-export async function getSheet(slug: string): Promise<Sheet | null> {
-  const all = await getSheets();
+export async function getSheet(slug: string, lang: Lang = PLAIN): Promise<Sheet | null> {
+  const all = await getSheets(lang);
   return all.find((sheet) => sheet.slug === slug) ?? null;
 }
 
