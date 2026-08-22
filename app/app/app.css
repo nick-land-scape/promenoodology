@@ -2291,6 +2291,16 @@ body:has(.app-shell) {
   }
 }
 
+/* Carried over from the launch screen: the mark is already on the screen, in this
+   place, at this size — so it does not arrive, it stays. Drawing it on again with
+   a sweep is the same mark appearing twice, which is what made the opening look
+   like three separate screens. */
+.curtain-carried .curtain-mark {
+  animation: none;
+  opacity: 1;
+  clip-path: none;
+}
+
 /* Anybody who has asked for less movement gets the mark, the paper, and nothing
    that moves. */
 .curtain-still .curtain-mark {

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { liftTheCurtain, reloadWhenStale } from "@/lib/native";
+import { inTheApp, liftTheCurtain, reloadWhenStale } from "@/lib/native";
 import type { Film } from "@/lib/source";
 
 /**
@@ -60,19 +60,32 @@ export default function Splash({ films }: { films: Film[] }) {
   const [rolling, setRolling] = useState(false);
   const [at, setAt] = useState(0);
   const [still, setStill] = useState(false);
+  /** When the film actually began, so it is given a beat before the lift. */
+  const rolled = useRef<number | null>(null);
 
-  /* The native launch screen is told to hide itself after a moment (see
-     capacitor.config.ts). This lifts it earlier where the bridge is there —
-     early, but never load-bearing. */
+  /* Come back to a fresh copy after a long time away. A WebView keeps its page
+     for days, so an app left in the background sits on a version of itself that
+     was published before whatever changed — which is how somebody ends up looking
+     at yesterday's screen and reasonably concluding nothing was fixed. */
+  useEffect(() => reloadWhenStale(30), []);
+
+  /*
+   * The native launch screen leaves when the film is ready, not when this mounts.
+   *
+   * It used to be lifted the instant this component appeared — which is before
+   * the film has a frame — so the app opened on the mark over paper, jumped to the
+   * mark over a film a second later, and then left. Three states, and the middle
+   * one looked like a mistake.
+   *
+   * Hooked to the film instead: the launch screen holds its mark on paper, the
+   * film starts underneath this curtain, and only then is the native screen taken
+   * away — so the change a person sees is a picture arriving behind a mark that
+   * never moved. If the film never comes, the launch screen's own auto-hide (see
+   * capacitor.config.ts) ends it, which is why nothing here is load-bearing.
+   */
   useEffect(() => {
-    void liftTheCurtain();
-    /* And while we are in the layout: come back to a fresh copy after a long
-       time away. A WebView keeps its page for days, so an app left in the
-       background sits on a version of itself that was published before whatever
-       changed — which is how somebody ends up looking at yesterday's screen and
-       reasonably concluding nothing was fixed. */
-    return reloadWhenStale(30);
-  }, []);
+    if (show === false || rolling || still) void liftTheCurtain();
+  }, [show, rolling, still]);
 
   useEffect(() => {
     setStill(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -124,20 +137,28 @@ export default function Splash({ films }: { films: Film[] }) {
           document.querySelector(".app-column .doorway"),
       );
 
-    const earliest = 900;
-    const latest = 3000;
+    /* Long enough to be an opening rather than a flash.
+     *
+       A film that appears for six hundred milliseconds and leaves is worse than
+       no film: it reads as something that went wrong. So the clock starts again
+       when the film starts — a beat and a bit of it, always — and the whole thing
+       is still capped, because an app that will not open is worse than both. */
     const from = performance.now();
+    const enough = 1250;
+    const latest = 3600;
 
     let watching = 0;
     const look = () => {
       const waited = performance.now() - from;
-      if (waited >= latest || (waited >= earliest && ready())) {
+      const seen = rolled.current ? performance.now() - rolled.current : 0;
+      const long = rolled.current ? seen >= enough : waited >= 900;
+      if (waited >= latest || (long && ready())) {
         setGoing(true);
         return;
       }
       watching = window.setTimeout(look, 90);
     };
-    watching = window.setTimeout(look, earliest);
+    watching = window.setTimeout(look, 600);
 
     return () => window.clearTimeout(watching);
   }, [show]);
@@ -156,6 +177,9 @@ export default function Splash({ films }: { films: Film[] }) {
     <div
       className={[
         "curtain",
+        /* In the app the launch screen has already drawn this mark, in this place.
+           Painting it on again with a sweep would be the same mark arriving twice. */
+        inTheApp() ? "curtain-carried" : "",
         going ? "curtain-going" : "",
         rolling ? "curtain-rolling" : "",
         still ? "curtain-still" : "",
@@ -185,6 +209,7 @@ export default function Splash({ films }: { films: Film[] }) {
           preload="auto"
           tabIndex={-1}
           onCanPlay={() => {
+            rolled.current ??= performance.now();
             setRolling(true);
             // Asked out loud: muted autoplay is allowed in a WebView, and
             // "allowed" is not "always".
