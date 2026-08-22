@@ -69,15 +69,24 @@ export default function Feels() {
     const bar = document.querySelector<HTMLElement>(".tabbar");
     if (!shell) return;
 
-    /* How much paper to leave under the last thing on a screen: the bar's own
-       height, measured, safe-area inset and all. The number that was there
-       before was a guess eight points over. */
+    const head = document.querySelector<HTMLElement>(".app-column .app-header");
+
+    /* Two numbers the CSS cannot work out for itself: how much paper to leave
+       under the last thing on a screen (the bar's own height, measured, safe-area
+       inset and all — the number that was there before was a guess eight points
+       over), and how tall the header is, which is what the pull-to-refresh
+       indicator and the map's full-height stage are positioned against. */
     const fit = () => {
       if (bar) shell.style.setProperty("--bar-room", `${bar.offsetHeight}px`);
+      if (head) {
+        document.documentElement.style.setProperty("--app-head", `${head.offsetHeight}px`);
+      }
     };
     fit();
-    const watch = bar ? new ResizeObserver(fit) : null;
-    if (bar && watch) watch.observe(bar);
+    const watch = new ResizeObserver(fit);
+    if (bar) watch.observe(bar);
+    // The header changes height when it collapses, so it is watched as well.
+    if (head) watch.observe(head);
 
     /* And the header collapses once the screen has moved. Twelve points of
        hysteresis between the two states, so a list that ends four points below
@@ -97,7 +106,7 @@ export default function Feels() {
     window.addEventListener("scroll", look, { passive: true });
     return () => {
       window.removeEventListener("scroll", look);
-      watch?.disconnect();
+      watch.disconnect();
     };
   }, [pathname]);
 

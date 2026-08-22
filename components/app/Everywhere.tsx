@@ -69,22 +69,11 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
   /** Where the sheet is while a thumb is on it, in pixels from the top of its run. */
   const [held, setHeld] = useState<number | null>(null);
 
-  /* How tall the header actually is on this phone, so the map can be exactly the
-     rest of the screen. Measured rather than guessed: the header carries the
-     notch's inset, and that number is different on every device Apple sells. */
-  useEffect(() => {
-    const head = document.querySelector<HTMLElement>(".app-column .app-header");
-    if (!head) return;
-    const tell = () => {
-      document.documentElement.style.setProperty(
-        "--app-head",
-        `${head.offsetHeight}px`,
-      );
-    };
-    tell();
-    window.addEventListener("resize", tell);
-    return () => window.removeEventListener("resize", tell);
-  }, []);
+  /* The header's height, which this screen's full-height stage is measured
+     against, is set on the document by components/app/Feels.tsx — on every
+     screen, and again whenever the header collapses. It used to be measured here
+     as well, which meant two effects writing the same variable with different
+     ideas of when. */
 
   useEffect(() => {
     if (!holder.current || pins.length === 0) return;

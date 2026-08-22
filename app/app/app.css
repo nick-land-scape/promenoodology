@@ -10,6 +10,23 @@ body:has(.app-shell) {
   padding-bottom: 0;
 }
 
+/*
+ * The app does not bounce.
+ *
+ * This is the whole of "the bar gets more space when I reach the bottom" and
+ * "the header gets bigger when I scroll up". Neither is growing: iOS is
+ * rubber-banding the document, the fixed bar and the sticky header stay where
+ * they are, and what appears between them and the content is paper — which reads
+ * exactly like the furniture inflating. Nothing about this app wants the bounce:
+ * it is a set of screens, not a long page, and the pull-to-refresh gesture is
+ * handled by hand anyway.
+ */
+html:has(.app-shell),
+body:has(.app-shell) {
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+}
+
 .app-shell {
   --gutter: 18px;
   --hair: rgba(0, 0, 0, 0.14);
@@ -3851,10 +3868,13 @@ body:has(.app-shell) {
    sixty times a second while a thumb is on the glass. */
 .pulldown {
   position: fixed;
-  top: 0;
+  /* Under the header, and only ever under it. The header is the one thing on the
+     screen that never moves — putting the pull indicator over it made the app
+     look like it had two headers for half a second. */
+  top: var(--app-head, 96px);
   left: 0;
   right: 0;
-  z-index: 40;
+  z-index: 20;
   display: flex;
   align-items: flex-end;
   justify-content: center;
