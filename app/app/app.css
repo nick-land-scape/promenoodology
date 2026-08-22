@@ -3270,6 +3270,17 @@ body:has(.app-shell) {
   border-top: 0;
 }
 
+/* Rows that are not inside a section of their own carry the page's gutter.
+ *
+ * The same row is used on the map's sheet, where the sheet supplies the gutter,
+ * and on the list of sheets, where nothing does — so that list came out flush
+ * against the left edge of the screen while every other list on the phone starts
+ * a gutter in. */
+.row-list-inset {
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
 /* A row that flies the map somewhere is a button, not a link: it changes what you
    are looking at rather than where you are. Photograph on the left, because in a
    list of evenings the picture says which one this was before the title does. */

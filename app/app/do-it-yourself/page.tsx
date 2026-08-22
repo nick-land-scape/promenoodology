@@ -39,7 +39,7 @@ export default async function SheetsPage() {
           meantime.
         </p>
       ) : (
-        <ul className="row-list">
+        <ul className="row-list row-list-inset">
           {sheets.map((sheet) => (
             <li key={sheet.slug}>
               <Link className="everywhere-row" href={`/app/do-it-yourself/${sheet.slug}`}>
