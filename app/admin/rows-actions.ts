@@ -110,6 +110,14 @@ const NEEDED: Record<TableName, { key: string; say: string; atBirth: boolean }[]
   ],
   quotes: [{ key: "text", say: "A quote needs some words.", atBirth: false }],
   donations: [{ key: "given_on", say: "A gift needs a date.", atBirth: true }],
+  sheets: [
+    { key: "title", say: "A sheet needs a kind of place.", atBirth: false },
+    {
+      key: "slug",
+      say: "A sheet needs an address — the end of the link people paste.",
+      atBirth: false,
+    },
+  ],
 };
 
 function missing(table: TableName, values: RowValues, brandNew = false): string | null {

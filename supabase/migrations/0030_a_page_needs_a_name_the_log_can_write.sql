@@ -17,7 +17,7 @@
 alter table public.pages add column if not exists id uuid not null default gen_random_uuid();
 
 comment on column public.pages.id is
-  'Not the key — slug is. This is a stable name for the changes log, which files every edit under a uuid. See migration 0029.';
+  'Not the key — slug is. This is a stable name for the changes log, which files every edit under a uuid. See migration 0030.';
 
 -- Two rows with one name would file two pages'' changes in one place.
 create unique index if not exists pages_id on public.pages (id);

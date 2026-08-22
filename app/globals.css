@@ -3613,3 +3613,196 @@ body:has(.hero) .edit-this {
   font-size: 0.88rem;
   color: var(--quiet);
 }
+
+/* ------------------------------------------------------------ do it yourself
+
+   The sheets. Everything else on this site is a record of what we did; these are
+   instructions for what somebody else could do, so they are set like
+   instructions: the steps carry the page, the materials sit beside them, and the
+   photograph is evidence rather than decoration. */
+
+.sheets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 34px 26px;
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0;
+  max-width: 1100px;
+}
+
+.sheet-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.sheet-card-shot {
+  display: block;
+  overflow: hidden;
+}
+
+.sheet-card-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sheet-card-words {
+  display: block;
+  padding-top: 10px;
+}
+
+.sheet-card-title {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+.sheet-card-count {
+  display: block;
+  padding-top: 4px;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f6a63;
+}
+
+.sheet-eyebrow {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6f6a63;
+}
+
+.sheet-hook {
+  margin: 6px 0 0;
+  font-size: 1.15rem;
+  max-width: 34em;
+}
+
+.sheet-shot {
+  margin: 30px 0 0;
+  max-width: 900px;
+}
+
+.sheet-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sheet-shot figcaption {
+  padding-top: 6px;
+  font-size: 0.82em;
+  font-style: italic;
+  color: #6f6a63;
+}
+
+/* The two halves of a sheet: what to find, and what to do with it. Side by side
+   where there is room, because they are read together — you check the list while
+   you work the steps. */
+.sheet-two {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+  margin-top: 44px;
+  max-width: 1000px;
+}
+
+@media (min-width: 820px) {
+  .sheet-two {
+    grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.4fr);
+    gap: 56px;
+  }
+}
+
+.sheet-two h2 {
+  margin: 0 0 12px;
+  font-size: 1.35rem;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 6px;
+}
+
+.sheet-needs ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sheet-needs li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+}
+
+.sheet-aside {
+  margin: 14px 0 0;
+  font-style: italic;
+  color: #6f6a63;
+  font-size: 0.92em;
+}
+
+/* Numbered, in the menu's typeface, because the order is the content. */
+.sheet-steps ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.sheet-steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+  font-size: 1.05rem;
+}
+
+.sheet-steps li::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--purple);
+  padding-top: 5px;
+}
+
+.sheet-foot {
+  margin: 52px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--ink);
+  max-width: 44em;
+}
+
+.sheet-foot h2 {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+}
+
+.sheet-pass {
+  font-size: 0.92em;
+  color: #6f6a63;
+}
+
+.sheet-address {
+  font-family: var(--sans);
+  font-size: 0.86em;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+/* The sheets, offered at the foot of the handbook. */
+.handbook-sheets {
+  margin: 48px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--ink);
+  max-width: 44em;
+}

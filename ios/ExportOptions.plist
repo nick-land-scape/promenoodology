@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  How the archive leaves this machine.
+
+  app-store-connect is the only method that reaches TestFlight and review; the
+  others (ad-hoc, development, enterprise) put a build on a phone and nowhere
+  near Apple.
+
+  Signing is manual, and deliberately: automatic signing asks Apple for a
+  *development* profile while it archives, and a development profile needs a
+  registered device — which a team that ships from a laptop through TestFlight
+  does not have. The App Store profile is made over the API by
+  scripts/asc-profile.mjs, needs no devices at all, and its name is written into
+  a copy of this file at ship time.
+
+  uploadSymbols on, so a crash in review comes back as a stack rather than as an
+  address. manageAppVersionAndBuildNumber off: the build number is set by the
+  ship script from the clock, and Apple silently rewriting it underneath that
+  would make two builds with the same name.
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>teamID</key>
+	<string>K35XLVJJ3T</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.promenoodology.community</key>
+		<!-- Filled in by scripts/ship-ios.sh from whatever the API just made or
+		     reused, rather than written here where it would go stale the day the
+		     profile is remade. -->
+		<string>__PROFILE__</string>
+	</dict>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+	<key>destination</key>
+	<string>export</string>
+</dict>
+</plist>

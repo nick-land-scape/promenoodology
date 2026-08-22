@@ -180,3 +180,51 @@ then Google asks for a different pile:
 5. The Capacitor shell, with push, the photo library and the native Apple sheet.
 6. Decide what happens to Connect.
 7. Icons, screenshots, the two questionnaires, submit.
+
+## Sending a build to Apple
+
+One command, once the key exists:
+
+```bash
+ASC_KEY_ID=ABCD123456 ASC_ISSUER_ID=69a6de00-… ./scripts/ship-ios.sh
+```
+
+It syncs the web shell into the native project, archives Release, exports an ipa
+and uploads it to App Store Connect — TestFlight first, and from there into
+review. The build number is the minute it was built (`202608221945`), so it always
+goes up and there is nothing to increment by hand. `MARKETING_VERSION` in the
+Xcode project is the version people see, and that one is a decision rather than a
+clock.
+
+### The key, once
+
+App Store Connect → Users and Access → Integrations → App Store Connect API →
+**Team Keys** → generate one with the role **App Manager**. Then:
+
+- the **Issuer ID** is at the top of that page (a UUID),
+- the **Key ID** is the ten characters beside the key,
+- the **AuthKey_<KeyID>.p8** downloads exactly once — it cannot be downloaded
+  again — and belongs at `~/.appstoreconnect/private_keys/AuthKey_<KeyID>.p8`,
+  that folder and that filename, which is where every Apple tool looks.
+
+With the key, `xcodebuild` makes the distribution profile itself; nothing has to
+be renewed by hand and nothing about signing is checked into this repository.
+
+### Without a key
+
+The other way is to sign Xcode into the Apple ID once (Xcode → Settings →
+Accounts → +) and then use Xcode's own Organizer to upload: Product → Archive,
+then Distribute App → App Store Connect. Same result, more clicking, and it has
+to be done from this Mac each time.
+
+### What is already true of the project
+
+- The distribution certificate is in this Mac's keychain: *Apple Distribution:
+  heyhey. Management GmbH (K35XLVJJ3T)*.
+- `DEVELOPMENT_TEAM` is set in the Xcode project, so an archive knows whose it is.
+- `ITSAppUsesNonExemptEncryption` is `false` in Info.plist, so TestFlight does not
+  stop and ask about export compliance.
+- Sign in with Apple is in `App.entitlements`, and the plugin is in the SPM
+  package — both verified in an archive.
+- A Release archive builds clean unsigned, so anything that fails from here is
+  about the account rather than about the code.

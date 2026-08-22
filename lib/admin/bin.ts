@@ -18,7 +18,8 @@ export type Binnable = {
     | "donations"
     | "associations"
     | "hero_videos"
-    | "handbook_pages";
+    | "handbook_pages"
+    | "sheets";
   /** The heading it belongs under in the back of the house. */
   section: string;
   /** Where its section lives, for the link back. */
@@ -66,6 +67,14 @@ export const BINNABLE: Binnable[] = [
   },
   { table: "news", section: "news", href: "/admin/news", one: "a note", title: "title", meta: "published_on" },
   { table: "events", section: "events", href: "/admin/events", one: "an event", title: "title", meta: "happens_on" },
+  {
+    table: "sheets",
+    section: "do it yourself",
+    href: "/admin/do-it-yourself",
+    one: "a sheet",
+    title: "title",
+    meta: "slug",
+  },
   {
     table: "donations",
     section: "the wall",

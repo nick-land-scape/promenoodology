@@ -97,7 +97,7 @@ export type EventRow = {
   partners: string[];
   /** The story written about it afterwards. See migration 0016. */
   story_id: string | null;
-  /* Everything a flyer has on it that a row did not. See migration 0027. */
+  /* Everything a flyer has on it that a row did not. See migration 0028. */
   /** Its address on the site. */
   slug: string | null;
   /** The line under the name: "avec le collectif promeNOODology". */
@@ -115,7 +115,7 @@ export type EventRow = {
   part_of_url: string;
 };
 
-/** One day of an event that runs over several. See migration 0027. */
+/** One day of an event that runs over several. See migration 0028. */
 export type EventSessionRow = {
   id: string;
   event_id: string;

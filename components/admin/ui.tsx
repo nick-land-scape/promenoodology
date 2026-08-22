@@ -38,6 +38,9 @@ const ICONS: Record<string, string> = {
   crop: "M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14",
   swap: "M4 8h13l-3.5-3.5M20 16H7l3.5 3.5",
   pin: "M9 3h6l-1 6 4 4v2H6v-2l4-4-1-6zM12 15v6",
+  /* A sheet of instructions, handed on: a page with a corner turned and a list
+     on it, which is what a sheet is. */
+  sheet: "M6 3h8l4 4v14H6zM14 3v5h5M9 12h6M9 15.5h6M9 19h3",
   eyeoff:
     "M4 4l16 16M9.9 5.9A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.6 7.7A17 17 0 0 0 2.5 12S6 18.5 12 18.5a9 9 0 0 0 3.4-.66M9.6 9.7a2.8 2.8 0 0 0 3.9 3.9",
   up: "M12 19V5M6 11l6-6 6 6",
