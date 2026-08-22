@@ -5,9 +5,11 @@ import FlyerBook from "@/components/FlyerBook";
 import JoinToTakePart from "@/components/JoinToTakePart";
 import Linked from "@/components/Linked";
 import Photo from "@/components/Photo";
+import QuoteThis from "@/components/QuoteThis";
 import StoryBody from "@/components/StoryBody";
 import type { Slide } from "@/lib/content";
 import { pretty } from "@/lib/admin/when";
+import { siteUrl } from "@/lib/site";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { getEvent, getEvents, getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
@@ -307,6 +309,10 @@ export default async function EventPage({ params }: Params) {
           ) : null}
         </footer>
       ) : null}
+
+      {/* The same offer as on a story: the moment somebody marks a passage is the
+          moment to hand them the reference for it. */}
+      <QuoteThis title={event.title} url={siteUrl(at(lang, `/events/${event.slug}`))} />
 
       {/* Where somebody who has just read about one evening actually wants to go
           next: everything else we have done, and the photographs of it. */}

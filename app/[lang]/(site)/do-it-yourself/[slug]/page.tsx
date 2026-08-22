@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Photo from "@/components/Photo";
+import QuoteThis from "@/components/QuoteThis";
 import { getSheet, getSheets } from "@/lib/source";
 import { SITE_URL, siteUrl } from "@/lib/site";
 
@@ -114,6 +115,10 @@ export default async function SheetPage({ params }: { params: Promise<{ slug: st
           .
         </p>
       </section>
+
+      {/* A sheet is written to be handed on, so the moment somebody marks a
+          passage of it is exactly the moment to give them the reference. */}
+      <QuoteThis title={sheet.title} url={siteUrl(`/do-it-yourself/${sheet.slug}`)} />
     </main>
   );
 }

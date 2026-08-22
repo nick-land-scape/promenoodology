@@ -160,7 +160,18 @@ export default function Handbook({
         maxShadowOpacity: 0.35,
         // Otherwise a finger meant for the page underneath turns the page.
         mobileScrollSupport: true,
-        useMouseEvents: true,
+        /*
+         * Pages are turned with the buttons, the arrow keys and a finger — not
+         * by dragging with a mouse.
+         *
+         * The library starts a drag on mousedown anywhere on a page, which is
+         * also how somebody selects a sentence: pressing on the words and moving
+         * turned the leaf instead of marking anything, so "quote this" could
+         * never appear in the one piece of writing here that exists to be quoted
+         * and handed on. Dragging is the nicer gesture; being able to take the
+         * words is the point of the book.
+         */
+        useMouseEvents: false,
         showPageCorners: true,
       });
 
