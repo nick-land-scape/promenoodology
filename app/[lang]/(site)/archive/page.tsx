@@ -42,7 +42,9 @@ export default async function ResourcesPage({ params }: { params: Promise<{ lang
   const [resources, quotes, stories, head] = await Promise.all([
     getResources(),
     getQuotes(),
-    getStories(),
+    // The filters along the top are the stories' own names, so they are read in
+    // the language the page is being read in.
+    getStories(lang),
     getPageHead("archive", lang),
   ]);
 

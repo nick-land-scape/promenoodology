@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PLAIN, isLang, type Lang } from "@/lib/lang";
@@ -62,7 +63,16 @@ export type MyBooking = {
   state: "interested" | "asked" | "kept" | "declined";
 };
 
-export async function whoIsThis(): Promise<Me | null> {
+/*
+ * Asked once per request, however many things want to know.
+ *
+ * Nearly every screen in the app asks twice over — `requireMember` to be let in
+ * and `readingIn` to know which language to be read in — and each ask was a
+ * round trip to the database for the same row. React's cache holds the answer
+ * for the length of one request and no longer, which is exactly as long as it
+ * is true for.
+ */
+export const whoIsThis = cache(async (): Promise<Me | null> => {
   const supabase = await supabaseServer();
   const {
     data: { user },
@@ -125,7 +135,7 @@ export async function whoIsThis(): Promise<Me | null> {
     admin: data.role === "admin",
     readsIn: data.reads_in === "en" || data.reads_in === "fr" ? data.reads_in : null,
   };
-}
+});
 
 /**
  * Which language to read this screen in.

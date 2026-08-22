@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type {
   ClubEvent,
   Donation,
@@ -417,7 +418,7 @@ export async function getPage(
  * table and the alternative is threading a dictionary through every component
  * on the site.
  */
-export async function getFrench(): Promise<Record<string, string>> {
+export const getFrench = cache(async (): Promise<Record<string, string>> => {
   if (!hasSupabase()) return {};
 
   try {
@@ -431,7 +432,7 @@ export async function getFrench(): Promise<Record<string, string>> {
     // A site that cannot reach the table still has words: its own.
     return {};
   }
-}
+});
 
 /** One leaf of the handbook: what it is called, and the words on it. */
 export type Leaf = { id: string; title: string; blocks: PageBlock[] };

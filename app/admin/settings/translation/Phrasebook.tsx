@@ -73,7 +73,22 @@ export default function Phrasebook({
 
       {WHERES.map((house) => {
         const mine = found.filter((phrase) => phrase.where === house.key);
-        if (mine.length === 0) return null;
+        const any = phrases.some((phrase) => phrase.where === house.key);
+
+        /* A half with nothing in it keeps its heading and says so: it is one of
+           the two this page was asked to separate, and one that quietly
+           disappeared would read as a page that had lost something. A half
+           emptied by the search simply goes — that is the search working. */
+        if (mine.length === 0) {
+          if (any) return null;
+          return (
+            <Panel key={house.key} name={house.name} hint={house.blurb}>
+              <p className="admin-empty" style={{ padding: "10px 14px" }}>
+                Nothing in this half needs translating yet.
+              </p>
+            </Panel>
+          );
+        }
 
         return (
           <Panel key={house.key} name={house.name} hint={house.blurb}>

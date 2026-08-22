@@ -1,6 +1,6 @@
 import AppHeader from "@/components/app/AppHeader";
 import Reading from "@/components/app/Reading";
-import { requireMember } from "@/lib/app/me";
+import { readingIn, requireMember } from "@/lib/app/me";
 import {
   sharedEverywhere,
   sharedPage,
@@ -31,6 +31,7 @@ export default async function ReadPage({
   searchParams: Promise<{ of?: string }>;
 }) {
   await requireMember("/app/read");
+  const lang = await readingIn();
   /* Which of the three to open on, so a preview on the front screen lands where
      it was pointing rather than on the first tab. */
   const { of } = await searchParams;
@@ -38,7 +39,7 @@ export default async function ReadPage({
     of === "archive" || of === "handbook" || of === "map" ? of : "stories";
 
   const [stories, photos, handbook, pins] = await Promise.all([
-    sharedStories(),
+    sharedStories(lang),
     sharedResources(),
     sharedPage("handbook"),
     sharedEverywhere(),

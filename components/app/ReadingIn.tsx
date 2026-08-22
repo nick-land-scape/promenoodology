@@ -21,7 +21,15 @@ import { chooseLanguage } from "@/lib/site-actions/language";
  * so that somebody can find whoever can talk to the neighbour who came out to
  * see what the noise was.
  */
-export default function ReadingIn({ chosen }: { chosen: Lang | null }) {
+export default function ReadingIn({
+  chosen,
+  words,
+}: {
+  chosen: Lang | null;
+  /* Handed in rather than held here: the words the site says are looked up on
+     the server, where the language is known. */
+  words: { label: string; note: string };
+}) {
   const router = useRouter();
   const [now, setNow] = useState<Lang | null>(chosen);
   const [pending, start] = useTransition();
@@ -44,7 +52,7 @@ export default function ReadingIn({ chosen }: { chosen: Lang | null }) {
 
   return (
     <section className="app-section">
-      <p className="app-label app-label-alone">the language you read us in</p>
+      <p className="app-label app-label-alone">{words.label}</p>
       <div className="reading-in">
         {LANGS.map((lang) => (
           <button
@@ -60,10 +68,7 @@ export default function ReadingIn({ chosen }: { chosen: Lang | null }) {
           </button>
         ))}
       </div>
-      <p className="app-note">
-        It follows your account, so it is the same here and on the website. Anything nobody has
-        translated yet is shown in English.
-      </p>
+      <p className="app-note">{words.note}</p>
     </section>
   );
 }

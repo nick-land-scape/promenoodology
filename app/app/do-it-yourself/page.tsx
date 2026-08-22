@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
-import { requireMember } from "@/lib/app/me";
+import { readingIn, requireMember } from "@/lib/app/me";
 import { sharedSheets } from "@/lib/shared";
 
 export const metadata = { title: "Do it yourself" };
@@ -19,7 +19,8 @@ export const revalidate = 60;
  */
 export default async function SheetsPage() {
   await requireMember("/app/do-it-yourself");
-  const sheets = await sharedSheets();
+  const lang = await readingIn();
+  const sheets = await sharedSheets(lang);
 
   return (
     <>

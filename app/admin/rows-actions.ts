@@ -272,6 +272,43 @@ export async function duplicateRow(table: string, id: string): Promise<Saved & {
   if (spec.publishable) again.published = false;
   if (spec.mints) again[spec.mints] = `untitled-${suffix()}`;
 
+  /*
+   * A copy of the one held at the top is not also held at the top.
+   *
+   * At most one row may be pinned — the save enforces it by clearing every
+   * other row first — and this went round the back of that: duplicating the
+   * pinned note gave two notes both saying "at the top", both first in the app,
+   * and no way to tell which one the rule meant.
+   */
+  if (spec.pinned) again[spec.pinned] = false;
+
+  /*
+   * And it lands beside the one it came from, not in front of everything.
+   *
+   * Where a table is kept in an order somebody decided, `position` is not one of
+   * the columns the editor writes, so a copy was inserted with the column's
+   * default of nought — which sorts before every row that has ever been placed.
+   * You duplicated the fourth sheet and the copy appeared first.
+   */
+  const ordered = spec.order.column === "position" && typeof was.position === "number";
+  if (ordered) {
+    const after = was.position as number;
+    const { data: below } = await supabase
+      .from(name)
+      .select("id, position")
+      .gt("position", after)
+      .returns<{ id: string; position: number }[]>();
+
+    for (const one of below ?? []) {
+      const { error } = await supabase
+        .from(name)
+        .update({ position: one.position + 1 })
+        .eq("id", one.id);
+      if (error) return failed(error);
+    }
+    again.position = after + 1;
+  }
+
   const { data, error } = await supabase
     .from(name)
     .insert(again)

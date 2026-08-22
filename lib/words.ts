@@ -74,7 +74,6 @@ export const PHRASES: Phrase[] = [
   { key: "event.whatCameOfIt", en: "what came of it", fr: "ce qui en est sorti", where: "front", note: "Links to the story written afterwards." },
   { key: "event.itHasBeen", en: "it has been", fr: "c’est passé", where: "front", note: "Added to the date of an evening that is over." },
   { key: "event.stillArranged", en: "still being arranged", fr: "en cours d’organisation", where: "front" },
-  { key: "event.theFlyer", en: "the flyer", fr: "le flyer", where: "front" },
   { key: "event.takeAsPdf", en: "take it as a PDF ↓", fr: "télécharger le PDF ↓", where: "front" },
   { key: "event.lookThrough", en: "look through the flyer", fr: "feuilleter le flyer", where: "front", note: "Opens the flyer as a book." },
   { key: "event.inTheApp", en: "In the members’ app —", fr: "Dans l’app des membres —", where: "front" },
@@ -116,9 +115,13 @@ export const PHRASES: Phrase[] = [
     where: "app",
   },
 
-  /* --------------------------------------------------------- the back of the house */
-  { key: "back.english", en: "English", fr: "English", where: "back", note: "The name of the language, in itself — it is not translated." },
-  { key: "back.french", en: "Français", fr: "Français", where: "back", note: "The same." },
+  /* --------------------------------------------------------- the back of the house
+
+     Nothing yet, and the section is drawn anyway — see WHERES. The words in
+     here are read by whoever is looking after the site and by nobody else, so
+     translating them is the last thing worth doing rather than the first. The
+     two names of the languages are deliberately not in here: a language names
+     itself, and "English" in French is English. */
 ];
 
 const BY_KEY = new Map(PHRASES.map((phrase) => [phrase.key, phrase]));
@@ -144,7 +147,7 @@ export const WHERES: { key: Where; name: string; blurb: string }[] = [
     key: "back",
     name: "the back of the house",
     blurb:
-      "The words in here. Almost nothing needs translating — only whoever is looking after the site ever reads them.",
+      "The words in here — read by whoever is looking after the site and by nobody else, which is why translating them is the last thing worth doing rather than the first.",
   },
 ];
 
