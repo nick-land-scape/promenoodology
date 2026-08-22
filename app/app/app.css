@@ -2761,25 +2761,34 @@ body:has(.app-shell) {
   line-height: 1.2;
 }
 
+/* The archive's cluster, in miniature.
+ *
+ * Squares in three columns is a contact sheet: every photograph cropped to the
+ * same shape says the shapes do not matter, and in this archive they are half of
+ * what is being looked at — a long table is not a portrait. Laid out by column
+ * like the wall itself, so the preview is the thing it is a preview of. */
 .peek-photos {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  columns: 3;
+  column-gap: 4px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .peek-photos li {
-  aspect-ratio: 1;
-  overflow: hidden;
+  margin: 0 0 4px;
+  break-inside: avoid;
+}
+
+.peek-photos a {
+  display: block;
+  line-height: 0;
 }
 
 .peek-photos img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   display: block;
+  width: 100%;
+  height: auto;
 }
 
 /* The first page of the handbook, set the way the handbook sets it: a number in
@@ -3644,9 +3653,13 @@ body:has(.app-shell) {
     padding-right: 0;
   }
 
-  /* And the wall gets a third column. */
+  /* And the walls get another column each. */
   .wall {
     columns: 3;
+  }
+
+  .peek-photos {
+    columns: 4;
   }
 
   /* The skeleton follows the screen it is standing in for: two covers abreast,
