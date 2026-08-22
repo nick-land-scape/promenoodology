@@ -2605,7 +2605,8 @@ body:has(.app-shell) {
 }
 
 .waiting-switcher-small {
-  padding: 4px var(--gutter) 10px;
+  gap: 18px;
+  padding: 4px var(--gutter) 12px;
 }
 
 .waiting-date {
@@ -2829,14 +2830,35 @@ body:has(.app-shell) {
 
 /* ------------------------------------------------------------- everywhere */
 
-/* The little one: two words inside a view, rather than a choice between views. */
-.segmented-small {
+/* Two words with a line under the one you are on.
+ *
+ * Deliberately not a second pill switch: two identical pills stacked read as two
+ * equal choices, and these are not equal. The pills above choose *what* you are
+ * looking at; this chooses only *how* the same thing is drawn, so it is quieter
+ * by a whole order — a label, not a control with a border round it. */
+.reading-how {
+  display: flex;
+  gap: 18px;
   margin: 0 var(--gutter) 14px;
 }
 
-.segmented-small button {
-  font-size: 0.62em;
-  padding: 7px 10px;
+.reading-how button {
+  border: 0;
+  background: none;
+  padding: 4px 0 5px;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.reading-how button[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
 }
 
 /*

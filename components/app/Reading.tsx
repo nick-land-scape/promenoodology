@@ -103,8 +103,12 @@ export default function Reading({
   /* The two ways of looking at the stories, and one of them takes the whole
      screen: header above it, bar below it, nothing else. A map in a box on a
      scrolling page is a picture of a map. */
+  /* Not a second pill switch under the first one: two pills of the same shape
+     stacked read as two equal choices, and these are not equal — the one above
+     chooses what you are looking at, this one only chooses how. So it is two
+     words with a line under the one you are on. */
   const bothWays = (
-    <div className="segmented segmented-small" role="tablist" aria-label="Stories how">
+    <div className="reading-how" role="tablist" aria-label="Stories how">
       <button type="button" role="tab" aria-selected={!asMap} onClick={() => setAsMap(false)}>
         as a list
       </button>

@@ -100,12 +100,12 @@ export function BoneSwitcher() {
   );
 }
 
-/** The little one inside a view: two words, as the stories have. */
+/** The two words under it: how the stories are drawn, list or map. */
 export function BoneSmallSwitcher() {
   return (
     <div className="waiting-switcher waiting-switcher-small">
-      <Bone w={92} h={30} round />
-      <Bone w={104} h={30} round />
+      <Bone w={54} h={10} />
+      <Bone w={62} h={10} />
     </div>
   );
 }
