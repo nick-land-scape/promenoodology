@@ -3036,4 +3036,12 @@ body:has(.app-shell) {
     grid-template-columns: 1fr 1fr;
     gap: 0 var(--gutter);
   }
+
+  /* And so do people: sixty-four names down the left of a thirteen-inch screen
+     is a column of nothing beside a column of somebody. */
+  .row-list-people {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: calc(var(--gutter) * 1.5);
+  }
 }

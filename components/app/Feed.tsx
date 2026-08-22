@@ -94,7 +94,9 @@ export default function Feed({ posts, people, meId, meName, wavable, waved }: Pr
             <h2 className="app-h2">who is around</h2>
             <span className="app-label">{people.length} people</span>
           </div>
-          <ul className="row-list">
+          {/* Two columns of these on a tablet: a name and a country in a row a
+              thousand points wide is mostly empty room. */}
+          <ul className="row-list row-list-people">
             {people.map((member) => (
               <li key={`${member.first}-${member.last}`}>
                 <div className="row">
