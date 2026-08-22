@@ -3,14 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import FlyerBook from "@/components/FlyerBook";
 import JoinToTakePart from "@/components/JoinToTakePart";
+import JsonLd from "@/components/JsonLd";
 import Linked from "@/components/Linked";
 import Photo from "@/components/Photo";
 import QuoteThis from "@/components/QuoteThis";
 import StoryBody from "@/components/StoryBody";
-import type { Slide } from "@/lib/content";
+import type { EventPage as Evening, Slide } from "@/lib/content";
 import { pretty } from "@/lib/admin/when";
-import { siteUrl } from "@/lib/site";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
+import { siteUrl } from "@/lib/site";
+import { addresses, breadcrumbs, graph, moment, picture, trim, US } from "@/lib/seo";
 import { getEvent, getEvents, getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 
@@ -34,16 +36,112 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: event.title,
     description,
-    alternates: {
-      canonical: at(isLang(lang) ? lang : PLAIN, `/events/${event.slug}`),
-      // The same evening in the other language, said to a search engine.
-      languages: { en: `/events/${event.slug}`, fr: `/fr/events/${event.slug}` },
-    },
+    alternates: addresses(isLang(lang) ? lang : PLAIN, `/events/${event.slug}`),
     openGraph: {
       title: event.title,
       description,
+      type: "article",
       images: event.photo ? [{ url: event.photo.src }] : undefined,
     },
+  };
+}
+
+/**
+ * One evening, as a thing with a date on it.
+ *
+ * This is the block that earns its place more than any other on the site. An
+ * evening is exactly the kind of fact a search engine will show as a card and a
+ * language model will read out when somebody asks what is on this weekend — but
+ * only if the date, the place and the price are given as data rather than left
+ * to be read out of a line of prose that says "22 August 2026, la friche, 19:00".
+ *
+ * Everything in here is already on the page in words. Nothing is invented: an
+ * evening with no address gets no location, and an evening nobody has priced
+ * gets no offer, because a free evening and an evening whose price has not been
+ * decided are not the same thing and guessing turns one into the other.
+ */
+function asEvent(event: Evening, lang: Lang) {
+  const url = siteUrl(at(lang, `/events/${event.slug}`));
+  const over = (event.until || event.date) < new Date().toISOString().slice(0, 10);
+
+  /* Where it is. A name and a street where both are known; the name alone is
+     still a place, and "la friche de Renens" is more use to a reader than an
+     empty field. */
+  const place =
+    event.place || event.address
+      ? {
+          "@type": "Place",
+          name: event.place || event.address,
+          address: event.address || event.place,
+        }
+      : undefined;
+
+  /* What it costs, where somebody has said. The text is kept as written —
+     "gratuit", "£5 on the door" — rather than parsed into a number, because a
+     wrong number in an offer is worse than no offer at all. Free is the one
+     case worth saying properly, and it is the one anybody searching cares
+     about. */
+  const free = /^(free|gratuit|libre|prix libre|0)\b/i.test(event.cost.trim());
+  const offer = event.cost
+    ? {
+        "@type": "Offer",
+        url,
+        name: event.cost,
+        ...(free ? { price: 0, priceCurrency: "CHF" } : {}),
+        availability: over
+          ? "https://schema.org/SoldOut"
+          : "https://schema.org/InStock",
+      }
+    : undefined;
+
+  return {
+    "@type": "Event",
+    "@id": url,
+    url,
+    name: event.title,
+    inLanguage: lang,
+    description: trim(event.lead || event.subtitle || event.note || event.title),
+    startDate: moment(event.date, event.time),
+    /* Only where it means something. An evening with no closing time and no
+       last day would otherwise end at the minute it started, which reads as an
+       event of zero length rather than as one nobody has said the end of. */
+    endDate:
+      event.until || event.endTime
+        ? moment(event.until || event.date, event.endTime)
+        : undefined,
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    location: place,
+    image: picture(event.photo?.src) ? [picture(event.photo?.src)] : undefined,
+    organizer: { "@id": US },
+    isAccessibleForFree: free || undefined,
+    offers: offer,
+    /* Who else is putting it on. Named rather than described: these are real
+       organisations with their own pages, and the link is the useful half. */
+    performer: event.partners.length
+      ? event.partners.map((partner) => ({
+          "@type": "Organization",
+          name: partner.name,
+          url: partner.url || undefined,
+        }))
+      : undefined,
+    superEvent: event.partOf
+      ? { "@type": "Event", name: event.partOf, url: event.partOfUrl || undefined }
+      : undefined,
+    /* A programme of several days, each one its own evening under this one.
+       Somebody looking for "the Saturday" is looking for one of these. */
+    subEvent: event.days.length
+      ? event.days.map((day) => ({
+          "@type": "Event",
+          name: day.title || event.title,
+          description: day.what || undefined,
+          startDate: moment(day.date, day.time),
+          endDate: day.endTime ? moment(day.date, day.endTime) : undefined,
+          location: place,
+          eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+          eventStatus: "https://schema.org/EventScheduled",
+        }))
+      : undefined,
   };
 }
 
@@ -85,6 +183,16 @@ export default async function EventPage({ params }: Params) {
 
   return (
     <main className="page">
+      <JsonLd
+        data={graph(
+          asEvent(event, lang),
+          breadcrumbs(lang, [
+            { name: "promeNOODology", path: "/" },
+            { name: say("event.allEvents"), path: "/events" },
+            { name: event.title, path: `/events/${event.slug}` },
+          ]),
+        )}
+      />
       {/*
        * The top of the evening, and it stays there.
        *
@@ -149,9 +257,12 @@ export default async function EventPage({ params }: Params) {
 
       {event.photo ? (
         <figure className="event-cover">
+          {/* Named rather than left empty: this is the photograph of the thing
+              the page is about, not decoration, and an empty alt tells a screen
+              reader and an image search exactly as much as no photograph. */}
           <Photo
             src={event.photo.src}
-            alt=""
+            alt={event.title}
             width={event.photo.width}
             height={event.photo.height}
             sizes="(max-width: 767px) 92vw, 60vw"

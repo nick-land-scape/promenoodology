@@ -1,15 +1,33 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import JsonLd from "@/components/JsonLd";
 import Photo from "@/components/Photo";
-import { at, isLang, PLAIN } from "@/lib/lang";
+import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
+import { breadcrumbs, graph, itemList, pageMetadata, say, type Bilingual } from "@/lib/seo";
 import { getPageHead, getSheets } from "@/lib/source";
 
-export const metadata: Metadata = {
-  title: "Do it yourself",
-  description:
-    "One sheet per kind of place — a square, a car park, a courtyard, a queue — for getting people who do not know each other into the same place on purpose. No account, no permission.",
-  alternates: { canonical: "/do-it-yourself" },
+const TITLE: Bilingual = { en: "Do it yourself", fr: "Faites-le vous-même" };
+const ABOUT: Bilingual = {
+  en: "One sheet per kind of place — a square, a car park, a courtyard, a queue — for getting people who do not know each other into the same place on purpose. No account, no permission.",
+  fr: "Une fiche par type de lieu — une place, un parking, une cour, une file d’attente — pour réunir volontairement des gens qui ne se connaissent pas. Sans compte, sans permission.",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const head = await getPageHead("do-it-yourself", lang);
+
+  return pageMetadata({
+    lang,
+    path: "/do-it-yourself",
+    title: head.title || say(lang, TITLE),
+    description: head.lead || say(lang, ABOUT),
+  });
+}
 
 export const revalidate = 60;
 
@@ -33,6 +51,18 @@ export default async function DoItYourselfPage({
 
   return (
     <main className="page">
+      <JsonLd
+        data={graph(
+          itemList(
+            lang,
+            sheets.map((sheet) => `/do-it-yourself/${sheet.slug}`),
+          ),
+          breadcrumbs(lang, [
+            { name: "promeNOODology", path: "/" },
+            { name: head.title || say(lang, TITLE), path: "/do-it-yourself" },
+          ]),
+        )}
+      />
       <h1 className="page-title">{head.title || "do it yourself"}</h1>
       {head.lead ? (
         <p className="page-intro">{head.lead}</p>

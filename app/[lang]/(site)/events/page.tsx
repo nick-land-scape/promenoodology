@@ -2,19 +2,38 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import EventsCalendar from "@/components/EventsCalendar";
+import JsonLd from "@/components/JsonLd";
 import Photo from "@/components/Photo";
 import type { ClubEvent } from "@/lib/content";
 import { pretty } from "@/lib/admin/when";
-import { at, isLang, PLAIN } from "@/lib/lang";
+import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
+import { breadcrumbs, graph, itemList, pageMetadata, say as pick, type Bilingual } from "@/lib/seo";
 import { pageIsVisible } from "@/lib/site-pages";
 import { getEvents, getFrench, getPageHead } from "@/lib/source";
 import { speaking, type Said } from "@/lib/words";
 
-export const metadata: Metadata = {
-  title: "What's on",
-  description: "What we are putting on next, and where — open to anybody who turns up.",
-  alternates: { canonical: "/events" },
+const TITLE: Bilingual = { en: "What’s on", fr: "Ce qui se passe" };
+const ABOUT: Bilingual = {
+  en: "What we are putting on next, and where — open to anybody who turns up.",
+  fr: "Ce que nous organisons prochainement, et où — ouvert à quiconque se présente.",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const head = await getPageHead("events", lang);
+
+  return pageMetadata({
+    lang,
+    path: "/events",
+    title: head.title || pick(lang, TITLE),
+    description: head.lead || pick(lang, ABOUT),
+  });
+}
 
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
@@ -107,6 +126,24 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
 
   return (
     <main className="page">
+      {/* The evenings that have not happened yet, in the order they will, as a
+          list. Only the ones still to come: an ItemList of things that are over
+          is a list nobody can act on, and each of them keeps its own Event block
+          on its own page for anything that wants the details. */}
+      <JsonLd
+        data={graph(
+          itemList(
+            lang,
+            withNext
+              .filter((one) => one.next)
+              .map((one) => `/events/${one.event.slug}`),
+          ),
+          breadcrumbs(lang, [
+            { name: "promeNOODology", path: "/" },
+            { name: head.title || pick(lang, TITLE), path: "/events" },
+          ]),
+        )}
+      />
       <h1 className="page-title">{head.title || "what's on"}</h1>
 
       {head.saved ? (

@@ -8,15 +8,32 @@ import Linked from "@/components/Linked";
 import { getFrench, getHandbookPages, getPage, getPageHead } from "@/lib/source";
 import { speaking } from "@/lib/words";
 import { siteUrl } from "@/lib/site";
-import { at, isLang, PLAIN } from "@/lib/lang";
+import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
+import { pageMetadata, say as pick, type Bilingual } from "@/lib/seo";
 import { pageIsVisible } from "@/lib/site-pages";
 
-export const metadata: Metadata = {
-  title: "Handbook",
-  description:
-    "How to put on something like ours in your own street — and how to ask us for help, including money.",
-  alternates: { canonical: "/handbook" },
+const TITLE: Bilingual = { en: "Handbook", fr: "Le manuel" };
+const ABOUT: Bilingual = {
+  en: "How to put on something like ours in your own street — and how to ask us for help, including money.",
+  fr: "Comment organiser quelque chose comme le nôtre dans votre propre rue — et comment nous demander un coup de main, y compris de l’argent.",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const head = await getPageHead("handbook", lang);
+
+  return pageMetadata({
+    lang,
+    path: "/handbook",
+    title: head.title || pick(lang, TITLE),
+    description: head.lead || pick(lang, ABOUT),
+  });
+}
 
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;

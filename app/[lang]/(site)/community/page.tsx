@@ -3,14 +3,32 @@ import { notFound } from "next/navigation";
 import CommunityGrid from "@/components/CommunityGrid";
 import type { Partner } from "@/lib/source";
 import { getMembers, getPageHead, getPartners } from "@/lib/source";
-import { isLang, PLAIN } from "@/lib/lang";
+import { isLang, PLAIN, type Lang } from "@/lib/lang";
+import { pageMetadata, say, type Bilingual } from "@/lib/seo";
 import { pageIsVisible } from "@/lib/site-pages";
 
-export const metadata: Metadata = {
-  title: "Community",
-  description: "The people of promeNOODology.",
-  alternates: { canonical: "/community" },
+const TITLE: Bilingual = { en: "Community", fr: "La communauté" };
+const ABOUT: Bilingual = {
+  en: "The people of promeNOODology — everybody who has cooked, walked or turned up, and the organisations we have done it with.",
+  fr: "Les gens de promeNOODology — tous ceux qui ont cuisiné, marché ou sont venus, et les organisations avec qui nous l’avons fait.",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const head = await getPageHead("community", lang);
+
+  return pageMetadata({
+    lang,
+    path: "/community",
+    title: head.title || say(lang, TITLE),
+    description: head.lead || say(lang, ABOUT),
+  });
+}
 
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;

@@ -1,16 +1,35 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import JsonLd from "@/components/JsonLd";
 import Photo from "@/components/Photo";
-import { at, isLang, PLAIN } from "@/lib/lang";
+import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
+import { breadcrumbs, graph, itemList, pageMetadata, say, type Bilingual } from "@/lib/seo";
 import { pageIsVisible } from "@/lib/site-pages";
 import { getPageHead, getStories } from "@/lib/source";
 
-export const metadata: Metadata = {
-  title: "Stories",
-  description: "The things we have put on together — one story each.",
-  alternates: { canonical: "/stories" },
+const TITLE: Bilingual = { en: "Stories", fr: "Les récits" };
+const ABOUT: Bilingual = {
+  en: "The things we have put on together — one story each: what we did, who was there and what we would do differently.",
+  fr: "Ce que nous avons organisé ensemble — un récit chacun : ce que nous avons fait, qui était là et ce que nous ferions autrement.",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const head = await getPageHead("stories", lang);
+
+  return pageMetadata({
+    lang,
+    path: "/stories",
+    title: head.title || say(lang, TITLE),
+    description: head.lead || say(lang, ABOUT),
+  });
+}
 
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
@@ -26,6 +45,19 @@ export default async function StoriesPage({ params }: { params: Promise<{ lang: 
 
   return (
     <main className="page">
+      {/* That this is a list, and what is in it, in the order it is in. */}
+      <JsonLd
+        data={graph(
+          itemList(
+            lang,
+            stories.map((story) => `/stories/${story.slug}`),
+          ),
+          breadcrumbs(lang, [
+            { name: "promeNOODology", path: "/" },
+            { name: head.title || say(lang, TITLE), path: "/stories" },
+          ]),
+        )}
+      />
       <h1 className="page-title">{head.title || "stories"}</h1>
 
       {/* The words the site shipped with are still here, and still have their

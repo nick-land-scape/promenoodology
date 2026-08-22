@@ -9,6 +9,21 @@ export async function generateStaticParams() {
   return LEGAL.map((page) => ({ slug: page.slug }));
 }
 
+/**
+ * Which address is the real one for a written page.
+ *
+ * Each of these can be reached four ways — /privacy, /legal/privacy, and both
+ * of those with /fr in front — and there is only one page. So there is one
+ * canonical for all four, and it is /privacy: the short English one, because it
+ * is what an app store form, a bank and a footer link should say, and because
+ * the words themselves are only written in English.
+ *
+ * No hreflang pair, deliberately, and this is the one page type on the site
+ * that should not have one. A pair says "the same page, in the other
+ * language". /fr/privacy is not that. It is the English privacy policy at a
+ * French address, and the honest thing to tell a search engine about it is that
+ * it is a copy of /privacy — which a canonical pointing there already does.
+ */
 export async function generateMetadata({
   params,
 }: {
@@ -17,6 +32,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const spec = legalSpec(slug);
   if (!spec) return {};
+
   return {
     title: spec.title,
     description: spec.lead,
