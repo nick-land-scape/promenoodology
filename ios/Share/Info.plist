@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  What the share sheet offers, and for what.
+
+  Images only, and up to twelve of them: an evening's worth. No text-only
+  sharing, no URLs — this extension exists to get photographs into the archive,
+  and offering it for a link somebody copied would be an entry in the share sheet
+  that does nothing useful.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>promeNOOD</string>
+	<key>CFBundleName</key>
+	<string>Share</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.promenoodology.community.share</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundlePackageType</key>
+	<string>XPC!</string>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>NSExtensionActivationRule</key>
+			<dict>
+				<key>NSExtensionActivationSupportsImageWithMaxCount</key>
+				<integer>12</integer>
+			</dict>
+		</dict>
+		<!-- The class itself, rather than a storyboard: the sheet is the system's
+		     own and there is nothing of ours to lay out, so a nib would be one more
+		     file that has to agree with the code. -->
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).ShareViewController</string>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.share-services</string>
+	</dict>
+</dict>
+</plist>

@@ -55,6 +55,68 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             Self.waiting = nil
             go(to: waiting)
         }
+
+        // Anything shared to us from elsewhere on the phone.
+        handShared()
+    }
+
+    // MARK: - Photographs shared from elsewhere
+
+    /// The container the share extension writes into. Nil until the App Group
+    /// exists on both targets, at which point this starts finding things — and
+    /// until then every line below is a no-op rather than an error.
+    private static var shared: URL? {
+        FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: "group.com.promenoodology.community")?
+            .appendingPathComponent("shared", isDirectory: true)
+    }
+
+    /**
+     * Hand what was shared to the app's own composer.
+     *
+     * The extension cannot post anything: it is a separate process with no idea
+     * who is signed in. So it leaves pictures in the shared container and this
+     * carries them across — as data URLs on a custom event, which is the only
+     * thing a web view can be handed a photograph as without a server in the
+     * middle. The files are removed as soon as they are passed on, so nothing
+     * arrives twice and nothing sits on the disk waiting to.
+     */
+    private func handShared() {
+        guard
+            let folder = Self.shared,
+            let web = Self.webView(in: window?.rootViewController?.view),
+            let note = try? Data(contentsOf: folder.appendingPathComponent("shared.json")),
+            let read = try? JSONSerialization.jsonObject(with: note) as? [String: Any],
+            let names = read["files"] as? [String],
+            !names.isEmpty
+        else { return }
+
+        let words = (read["words"] as? String) ?? ""
+        var pictures: [String] = []
+        for name in names {
+            let file = folder.appendingPathComponent(name)
+            guard let data = try? Data(contentsOf: file) else { continue }
+            pictures.append("data:image/jpeg;base64,\(data.base64EncodedString())")
+            try? FileManager.default.removeItem(at: file)
+        }
+        try? FileManager.default.removeItem(at: folder.appendingPathComponent("shared.json"))
+        guard !pictures.isEmpty else { return }
+
+        let payload: [String: Any] = ["words": words, "pictures": pictures]
+        guard
+            let json = try? JSONSerialization.data(withJSONObject: payload),
+            let text = String(data: json, encoding: .utf8)
+        else { return }
+
+        let script = """
+        (function () {
+          window.__promeShared = \(text);
+          history.pushState({}, '', '/app/connect');
+          window.dispatchEvent(new PopStateEvent('popstate'));
+          window.dispatchEvent(new CustomEvent('prome:shared'));
+        })();
+        """
+        web.evaluateJavaScript(script)
     }
 
     // MARK: - Shortcuts from the home screen

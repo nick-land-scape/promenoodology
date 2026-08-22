@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Photo from "../Photo";
 import type { Member, Post } from "@/lib/content";
 import {
@@ -191,6 +191,40 @@ function Composer({ meName }: { meName: string }) {
   const [pending, start] = useTransition();
 
   const me = supabaseUserFolder();
+
+  /* Photographs shared to the app from somewhere else on the phone.
+   *
+   * The native side leaves them on `window.__promeShared` and shouts once, then
+   * navigates here — so this listens for the shout and also looks on mount, for
+   * the cold start where the app arrives after the message. Everything after that
+   * is the ordinary composer: the same upload, the same eight-picture limit, the
+   * same post button. Nothing is sent anywhere until somebody presses it. */
+  useEffect(() => {
+    const collect = () => {
+      const box = (window as { __promeShared?: { words?: string; pictures?: string[] } })
+        .__promeShared;
+      if (!box?.pictures?.length) return;
+      delete (window as { __promeShared?: unknown }).__promeShared;
+
+      setOpen(true);
+      if (box.words) setWords((was) => was || box.words!);
+
+      const files = box.pictures.map((one, index) => {
+        const [head, body] = one.split(",");
+        const bytes = Uint8Array.from(atob(body), (letter) => letter.charCodeAt(0));
+        const type = /:(.*?);/.exec(head)?.[1] ?? "image/jpeg";
+        return new File([bytes], `shared-${index + 1}.jpg`, { type });
+      });
+      const carrier = new DataTransfer();
+      for (const file of files) carrier.items.add(file);
+      void take(carrier.files);
+    };
+
+    collect();
+    window.addEventListener("prome:shared", collect);
+    return () => window.removeEventListener("prome:shared", collect);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function take(chosen: FileList | null) {
     const pictures = Array.from(chosen ?? []);
