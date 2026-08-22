@@ -93,21 +93,22 @@ export default async function AppHome() {
             <li key={item.date + item.title}>
               <div className="row">
                 <span className="row-body">
-                  <span className="row-title">
-                    {item.title}
-                    {/* The one held at the top says why it is there. */}
-                    {item.pinned ? (
-                      <em className="row-pinned">kept at the top</em>
-                    ) : null}
+                  {/* The date beside the headline rather than under it: a note is
+                      three lines long, and a line of its own for six characters
+                      pushed the words that matter further down every one. */}
+                  <span className="row-titled">
+                    <span className="row-title">
+                      {item.title}
+                      {/* The one held at the top says why it is there. */}
+                      {item.pinned ? (
+                        <em className="row-pinned">kept at the top</em>
+                      ) : null}
+                    </span>
+                    <span className="row-when-said">{shortDate(item.date)}</span>
                   </span>
-                  <span className="row-meta">
-                    {[
-                      shortDate(item.date),
-                      item.by.length > 0 ? said(item.by) : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </span>
+                  {item.by.length > 0 ? (
+                    <span className="row-meta">{said(item.by)}</span>
+                  ) : null}
                   <p className="post-text" style={{ paddingTop: 4 }}>
                     {item.text}
                   </p>

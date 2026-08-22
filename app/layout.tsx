@@ -93,8 +93,21 @@ export const viewport: Viewport = {
  */
 const rememberTheThing = `
 try {
-  var choice = localStorage.getItem("promenood-paper");
-  document.documentElement.dataset.theme = choice === "dark" ? "dark" : "light";
+  var key = "promenood-paper";
+  var asked = window.matchMedia("(prefers-color-scheme: dark)");
+  var put = function () {
+    var choice = localStorage.getItem(key);
+    /* A choice made out loud wins. Otherwise the phone decides — which is what
+       people mean when they turn dark mode on: everything, not everything except
+       this. */
+    var dark = choice === "dark" || (choice !== "light" && asked.matches);
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+  };
+  put();
+  /* And it keeps following while the page is open: a phone on automatic switches
+     at sunset, and a page that only looked once is a page that is wrong from then
+     until it is reloaded. Anybody who has pressed the switch is unaffected. */
+  asked.addEventListener("change", put);
 } catch (e) { document.documentElement.dataset.theme = "light"; }
 `.trim();
 

@@ -73,9 +73,19 @@ export default function UpcomingEvents({ events, places }: Props) {
             {shown.map((event) => (
               <li key={event.id}>
                 <div className="row">
-                  <span className="row-date">
-                    <span className="row-day">{event.day}</span>
-                    <span className="row-month">{event.month}</span>
+                  {/* The day, on the picture.
+                      The date was a column and the photograph was another, which
+                      is two columns of furniture on either side of the words on a
+                      screen four hundred points wide. On the picture it is a stamp
+                      on a postcard, and the evening gets the width back. */}
+                  <span className={event.photo ? "row-when" : "row-when row-when-bare"}>
+                    {event.photo ? (
+                      <Photo src={event.photo.src} alt="" fill sizes="72px" />
+                    ) : null}
+                    <span className="row-date">
+                      <span className="row-day">{event.day}</span>
+                      <span className="row-month">{event.month}</span>
+                    </span>
                   </span>
                   <span className="row-body">
                     <span className="row-title">{event.title}</span>
@@ -92,11 +102,6 @@ export default function UpcomingEvents({ events, places }: Props) {
                       <span className="row-yes">you are coming</span>
                     ) : null}
                   </span>
-                  {event.photo ? (
-                    <span className="row-thumb">
-                      <Photo src={event.photo.src} alt="" fill sizes="58px" />
-                    </span>
-                  ) : null}
                 </div>
               </li>
             ))}

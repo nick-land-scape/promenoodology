@@ -28,19 +28,19 @@ export default async function DetailsPage() {
         title="who you are here"
         back="/app/account"
       />
-      {/* Which language you read us in, at the top of the screen that is about
-          you. It belongs with your name rather than with the settings: it is not
-          a preference about the app, it is how you would rather be spoken to. And
-          it is not the languages further down the form — those are what you speak,
-          so somebody can find whoever can talk to the neighbour who came out to
-          see what the noise was. */}
-      <ReadingIn
-        chosen={me.readsIn}
-        words={{ label: say("app.readingIn"), note: say("app.readingInNote") }}
-      />
-
       <Settling
         back="/app/account"
+        /* Which language we write to you in, as a field inside the form rather
+           than a section above it: it is an answer about you, of the same kind as
+           your name. Not the same as "languages" further down — those are what you
+           speak, so somebody can find whoever can talk to the neighbour who came
+           out to see what the noise was. */
+        language={
+          <ReadingIn
+            chosen={me.readsIn}
+            words={{ label: say("app.readingIn"), note: say("app.readingInNote") }}
+          />
+        }
         userId={me.userId}
         name={me.name}
         city={me.city}

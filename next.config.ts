@@ -17,7 +17,17 @@ const nextConfig: NextConfig = {
    * revalidates the paths it touched and that clears this too.
    */
   experimental: {
-    staleTimes: { dynamic: 30, static: 180 },
+    /* Five minutes, up from thirty seconds.
+     *
+     * What this buys is the second and every later visit to a tab: the router
+     * still has the screen and shows it with no round trip and no skeleton at
+     * all. Thirty seconds meant a member who read the news, looked at what's on
+     * and came back was served three fetches for two screens that had not
+     * changed. Anything anybody actually does — signing up, waving, posting —
+     * revalidates the paths it touches, which clears this too, so the risk is not
+     * staleness but a five-minute-old list of evenings that were published a
+     * moment ago. */
+    staleTimes: { dynamic: 300, static: 600 },
   },
   // The whole site is static — nothing here needs a server at request time.
   images: {

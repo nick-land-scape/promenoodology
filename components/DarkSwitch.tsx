@@ -14,6 +14,11 @@ import { useEffect, useState } from "react";
  * the word never says the opposite of what the screen is doing. The stored
  * choice is applied before paint by a script in the layout; this only offers the
  * switch.
+ *
+ * With no choice stored, the phone decides — dark mode on a device means dark
+ * mode everywhere, not everywhere except here. Pressing this writes a choice down
+ * and from then on the device is overruled on this browser, which is the right
+ * way round: an explicit press beats a system default.
  */
 
 export const THEME_KEY = "promenood-paper";

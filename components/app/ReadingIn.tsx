@@ -13,9 +13,11 @@ import { chooseLanguage } from "@/lib/site-actions/language";
  * asked again on a laptop — so this writes it on the account, and the account
  * follows them to both.
  *
- * Deliberately near "your personal information" rather than buried under
- * settings: it is a fact about how somebody wants to be spoken to, which is the
- * same kind of thing as their name.
+ * It sits *in* the form on "your personal information", as a field among the
+ * fields, because that is what it is: a fact about how somebody wants to be
+ * spoken to, of the same kind as their name and their city. Above the form as its
+ * own section it read as a setting for the app rather than as an answer about the
+ * person, and looked stuck to the top of the screen.
  *
  * It is not the same as the languages on your profile. Those are what you speak,
  * so that somebody can find whoever can talk to the neighbour who came out to
@@ -51,8 +53,8 @@ export default function ReadingIn({
   }
 
   return (
-    <section className="app-section">
-      <p className="app-label app-label-alone">{words.label}</p>
+    <div className="field">
+      <span className="field-label">{words.label}</span>
       <div className="reading-in">
         {LANGS.map((lang) => (
           <button
@@ -68,7 +70,7 @@ export default function ReadingIn({
           </button>
         ))}
       </div>
-      <p className="app-note">{words.note}</p>
-    </section>
+      <em className="field-said">{words.note}</em>
+    </div>
   );
 }

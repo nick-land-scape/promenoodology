@@ -230,32 +230,32 @@ export default function SignUpForm({
             ) : marked(event) ? (
               <span className="row-maybe">on your list</span>
             ) : null}
-          </span>
 
-          {/* One button, under the evening it is about. */}
-          <span className="row-does">
-            {coming(event) ? (
-              <button
-                type="button"
-                className="pill pill-small"
-                onClick={() => cancel(event)}
-                disabled={pending}
-              >
-                not coming
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="pill pill-small pill-solid"
-                onClick={() => {
-                  setOpen(open === event.id ? null : event.id);
-                  setSaid(null);
-                }}
-                disabled={pending}
-              >
-                {open === event.id ? "close" : "count me in"}
-              </button>
-            )}
+            {/* One button, under the evening it is about. */}
+            <span className="row-does">
+              {coming(event) ? (
+                <button
+                  type="button"
+                  className="pill pill-small"
+                  onClick={() => cancel(event)}
+                  disabled={pending}
+                >
+                  not coming
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="pill pill-small pill-solid"
+                  onClick={() => {
+                    setOpen(open === event.id ? null : event.id);
+                    setSaid(null);
+                  }}
+                  disabled={pending}
+                >
+                  {open === event.id ? "close" : "count me in"}
+                </button>
+              )}
+            </span>
           </span>
         </div>
 

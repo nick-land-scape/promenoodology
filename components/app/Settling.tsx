@@ -12,6 +12,8 @@ import { mediaUrl } from "@/lib/supabase/config";
 type Props = {
   /** Where to go when it is kept, and whether this is the first time. */
   back?: string;
+  /** The language field, handed in from the server where its words live. */
+  language?: React.ReactNode;
   first?: boolean;
   userId: string;
   name: string;
@@ -237,6 +239,9 @@ export default function Settling(props: Props) {
             placeholder="German, English, a little Italian"
           />
         </div>
+
+        {/* Which language we write to you in — a field, among the fields. */}
+        {props.language}
 
         <div className="field">
           <label htmlFor="who-birthday">birthday</label>
