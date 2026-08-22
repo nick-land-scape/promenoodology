@@ -1960,35 +1960,10 @@ body:has(.app-shell) {
   color: var(--muted);
 }
 
-/* The nine widths and indents, as on the website. */
-.wall li[data-v="0"],
-.wall li[data-v="4"] {
-  width: 100%;
-}
-.wall li[data-v="1"] {
-  width: 82%;
-  margin-left: 18%;
-}
-.wall li[data-v="2"] {
-  width: 93%;
-}
-.wall li[data-v="3"] {
-  width: 72%;
-}
-.wall li[data-v="5"] {
-  width: 88%;
-  margin-left: 12%;
-}
-.wall li[data-v="6"] {
-  width: 78%;
-  margin-left: 8%;
-}
-.wall li[data-v="7"] {
-  width: 96%;
-}
-.wall li[data-v="8"] {
-  width: 84%;
-}
+/* On a phone every photograph takes its column.
+   The website's nine widths and indents need four columns to read as a wall; in
+   two they read as things that have slipped. They come back on a tablet, below. */
+
 
 .told-card {
   display: block;
@@ -3661,6 +3636,36 @@ body:has(.app-shell) {
   /* And the walls get another column each. */
   .wall {
     columns: 3;
+  }
+
+  /* The nine widths and indents, as on the website. */
+  .wall li[data-v="0"],
+  .wall li[data-v="4"] {
+    width: 100%;
+  }
+  .wall li[data-v="1"] {
+    width: 82%;
+    margin-left: 18%;
+  }
+  .wall li[data-v="2"] {
+    width: 93%;
+  }
+  .wall li[data-v="3"] {
+    width: 72%;
+  }
+  .wall li[data-v="5"] {
+    width: 88%;
+    margin-left: 12%;
+  }
+  .wall li[data-v="6"] {
+    width: 78%;
+    margin-left: 8%;
+  }
+  .wall li[data-v="7"] {
+    width: 96%;
+  }
+  .wall li[data-v="8"] {
+    width: 84%;
   }
 
   .peek-photos {
