@@ -99,8 +99,11 @@ body:has(.app-shell) {
  * this screen for other reasons.
  */
 .is-scrolled .app-header {
-  padding-top: 4px;
-  padding-bottom: 4px;
+  /* The notch's inset stays. It is not padding, it is the part of the screen the
+     phone does not own — dropping it, as the first version of this rule did,
+     printed the title across the clock. */
+  padding-top: calc(3px + env(safe-area-inset-top));
+  padding-bottom: 6px;
   gap: 10px;
 }
 
