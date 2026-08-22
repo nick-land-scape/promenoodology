@@ -3232,8 +3232,18 @@ body:has(.app-shell) {
   background: none;
   text-align: left;
   font: inherit;
+  font-style: normal;
   color: inherit;
+  /* The same row is a button on the map and a link in the list of sheets, and a
+     link in this app is underlined by default — which turned a list of evenings
+     into a page of hyperlinks. */
+  text-decoration: none;
   cursor: pointer;
+}
+
+.everywhere-row:hover .row-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .everywhere-row-shot {
