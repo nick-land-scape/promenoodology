@@ -58,38 +58,6 @@ body:has(.app-shell) {
   }
 }
 
-/*
- * On a tablet the app takes the whole window.
- *
- * 560 points is a phone's reading width, and on a thirteen-inch iPad it left a
- * hand's width of paper down both sides with the bar stranded in the middle of
- * it — an app that had not been told what screen it was on. So it fills the
- * window: no maximum, no edges to draw, and a wider gutter so nothing is stuck
- * to the bezel. The one thing that does not stretch is a paragraph: running text
- * keeps a reading width of its own, because a line of Times a thousand points
- * long stops being a line and becomes a distance.
- */
-@media (min-width: 834px) {
-  .app-shell {
-    --gutter: 30px;
-  }
-
-  .app-column,
-  .tabbar {
-    max-width: none;
-    border-left: 0;
-    border-right: 0;
-  }
-
-  /* Prose keeps its own width inside the wide page. Lists, rows, walls of
-     photographs and the map all take the room; sentences do not. */
-  .app-note,
-  .app-book p,
-  .app-book-lead {
-    max-width: 34rem;
-  }
-}
-
 /* -------------------------------------------------------------------- header */
 
 /* Stays at the top while the screen scrolls under it. */
@@ -3021,4 +2989,43 @@ body:has(.app-shell) {
   font-style: italic;
   line-height: 1.35;
   color: var(--muted);
+}
+
+/* --------------------------------------------------------------- a tablet
+ *
+ * On a tablet the app takes the whole window.
+ *
+ * 560 points is a phone's reading width, and on a thirteen-inch iPad it left a
+ * hand's width of paper down both sides with the bar stranded in the middle of
+ * it — an app that had not been told what screen it was on. So it fills the
+ * window: no maximum, no edges to draw, and a wider gutter so nothing is stuck
+ * to the bezel. The one thing that does not stretch is a paragraph: running text
+ * keeps a reading width of its own, because a line of Times a thousand points
+ * long stops being a line and becomes a distance.
+ *
+ * At the end of the file on purpose: every rule here overrides a base rule
+ * further up, and CSS settles ties by order rather than by intent. The first
+ * version of this block sat at the top and lost the bar's width straight back to
+ * the base rule — so the app went full width on an iPad with its bar still
+ * stranded at a phone's width in the middle of the screen.
+ */
+@media (min-width: 834px) {
+  .app-shell {
+    --gutter: 30px;
+  }
+
+  .app-column,
+  .tabbar {
+    max-width: none;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  /* Prose keeps its own width inside the wide page. Lists, rows, walls of
+     photographs and the map all take the room; sentences do not. */
+  .app-note,
+  .app-book p,
+  .app-book-lead {
+    max-width: 34rem;
+  }
 }
