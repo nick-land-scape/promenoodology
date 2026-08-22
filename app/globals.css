@@ -16,6 +16,11 @@
   --rule: rgba(0, 0, 0, 0.34);
   /* For anything said quietly: a hint under a field, a label beside a link. */
   --quiet: #6f6a63;
+  /* Darker than quiet, for a line of prose that is secondary but still being
+     read — the about page's statement, for instance. */
+  --quiet-strong: #4a4640;
+  /* Lighter than quiet, for the labels beside things rather than the things. */
+  --faint: #a09a92;
   /* A breath of ink on the paper: the back of a tag, a stripe on a table. These
      were written as rgba(0,0,0,0.05) in a dozen places, which is the same thing
      said badly — and invisible the moment the paper goes dark. */
@@ -269,7 +274,7 @@ img {
   font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .session-face img {
@@ -347,7 +352,7 @@ img {
   font-size: 1.15rem;
   line-height: 1.5;
   font-style: italic;
-  color: #4a4640;
+  color: var(--quiet-strong);
   text-wrap: pretty;
 }
 
@@ -406,7 +411,7 @@ img {
   max-width: 42rem;
   margin: 0 0 20px;
   font-style: italic;
-  color: #6f6a63;
+  color: var(--quiet);
   font-size: 0.95em;
 }
 
@@ -438,7 +443,7 @@ img {
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .cite-text {
@@ -489,7 +494,7 @@ img {
   display: grid;
   place-items: center;
   font-size: 1.4rem;
-  color: #9a948c;
+  color: var(--faint);
 }
 
 .brick-who {
@@ -500,7 +505,7 @@ img {
 .brick-quiet .brick-who {
   font-weight: normal;
   font-style: italic;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .brick-amount {
@@ -510,7 +515,7 @@ img {
 .brick-when {
   font-size: 0.85em;
   font-style: italic;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .brick-note {
@@ -563,7 +568,7 @@ img {
 .quote-meta {
   display: block;
   font-size: 0.85em;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 /* ---------------------------------------------------------------- handbook */
@@ -642,7 +647,7 @@ img {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .support input,
@@ -659,7 +664,7 @@ img {
 
 .support input::placeholder,
 .support textarea::placeholder {
-  color: #a09a92;
+  color: var(--faint);
   font-style: italic;
 }
 
@@ -730,7 +735,7 @@ img {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .auth-form input:not([type="checkbox"]) {
@@ -744,7 +749,7 @@ img {
 }
 
 .auth-form input::placeholder {
-  color: #a09a92;
+  color: var(--faint);
   font-style: italic;
 }
 
@@ -812,7 +817,7 @@ img {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .auth-or::before,
@@ -905,7 +910,7 @@ img {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #a09a92;
+  color: var(--faint);
 }
 
 .me-portrait-box em {
@@ -941,7 +946,7 @@ img {
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.4;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 /* Your number and the day you joined. Facts, so they are set like facts: the
@@ -961,7 +966,7 @@ img {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .me-facts dd {
@@ -1006,7 +1011,7 @@ img {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .code-boxes {
@@ -1055,7 +1060,7 @@ img {
   flex-direction: column;
   gap: 6px;
   font-size: 0.95em;
-  color: #6f6a63;
+  color: var(--quiet);
   line-height: 1.45;
 }
 
@@ -1625,7 +1630,7 @@ body:has(.hero) .contact {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #8a8a8a;
+  color: var(--faint);
   padding-bottom: 3px;
 }
 
@@ -1691,7 +1696,7 @@ body:has(.hero) .contact {
 .archive-item figcaption {
   font-size: 0.78em;
   font-style: italic;
-  color: #6f6a63;
+  color: var(--quiet);
   padding-top: 5px;
 }
 
@@ -1861,7 +1866,7 @@ body:has(.hero) .contact {
 .lightbox-count {
   font-style: italic;
   font-size: 0.85em;
-  color: #666;
+  color: var(--quiet);
   min-width: 4em;
   text-align: center;
 }
@@ -1897,6 +1902,8 @@ body:has(.hero) .contact {
   --hairline: rgba(242, 236, 225, 0.16);
   --rule: rgba(242, 236, 225, 0.42);
   --quiet: #a9a196;
+  --quiet-strong: #cfc7ba;
+  --faint: #8d857a;
   --wash: rgba(242, 236, 225, 0.06);
   --wash-soft: rgba(242, 236, 225, 0.035);
   --veil: rgba(20, 18, 15, 0.95);
@@ -2705,7 +2712,7 @@ html.has-top-bar {
   font-weight: 700;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .partners-row {
@@ -3680,7 +3687,7 @@ body:has(.hero) .edit-this {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .sheet-eyebrow {
@@ -3690,7 +3697,7 @@ body:has(.hero) .edit-this {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .sheet-hook {
@@ -3714,7 +3721,7 @@ body:has(.hero) .edit-this {
   padding-top: 6px;
   font-size: 0.82em;
   font-style: italic;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 /* The two halves of a sheet: what to find, and what to do with it. Side by side
@@ -3756,7 +3763,7 @@ body:has(.hero) .edit-this {
 .sheet-aside {
   margin: 14px 0 0;
   font-style: italic;
-  color: #6f6a63;
+  color: var(--quiet);
   font-size: 0.92em;
 }
 
@@ -3802,7 +3809,7 @@ body:has(.hero) .edit-this {
 
 .sheet-pass {
   font-size: 0.92em;
-  color: #6f6a63;
+  color: var(--quiet);
 }
 
 .sheet-address {
@@ -4283,12 +4290,14 @@ body:has(.hero) .edit-this {
    with flags in it — a flag is a country and a language is not, and with two of
    anything a list you can read beats a control you have to open. */
 
+/* Two words, beside "make it dark": both are about how you are reading. It used
+   to be the last line of the menu, under the handbook, with a rule above it —
+   which on a phone was three scrolls from anywhere anybody would look. */
 .nav-langs {
   display: flex;
-  gap: 10px;
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid var(--hairline);
+  align-items: center;
+  gap: 8px;
+  margin-right: 4px;
 }
 
 .nav-langs a,

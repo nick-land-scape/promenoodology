@@ -34,8 +34,18 @@ body:has(.app-shell) {
 
 .app-shell {
   --gutter: 18px;
-  --hair: rgba(0, 0, 0, 0.14);
-  --muted: #6f6a63;
+  /*
+   * The two greys of this app, taken from the site's own palette rather than
+   * written out again here.
+   *
+   * They were literals — a hairline of `rgba(0, 0, 0, 0.14)` and a muted
+   * `#6f6a63` — which is the same colour said twice and, on dark paper, said
+   * wrongly: black hairlines on a dark ground are invisible, and a grey chosen
+   * against white is the wrong grey against black. The tokens they now point at
+   * have a dark twin, so the app follows the paper without knowing it has.
+   */
+  --hair: var(--hairline);
+  --muted: var(--quiet);
   --tabbar: 58px;
 
   min-height: 100vh;
@@ -481,7 +491,7 @@ body:has(.app-shell) {
   width: 72px;
   aspect-ratio: 1;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
 }
 
 .row-when img {
@@ -536,7 +546,7 @@ body:has(.app-shell) {
   width: 58px;
   height: 58px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
 }
 
 .row-thumb img {
@@ -724,7 +734,7 @@ body:has(.app-shell) {
   position: relative;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
   margin-bottom: 7px;
 }
 
@@ -926,7 +936,7 @@ body:has(.app-shell) {
   margin-top: 10px;
   aspect-ratio: 3 / 2;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
 }
 
 .post-photo img {
@@ -1333,7 +1343,7 @@ body:has(.app-shell) {
   aspect-ratio: 3 / 4;
   padding: 0;
   border: 1px solid var(--ink);
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--wash);
   cursor: pointer;
   overflow: hidden;
 }
@@ -1770,7 +1780,7 @@ body:has(.app-shell) {
   place-items: center;
   padding: 8px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.03);
+  background: var(--wash-soft);
   font-family: var(--sans);
   font-size: 0.52rem;
   font-weight: 700;
@@ -3392,7 +3402,7 @@ body:has(.app-shell) {
   width: 88px;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
 }
 
 .everywhere-row-shot img {
@@ -3466,7 +3476,7 @@ body:has(.app-shell) {
   position: relative;
   display: block;
   aspect-ratio: 16 / 9;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--wash);
 }
 
 .everywhere-said-cover img {

@@ -66,9 +66,6 @@ export default function Nav({
           </Link>
         ))}
 
-        {/* Under the handbook, at the foot of the quiet group: it is a thing
-            about how you are reading rather than a place to go. */}
-        <LanguageSwitch lang={lang} />
         {/* The way into the back of the house used to be here. It is in the
             strip along the top now, on every page, where it also says who you
             are — two links to the same place is one link too many. */}
@@ -89,6 +86,12 @@ export default function Nav({
        * questions, and CSS answers the second one.
        */}
       <div className="nav-session">
+        {/* Language and paper together, because they are the same kind of thing:
+            how you are reading rather than where you are going. On a phone that
+            is the strip along the top, which is where somebody looks for it —
+            under the handbook at the foot of a long menu it was three scrolls
+            from anywhere. */}
+        <LanguageSwitch lang={lang} />
         <DarkSwitch />
         <SessionButton />
       </div>
