@@ -18,6 +18,10 @@ export type Pin = {
   fed: number | null;
   /** Something to look at in the list. */
   cover: string | null;
+  /** The line under a story's title. */
+  hook: string;
+  /** Its first paragraph. */
+  lead: string;
 };
 
 /** How much of the sheet stays in sight when it is down. */
@@ -166,9 +170,12 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           setStop(0);
         });
         made.addControl(new AttributionControl({ compact: true }), "top-left");
+        /* Bottom right, above the sheet. Top right put them under the paper
+           gradient the floating switcher sits on, where they were a pair of grey
+           ghosts nobody could see, let alone press. */
         made.addControl(
           new NavigationControl({ showCompass: false }),
-          "top-right",
+          "bottom-right",
         );
 
         const edges = new LngLatBounds();
@@ -344,7 +351,9 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
       <div className="everywhere-map" ref={holder} />
 
       {/* What was pressed. Above the sheet rather than on the pin: a bubble on a
-          phone covers the thing it is about. */}
+          phone covers the thing it is about. It carries the whole opening of the
+          story — photograph, line, first paragraph — because "read it" is a big
+          ask from one tap on a dot, and this is enough to decide by. */}
       {chosen ? (
         <div className="everywhere-said">
           <button
@@ -355,25 +364,48 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           >
             ×
           </button>
-          <p className="everywhere-what">{chosen.title}</p>
-          <p className="row-meta">
-            {[
-              chosen.where,
-              chosen.when,
-              chosen.fed ? `${chosen.fed} ate` : null,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-          {chosen.slug ? (
-            <Link className="pill pill-small" href={`/app/read/${chosen.slug}`}>
-              read it
-            </Link>
-          ) : chosen.ahead ? (
-            <Link className="pill pill-small" href="/app/events">
-              it is still to come
-            </Link>
+
+          {chosen.cover ? (
+            <span className="everywhere-said-cover">
+              <Photo
+                src={chosen.cover}
+                alt=""
+                fill
+                sizes="(max-width: 833px) 100vw, 520px"
+              />
+            </span>
           ) : null}
+
+          <div className="everywhere-said-words">
+            <p className="everywhere-what">{chosen.title}</p>
+            {chosen.hook ? (
+              <p className="everywhere-hook">{chosen.hook}</p>
+            ) : null}
+            <p className="row-meta">
+              {[
+                chosen.where,
+                chosen.when,
+                chosen.fed ? `${chosen.fed} ate` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+            {chosen.lead ? (
+              <p className="everywhere-lead">{chosen.lead}</p>
+            ) : null}
+            {chosen.slug ? (
+              <Link
+                className="pill pill-small"
+                href={`/app/read/${chosen.slug}`}
+              >
+                read it
+              </Link>
+            ) : chosen.ahead ? (
+              <Link className="pill pill-small" href="/app/events">
+                it is still to come
+              </Link>
+            ) : null}
+          </div>
         </div>
       ) : null}
 

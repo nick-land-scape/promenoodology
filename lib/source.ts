@@ -731,6 +731,10 @@ export type Placed = {
   fed: number | null;
   /** Something to look at in the list beside the map. */
   cover: string | null;
+  /** The story's own line under its title, where it has one. */
+  hook: string;
+  /** Its first paragraph, for the card that opens when a pin is pressed. */
+  lead: string;
 };
 
 /**
@@ -799,10 +803,12 @@ export async function getEverywhere(): Promise<Placed[]> {
     slug: story.slug,
     ahead: false,
     fed: story.people_fed,
-    /* A story's cover comes from its photographs, which are already read by the
-       screen that asks for this — so it is filled in there rather than fetched a
-       second time here. */
+    /* A story's cover, line and first paragraph come from the story itself,
+       which the screen asking for this has already read — so they are filled in
+       there rather than fetched a second time here. */
     cover: null,
+    hook: "",
+    lead: "",
   }));
 
   for (const event of events ?? []) {
@@ -820,6 +826,8 @@ export async function getEverywhere(): Promise<Placed[]> {
       ahead: event.happens_on >= today,
       fed: event.people_fed,
       cover: event.photo_path ? mediaUrl(event.photo_path) : null,
+      hook: "",
+      lead: "",
     });
   }
 

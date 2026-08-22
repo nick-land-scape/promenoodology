@@ -39,7 +39,19 @@ export default async function ReadPage({
     getEverywhere(),
   ]);
 
-  const covers = new Map(stories.map((story) => [story.slug, story.cover?.src ?? null]));
+  /* What the map's card shows when a pin is pressed: the photograph, the line
+     under the title and the first paragraph — all of it already read for the list
+     of stories above, so the map costs no second journey to the database. */
+  const told = new Map(
+    stories.map((story) => [
+      story.slug,
+      {
+        cover: story.cover?.src ?? null,
+        hook: story.subtitle ?? "",
+        lead: story.lead ?? "",
+      },
+    ]),
+  );
 
   return (
     <>
@@ -76,9 +88,9 @@ export default async function ReadPage({
           slug: pin.slug,
           ahead: pin.ahead,
           fed: pin.fed,
-          /* A story's cover, taken from the stories this screen has already read
-             rather than fetched again for the map's sake. */
-          cover: pin.cover ?? (pin.slug ? (covers.get(pin.slug) ?? null) : null),
+          cover: pin.cover ?? (pin.slug ? (told.get(pin.slug)?.cover ?? null) : null),
+          hook: pin.slug ? (told.get(pin.slug)?.hook ?? "") : "",
+          lead: pin.slug ? (told.get(pin.slug)?.lead ?? "") : "",
         }))}
       />
     </>

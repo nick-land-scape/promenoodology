@@ -99,3 +99,13 @@ export function BoneSwitcher() {
     </div>
   );
 }
+
+/** The little one inside a view: two words, as the stories have. */
+export function BoneSmallSwitcher() {
+  return (
+    <div className="waiting-switcher waiting-switcher-small">
+      <Bone w={92} h={30} round />
+      <Bone w={104} h={30} round />
+    </div>
+  );
+}
