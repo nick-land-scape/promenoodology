@@ -79,6 +79,16 @@ export default function RowsEditor({
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
   const [picking, setPicking] = useState<{ id: string; key: string } | null>(null);
+
+  /*
+   * Which language you are typing in, where this table has another one.
+   *
+   * One toggle rather than two of every field: the field stays where it is and
+   * changes what it is holding, with the English showing through as the
+   * placeholder — which is what the site does with it when the French is empty.
+   */
+  const [saying, setSaying] = useState<"en" | "fr">("en");
+  const inFrench = Boolean(spec.translates) && saying === "fr";
   const [pending, start] = useTransition();
 
   const changed = useMemo(() => {
@@ -93,6 +103,33 @@ export default function RowsEditor({
   function edit(id: string, key: string, value: RowValues[string]) {
     setRows((list) => list.map((row) => (row.id === id ? { ...row, [key]: value } : row)));
     setJustSaved(false);
+  }
+
+  /** The French of one field, kept beside the English in the row's own `fr`. */
+  function editFrench(row: Row, key: string, value: string) {
+    const had = (row.fr && typeof row.fr === "object" ? row.fr : {}) as Record<string, string>;
+    edit(row.id, "fr", { ...had, [key]: value } as unknown as RowValues[string]);
+  }
+
+  /** What is in a field, and where what you type into it goes. */
+  function saying_(row: Row, key: string) {
+    const english = String(row[key] ?? "");
+    const translated = Boolean(spec.translates?.includes(key));
+    if (!inFrench || !translated) {
+      return {
+        value: english,
+        said: (next: string) => edit(row.id, key, next),
+        placeholder: undefined as string | undefined,
+        lang: undefined as string | undefined,
+      };
+    }
+    const had = (row.fr && typeof row.fr === "object" ? row.fr : {}) as Record<string, string>;
+    return {
+      value: had[key] ?? "",
+      said: (next: string) => editFrench(row, key, next),
+      placeholder: english,
+      lang: "fr",
+    };
   }
 
   function save() {
@@ -156,13 +193,14 @@ export default function RowsEditor({
     const value = row[column.key];
 
     if (column.kind === "long") {
-      const text = String(value ?? "");
+      const now = saying_(row, column.key);
       return (
         <textarea
-          value={text}
-          rows={Math.min(8, Math.max(2, Math.ceil(text.length / 80)))}
-          placeholder={column.placeholder}
-          onChange={(event) => edit(row.id, column.key, event.target.value)}
+          value={now.value}
+          rows={Math.min(8, Math.max(2, Math.ceil(now.value.length / 80)))}
+          placeholder={now.placeholder ?? column.placeholder}
+          lang={now.lang}
+          onChange={(event) => now.said(event.target.value)}
         />
       );
     }
@@ -355,11 +393,13 @@ export default function RowsEditor({
       );
     }
 
+    const now = saying_(row, column.key);
     return (
       <input
-        value={String(value ?? "")}
-        placeholder={column.placeholder}
-        onChange={(event) => edit(row.id, column.key, event.target.value)}
+        value={now.value}
+        placeholder={now.placeholder ?? column.placeholder}
+        lang={now.lang}
+        onChange={(event) => now.said(event.target.value)}
       />
     );
   }
@@ -371,14 +411,34 @@ export default function RowsEditor({
       {/* Beside the page's title, where every other section's one action is.
           It sat above the list, which put the way to make something in the
           same place as the first of the things already made. */}
-      {alone ? null : (
-        <InHead>
+      <InHead>
+        {spec.translates ? (
+          <span className="admin-saying">
+            {(["en", "fr"] as const).map((one) => (
+              <button
+                key={one}
+                type="button"
+                className="admin-flag"
+                aria-pressed={saying === one}
+                onClick={() => setSaying(one)}
+                title={
+                  one === "en"
+                    ? "The words the site is written in"
+                    : "The French. Anything left empty shows the English instead."
+                }
+              >
+                {one === "en" ? "English" : "Français"}
+              </button>
+            ))}
+          </span>
+        ) : null}
+        {alone ? null : (
           <button type="button" className="admin-btn" onClick={add} disabled={pending}>
             <Icon name="plus" />
             add {spec.one}
           </button>
-        </InHead>
-      )}
+        )}
+      </InHead>
 
       {rows.length === 0 ? (
         <Empty>Nothing here yet.</Empty>
@@ -437,10 +497,15 @@ export default function RowsEditor({
                 <div className="admin-rowhead-name">
                   <input
                     className="admin-rowhead-input"
-                    value={String(row[spec.title] ?? "")}
-                    placeholder={spec.columns.find((c) => c.key === spec.title)?.placeholder ?? "a name"}
+                    value={saying_(row, spec.title).value}
+                    placeholder={
+                      saying_(row, spec.title).placeholder ??
+                      spec.columns.find((c) => c.key === spec.title)?.placeholder ??
+                      "a name"
+                    }
+                    lang={saying_(row, spec.title).lang}
                     aria-label={spec.columns.find((c) => c.key === spec.title)?.label ?? "name"}
-                    onChange={(event) => edit(row.id, spec.title, event.target.value)}
+                    onChange={(event) => saying_(row, spec.title).said(event.target.value)}
                   />
                   <p className="admin-panel-hint">
                     {[

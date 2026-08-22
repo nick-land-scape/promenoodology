@@ -100,6 +100,14 @@ export type TableSpec = {
    */
   pinned?: string;
   /**
+   * Which of this table's columns can be said in another language.
+   *
+   * Named rather than inferred: a date is not translated, a number is not
+   * translated, and "which story this belongs to" is a key. Only the words.
+   * A table with none of these is a table with nothing to translate.
+   */
+  translates?: string[];
+  /**
    * Is a brand-new row on the site straight away?
    *
    * An evening is not: it is being planned, and a half-written date and place
@@ -140,6 +148,7 @@ export const TABLES: Record<TableName, TableSpec> = {
 
   news: {
     table: "news",
+    translates: ["title", "text"],
     // "add news", because that is what the section is called. "Add a note" had
     // people looking for notes.
     one: "news",

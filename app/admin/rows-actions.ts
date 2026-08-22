@@ -29,6 +29,24 @@ function clean(table: TableName, values: RowValues): RowValues {
   const out: RowValues = {};
 
   for (const [key, value] of Object.entries(values)) {
+    /* The other language, if this table has one. Only the columns named as
+       translatable, only strings, and only ones with something in them: the
+       fallback rests on a key being absent meaning "nobody has translated
+       this", so an empty box must leave nothing behind. */
+    if (key === "fr") {
+      const can = TABLES[table].translates;
+      if (!can) continue;
+      const said = value && typeof value === "object" && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : {};
+      const french: Record<string, string> = {};
+      for (const column of can) {
+        const one = said[column];
+        if (typeof one === "string" && one.trim()) french[column] = one.trim();
+      }
+      out[key] = french as unknown as RowValues[string];
+      continue;
+    }
     if (!allowed.has(key)) continue;
     const kind = kindOf(table, key);
     const column = { kind } as { kind: ReturnType<typeof kindOf> };

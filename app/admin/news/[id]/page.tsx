@@ -13,7 +13,7 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
 
   const { data: note } = await supabase
     .from("news")
-    .select("id, published_on, title, text, authors, pinned, published")
+    .select("id, published_on, title, text, authors, pinned, published, fr")
     .is("deleted_at", null)
     .eq("id", id)
     .maybeSingle<Row>();
