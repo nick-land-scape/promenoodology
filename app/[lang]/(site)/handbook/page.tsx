@@ -4,6 +4,7 @@ import Link from "next/link";
 import SupportForm from "@/components/SupportForm";
 import QuoteThis from "@/components/QuoteThis";
 import Handbook from "@/components/Handbook";
+import Linked from "@/components/Linked";
 import { getFrench, getHandbookPages, getPage, getPageHead } from "@/lib/source";
 import { speaking } from "@/lib/words";
 import { siteUrl } from "@/lib/site";
@@ -73,7 +74,7 @@ export default async function HandbookPage({ params }: { params: Promise<{ lang:
               </h2>
             ) : (
               <p key={index} className="handbook-text">
-                {block.text}
+                <Linked>{block.text}</Linked>
               </p>
             ),
           )}

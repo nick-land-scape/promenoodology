@@ -20,13 +20,23 @@ export default function JoinToTakePart({
   signUpEmail,
   lang,
   say,
+  tight = false,
 }: {
   signUpEmail?: string;
   lang: Lang;
   say: Said;
+  /**
+   * In the header rather than in the page.
+   *
+   * The same two controls, with the paragraph under them left off: at the top of
+   * the page they sit beside the title, and three lines of explanation beside a
+   * title is a title nobody reads. The explanation is where it was, at the foot,
+   * with the practical bits.
+   */
+  tight?: boolean;
 }) {
   return (
-    <section className="taking-part">
+    <section className={tight ? "taking-part taking-part-tight" : "taking-part"}>
       <span className="taking-part-does">
         <button type="button" className="pill pill-solid" disabled aria-disabled="true">
           {say("part.countMeIn")}
@@ -45,6 +55,7 @@ export default function JoinToTakePart({
         </button>
       </span>
 
+      {tight ? null : (
       <p className="taking-part-why">
         {say("part.why")}{" "}
         <Link href="/app/enter">{say("part.join")}</Link> {say("part.bothWork")}
@@ -56,6 +67,7 @@ export default function JoinToTakePart({
           </>
         ) : null}
       </p>
+      )}
     </section>
   );
 }

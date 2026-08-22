@@ -6,6 +6,7 @@ import InHead from "@/components/admin/InHead";
 import Picker from "@/components/admin/Picker";
 import Thumb from "@/components/admin/Thumb";
 import Uploader from "@/components/admin/Uploader";
+import When from "@/components/admin/When";
 import {
   Button,
   Chosen,
@@ -472,10 +473,13 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                   <span className="admin-said">{person.birthday || "—"}</span>
                 </Field>
                 <Field label="since">
-                  <input
-                    type="date"
-                    value={person.joined.slice(0, 10)}
-                    onChange={(event) => edit(person.id, { joined: event.target.value })}
+                  <When
+                    label="joined"
+                    date={person.joined.slice(0, 10)}
+                    time=""
+                    dayOnly
+                    empty="choose a day"
+                    onChange={(day) => edit(person.id, { joined: day })}
                   />
                 </Field>
                 <Field label="may look after the site">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import FlyerBook from "@/components/FlyerBook";
 import JoinToTakePart from "@/components/JoinToTakePart";
+import Linked from "@/components/Linked";
 import Photo from "@/components/Photo";
 import StoryBody from "@/components/StoryBody";
 import type { Slide } from "@/lib/content";
@@ -82,21 +83,51 @@ export default async function EventPage({ params }: Params) {
 
   return (
     <main className="page">
-      <header className="story-header">
-        {/* The way back, and it goes to the list this came from rather than to
-            wherever the browser happened to be. Top left, where a back is. */}
-        <p className="crumb">
-          <Link href={at(lang, "/events")} className="event-back">
-            ← {say("event.allEvents")}
-          </Link>
-        </p>
+      {/*
+       * The top of the evening, and it stays there.
+       *
+       * Everything you can *do* about this evening is up here now — look through
+       * the flyer, say you are coming, keep it on your list — because on a page
+       * this long they were at the foot, five screens past the point where
+       * somebody decides. It sticks so that the decision is never off screen.
+       */}
+      <header className="story-header event-top">
+        <div className="event-top-row">
+          {/* The way back, and it goes to the list this came from rather than to
+              wherever the browser happened to be. Top left, where a back is. */}
+          <p className="crumb">
+            <Link href={at(lang, "/events")} className="event-back">
+              ← {say("event.allEvents")}
+            </Link>
+          </p>
+
+          <span className="event-top-does">
+            {event.flyer ? (
+              <FlyerBook
+                src={event.flyer}
+                title={event.title}
+                words={{
+                  open: say("event.lookThrough"),
+                  take: say("event.takeAsPdf"),
+                  before: say("book.pageBefore"),
+                  after: say("book.nextPage"),
+                }}
+              />
+            ) : null}
+            {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} tight /> : null}
+          </span>
+        </div>
         <h1 className="page-title">{event.title}</h1>
         {event.subtitle ? <p className="story-hook">{event.subtitle}</p> : null}
         <p className="story-meta">
           {[when(event), event.place, event.address].filter(Boolean).join(" · ")}
           {over ? ` · ${say("event.itHasBeen")}` : null}
         </p>
-        {event.lead ? <p className="event-lead">{event.lead}</p> : null}
+        {event.lead ? (
+          <p className="event-lead">
+            <Linked>{event.lead}</Linked>
+          </p>
+        ) : null}
       </header>
 
       {event.photo ? (
@@ -126,7 +157,11 @@ export default async function EventPage({ params }: Params) {
                     .join(", ")}
                 </p>
                 {day.title ? <h3 className="event-day-name">{day.title}</h3> : null}
-                {day.what ? <p className="story-text">{day.what}</p> : null}
+                {day.what ? (
+                  <p className="story-text">
+                    <Linked>{day.what}</Linked>
+                  </p>
+                ) : null}
               </li>
             ))}
           </ol>
@@ -184,28 +219,18 @@ export default async function EventPage({ params }: Params) {
               not want to send them a link, they want the thing to print. */}
         </dl>
 
-        {/* The flyer, both ways: looked through here, or taken away to print.
-            The reader who wants to see it and the reader who wants to put it up
-            in a launderette are not the same person. */}
-        {event.flyer ? (
-          <div className="event-flyer">
-            <FlyerBook src={event.flyer} title={event.title} words={{ open: say("event.lookThrough"), take: say("event.takeAsPdf"), before: say("book.pageBefore"), after: say("book.nextPage") }} />
-            <a
-              className="event-flyer-take"
-              href={event.flyer}
-              download
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {say("event.takeAsPdf")}
-            </a>
-          </div>
-        ) : null}
-
         {/* What a member could do about this, and what it takes to be one. */}
         {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} /> : null}
 
-        {event.note ? <p className="story-text">{event.note}</p> : null}
+        {event.note ? (
+          <p className="story-text">
+            <Linked>{event.note}</Linked>
+          </p>
+        ) : null}
+
+        {/* Why the two buttons at the top are grey, said once, where somebody
+            who has read this far will look for it. */}
+        {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} /> : null}
 
         {/* What is still wanted, and it recruits itself: somebody reading this
             page is exactly the person who owns a pot big enough for forty. */}

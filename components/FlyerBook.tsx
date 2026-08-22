@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { PageFlip } from "page-flip";
 import { pagesOf } from "@/lib/pdf-pages";
 
@@ -21,6 +22,15 @@ import { pagesOf } from "@/lib/pdf-pages";
  * turning library moves those nodes into a structure of its own, and React
  * putting them back where it thinks they belong is what silently returns a book
  * to page one on every turn. Nothing React draws is ever inside the book.
+ *
+ * And the whole thing is hung on the body rather than where it is written. A
+ * cover over the page has to be above everything on it, and z-index cannot
+ * promise that from inside: any ancestor with a transform, a filter or an
+ * opacity of its own makes a stacking context, and inside one a z-index of two
+ * hundred competes only with its siblings. Worse, `position: fixed` inside a
+ * transformed ancestor is not fixed to the window at all. On the body there is
+ * nothing above it to be trapped by, on either the site or the back of the
+ * house.
  */
 export default function FlyerBook({
   src,
@@ -34,6 +44,10 @@ export default function FlyerBook({
   words: { open: string; take: string; before: string; after: string };
 }) {
   const [open, setOpen] = useState(false);
+  /* Where the cover is hung. Found after the first paint, because on the server
+     there is no body to hang it on. */
+  const [where, setWhere] = useState<HTMLElement | null>(null);
+  useEffect(() => setWhere(document.body), []);
   const [pages, setPages] = useState<string[]>([]);
   const [at, setAt] = useState(0);
   const [problem, setProblem] = useState("");
@@ -165,7 +179,8 @@ export default function FlyerBook({
         {words.open}
       </button>
 
-      {open ? (
+      {open && where
+        ? createPortal(
         <div
           className="flyer-over"
           role="dialog"
@@ -184,7 +199,11 @@ export default function FlyerBook({
             <header className="flyer-bar">
               <span className="flyer-name">{title}</span>
               <span className="flyer-does">
-                <a href={src} download target="_blank" rel="noopener noreferrer">
+                {/* The download lives in here now rather than beside the button
+                    that opens it: somebody who wants the file wants it after
+                    they have looked, and two offers of the same PDF on one page
+                    read as two different things. */}
+                <a className="flyer-take" href={src} download target="_blank" rel="noopener noreferrer">
                   {words.take}
                 </a>
                 <button type="button" onClick={() => setOpen(false)} aria-label="Close">
@@ -248,8 +267,10 @@ export default function FlyerBook({
               </footer>
             ) : null}
           </div>
-        </div>
-      ) : null}
+        </div>,
+            where,
+          )
+        : null}
     </>
   );
 }

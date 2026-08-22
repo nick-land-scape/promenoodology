@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AppHeader from "@/components/app/AppHeader";
 import Evening from "@/components/app/Evening";
+import Linked from "@/components/Linked";
 import Photo from "@/components/Photo";
 import { whenItIs } from "@/lib/app-data";
 import { myBookings, readingIn, requireMember, whoIsBringingWhat } from "@/lib/app/me";
@@ -66,7 +67,11 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
         {event.subtitle ? <p className="evening-hook">{event.subtitle}</p> : null}
         <p className="evening-when">{whenItIs(event)}</p>
         {event.address ? <p className="evening-where">{event.address}</p> : null}
-        {event.lead ? <p className="evening-lead">{event.lead}</p> : null}
+        {event.lead ? (
+          <p className="evening-lead">
+            <Linked>{event.lead}</Linked>
+          </p>
+        ) : null}
 
         {over ? (
           <p className="app-note">It has been. What is here is what it was.</p>
@@ -95,7 +100,11 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
                       .join(", ")}
                   </p>
                   {day.title ? <h3 className="evening-day-name">{day.title}</h3> : null}
-                  {day.what ? <p className="evening-text">{day.what}</p> : null}
+                  {day.what ? (
+                    <p className="evening-text">
+                      <Linked>{day.what}</Linked>
+                    </p>
+                  ) : null}
                 </li>
               ))}
             </ol>
@@ -114,7 +123,7 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
                 </h2>
               ) : block.kind === "text" ? (
                 <p key={index} className="evening-text">
-                  {block.words}
+                  <Linked>{block.words}</Linked>
                 </p>
               ) : block.kind === "photo" ? (
                 <figure key={index} className="evening-photo">

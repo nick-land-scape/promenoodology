@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { PageFlip } from "page-flip";
+import Linked from "./Linked";
 import type { Leaf } from "@/lib/source";
 
 /**
@@ -317,7 +318,7 @@ const Leaves = memo(function Leaves({
                 </h2>
               ) : (
                 <p key={at} className="handbook-text">
-                  {block.text}
+                  <Linked>{block.text}</Linked>
                 </p>
               ),
             )}

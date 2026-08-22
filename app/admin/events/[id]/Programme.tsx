@@ -1,6 +1,7 @@
 "use client";
 
-import { Bin, Field, Grip, Icon, Place, moved, useDragOrder } from "@/components/admin/ui";
+import When from "@/components/admin/When";
+import { Bin, Field, Icon } from "@/components/admin/ui";
 import { pretty } from "@/lib/admin/when";
 
 /**
@@ -16,6 +17,13 @@ import { pretty } from "@/lib/admin/when";
  * would *describe* these days and it is not what they are — one is a Sunday, one
  * starts at nine in the morning, one is the closing event with somebody else's
  * festival — so a rule would have to be argued with on nearly every one of them.
+ *
+ * They are not dragged, either. A programme has exactly one right order and the
+ * days themselves say what it is: the 22nd comes before the 29th whatever anybody
+ * drags. So they sort themselves, by day and then by the hour they start, and a
+ * day given a new date moves to where it belongs the moment it is given one. The
+ * save sorts them again on the way to the database, so the two can never
+ * disagree.
  *
  * An evening with nothing here is an ordinary evening on one day, which is most
  * of them: the day and the hour up in "when" say it, and nothing down here is
@@ -54,15 +62,18 @@ export default function Programme({
   /** Typing the French of these days rather than the English. */
   inFrench?: boolean;
 }) {
-  const move = (from: number, to: number) => {
-    const next = moved(days, from, to);
-    if (next !== days) onChange(next);
-  };
-
-  const { dropProps, handleProps, stateOf } = useDragOrder(days, move);
+  /** By the day, then by the hour. A day with no date yet stays at the back. */
+  const inOrder = (list: Session[]) =>
+    [...list].sort((a, b) => {
+      if (!a.happens_on) return 1;
+      if (!b.happens_on) return -1;
+      return (
+        a.happens_on.localeCompare(b.happens_on) || (a.starts_at || "").localeCompare(b.starts_at || "")
+      );
+    });
 
   const set = (id: string, patch: Partial<Session>) =>
-    onChange(days.map((day) => (day.id === id ? { ...day, ...patch } : day)));
+    onChange(inOrder(days.map((day) => (day.id === id ? { ...day, ...patch } : day))));
 
   /** The French of one field of one day, kept beside the English. */
   const setFrench = (day: Session, key: string, value: string) =>
@@ -78,23 +89,23 @@ export default function Programme({
 
       <ul className="admin-blocks">
         {days.map((day, index) => (
-          <li
-            key={day.id}
-            {...dropProps(day, index)}
-            className={["admin-block", "admin-block-day", stateOf(day)].filter(Boolean).join(" ")}
-          >
+          <li key={day.id} className="admin-block admin-block-day">
+            {/* The number is which day of it this is, and it is read rather than
+                set: the dates decide the order, not the other way round. */}
             <span className="admin-block-hold">
-              <Grip {...handleProps(day)} />
-              <Place index={index} total={days.length} onMove={move} />
+              <span className="admin-block-count">{index + 1}</span>
             </span>
 
             <span className="admin-block-body">
               <div className="admin-fields">
                 <Field label="the day">
-                  <input
-                    type="date"
-                    value={day.happens_on}
-                    onChange={(event) => set(day.id, { happens_on: event.target.value })}
+                  <When
+                    label="the day"
+                    date={day.happens_on}
+                    time=""
+                    dayOnly
+                    empty="choose a day"
+                    onChange={(chosen) => set(day.id, { happens_on: chosen })}
                   />
                 </Field>
                 <Field label="from — until" two>
@@ -169,8 +180,10 @@ export default function Programme({
           add a day
         </button>
         <p className="admin-note" style={{ margin: "8px 0 0" }}>
-          The first and last of these become the evening&rsquo;s own dates, so &ldquo;22 August to 20
-          September&rdquo; is never typed anywhere — it is what the days add up to.
+          They sort themselves by day and hour, so a new one can be added anywhere and given its
+          date afterwards. The first and last of them become the evening&rsquo;s own dates, so
+          &ldquo;22 August to 20 September&rdquo; is never typed anywhere — it is what the days add
+          up to.
         </p>
       </div>
     </>

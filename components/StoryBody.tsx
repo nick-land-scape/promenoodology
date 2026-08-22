@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Section, Slide, StoryBlock } from "@/lib/content";
 import { variantFor } from "@/lib/photo-layout";
 import Lightbox from "./Lightbox";
+import Linked from "./Linked";
 import Photo from "./Photo";
 
 /** How much larger than the original file a photo may be drawn. */
@@ -50,7 +51,7 @@ export default function StoryBody({ slides, sections, built = [] }: Props) {
               ) : null}
               {block.section.texts.map((text, index) => (
                 <p key={index} className="story-text">
-                  {text}
+                  <Linked>{text}</Linked>
                 </p>
               ))}
             </section>

@@ -206,11 +206,18 @@ export default function RowsEditor({
     }
 
     if (column.kind === "date") {
+      /* The same calendar as everywhere else in here, with no hour on it: a
+         note has a date, not a moment. The browser's own control gives every
+         machine a different shape and a different date format, which on a page
+         of otherwise identical fields reads as one field somebody forgot. */
       return (
-        <input
-          type="date"
-          value={String(value ?? "")}
-          onChange={(event) => edit(row.id, column.key, event.target.value)}
+        <When
+          label={column.label}
+          date={String(value ?? "")}
+          time=""
+          dayOnly
+          empty="choose a day"
+          onChange={(day) => edit(row.id, column.key, day)}
         />
       );
     }
