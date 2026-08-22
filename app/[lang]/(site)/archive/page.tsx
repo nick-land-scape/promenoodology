@@ -2,15 +2,32 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Archive, { type StoryFilter } from "@/components/Archive";
 import { getFilters, getPageHead, getQuotes, getResources, getStories } from "@/lib/source";
-import { isLang, PLAIN } from "@/lib/lang";
+import { isLang, PLAIN, type Lang } from "@/lib/lang";
+import { pageMetadata, say, type Bilingual } from "@/lib/seo";
 import { pageIsVisible } from "@/lib/site-pages";
 
-export const metadata: Metadata = {
-  title: "The archive",
-  description:
-    "Everything we keep: photographs at whatever size they came in, and the things people said, on one wall.",
-  alternates: { canonical: "/archive" },
+const TITLE: Bilingual = { en: "The archive", fr: "L’archive" };
+const ABOUT: Bilingual = {
+  en: "Everything we keep: photographs at whatever size they came in, and the things people said, on one wall.",
+  fr: "Tout ce que nous gardons : les photographies dans la taille où elles nous sont arrivées, et ce que les gens ont dit, sur un même mur.",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const head = await getPageHead("archive", lang);
+
+  return pageMetadata({
+    lang,
+    path: "/archive",
+    title: head.title || say(lang, TITLE),
+    description: head.lead || say(lang, ABOUT),
+  });
+}
 
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;

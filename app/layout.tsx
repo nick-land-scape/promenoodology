@@ -31,6 +31,8 @@ export const metadata: Metadata = {
   },
   description:
     "A simple social club, open to everyone. We cook, walk and put on small events that make a place feel like ours.",
+  applicationName: "promeNOODology",
+  publisher: "promeNOODology",
   openGraph: {
     title: "promeNOODology",
     description:
@@ -41,7 +43,34 @@ export const metadata: Metadata = {
     images: [{ url: "/opengraph-image.jpg", width: 1200, height: 630 }],
   },
   twitter: { card: "summary_large_image" },
-  alternates: { canonical: "/" },
+  /*
+   * Proving to Google and Bing that this site is ours.
+   *
+   * Both of them will hand over a string and ask for it back in the head of the
+   * front page before they will show anybody what they know about the site.
+   * Here rather than pasted into the markup so that getting verified is setting
+   * an environment variable and waiting for a build, rather than a commit — and
+   * so that a preview deployment, which is a different address, is not quietly
+   * claiming to be the live site.
+   *
+   * Unset, these are simply absent. Next drops an undefined field.
+   */
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION }
+      : undefined,
+  },
+  /*
+   * No canonical here, and that is the point.
+   *
+   * Metadata is inherited, so a canonical written at the root is the answer for
+   * every page that does not give its own — which meant every screen of the
+   * members' app, every page of /admin and anything new declared itself to be a
+   * copy of the front page. A canonical is a claim about one page; there is no
+   * such thing as a sitewide one. Each page under app/[lang] says its own,
+   * through lib/seo, along with where it lives in the other language.
+   */
 };
 
 export const viewport: Viewport = {

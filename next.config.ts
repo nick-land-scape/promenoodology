@@ -61,18 +61,13 @@ const nextConfig: NextConfig = {
       { source: "/munity/resources/index.html", destination: "/archive", permanent: true },
     ];
   },
-  // The three written pages are one route with three addresses: /privacy is a
-  // better thing to link to from an app store form than /legal/privacy, and a
-  // rewrite keeps the address the reader sees.
-  async rewrites() {
-    return [
-      { source: "/privacy", destination: "/legal/privacy" },
-      { source: "/support", destination: "/legal/support" },
-      { source: "/help", destination: "/legal/support" },
-      { source: "/imprint", destination: "/legal/imprint" },
-      { source: "/terms", destination: "/legal/terms" },
-    ];
-  },
+  /*
+   * The written pages' short addresses used to be rewritten here, and it never
+   * worked: the proxy turns /privacy into /en/privacy before Next looks at this
+   * list, so /privacy, /imprint, /terms, /support and /help all answered 404.
+   * They live in proxy.ts now, next to the language rewrite that was eating
+   * them — see WRITTEN there.
+   */
   async headers() {
     return [
       {

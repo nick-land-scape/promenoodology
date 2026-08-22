@@ -72,6 +72,28 @@ function hasNoLanguage(pathname: string) {
 }
 
 /**
+ * The short addresses the written pages are known by.
+ *
+ * /privacy is what goes in an app store form and a footer link; /legal/privacy
+ * is where the route lives. This used to be a rewrite in next.config.ts and
+ * that rewrite never once fired: by the time Next looked at it this proxy had
+ * already turned /privacy into /en/privacy, which matches nothing, so all five
+ * of them answered 404 — including the privacy policy two app stores had been
+ * given the address of.
+ *
+ * It belongs here rather than there for the same reason the language rewrite
+ * does. There is one place that decides what a path means, and a second place
+ * quietly disagreeing with it is how this happened.
+ */
+const WRITTEN: Record<string, string> = {
+  "/privacy": "/legal/privacy",
+  "/imprint": "/legal/imprint",
+  "/terms": "/legal/terms",
+  "/support": "/legal/support",
+  "/help": "/legal/support",
+};
+
+/**
  * Where a request goes to be read in a language.
  *
  * English has no prefix and never will: /events is the English page and the
@@ -79,25 +101,32 @@ function hasNoLanguage(pathname: string) {
  * been shared should not grow a segment. /en/events, if anybody types it, is
  * sent back to /events so there is one English address rather than two.
  *
- * French asks for itself by name and is already where it needs to be.
+ * French asks for itself by name and is already where it needs to be — unless
+ * it is one of the short addresses above, which is a name for a route rather
+ * than a route, in either language.
  */
 function language(request: NextRequest): { to: URL; redirect: boolean } | null {
   const { pathname } = request.nextUrl;
   if (hasNoLanguage(pathname)) return null;
 
   const [, first] = pathname.split("/");
+  const under = (lang: string, path: string) =>
+    new URL(`/${lang}${path === "/" ? "" : path}${request.nextUrl.search}`, request.url);
 
   // Already French, and already in the right place.
-  if (isLang(first) && first !== PLAIN) return null;
+  if (isLang(first) && first !== PLAIN) {
+    const rest = pathname.slice(first.length + 1) || "/";
+    const written = WRITTEN[rest];
+    return written ? { to: under(first, written), redirect: false } : null;
+  }
 
   // One English address, not two.
   if (first === PLAIN) {
     const rest = pathname.slice(PLAIN.length + 1) || "/";
-    return { to: new URL(rest, request.url), redirect: true };
+    return { to: new URL(`${rest}${request.nextUrl.search}`, request.url), redirect: true };
   }
 
-  const to = new URL(`/${PLAIN}${pathname === "/" ? "" : pathname}${request.nextUrl.search}`, request.url);
-  return { to, redirect: false };
+  return { to: under(PLAIN, WRITTEN[pathname] ?? pathname), redirect: false };
 }
 
 /**
@@ -120,9 +149,33 @@ function sendToFrench(request: NextRequest) {
   const [, first] = pathname.split("/");
   if (isLang(first)) return null;
 
+  // Never a crawler. See `aReader`.
+  if (!aReader(request)) return null;
+
   if (wouldRather(request) !== "fr") return null;
 
   return new URL(`/fr${pathname === "/" ? "" : pathname}${request.nextUrl.search}`, request.url);
+}
+
+/**
+ * Somebody, rather than something.
+ *
+ * The guess above is right for a person and wrong for a crawler, and wrong in a
+ * way that costs. A crawler asks for the English address, gets moved to the
+ * French one, and files the English page as a redirect — so the page that says
+ * it is canonical is a page nothing can reach without being sent somewhere
+ * else. Both languages are in the sitemap and each says where the other is;
+ * a crawler has been told, and does not need to be steered.
+ *
+ * Matched loosely and on purpose. A false positive costs one visitor one click
+ * on the language switch, which is the thing the switch is for; a false
+ * negative costs a page in the index.
+ */
+const NOT_A_PERSON =
+  /bot|crawler|spider|crawling|slurp|facebookexternalhit|embedly|quora link preview|whatsapp|telegram|discord|preview|scrape|curl|wget|python-requests|node-fetch|headless|lighthouse|gpt|claude|anthropic|perplexity|chatgpt|openai|applebot|bingpreview/i;
+
+function aReader(request: NextRequest) {
+  return !NOT_A_PERSON.test(request.headers.get("user-agent") ?? "");
 }
 
 /** Which language this reader would rather have. */

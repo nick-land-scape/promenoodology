@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { LANGS, at } from "@/lib/lang";
+import { LEGAL } from "@/lib/legal";
 import { SITE_URL } from "@/lib/site";
 import { getSitePages } from "@/lib/site-pages";
 import { getEvents, getSheets, getStories } from "@/lib/source";
@@ -37,17 +38,52 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const all = [...pages, ...stories, ...events, ...doing];
 
+  /* How much of the site each page is. The front page, then the pages that are
+     the point of it — what is on, and the sheets somebody can act on — then
+     everything else. Search engines treat this as a hint about our own site
+     rather than a claim about anybody else's, which is exactly what it is. */
+  const weight = (route: string) => {
+    if (route === "/") return 1;
+    if (route === "/events" || route === "/do-it-yourself") return 0.9;
+    return 0.7;
+  };
+
   /* Both languages, and each one saying where the other is.
    *
    * A French page that no search engine knows is French is a French page nobody
-   * French ever sees, which would make the whole exercise decorative. */
-  return all.flatMap((route) => {
-    const languages = { en: `${SITE_URL}${route}`, fr: `${SITE_URL}${at("fr", route)}` };
+   * French ever sees, which would make the whole exercise decorative.
+   *
+   * x-default with them: it is what a search engine shows somebody whose
+   * language matches neither, and without it that choice is made for us. */
+  const bilingual = all.flatMap((route) => {
+    const languages = {
+      en: `${SITE_URL}${route}`,
+      fr: `${SITE_URL}${at("fr", route)}`,
+      "x-default": `${SITE_URL}${route}`,
+    };
     return LANGS.map((lang) => ({
       url: `${SITE_URL}${at(lang, route)}`,
       changeFrequency: "monthly" as const,
-      priority: route === "/" ? 1 : 0.7,
+      priority: weight(route),
       alternates: { languages },
     }));
   });
+
+  /* The written pages, at the short addresses they are canonical at, and in
+     English only — they are written in English and served the same either way,
+     so listing a French copy would be listing a duplicate of a page we have
+     already said is a duplicate.
+
+     They were missing here altogether, which meant the pages an app store, a
+     bank and anybody checking who is behind this site go looking for were the
+     pages nothing pointed at. Low priority, because nobody arrives at a privacy
+     policy by accident — but a sitemap that leaves out the parts of a site that
+     establish who runs it leaves out the part that makes the rest credible. */
+  const written = LEGAL.map((page) => ({
+    url: `${SITE_URL}/${page.slug}`,
+    changeFrequency: "yearly" as const,
+    priority: 0.2,
+  }));
+
+  return [...bilingual, ...written];
 }

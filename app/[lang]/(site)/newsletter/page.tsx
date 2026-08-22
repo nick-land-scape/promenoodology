@@ -2,15 +2,33 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import NewsletterForm from "@/components/NewsletterForm";
-import { isLang, PLAIN } from "@/lib/lang";
+import { isLang, PLAIN, type Lang } from "@/lib/lang";
+import { pageMetadata, say, type Bilingual } from "@/lib/seo";
 import { pageIsVisible } from "@/lib/site-pages";
 import { getPageHead } from "@/lib/source";
 
-export const metadata: Metadata = {
-  title: "Newsletter",
-  description: "A short letter when there is something to come to. Nothing else.",
-  alternates: { canonical: "/newsletter" },
+const TITLE: Bilingual = { en: "Newsletter", fr: "La lettre" };
+const ABOUT: Bilingual = {
+  en: "A short letter when there is something to come to. Nothing else.",
+  fr: "Une courte lettre quand il y a quelque chose où venir. Rien d’autre.",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const head = await getPageHead("newsletter", lang);
+
+  return pageMetadata({
+    lang,
+    path: "/newsletter",
+    title: head.title || say(lang, TITLE),
+    description: head.lead || say(lang, ABOUT),
+  });
+}
 
 export default async function NewsletterPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang: asked } = await params;

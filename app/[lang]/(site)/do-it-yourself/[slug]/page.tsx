@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import JsonLd from "@/components/JsonLd";
 import Photo from "@/components/Photo";
-import { getSheet, getSheets } from "@/lib/source";
+import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
+import { breadcrumbs, graph, pageMetadata, picture, trim, US } from "@/lib/seo";
+import { getSheet, getSheets, type Sheet } from "@/lib/source";
 import { SITE_URL, siteUrl } from "@/lib/site";
 
 export const revalidate = 60;
@@ -15,24 +18,62 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; lang: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const sheet = await getSheet(slug);
+  const { slug, lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const sheet = await getSheet(slug, lang);
   if (!sheet) return { title: "Do it yourself" };
-  return {
+
+  return pageMetadata({
+    lang,
+    path: `/do-it-yourself/${sheet.slug}`,
     title: `${sheet.title} — do it yourself`,
     description:
       sheet.hook ||
-      sheet.words.slice(0, 180) ||
+      trim(sheet.words, 180) ||
       "What it takes, what to do, and a photograph of it working.",
-    alternates: { canonical: `/do-it-yourself/${sheet.slug}` },
-    openGraph: {
-      title: `${sheet.title} — do it yourself`,
-      description: sheet.hook || sheet.words.slice(0, 180),
-      url: siteUrl(`/do-it-yourself/${sheet.slug}`),
-      images: sheet.photo ? [{ url: sheet.photo }] : undefined,
-    },
+    image: sheet.photo,
+    type: "article",
+  });
+}
+
+/**
+ * A sheet, as a set of instructions.
+ *
+ * The one page type on this site that maps onto a schema.org type exactly: a
+ * list of what it takes and a numbered list of what to do is a HowTo, and
+ * saying so is the difference between "somebody wrote a page about car parks"
+ * and "here is how to do this, in eight steps, and here is what you need".
+ *
+ * That matters more for the machines that answer questions than for the ones
+ * that rank pages. Somebody asking an assistant how to get their street eating
+ * together is asking for exactly this, and this is how it gets handed over
+ * whole instead of paraphrased.
+ */
+function asHowTo(sheet: Sheet, lang: Lang) {
+  const url = siteUrl(at(lang, `/do-it-yourself/${sheet.slug}`));
+
+  return {
+    "@type": "HowTo",
+    "@id": url,
+    url,
+    name: sheet.title,
+    inLanguage: lang,
+    description: trim(sheet.hook || sheet.words),
+    image: picture(sheet.photo) ? [picture(sheet.photo)] : undefined,
+    publisher: { "@id": US },
+    supply: sheet.needs.map((thing) => ({ "@type": "HowToSupply", name: thing })),
+    step: sheet.steps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      /* The step's own words as its name, cut short, and the whole thing as the
+         text. A step here is a sentence rather than a heading, and inventing a
+         heading for it would be writing something the page does not say. */
+      name: trim(step, 80),
+      text: step,
+      url: `${url}#step-${index + 1}`,
+    })),
   };
 }
 
@@ -44,13 +85,30 @@ export async function generateMetadata({
  * decoration. It is meant to be read standing up, on a phone, by somebody who has
  * already decided to try, so nothing on it is an argument for trying.
  */
-export default async function SheetPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const sheet = await getSheet(slug);
+export default async function SheetPage({
+  params,
+}: {
+  params: Promise<{ slug: string; lang: string }>;
+}) {
+  const { slug, lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  // In the language it is being read in. Asked without one, the French address
+  // served the English sheet — a translated page nobody could get to.
+  const sheet = await getSheet(slug, lang);
   if (!sheet) notFound();
 
   return (
     <main className="page sheet">
+      <JsonLd
+        data={graph(
+          asHowTo(sheet, lang),
+          breadcrumbs(lang, [
+            { name: "promeNOODology", path: "/" },
+            { name: "do it yourself", path: "/do-it-yourself" },
+            { name: sheet.title, path: `/do-it-yourself/${sheet.slug}` },
+          ]),
+        )}
+      />
       <p className="sheet-eyebrow">do it yourself</p>
       <h1 className="page-title">{sheet.title}</h1>
       {sheet.hook ? <p className="story-hook sheet-hook">{sheet.hook}</p> : null}
@@ -58,7 +116,13 @@ export default async function SheetPage({ params }: { params: Promise<{ slug: st
 
       {sheet.photo ? (
         <figure className="sheet-shot">
-          <Photo src={sheet.photo} alt="" width={1600} height={1067} sizes="(max-width: 900px) 100vw, 900px" />
+          <Photo
+            src={sheet.photo}
+            alt={sheet.title}
+            width={1600}
+            height={1067}
+            sizes="(max-width: 900px) 100vw, 900px"
+          />
           <figcaption>
             {sheet.fed
               ? `Somewhere else, on a day like the one you are planning. About ${sheet.fed} people stayed and ate.`
@@ -88,9 +152,14 @@ export default async function SheetPage({ params }: { params: Promise<{ slug: st
         {sheet.steps.length > 0 ? (
           <section className="sheet-steps">
             <h2>what to do</h2>
+            {/* Each step at its own address. The structured data points at
+                these, and somebody sending a friend "the bit about the tables"
+                has something to send. */}
             <ol>
-              {sheet.steps.map((step) => (
-                <li key={step}>{step}</li>
+              {sheet.steps.map((step, index) => (
+                <li key={step} id={`step-${index + 1}`}>
+                  {step}
+                </li>
               ))}
             </ol>
           </section>
@@ -103,13 +172,14 @@ export default async function SheetPage({ params }: { params: Promise<{ slug: st
         <p>
           Send us a photograph of the people, not of the food. That is the whole ask
           — no forms, no affiliation, nothing to join. If you want a hand first, the{" "}
-          <Link href="/handbook">handbook</Link> is the long version of this, and{" "}
-          <Link href="/handbook#ask">asking us</Link> costs nothing.
+          <Link href={at(lang, "/handbook")}>handbook</Link> is the long version of this, and{" "}
+          <Link href={`${at(lang, "/handbook")}#ask`}>asking us</Link> costs nothing.
         </p>
         <p className="sheet-pass">
           This page is meant to be passed on. Its address is{" "}
           <span className="sheet-address">
-            {SITE_URL.replace(/^https?:\/\//, "")}/do-it-yourself/{sheet.slug}
+            {SITE_URL.replace(/^https?:\/\//, "")}
+            {at(lang, `/do-it-yourself/${sheet.slug}`)}
           </span>
           .
         </p>

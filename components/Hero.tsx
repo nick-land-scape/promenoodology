@@ -27,7 +27,17 @@ const KNOCK_WINDOW = 1400;
  * alone holds the page. Rendering the first one and then swapping would fetch a
  * film nobody was going to watch.
  */
-export default function Hero({ films }: { films: Film[] }) {
+export default function Hero({
+  films,
+  heading,
+  words,
+}: {
+  films: Film[];
+  /** The page's own title, said where a screen reader will reach it. */
+  heading: string;
+  /** What this place is, for anybody who cannot watch the film. */
+  words: string;
+}) {
   const stage = useRef<HTMLElement>(null);
   const frame = useRef(0);
   const knocks = useRef(0);
@@ -81,7 +91,18 @@ export default function Hero({ films }: { films: Film[] }) {
 
   return (
     <main className="hero" ref={stage}>
-      <h1 className="visually-hidden">promeNOODology</h1>
+      {/*
+       * The only words on the front page, and they are not shown.
+       *
+       * That is not a trick played on a search engine: the film and the mark
+       * carry the page for anybody who can see them, and this is what somebody
+       * who cannot gets instead of a video with no soundtrack and an image with
+       * an empty alt. It says the same thing the page says — which is the test —
+       * and the fact that it is also the only thing a crawler can read here is a
+       * consequence of the design rather than the reason for the words.
+       */}
+      <h1 className="visually-hidden">{heading}</h1>
+      <p className="visually-hidden">{words}</p>
 
       {/* The still under the film, and all there is to look at until one has
           been chosen. Not next/image: it is one fixed square that wants to be
