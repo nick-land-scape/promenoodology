@@ -8,6 +8,8 @@
  * written, whatever a browser sends.
  */
 
+import { suffix } from "./slug";
+
 export type Column = {
   key: string;
   /** For a "dates" or "times" column: which column holds the other end. */
@@ -107,6 +109,16 @@ export type TableSpec = {
    * A table with none of these is a table with nothing to translate.
    */
   translates?: string[];
+  /**
+   * A column that has to be unique from the moment the row exists.
+   *
+   * A sheet's address is its identity and the database will not have two the
+   * same — so a brand-new one cannot start empty, or the second one anybody
+   * makes is refused with a constraint violation rather than a sentence. It
+   * starts as "untitled-…" and is changed to something readable before it is
+   * turned on, exactly as a new story's address does.
+   */
+  mints?: string;
   /**
    * Is a brand-new row on the site straight away?
    *
@@ -297,6 +309,7 @@ export const TABLES: Record<TableName, TableSpec> = {
   sheets: {
     table: "sheets",
     one: "a sheet",
+    mints: "slug",
     order: { column: "position", ascending: true },
     title: "title",
     publishable: true,
@@ -420,6 +433,9 @@ export type Values = Record<string, string | number | boolean | null | string[]>
 export function fresh(table: TableName, day: string, over?: Values): Values {
   const spec = TABLES[table];
   const values: Values = { ...spec.blank };
+
+  // Something no other row can already have. See `mints`.
+  if (spec.mints) values[spec.mints] = `untitled-${suffix()}`;
 
   const first = spec.columns.find(
     (column) => column.kind === "date" || column.kind === "when" || column.kind === "dates",

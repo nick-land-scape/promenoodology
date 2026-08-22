@@ -21,7 +21,7 @@ export type Section = {
   /** One of the shapes in components/admin/ui.tsx. */
   icon: string;
   /** Which heading in the menu it sits under. */
-  group: "content" | "material" | "wall" | "community" | "post" | "settings";
+  group: "content" | "giving" | "material" | "wall" | "community" | "post" | "settings";
   /** The page on the public site this looks after, if there is one. */
   view?: string;
 };
@@ -48,7 +48,7 @@ export const SECTIONS: Section[] = [
     label: "the handbook",
     blurb: "The book we give away, a page at a time — and the order they are read in.",
     icon: "book",
-    group: "content",
+    group: "giving",
     view: "/handbook",
   },
   {
@@ -75,7 +75,7 @@ export const SECTIONS: Section[] = [
     blurb:
       "One sheet per kind of place — what it takes, what to do — public, and made to be handed on.",
     icon: "sheet",
-    group: "content",
+    group: "giving",
     view: "/do-it-yourself",
   },
 
@@ -170,6 +170,12 @@ export const SECTIONS: Section[] = [
 
 export const GROUPS: { key: Section["group"]; label: string }[] = [
   { key: "content", label: "content" },
+  /* The two things this collective gives away rather than publishes. They sat
+     under "content" beside the stories and the evenings, which is where you
+     would look for them and not what they are: a story is a record of something
+     we did, and these are instructions for something somebody else could do.
+     They are also the only two things on the site made to be printed. */
+  { key: "giving", label: "to give away" },
   { key: "material", label: "resources" },
   // Its own heading. It sat under "resources" beside the archive and the quotes,
   // and it is not one: those are material a story is made of, and this is a list
