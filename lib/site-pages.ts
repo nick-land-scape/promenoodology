@@ -30,14 +30,15 @@ const SHIPPED: SitePage[] = [
   { slug: "archive", navLabel: "ARCHIVE", group: "main", position: 2, visible: true },
   { slug: "community", navLabel: "COMMUNITY", group: "main", position: 3, visible: true },
   { slug: "about", navLabel: "ABOUT US", group: "main", position: 4, visible: true },
-  { slug: "handbook", navLabel: "handbook", group: "more", position: 5, visible: true },
+  { slug: "events", navLabel: "WHAT'S ON", group: "main", position: 5, visible: true },
+  { slug: "handbook", navLabel: "handbook", group: "more", position: 6, visible: true },
   /* Two pages that are not in the menu. The newsletter has its own place — the
      last line of the menu is the session link, which reads "newsletter" until
      you are signed in and becomes your own face after; putting it in a group as
      well listed it twice. The public bank account has never been listed at all:
      only people given the address find it. */
-  { slug: "newsletter", navLabel: null, group: "none", position: 6, visible: true },
-  { slug: "donations", navLabel: null, group: "none", position: 7, visible: true },
+  { slug: "newsletter", navLabel: null, group: "none", position: 7, visible: true },
+  { slug: "donations", navLabel: null, group: "none", position: 8, visible: true },
 ];
 
 type Row = {

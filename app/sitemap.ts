@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const pages = [
     "/",
-    ...["stories", "archive", "community", "about", "newsletter", "handbook"]
+    ...["stories", "archive", "community", "about", "events", "newsletter", "handbook"]
       .filter(on)
       .map((slug) => `/${slug}`),
   ];
@@ -22,9 +22,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   /* Every evening that is on and has an address. Not behind the "stories"
      switch: an evening's page is a flyer, and turning off the stories does not
      cancel what is on. */
-  const events = (await getEvents())
-    .filter((event) => event.slug)
-    .map((event) => `/events/${event.slug}`);
+  const events = on("events")
+    ? (await getEvents()).filter((event) => event.slug).map((event) => `/events/${event.slug}`)
+    : [];
 
   return [...pages, ...stories, ...events].map((route) => ({
     url: `${SITE_URL}${route}`,

@@ -3433,3 +3433,25 @@ body:has(.hero) .edit-this {
 :root[data-theme="dark"] .handbook-book.paper-white {
   --book-paper: var(--paper);
 }
+
+/* What has been, under what is on. The same cards, quieter: an evening that has
+   happened is still worth reading and is not what anybody came to this page
+   for. */
+.events-been {
+  margin-top: 56px;
+  padding-top: 26px;
+  border-top: 1px solid var(--hairline);
+}
+
+.events-been .story-label {
+  margin-bottom: 18px;
+}
+
+.story-list-past .story-card {
+  opacity: 0.72;
+}
+
+.story-list-past .story-card:hover,
+.story-list-past .story-card:focus-within {
+  opacity: 1;
+}

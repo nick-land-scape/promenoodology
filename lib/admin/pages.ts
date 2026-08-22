@@ -86,6 +86,18 @@ export const PAGES: PageSpec[] = [
     ],
   },
   {
+    slug: "events",
+    name: "what's on",
+    blurb:
+      "The list of evenings on the website: the heading, and the line under it. What is actually on is under Events.",
+    view: "/events",
+    usesTitle: true,
+    usesLead: true,
+    kinds: [],
+    addLabel: "",
+    madeOf: "The evenings themselves are under Events.",
+  },
+  {
     slug: "handbook",
     name: "the handbook",
     blurb: "How to put on your own. Headings are numbered 01, 02, 03 in the order they appear.",
