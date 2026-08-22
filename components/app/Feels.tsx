@@ -58,6 +58,49 @@ export default function Feels() {
     return () => document.removeEventListener("pointerdown", felt, { capture: true });
   }, []);
 
+  /* ------------------------------------------------------ the chrome fits */
+
+  /* Two measurements that stop the app's own furniture taking more room than it
+     needs — the complaint being that the bar looked like it grew when you got to
+     the bottom of a screen, and the header sat there at full height while you
+     were trying to read under it. */
+  useEffect(() => {
+    const shell = document.querySelector<HTMLElement>(".app-shell");
+    const bar = document.querySelector<HTMLElement>(".tabbar");
+    if (!shell) return;
+
+    /* How much paper to leave under the last thing on a screen: the bar's own
+       height, measured, safe-area inset and all. The number that was there
+       before was a guess eight points over. */
+    const fit = () => {
+      if (bar) shell.style.setProperty("--bar-room", `${bar.offsetHeight}px`);
+    };
+    fit();
+    const watch = bar ? new ResizeObserver(fit) : null;
+    if (bar && watch) watch.observe(bar);
+
+    /* And the header collapses once the screen has moved. Twelve points of
+       hysteresis between the two states, so a list that ends four points below
+       the fold cannot flicker the title on and off. */
+    let shrunk = false;
+    const look = () => {
+      const y = window.scrollY;
+      if (!shrunk && y > 16) {
+        shrunk = true;
+        shell.classList.add("is-scrolled");
+      } else if (shrunk && y < 4) {
+        shrunk = false;
+        shell.classList.remove("is-scrolled");
+      }
+    };
+    look();
+    window.addEventListener("scroll", look, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", look);
+      watch?.disconnect();
+    };
+  }, [pathname]);
+
   /* -------------------------------------------------- everything, warmed up */
 
   /* The four screens somebody has not asked for yet.

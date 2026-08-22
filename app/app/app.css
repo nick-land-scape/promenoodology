@@ -18,7 +18,14 @@ body:has(.app-shell) {
 
   min-height: 100vh;
   background: var(--paper);
-  padding-bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px));
+  /* Exactly as much room as the bar takes, and not a point more.
+   *
+   * This used to be 58px plus the home indicator's inset — a guess at the bar's
+   * height that was eight points over, so every screen ended in a band of paper
+   * that reads as the bar having grown when you reach the bottom. The real number
+   * is measured off the bar itself in components/app/Feels.tsx; the calc below is
+   * only what stands until the first measurement, a frame later. */
+  padding-bottom: var(--bar-room, calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)));
 }
 
 .app-column {
@@ -69,8 +76,60 @@ body:has(.app-shell) {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px var(--gutter) 12px;
+  padding: 10px var(--gutter);
   border-bottom: 1px solid var(--hair);
+  /* Everything that changes when it collapses, in one transition, so the whole
+     bar moves as one object rather than as four things resizing. */
+  transition:
+    padding 0.22s ease,
+    gap 0.22s ease;
+}
+
+/*
+ * The header collapses when the screen is scrolled, and that is not decoration.
+ *
+ * At the top it is a title: two lines, the club's mark beside it, taking a
+ * hundred and twenty-four points of a nine-hundred-point screen because the name
+ * of the screen you have just opened is worth that much. Once you are reading, it
+ * is worth about half of it — which is exactly what iOS does with a large title,
+ * and the reason this app felt like it had a lid on it: the title stayed the size
+ * it is when you arrive, forever, on every screen.
+ *
+ * The class is put on by components/app/Feels.tsx, which is already listening to
+ * this screen for other reasons.
+ */
+.is-scrolled .app-header {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  gap: 10px;
+}
+
+.app-header .app-mark,
+.app-header .app-back,
+.app-header .app-eyebrow,
+.app-title {
+  transition:
+    font-size 0.22s ease,
+    width 0.22s ease,
+    opacity 0.18s ease,
+    max-height 0.22s ease;
+}
+
+.is-scrolled .app-header .app-mark {
+  width: 26px;
+}
+
+/* The eyebrow goes first: on a collapsed bar the title is the only thing that
+   still says where you are, and "READ" above "what we have done" is a second
+   answer to a question nobody is asking twice. */
+.is-scrolled .app-eyebrow {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.is-scrolled .app-title {
+  font-size: 1.08rem;
 }
 
 .app-mark {
@@ -93,6 +152,7 @@ body:has(.app-shell) {
 
 .app-eyebrow {
   margin: 0;
+  max-height: 2em;
   font-family: var(--sans);
   font-size: 0.62rem;
   font-weight: 700;
@@ -3770,4 +3830,110 @@ body:has(.app-shell) {
   display: flex;
   gap: 10px;
   padding: 4px 0 2px;
+/* ------------------------------------------------------------- pull to ask
+
+   The paper that appears above the screen while it is being pulled. Fixed rather
+   than in the flow, so nothing below it moves and no layout is recalculated
+   sixty times a second while a thumb is on the glass. */
+.pulldown {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 10px;
+  pointer-events: none;
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.pulldown:not(.is-drawn) {
+  transition:
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease;
+}
+
+.pulldown-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--paper);
+  transition: transform 0.18s ease;
+}
+
+/* Turning, while the answer is on its way. One ring rather than a spinner with
+   spokes: the app has hairlines and no other weights. */
+.pulldown-turning {
+  display: block;
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid var(--hair);
+  border-top-color: var(--ink);
+  border-radius: 999px;
+  animation: pulldown-turn 0.7s linear infinite;
+}
+
+@keyframes pulldown-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulldown-turning {
+    animation-duration: 2s;
+  }
+}
+
+/* --------------------------------------------------------- one screen to the next
+
+   The browser's own view transitions, used for exactly two things: the header and
+   the bar are named, so they are understood to be the same objects on both sides
+   of a navigation and stay put; and what is between them turns over.
+
+   Naming the furniture is the whole trick. Without it the browser cross-fades the
+   entire page, header and bar included, and a bar that dissolves and reappears in
+   the same position reads as a page load — which is what this is here to stop
+   looking like. */
+.app-header {
+  view-transition-name: app-header;
+}
+
+.tabbar {
+  view-transition-name: app-bar;
+}
+
+/* And the screen itself: the new one comes up as it arrives, the way every
+   screen in this app already does when it first appears. Same curve, same
+   distance, so a navigation and a first paint are the same gesture. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: app-cross-out 0.16s ease both;
+  }
+
+  ::view-transition-new(root) {
+    animation: app-cross-in 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes app-cross-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes app-cross-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
