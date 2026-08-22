@@ -44,6 +44,17 @@ stop() { printf '\n\033[31m%s\033[0m\n' "$1" >&2; exit 1; }
 say "Asking Apple whether the key works and the app exists"
 node scripts/asc-check.mjs
 
+# The App Store profile, made over the API and put where Xcode looks.
+#
+# Not automatic signing, and that is the whole trick: automatic signing asks for a
+# *development* profile while it archives, a development profile needs a
+# registered device, and a team that ships from a laptop through TestFlight has
+# never plugged a phone in. An App Store profile needs no devices by definition —
+# nothing is being installed on anything.
+say "The App Store profile"
+PROFILE="$(node scripts/asc-profile.mjs | sed -n 's/^PROFILE_NAME=//p')"
+[ -n "$PROFILE" ] || stop "No profile came back. The lines above say why."
+
 say "The web shell into the native project"
 npx cap sync ios
 
@@ -56,23 +67,23 @@ xcodebuild \
   -configuration Release \
   -destination 'generic/platform=iOS' \
   -archivePath "$ARCHIVE" \
-  -allowProvisioningUpdates \
-  -authenticationKeyPath "$KEY_DIR/AuthKey_$ASC_KEY_ID.p8" \
-  -authenticationKeyID "$ASC_KEY_ID" \
-  -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+  CODE_SIGN_STYLE=Manual \
+  CODE_SIGN_IDENTITY="Apple Distribution" \
+  PROVISIONING_PROFILE_SPECIFIER="$PROFILE" \
+  DEVELOPMENT_TEAM=K35XLVJJ3T \
   CURRENT_PROJECT_VERSION="$BUILD" \
   archive
 
 say "Exporting the ipa"
+# The export options name the profile, so this file can say the same thing twice
+# without either half guessing: it is written here rather than checked in with a
+# profile name that would go stale the day the profile is remade.
+sed "s|__PROFILE__|$PROFILE|" ios/ExportOptions.plist > "$OUT/ExportOptions.plist"
 xcodebuild \
   -exportArchive \
   -archivePath "$ARCHIVE" \
-  -exportOptionsPlist ios/ExportOptions.plist \
-  -exportPath "$OUT" \
-  -allowProvisioningUpdates \
-  -authenticationKeyPath "$KEY_DIR/AuthKey_$ASC_KEY_ID.p8" \
-  -authenticationKeyID "$ASC_KEY_ID" \
-  -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+  -exportOptionsPlist "$OUT/ExportOptions.plist" \
+  -exportPath "$OUT"
 
 IPA="$(find "$OUT" -maxdepth 1 -name '*.ipa' | head -1)"
 [ -n "$IPA" ] || stop "The export produced no ipa. The log above says why."
