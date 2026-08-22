@@ -3907,3 +3907,28 @@ body:has(.hero) .edit-this {
 .cal-shut:hover {
   color: var(--ink);
 }
+
+/* A frame on the picture.
+ *
+ * A photograph on paper has an edge; a photograph bleeding into the page has
+ * one only where the picture happens to be dark. The hairline is the same one
+ * everything else on this site is drawn with, and it is what the date stamp in
+ * the corner is already sitting against. */
+.event-cover-card,
+.event-cover {
+  border: 1px solid var(--hairline);
+}
+
+.event-cover {
+  /* The big one on the evening's own page carries a little more weight: it is
+     the picture of the thing, not a thumbnail of it. */
+  border-color: var(--ink);
+  padding: 8px;
+  background: var(--paper);
+}
+
+/* The stamp sits inside the frame rather than on top of it. */
+.event-cover-card .event-stamp {
+  border-right-color: var(--hairline);
+  border-bottom-color: var(--hairline);
+}
