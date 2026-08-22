@@ -81,11 +81,15 @@ const config: CapacitorConfig = {
        * worth that. The JavaScript call is still there and still lifts it early
        * when it works; this is what happens when it does not.
        *
-       * The gap it leaves is a fifth of a second of paper — the same paper the
-       * launch screen and the curtain behind it are painted in, so there is
-       * nothing to see. */
+       * The gap it leaves is paper — the same paper the launch screen and the
+       * curtain behind it are painted in, so there is nothing to see except the
+       * mark going missing for a moment. Which it did: at a second and a fifth
+       * the launch screen left before the WebView had painted anything at all,
+       * and the app opened on an empty sheet. Two and a half seconds is longer
+       * than the page takes on any real connection, and if it is ever slower
+       * than that the curtain behind takes over with the film. */
       launchAutoHide: true,
-      launchShowDuration: 1200,
+      launchShowDuration: 2500,
       launchFadeOutDuration: 300,
       backgroundColor: "#fffcf6",
       showSpinner: false,

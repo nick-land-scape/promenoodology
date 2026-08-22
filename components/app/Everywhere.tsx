@@ -66,7 +66,10 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
     const head = document.querySelector<HTMLElement>(".app-column .app-header");
     if (!head) return;
     const tell = () => {
-      document.documentElement.style.setProperty("--app-head", `${head.offsetHeight}px`);
+      document.documentElement.style.setProperty(
+        "--app-head",
+        `${head.offsetHeight}px`,
+      );
     };
     tell();
     window.addEventListener("resize", tell);
@@ -79,15 +82,31 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
     let dead = false;
     let drew = false;
 
+    /* The watchdog is set before anything is fetched, not after.
+     *
+     * It used to be armed inside the try, below the two imports — so the one
+     * failure it could not report was the library never arriving: no map, no
+     * error, no list, a blank screen and nothing to read. Six seconds from the
+     * moment the screen opens, whatever is or is not loaded by then. */
+    const watch = window.setTimeout(() => {
+      if (!dead && !drew) {
+        setTrouble(
+          "The map would not draw here. The places are all still listed.",
+        );
+        setUp(true);
+      }
+    }, 6000);
+
     void (async () => {
       try {
-        const [{ Map, Marker, NavigationControl, AttributionControl, LngLatBounds }] =
-          await Promise.all([
-            import("maplibre-gl"),
-            // The library's own stylesheet, fetched with it rather than bundled into
-            // every page's CSS.
-            import("maplibre-gl/dist/maplibre-gl.css"),
-          ]);
+        const [
+          { Map, Marker, NavigationControl, AttributionControl, LngLatBounds },
+        ] = await Promise.all([
+          import("maplibre-gl"),
+          // The library's own stylesheet, fetched with it rather than bundled into
+          // every page's CSS.
+          import("maplibre-gl/dist/maplibre-gl.css"),
+        ]);
         if (dead || !holder.current) return;
 
         const made = new Map({
@@ -107,8 +126,23 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           pitchWithRotate: false,
         });
         map = made;
+        /* What the map says when it goes wrong, said out loud.
+         *
+         * The library reports a missing style, a refused source and a tile that
+         * would not parse on this event and nowhere else. Left unlistened, all
+         * three look identical from the outside: an empty box. */
+        made.on("error", (bad: { error?: { message?: string } }) => {
+          if (dead) return;
+          setTrouble(
+            `The map: ${bad?.error?.message ?? "something went wrong"}`,
+          );
+          setUp(true);
+        });
         made.addControl(new AttributionControl({ compact: true }), "top-left");
-        made.addControl(new NavigationControl({ showCompass: false }), "top-right");
+        made.addControl(
+          new NavigationControl({ showCompass: false }),
+          "top-right",
+        );
 
         const edges = new LngLatBounds();
         for (const pin of pins) {
@@ -121,7 +155,9 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
             setChosen(pin);
             setUp(false);
           });
-          new Marker({ element: dot }).setLngLat([pin.lng, pin.lat]).addTo(made);
+          new Marker({ element: dot })
+            .setLngLat([pin.lng, pin.lat])
+            .addTo(made);
           edges.extend([pin.lng, pin.lat]);
         }
 
@@ -140,24 +176,14 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
         flyTo.current = (pin) => {
           made.flyTo({ center: [pin.lng, pin.lat], zoom: 8.5, duration: 900 });
         };
-
-        /* If it never draws, say so. The sheet is the list, so nothing is lost:
-           it just comes up on its own and says why.
-         *
-         * A map can fail in a way that leaves a perfectly good empty box: no
-         * WebGL, a device too old, a network that resolves but does not deliver
-         * tiles. Six seconds is longer than any of that takes to succeed. */
-        window.setTimeout(() => {
-          if (!dead && !drew) {
-            setTrouble("The map would not draw here. The places are all still listed.");
-            setUp(true);
-          }
-        }, 6000);
       } catch (error) {
+        /* The library itself did not arrive. Which one it was matters when
+           somebody has to fix it, so it is in the line rather than in a console
+           nobody on a phone can open. */
         setTrouble(
-          error instanceof Error && /network|fetch/i.test(error.message)
+          error instanceof Error && /network|fetch|load/i.test(error.message)
             ? "The map needs a line to the outside. The list works without one."
-            : "The map would not open. The list works either way.",
+            : `The map would not open: ${error instanceof Error ? error.message : "unknown"}`,
         );
         setUp(true);
       }
@@ -165,6 +191,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
 
     return () => {
       dead = true;
+      window.clearTimeout(watch);
       flyTo.current = null;
       map?.remove();
     };
@@ -173,7 +200,9 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
   /* Dragging the sheet. Pointer events rather than touch events, so a mouse on a
      desk and a thumb on a phone are the same gesture, and the pointer is captured
      so it keeps reporting after it leaves the handle. */
-  const grabbed = useRef<{ from: number; at: number; now: number } | null>(null);
+  const grabbed = useRef<{ from: number; at: number; now: number } | null>(
+    null,
+  );
 
   const run = useCallback(() => {
     const node = sheet.current;
@@ -190,7 +219,10 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
   const move = (event: React.PointerEvent) => {
     const grab = grabbed.current;
     if (!grab) return;
-    const next = Math.min(run(), Math.max(0, grab.at + (event.clientY - grab.from)));
+    const next = Math.min(
+      run(),
+      Math.max(0, grab.at + (event.clientY - grab.from)),
+    );
     grab.now = next;
     setHeld(next);
   };
@@ -233,7 +265,11 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           </button>
           <p className="everywhere-what">{chosen.title}</p>
           <p className="row-meta">
-            {[chosen.where, chosen.when, chosen.fed ? `${chosen.fed} ate` : null]
+            {[
+              chosen.where,
+              chosen.when,
+              chosen.fed ? `${chosen.fed} ate` : null,
+            ]
               .filter(Boolean)
               .join(" · ")}
           </p>
@@ -253,7 +289,9 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
       <div
         ref={sheet}
         className={`everywhere-sheet${up ? " is-up" : ""}${held === null ? "" : " is-held"}`}
-        style={held === null ? undefined : { transform: `translateY(${held}px)` }}
+        style={
+          held === null ? undefined : { transform: `translateY(${held}px)` }
+        }
       >
         <div
           className="everywhere-grab"
@@ -293,14 +331,19 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
                   >
                     <span className="row-title">
                       {pin.title}
-                      {pin.ahead ? <span className="everywhere-soon">to come</span> : null}
+                      {pin.ahead ? (
+                        <span className="everywhere-soon">to come</span>
+                      ) : null}
                     </span>
                     <span className="row-meta">
                       {[pin.where, pin.when].filter(Boolean).join(" · ")}
                     </span>
                   </button>
                   {pin.slug ? (
-                    <Link className="pill pill-small" href={`/app/read/${pin.slug}`}>
+                    <Link
+                      className="pill pill-small"
+                      href={`/app/read/${pin.slug}`}
+                    >
                       read it
                     </Link>
                   ) : null}
@@ -338,11 +381,16 @@ function paperStyle() {
       osm: {
         type: "vector" as const,
         url: "https://tiles.openfreemap.org/planet",
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution:
+          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       },
     },
     layers: [
-      { id: "paper", type: "background" as const, paint: { "background-color": paper } },
+      {
+        id: "paper",
+        type: "background" as const,
+        paint: { "background-color": paper },
+      },
       {
         id: "water",
         type: "fill" as const,
@@ -363,7 +411,11 @@ function paperStyle() {
         type: "line" as const,
         source: "osm",
         "source-layer": "transportation",
-        filter: ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary"]]],
+        filter: [
+          "in",
+          ["get", "class"],
+          ["literal", ["motorway", "trunk", "primary"]],
+        ],
         paint: { "line-color": ink, "line-width": 0.4, "line-opacity": 0.18 },
       },
       {
@@ -378,7 +430,11 @@ function paperStyle() {
           "text-size": 11,
           "text-max-width": 8,
         },
-        paint: { "text-color": quiet, "text-halo-color": paper, "text-halo-width": 1.2 },
+        paint: {
+          "text-color": quiet,
+          "text-halo-color": paper,
+          "text-halo-width": 1.2,
+        },
       },
     ],
   };
@@ -386,6 +442,8 @@ function paperStyle() {
 
 function read(name: string, fallback: string) {
   if (typeof window === "undefined") return fallback;
-  const found = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const found = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
   return found || fallback;
 }
