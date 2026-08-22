@@ -63,6 +63,8 @@ export type Draft = {
   partners: string[];
   story_id: string | null;
   published: boolean;
+  /** The French of this evening, keyed by the column it translates. */
+  fr: Record<string, string>;
 };
 
 export default function EventEditor({
@@ -95,6 +97,19 @@ export default function EventEditor({
   const [keptBlocks, setKeptBlocks] = useState<Block[]>(page);
 
   const [picking, setPicking] = useState(false);
+
+  /*
+   * Which language you are typing in.
+   *
+   * One toggle for the whole evening rather than two of every field: what is
+   * translated here is spread over five panels, and doubling each of them would
+   * make a long page twice as long to say the same thing twice. The field stays
+   * where it is and changes what it is holding, with the English showing
+   * through as the placeholder — which is what the site does with it when the
+   * French is left empty.
+   */
+  const [saying, setSaying] = useState<"en" | "fr">("en");
+  const inFrench = saying === "fr";
   const [problem, setProblem] = useState("");
   const [justSaved, setJustSaved] = useState(false);
   const [pending, start] = useTransition();
@@ -109,6 +124,34 @@ export default function EventEditor({
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((old) => ({ ...old, [key]: value }));
     setJustSaved(false);
+  }
+
+  function setFrench(key: string, value: string) {
+    setDraft((old) => ({ ...old, fr: { ...old.fr, [key]: value } }));
+    setJustSaved(false);
+  }
+
+  /**
+   * A field that is one thing in English and another in French.
+   *
+   * Everything it needs to be bound: what is in it, what shows through when it
+   * is empty, and where what you type goes.
+   */
+  function both(key: keyof Draft & string) {
+    const english = String(draft[key] ?? "");
+    if (!inFrench) {
+      return {
+        value: english,
+        onChange: (event: { target: { value: string } }) =>
+          set(key as keyof Draft, event.target.value as Draft[keyof Draft]),
+      };
+    }
+    return {
+      value: draft.fr[key] ?? "",
+      placeholder: english,
+      lang: "fr",
+      onChange: (event: { target: { value: string } }) => setFrench(key, event.target.value),
+    };
   }
 
   const pictureUrl = photos.find((photo) => photo.path === draft.photo_path)?.url ?? "";
@@ -130,12 +173,14 @@ export default function EventEditor({
           ends_at: day.ends_at,
           title: day.title,
           what: day.what,
+          fr: day.fr,
         })),
         blocks.map((block) => ({
           kind: block.kind,
           words: block.words,
           photo_id: block.photoId,
           layout: block.layout,
+          fr: block.fr,
         })),
       );
 
@@ -184,6 +229,24 @@ export default function EventEditor({
       <Problem>{problem}</Problem>
 
       <InHead>
+        <span className="admin-saying">
+          {(["en", "fr"] as const).map((one) => (
+            <button
+              key={one}
+              type="button"
+              className="admin-flag"
+              aria-pressed={saying === one}
+              onClick={() => setSaying(one)}
+              title={
+                one === "en"
+                  ? "The words the site is written in"
+                  : "The French. Anything left empty shows the English instead."
+              }
+            >
+              {one === "en" ? "English" : "Français"}
+            </button>
+          ))}
+        </span>
         {draft.published && draft.slug ? (
           <a
             href={`/events/${draft.slug}`}
@@ -211,16 +274,14 @@ export default function EventEditor({
         <Fields>
           <Field label="what it is called">
             <input
-              value={draft.title}
-              placeholder="Ateliers olfactifs"
-              onChange={(event) => set("title", event.target.value)}
+              {...both("title")}
+              placeholder={inFrench ? draft.title : "soup and a walk"}
             />
           </Field>
           <Field label="who it is with" hint="The line under the name, as a flyer has one.">
             <input
-              value={draft.subtitle}
-              placeholder="avec le collectif promeNOODology"
-              onChange={(event) => set("subtitle", event.target.value)}
+              {...both("subtitle")}
+              placeholder={inFrench ? draft.subtitle : "with the promeNOODology collective"}
             />
           </Field>
           <Field
@@ -230,9 +291,8 @@ export default function EventEditor({
           >
             <textarea
               rows={3}
-              value={draft.lead}
-              placeholder="Des expériences co-construites autour des sens et du terrain…"
-              onChange={(event) => set("lead", event.target.value)}
+              {...both("lead")}
+              placeholder={inFrench ? draft.lead : "two or three lines on what it is and why"}
             />
           </Field>
         </Fields>
@@ -289,23 +349,28 @@ export default function EventEditor({
         name="the programme"
         hint="The days it actually runs, each with its own name and hours. Drag them, or type a number."
       >
-        <Programme days={days} onChange={(next) => { setDays(next); setJustSaved(false); }} />
+        <Programme
+          days={days}
+          inFrench={inFrench}
+          onChange={(next) => {
+            setDays(next);
+            setJustSaved(false);
+          }}
+        />
       </Panel>
 
       <Panel name="where" hint="A name anybody would use, the street underneath, and a pin.">
         <Fields>
           <Field label="the place">
             <input
-              value={draft.place}
-              placeholder="la friche des Buissonnets, Versoix"
-              onChange={(event) => set("place", event.target.value)}
+              {...both("place")}
+              placeholder={inFrench ? draft.place : "the yard, Burngreave"}
             />
           </Field>
           <Field label="the street">
             <input
-              value={draft.address}
-              placeholder="Route de Suisse 112-114"
-              onChange={(event) => set("address", event.target.value)}
+              {...both("address")}
+              placeholder={inFrench ? draft.address : "Route de Suisse 112-114"}
             />
           </Field>
           <Field
@@ -344,9 +409,8 @@ export default function EventEditor({
           </Field>
           <Field label="what it costs" hint="Free is worth saying out loud.">
             <input
-              value={draft.cost}
-              placeholder="gratuit"
-              onChange={(event) => set("cost", event.target.value)}
+              {...both("cost")}
+              placeholder={inFrench ? draft.cost : "free"}
             />
           </Field>
           <Field
@@ -367,17 +431,15 @@ export default function EventEditor({
           >
             <textarea
               rows={3}
-              value={draft.needs}
-              placeholder={"a pot big enough for forty\na table\nsomebody with a van"}
-              onChange={(event) => set("needs", event.target.value)}
+              {...both("needs")}
+              placeholder={inFrench ? draft.needs : "a pot big enough for forty\na table\nsomebody with a van"}
             />
           </Field>
           <Field label="anything else" hint="The practical sentence: bring a bowl." wide>
             <textarea
               rows={2}
-              value={draft.note}
-              placeholder="bring a bowl"
-              onChange={(event) => set("note", event.target.value)}
+              {...both("note")}
+              placeholder={inFrench ? draft.note : "bring a bowl"}
             />
           </Field>
         </Fields>
@@ -396,9 +458,8 @@ export default function EventEditor({
           </Field>
           <Field label="part of" hint="A project, a festival, a programme it happens inside.">
             <input
-              value={draft.part_of}
-              placeholder="le projet Devenirs buissons, porté par l’association least"
-              onChange={(event) => set("part_of", event.target.value)}
+              {...both("part_of")}
+              placeholder={inFrench ? draft.part_of : "a project, a festival, a programme"}
             />
           </Field>
           <Field label="and where to read about it">
@@ -464,6 +525,7 @@ export default function EventEditor({
       >
         <Build
           blocks={blocks}
+          inFrench={inFrench}
           onChange={(next) => {
             setBlocks(next);
             setJustSaved(false);

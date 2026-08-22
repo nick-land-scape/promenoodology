@@ -33,7 +33,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     await Promise.all([
       supabase
         .from("event_sessions")
-        .select("id, happens_on, starts_at, ends_at, title, what")
+        .select("id, happens_on, starts_at, ends_at, title, what, fr")
         .eq("event_id", id)
         .order("position")
         .returns<
@@ -44,11 +44,12 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             ends_at: string | null;
             title: string;
             what: string;
+            fr: Record<string, string> | null;
           }[]
         >(),
       supabase
         .from("event_blocks")
-        .select("id, position, kind, words, photo_id, layout")
+        .select("id, position, kind, words, photo_id, layout, fr")
         .eq("event_id", id)
         .order("position")
         .returns<
@@ -59,6 +60,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
             words: string;
             photo_id: string | null;
             layout: string | null;
+            fr: Record<string, string> | null;
           }[]
         >(),
       supabase
@@ -122,6 +124,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     partners: (event.partners as string[] | null) ?? [],
     story_id: (event.story_id as string | null) ?? null,
     published: event.published === true,
+    fr: ((event.fr ?? {}) as Record<string, string>),
   };
 
   return (
@@ -138,6 +141,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           ends_at: day.ends_at ?? "",
           title: day.title ?? "",
           what: day.what ?? "",
+          fr: day.fr ?? {},
         }))}
         page={(blocks ?? []).map<Block>((block) => ({
           id: block.id,
@@ -145,6 +149,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           words: block.words ?? "",
           photoId: block.photo_id,
           layout: (block.layout ?? null) as PhotoLayout | null,
+          fr: block.fr ?? {},
         }))}
         photos={(photos ?? []).map((photo) => ({
           // A picture to choose as the cover…

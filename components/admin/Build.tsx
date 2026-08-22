@@ -40,6 +40,8 @@ export type Block = {
   words: string;
   photoId: string | null;
   layout: PhotoLayout | null;
+  /** The French of this block, keyed by the column it translates. */
+  fr?: Record<string, string>;
 };
 
 let counter = 0;
@@ -66,6 +68,7 @@ export default function StoryPage({
   onUnlink,
   onDelete,
   empty = "Nothing on the page yet. Add a heading or a paragraph below.",
+  inFrench = false,
 }: {
   blocks: Block[];
   onChange: (next: Block[]) => void;
@@ -73,6 +76,14 @@ export default function StoryPage({
   photos: (Choice & { width: number; height: number })[];
   /** What to say when there is nothing on the page. */
   empty?: string;
+  /**
+   * Typing the French of this page rather than the English.
+   *
+   * Only the words change hands. Which photograph, how it sits, what order the
+   * blocks are in — none of that is a language, and a page whose French version
+   * could be arranged differently would be two pages pretending to be one.
+   */
+  inFrench?: boolean;
   /** Which one stands for the whole thing. Only a story has one. */
   cover?: string | null;
   onCover?: (id: string | null) => void;
@@ -90,6 +101,11 @@ export default function StoryPage({
 
   const set = (id: string, patch: Partial<Block>) =>
     onChange(blocks.map((block) => (block.id === id ? { ...block, ...patch } : block)));
+
+  /** The words, in whichever language is being typed. */
+  const words = (block: Block) => (inFrench ? (block.fr?.words ?? "") : block.words);
+  const setWords = (block: Block, said: string) =>
+    set(block.id, inFrench ? { fr: { ...(block.fr ?? {}), words: said } } : { words: said });
 
   const add = (kind: Block["kind"], after?: number) => {
     const fresh = blankBlock(kind);
@@ -131,21 +147,23 @@ export default function StoryPage({
                 {block.kind === "heading" ? (
                   <input
                     className="admin-block-heading"
-                    value={block.words}
-                    placeholder="opportunity"
-                    aria-label="A heading"
-                    onChange={(event) => set(block.id, { words: event.target.value })}
+                    value={words(block)}
+                    placeholder={inFrench ? block.words || "en français" : "opportunity"}
+                    lang={inFrench ? "fr" : undefined}
+                    aria-label={inFrench ? "A heading, in French" : "A heading"}
+                    onChange={(event) => setWords(block, event.target.value)}
                   />
                 ) : null}
 
                 {block.kind === "text" ? (
                   <textarea
                     className="admin-block-text"
-                    rows={Math.min(10, Math.max(2, Math.ceil(block.words.length / 88)))}
-                    value={block.words}
-                    placeholder="a paragraph"
-                    aria-label="A paragraph"
-                    onChange={(event) => set(block.id, { words: event.target.value })}
+                    rows={Math.min(10, Math.max(2, Math.ceil(words(block).length / 88)))}
+                    value={words(block)}
+                    placeholder={inFrench ? block.words || "en français" : "a paragraph"}
+                    lang={inFrench ? "fr" : undefined}
+                    aria-label={inFrench ? "A paragraph, in French" : "A paragraph"}
+                    onChange={(event) => setWords(block, event.target.value)}
                   />
                 ) : null}
 

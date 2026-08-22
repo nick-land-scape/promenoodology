@@ -25,6 +25,8 @@ export type SessionInput = {
   ends_at: string;
   title: string;
   what: string;
+  /** The French of this day, keyed by the column it translates. */
+  fr?: Record<string, string>;
 };
 
 export type BlockInput = {
@@ -32,6 +34,7 @@ export type BlockInput = {
   words: string;
   photo_id: string | null;
   layout: string | null;
+  fr?: Record<string, string>;
 };
 
 export type EventInput = {
@@ -61,6 +64,8 @@ export type EventInput = {
   partners: string[];
   story_id: string | null;
   published: boolean;
+  /** The French of this evening, keyed by the column it translates. */
+  fr?: Record<string, string>;
 };
 
 /** Free, or does another evening already live there? The bin counts. */
@@ -119,6 +124,7 @@ export async function saveEvent(
       ends_at: one.ends_at.trim(),
       title: one.title.trim(),
       what: one.what.trim(),
+      fr: onlyWhatIsWritten(one.fr ?? {}),
     }))
     .sort((a, b) => a.happens_on.localeCompare(b.happens_on));
 
@@ -158,6 +164,7 @@ export async function saveEvent(
       partners: input.partners.filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 20),
       story_id: input.story_id,
       published: input.published,
+      fr: onlyWhatIsWritten(input.fr ?? {}),
     })
     .eq("id", input.id);
   if (error) return failed(error);
@@ -204,6 +211,7 @@ async function writePage(eventId: string, blocks: BlockInput[]): Promise<Saved> 
       photo_id: block.kind === "photo" ? block.photo_id : null,
       layout:
         block.kind === "photo" && block.layout && LAYOUTS.has(block.layout) ? block.layout : null,
+      fr: onlyWhatIsWritten(block.fr ?? {}),
     }))
     // A block with nothing in it is one somebody started and left.
     .filter((row) => row.kind === "space" || (row.kind === "photo" ? row.photo_id : row.words));
@@ -232,4 +240,21 @@ export async function deleteEvent(id: string): Promise<Saved> {
 
   refreshSite();
   return { ok: true };
+}
+
+/**
+ * The French, with the fields nobody has filled in taken out.
+ *
+ * The whole of the fallback rests on absence meaning "not translated", so an
+ * empty box in the editor has to leave nothing behind rather than an empty
+ * string — otherwise the French page shows a blank where the English would have
+ * stood in, and there is no way back to it from the form.
+ */
+function onlyWhatIsWritten(fr: Record<string, string>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(fr)) {
+    const said = typeof value === "string" ? value.trim() : "";
+    if (said) out[key] = said;
+  }
+  return out;
 }

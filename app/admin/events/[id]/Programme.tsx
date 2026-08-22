@@ -30,6 +30,8 @@ export type Session = {
   ends_at: string;
   title: string;
   what: string;
+  /** The French of this day, keyed by the column it translates. */
+  fr?: Record<string, string>;
 };
 
 let counter = 0;
@@ -45,9 +47,12 @@ export const blankSession = (): Session => ({
 export default function Programme({
   days,
   onChange,
+  inFrench = false,
 }: {
   days: Session[];
   onChange: (next: Session[]) => void;
+  /** Typing the French of these days rather than the English. */
+  inFrench?: boolean;
 }) {
   const move = (from: number, to: number) => {
     const next = moved(days, from, to);
@@ -58,6 +63,10 @@ export default function Programme({
 
   const set = (id: string, patch: Partial<Session>) =>
     onChange(days.map((day) => (day.id === id ? { ...day, ...patch } : day)));
+
+  /** The French of one field of one day, kept beside the English. */
+  const setFrench = (day: Session, key: string, value: string) =>
+    set(day.id, { fr: { ...(day.fr ?? {}), [key]: value } });
 
   return (
     <>
@@ -105,19 +114,31 @@ export default function Programme({
                     />
                   </span>
                 </Field>
-                <Field label="what this one is called" wide>
+                <Field label={inFrench ? "what this one is called, in French" : "what this one is called"} wide>
                   <input
-                    value={day.title}
-                    placeholder="La cuisine du buisson"
-                    onChange={(event) => set(day.id, { title: event.target.value })}
+                    value={inFrench ? (day.fr?.title ?? "") : day.title}
+                    placeholder={inFrench ? day.title : "cooking from the scrub"}
+                    lang={inFrench ? "fr" : undefined}
+                    onChange={(event) =>
+                      inFrench
+                        ? setFrench(day, "title", event.target.value)
+                        : set(day.id, { title: event.target.value })
+                    }
                   />
                 </Field>
-                <Field label="and what happens" wide>
+                <Field label={inFrench ? "and what happens, in French" : "and what happens"} wide>
                   <textarea
-                    rows={Math.min(6, Math.max(2, Math.ceil(day.what.length / 80)))}
-                    value={day.what}
-                    placeholder="a foraging walk, then cooking together, then eating what was cooked"
-                    onChange={(event) => set(day.id, { what: event.target.value })}
+                    rows={Math.min(6, Math.max(2, Math.ceil((inFrench ? (day.fr?.what ?? "") : day.what).length / 80)))}
+                    value={inFrench ? (day.fr?.what ?? "") : day.what}
+                    placeholder={
+                      inFrench ? day.what : "a foraging walk, then cooking together, then eating what was cooked"
+                    }
+                    lang={inFrench ? "fr" : undefined}
+                    onChange={(event) =>
+                      inFrench
+                        ? setFrench(day, "what", event.target.value)
+                        : set(day.id, { what: event.target.value })
+                    }
                   />
                 </Field>
               </div>
