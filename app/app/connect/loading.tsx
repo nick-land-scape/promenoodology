@@ -1,10 +1,11 @@
-import { Bone, BoneHead } from "@/components/app/Bones";
+import AppHeader from "@/components/app/AppHeader";
+import { Bone } from "@/components/app/Bones";
 
 /** Connect: two views, the one-line composer, then posts with pictures. */
 export default function Loading() {
   return (
     <div className="waiting" aria-busy="true">
-      <BoneHead />
+      <AppHeader eyebrow="connect" title="what everyone is up to" />
 
       <div className="waiting-switcher">
         <Bone w="50%" h={40} round />
@@ -21,7 +22,10 @@ export default function Loading() {
 
       {[0, 1].map((post) => (
         <div className="waiting-post" key={post}>
-          <div className="waiting-row" style={{ borderBottom: 0, paddingBottom: 0 }}>
+          <div
+            className="waiting-row"
+            style={{ borderBottom: 0, paddingBottom: 0 }}
+          >
             <Bone w={40} h={40} round />
             <span style={{ flex: 1 }}>
               <Bone w={128} h={14} />

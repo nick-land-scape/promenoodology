@@ -1,10 +1,14 @@
-import { Bone, BoneHead, BoneHeading, BoneRow } from "@/components/app/Bones";
+import AppHeader from "@/components/app/AppHeader";
+import { Bone, BoneHeading, BoneRow } from "@/components/app/Bones";
 
 /** Home: what is coming up, the news, and three previews. */
 export default function Loading() {
   return (
     <div className="waiting" aria-busy="true">
-      <BoneHead />
+      {/* The one header in the app whose words are not known before the answer
+          arrives: it says hello by name. Everything else about it is known, so
+          only the name is a bone. */}
+      <AppHeader eyebrow="welcome" title="hello" />
 
       <div className="waiting-part">
         <BoneHeading wide={168} />

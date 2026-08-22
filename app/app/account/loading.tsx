@@ -1,10 +1,11 @@
-import { Bone, BoneHead, BoneHeading, BoneRow } from "@/components/app/Bones";
+import AppHeader from "@/components/app/AppHeader";
+import { Bone, BoneHeading, BoneRow } from "@/components/app/Bones";
 
 /** Account: the card, then previews of what is yours, then the settings rows. */
 export default function Loading() {
   return (
     <div className="waiting" aria-busy="true">
-      <BoneHead />
+      <AppHeader eyebrow="you" title="your membership" />
 
       <div className="waiting-card">
         <Bone w="100%" h={180} />

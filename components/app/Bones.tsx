@@ -34,19 +34,18 @@ export function Bone({
   );
 }
 
-/** The header every screen has: a mark, a small line, a title. */
-export function BoneHead() {
-  return (
-    <div className="waiting-head">
-      <Bone w={34} h={34} round />
-      <span>
-        <Bone w={58} h={8} />
-        <Bone w={176} h={22} gap={9} />
-      </span>
-      <Bone w={22} h={22} round />
-    </div>
-  );
-}
+/* There was a BoneHead here: a mark, a line and a title, in grey.
+ *
+ * It is gone because it was answering a question nobody had. Every header in this
+ * app is known before the data is: "what's on / what would you like to join?" is
+ * the same sentence whatever the server says. So the waiting states draw the real
+ * header and keep bones for the one thing that is genuinely unknown — which is
+ * also why nothing jumps when the answer arrives: the header was never replaced,
+ * it was there from the first frame.
+ *
+ * The tab bar never needed one either, and never had one: it lives in the layout,
+ * and a loading file only ever replaces the screen inside it.
+ */
 
 /** A heading with a count beside it, as every section has. */
 export function BoneHeading({ wide = 150 }: { wide?: number }) {

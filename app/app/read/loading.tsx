@@ -1,10 +1,11 @@
-import { Bone, BoneHead, BoneSmallSwitcher, BoneSwitcher } from "@/components/app/Bones";
+import AppHeader from "@/components/app/AppHeader";
+import { Bone, BoneSmallSwitcher, BoneSwitcher } from "@/components/app/Bones";
 
 /** Read: three views, the two ways of looking at the stories, then the covers. */
 export default function Loading() {
   return (
     <div className="waiting" aria-busy="true">
-      <BoneHead />
+      <AppHeader eyebrow="read" title="what we have done" />
       <BoneSwitcher />
       <BoneSmallSwitcher />
 

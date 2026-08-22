@@ -1,10 +1,11 @@
-import { Bone, BoneHead, BoneHeading, BoneRow } from "@/components/app/Bones";
+import AppHeader from "@/components/app/AppHeader";
+import { Bone, BoneHeading, BoneRow } from "@/components/app/Bones";
 
 /** What's on: the switcher, the places, then evenings with two buttons each. */
 export default function Loading() {
   return (
     <div className="waiting" aria-busy="true">
-      <BoneHead />
+      <AppHeader eyebrow="what's on" title="what would you like to join?" />
 
       <div className="waiting-switcher">
         <Bone w="50%" h={40} round />
