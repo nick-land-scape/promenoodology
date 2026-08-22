@@ -43,13 +43,15 @@ body:has(.app-shell) {
    * tabs stretched across a thousand points has the tabs at the edges and a
    * hand's width of nothing in the middle. Held to the column, it reads as the
    * bottom of the app rather than the bottom of the window.
+   *
+   * It only needs the two edges: the bar centres itself further down the file,
+   * on the same left/right/margin as the column. This block used to move it with
+   * `left: 50%` and a transform, which is exactly the trouble — the base rule
+   * comes later, so it won back the `left` and left the transform standing, and
+   * the bar sat half a bar's width off the left edge of an iPad. Rules that do
+   * the same job twice always end up disagreeing.
    */
   .tabbar {
-    left: 50%;
-    right: auto;
-    width: 100%;
-    max-width: 562px;
-    transform: translateX(-50%);
     border-left: 1px solid var(--hair);
     border-right: 1px solid var(--hair);
   }
@@ -58,6 +60,23 @@ body:has(.app-shell) {
   .doorway {
     max-width: 30rem;
     margin: 0 auto;
+  }
+}
+
+/*
+ * On a tablet the column grows.
+ *
+ * 560 points is a phone's reading width, and on a thirteen-inch iPad it left a
+ * hand's width of paper down both sides — which reads as an app that has not
+ * been told what screen it is on. It grows to 780 and stops: a line of Times
+ * wider than that stops being a line and becomes a distance, and this is a club
+ * that reads. The two hairlines stay. They are the edges of the page, and paper
+ * with edges is the whole idea.
+ */
+@media (min-width: 834px) {
+  .app-column,
+  .tabbar {
+    max-width: 780px;
   }
 }
 
@@ -2666,16 +2685,46 @@ body:has(.app-shell) {
   letter-spacing: 0.06em;
 }
 
-/* The map: as tall as it can be without pushing the switcher off the screen. */
-.everywhere {
+/*
+ * The map is the screen.
+ *
+ * It fills everything between the header and the bar, the switcher floats on top
+ * of it, and the places come up over it on a sheet. A map in a bordered box on a
+ * scrolling page is a picture of a map; this is a map.
+ */
+.reading-stage {
   position: relative;
-  padding: 0 var(--gutter);
+  height: calc(
+    100dvh - var(--app-head, 92px) - var(--tabbar) - env(safe-area-inset-bottom, 0px)
+  );
+  overflow: hidden;
+}
+
+/* The switcher, floating. Paper behind it so the map does not read through the
+   words, and pressable before anything under it. */
+.reading-over {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  padding: 10px var(--gutter) 12px;
+  background: linear-gradient(to bottom, var(--paper) 62%, transparent);
+  pointer-events: none;
+}
+
+.reading-over > * {
+  pointer-events: auto;
+}
+
+.everywhere {
+  position: absolute;
+  inset: 0;
 }
 
 .everywhere-map {
-  height: min(62vh, 520px);
-  border: 1px solid var(--hair);
-  overflow: hidden;
+  position: absolute;
+  inset: 0;
 }
 
 /* The pins. A dot in the club's purple, and a hollow one for something still to
@@ -2700,11 +2749,116 @@ body:has(.app-shell) {
   transform: scale(0.86);
 }
 
-/* What was pressed, as a sheet at the foot of the map rather than a bubble on it:
-   a bubble on a phone covers the thing it is about. */
+/* ------------------------------------------------------------- the sheet
+
+   Every place, on a sheet you pull up over the map. Down, it shows the handle and
+   the count; up, it is the list, and the map is still there behind it. The height
+   is the run: the thing slides by its own height less the peek, so one number
+   sets both ends. */
+.everywhere-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  height: 78%;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border-top: 1px solid var(--hair);
+  transform: translateY(calc(100% - 128px));
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.everywhere-sheet.is-up {
+  transform: translateY(0);
+}
+
+/* While a thumb is on it there is no transition: it follows the thumb, which is
+   the only thing that makes a sheet feel like an object rather than a menu. */
+.everywhere-sheet.is-held {
+  transition: none;
+}
+
+.everywhere-grab {
+  flex: none;
+  padding: 8px 0 6px;
+  touch-action: none;
+  cursor: grab;
+}
+
+.everywhere-bar {
+  display: block;
+  width: 42px;
+  height: 4px;
+  margin: 0 auto 8px;
+  border-radius: 999px;
+  background: var(--hair);
+}
+
+.everywhere-count {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 var(--gutter) 10px;
+  border: 0;
+  border-bottom: 1px solid var(--hair);
+  background: none;
+  text-align: left;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+.everywhere-of {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The list itself scrolls, inside the sheet, without moving the map under it. */
+.everywhere-roll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 18px;
+}
+
+/* A row that flies the map somewhere is a button, not a link: it changes what you
+   are looking at rather than where you are. */
+.everywhere-jump {
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.everywhere-soon {
+  margin-left: 8px;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--purple);
+  vertical-align: 0.15em;
+}
+
+/* What was pressed. Above the sheet, over the map, on the map's own terms. */
 .everywhere-said {
-  position: relative;
-  margin-top: -1px;
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(128px + 12px);
+  z-index: 7;
   border: 1px solid var(--hair);
   padding: 14px 16px 16px;
   background: var(--paper);
@@ -2733,6 +2887,15 @@ body:has(.app-shell) {
   font-size: 1.4rem;
   line-height: 1;
   color: var(--muted);
+}
+
+/* The zoom buttons clear the floating switcher. */
+.everywhere .maplibregl-ctrl-top-right {
+  top: 52px;
+}
+
+.everywhere .maplibregl-ctrl-top-left .maplibregl-ctrl-attrib {
+  margin-top: 52px;
 }
 
 /* The library's own furniture, in this club's materials rather than its own. */

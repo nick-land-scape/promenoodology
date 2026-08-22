@@ -75,24 +75,43 @@ export default function Reading({
     return order;
   }, [photos, year, shuffle]);
 
+  /* Four ways of looking at the same five years. The map is a way of looking,
+     not a replacement for the list: one answers "what happened", the other
+     answers "where has this been".
+
+     Held in a variable because on the map it does not sit above the screen — it
+     floats on it, and the map runs underneath. Same buttons either way: a second
+     copy of them for the map would be a second copy that drifts. */
+  const chooser = (
+    <div className="segmented segmented-four" role="tablist" aria-label="What to read">
+      {(["stories", "map", "archive", "handbook"] as const).map((option) => (
+        <button
+          key={option}
+          type="button"
+          role="tab"
+          aria-selected={view === option}
+          onClick={() => setView(option)}
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+  );
+
+  /* The map takes the whole screen: header above it, bar below it, nothing else.
+     A map in a box on a scrolling page is a picture of a map. */
+  if (view === "map") {
+    return (
+      <div className="reading-stage">
+        <Everywhere pins={pins} />
+        <div className="reading-over">{chooser}</div>
+      </div>
+    );
+  }
+
   return (
     <>
-      {/* Four ways of looking at the same five years. The map is a way of looking,
-          not a replacement for the list: one answers "what happened", the other
-          answers "where has this been". */}
-      <div className="segmented segmented-four" role="tablist" aria-label="What to read">
-        {(["stories", "map", "archive", "handbook"] as const).map((option) => (
-          <button
-            key={option}
-            type="button"
-            role="tab"
-            aria-selected={view === option}
-            onClick={() => setView(option)}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
+      {chooser}
 
       {view === "stories" ? (
         <ul className="told">
@@ -160,8 +179,6 @@ export default function Reading({
           </ul>
         </>
       ) : null}
-
-      {view === "map" ? <Everywhere pins={pins} /> : null}
 
       {view === "handbook" ? (
         <div className="app-book">

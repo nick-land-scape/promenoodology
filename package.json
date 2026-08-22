@@ -28,7 +28,7 @@
     "browser-image-compression": "^2.0.2",
     "cropperjs": "^1.6.2",
     "heic2any": "^0.0.4",
-    "maplibre-gl": "^6.5.0",
+    "maplibre-gl": "^5.24.0",
     "next": "^16.3.1",
     "nodemailer": "^9.0.5",
     "react": "^19.2.8",

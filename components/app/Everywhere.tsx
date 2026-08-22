@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type Pin = {
   id: string;
@@ -17,6 +17,9 @@ export type Pin = {
   fed: number | null;
 };
 
+/** How much of the sheet stays in sight when it is down. */
+const PEEK = 128;
+
 /**
  * Everywhere this has happened.
  *
@@ -24,12 +27,22 @@ export type Pin = {
  * the app could only show that as rows sorted by date — which flattens a continent
  * into "recent". A map makes the geography an argument rather than a detail.
  *
+ * The map is the screen, not a box on it: it fills everything between the header
+ * and the bar, the four-way switcher floats on top of it, and the places are a
+ * sheet you pull up over it — the shape every map on a phone has, because a list
+ * beside a map on a screen this size gives you half of each.
+ *
  * Why MapLibre and not the obvious ones: no key, no account, no billing, and no
  * terms that change under you. The tiles come from OpenFreeMap, which serves
  * OpenStreetMap's own data for nothing and asks for nothing back but the
- * attribution below. And the style is written here rather than bought, which is the
- * point — a map in somebody else's blue with somebody else's roads in it would be
- * the one screen in this app that belongs to a stranger.
+ * attribution in the corner. And the style is written here rather than bought,
+ * which is the point — a map in somebody else's blue with somebody else's roads
+ * in it would be the one screen in this app that belongs to a stranger.
+ *
+ * Pinned to MapLibre 5. Six is ESM-only and loads its tile worker as a separate
+ * module chunk, which the app's bundle did not carry across: the canvas came up,
+ * the pins landed, and not one tile was ever parsed — a perfectly good empty map.
+ * Five carries its worker inside itself, and drew on the first try.
  *
  * It is loaded only on this screen. The library is two hundred kilobytes and the
  * other four screens have no business paying for it, so both the code and the
@@ -37,8 +50,28 @@ export type Pin = {
  */
 export default function Everywhere({ pins }: { pins: Pin[] }) {
   const holder = useRef<HTMLDivElement>(null);
+  const sheet = useRef<HTMLDivElement>(null);
+  const flyTo = useRef<((pin: Pin) => void) | null>(null);
   const [chosen, setChosen] = useState<Pin | null>(null);
   const [trouble, setTrouble] = useState("");
+  /** Up or down. Down is the peek; up is most of the screen. */
+  const [up, setUp] = useState(false);
+  /** Where the sheet is while a thumb is on it, in pixels from the top of its run. */
+  const [held, setHeld] = useState<number | null>(null);
+
+  /* How tall the header actually is on this phone, so the map can be exactly the
+     rest of the screen. Measured rather than guessed: the header carries the
+     notch's inset, and that number is different on every device Apple sells. */
+  useEffect(() => {
+    const head = document.querySelector<HTMLElement>(".app-column .app-header");
+    if (!head) return;
+    const tell = () => {
+      document.documentElement.style.setProperty("--app-head", `${head.offsetHeight}px`);
+    };
+    tell();
+    window.addEventListener("resize", tell);
+    return () => window.removeEventListener("resize", tell);
+  }, []);
 
   useEffect(() => {
     if (!holder.current || pins.length === 0) return;
@@ -48,12 +81,13 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
 
     void (async () => {
       try {
-        const [{ Map, Marker, NavigationControl, LngLatBounds }] = await Promise.all([
-          import("maplibre-gl"),
-          // The library's own stylesheet, fetched with it rather than bundled into
-          // every page's CSS.
-          import("maplibre-gl/dist/maplibre-gl.css"),
-        ]);
+        const [{ Map, Marker, NavigationControl, AttributionControl, LngLatBounds }] =
+          await Promise.all([
+            import("maplibre-gl"),
+            // The library's own stylesheet, fetched with it rather than bundled into
+            // every page's CSS.
+            import("maplibre-gl/dist/maplibre-gl.css"),
+          ]);
         if (dead || !holder.current) return;
 
         const made = new Map({
@@ -65,12 +99,15 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           style: paperStyle() as never,
           center: [10, 47],
           zoom: 3.4,
-          attributionControl: { compact: true },
-          // A map inside a scrolling app: two fingers to move it, so a thumb
-          // travelling down the screen does not drag Europe with it.
-          cooperativeGestures: true,
+          /* The map is the whole screen now, so one finger moves it: there is no
+             page scrolling behind it to protect. The corner attribution moves to
+             the top, where the sheet cannot sit on it. */
+          attributionControl: false,
+          dragRotate: false,
+          pitchWithRotate: false,
         });
         map = made;
+        made.addControl(new AttributionControl({ compact: true }), "top-left");
         made.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
         const edges = new LngLatBounds();
@@ -82,42 +119,90 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           dot.addEventListener("click", (press) => {
             press.stopPropagation();
             setChosen(pin);
+            setUp(false);
           });
           new Marker({ element: dot }).setLngLat([pin.lng, pin.lat]).addTo(made);
           edges.extend([pin.lng, pin.lat]);
         }
 
-        // Everything in view, with room around the edges for the pins themselves.
+        /* Everything in view, with room around the edges for the pins — and for
+           the sheet, which covers the bottom of the map even when it is down. */
         made.once("load", () => {
           if (dead) return;
           drew = true;
-          made.fitBounds(edges, { padding: 56, maxZoom: 9, duration: 0 });
+          made.fitBounds(edges, {
+            padding: { top: 76, right: 48, bottom: PEEK + 32, left: 48 },
+            maxZoom: 9,
+            duration: 0,
+          });
         });
 
-        /* If it never draws, say so and show the places as a list.
+        flyTo.current = (pin) => {
+          made.flyTo({ center: [pin.lng, pin.lat], zoom: 8.5, duration: 900 });
+        };
+
+        /* If it never draws, say so. The sheet is the list, so nothing is lost:
+           it just comes up on its own and says why.
          *
          * A map can fail in a way that leaves a perfectly good empty box: no
          * WebGL, a device too old, a network that resolves but does not deliver
          * tiles. Six seconds is longer than any of that takes to succeed. */
         window.setTimeout(() => {
           if (!dead && !drew) {
-            setTrouble("The map would not draw here. The places are listed below.");
+            setTrouble("The map would not draw here. The places are all still listed.");
+            setUp(true);
           }
         }, 6000);
       } catch (error) {
         setTrouble(
           error instanceof Error && /network|fetch/i.test(error.message)
-            ? "The map needs a line to the outside. The list below works without one."
-            : "The map would not open. The list below works either way.",
+            ? "The map needs a line to the outside. The list works without one."
+            : "The map would not open. The list works either way.",
         );
+        setUp(true);
       }
     })();
 
     return () => {
       dead = true;
+      flyTo.current = null;
       map?.remove();
     };
   }, [pins]);
+
+  /* Dragging the sheet. Pointer events rather than touch events, so a mouse on a
+     desk and a thumb on a phone are the same gesture, and the pointer is captured
+     so it keeps reporting after it leaves the handle. */
+  const grabbed = useRef<{ from: number; at: number; now: number } | null>(null);
+
+  const run = useCallback(() => {
+    const node = sheet.current;
+    return node ? Math.max(0, node.offsetHeight - PEEK) : 0;
+  }, []);
+
+  const take = (event: React.PointerEvent) => {
+    const at = up ? 0 : run();
+    grabbed.current = { from: event.clientY, at, now: at };
+    setHeld(at);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const move = (event: React.PointerEvent) => {
+    const grab = grabbed.current;
+    if (!grab) return;
+    const next = Math.min(run(), Math.max(0, grab.at + (event.clientY - grab.from)));
+    grab.now = next;
+    setHeld(next);
+  };
+
+  const letGo = () => {
+    const grab = grabbed.current;
+    if (!grab) return;
+    grabbed.current = null;
+    // Nearer the top than the bottom: it stays up. A flick counts as a decision.
+    setUp(grab.now < run() / 2);
+    setHeld(null);
+  };
 
   if (pins.length === 0) {
     return (
@@ -128,38 +213,13 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
     );
   }
 
+  const ahead = pins.filter((pin) => pin.ahead).length;
+
   return (
     <div className="everywhere">
       <div className="everywhere-map" ref={holder} />
 
-      {trouble ? (
-        <>
-          <p className="app-error">{trouble}</p>
-          {/* The same places, without the map. Where somebody is standing matters
-              more than whether the tiles arrived. */}
-          <ul className="row-list">
-            {pins.map((pin) => (
-              <li key={pin.id}>
-                <div className="row">
-                  <span className="row-body">
-                    <span className="row-title">{pin.title}</span>
-                    <span className="row-meta">
-                      {[pin.where, pin.when].filter(Boolean).join(" · ")}
-                    </span>
-                  </span>
-                  {pin.slug ? (
-                    <Link className="pill pill-small" href={`/app/read/${pin.slug}`}>
-                      read it
-                    </Link>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : null}
-
-      {/* What was pressed. A sheet rather than a bubble on the map: a bubble on a
+      {/* What was pressed. Above the sheet rather than on the pin: a bubble on a
           phone covers the thing it is about. */}
       {chosen ? (
         <div className="everywhere-said">
@@ -188,6 +248,68 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           ) : null}
         </div>
       ) : null}
+
+      {/* The places, as a sheet over the map. */}
+      <div
+        ref={sheet}
+        className={`everywhere-sheet${up ? " is-up" : ""}${held === null ? "" : " is-held"}`}
+        style={held === null ? undefined : { transform: `translateY(${held}px)` }}
+      >
+        <div
+          className="everywhere-grab"
+          onPointerDown={take}
+          onPointerMove={move}
+          onPointerUp={letGo}
+          onPointerCancel={letGo}
+        >
+          <span className="everywhere-bar" aria-hidden="true" />
+          <button
+            type="button"
+            className="everywhere-count"
+            onClick={() => setUp((was) => !was)}
+            aria-expanded={up}
+          >
+            <span>{pins.length} places</span>
+            <span className="everywhere-of">
+              {ahead ? `${ahead} still to come` : "five years of them"}
+            </span>
+          </button>
+        </div>
+
+        <div className="everywhere-roll">
+          {trouble ? <p className="app-error">{trouble}</p> : null}
+          <ul className="row-list">
+            {pins.map((pin) => (
+              <li key={pin.id}>
+                <div className="row">
+                  <button
+                    type="button"
+                    className="row-body everywhere-jump"
+                    onClick={() => {
+                      setChosen(pin);
+                      setUp(false);
+                      flyTo.current?.(pin);
+                    }}
+                  >
+                    <span className="row-title">
+                      {pin.title}
+                      {pin.ahead ? <span className="everywhere-soon">to come</span> : null}
+                    </span>
+                    <span className="row-meta">
+                      {[pin.where, pin.when].filter(Boolean).join(" · ")}
+                    </span>
+                  </button>
+                  {pin.slug ? (
+                    <Link className="pill pill-small" href={`/app/read/${pin.slug}`}>
+                      read it
+                    </Link>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
