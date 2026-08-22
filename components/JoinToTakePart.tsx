@@ -21,6 +21,7 @@ export default function JoinToTakePart({
   lang,
   say,
   tight = false,
+  wordsOnly = false,
 }: {
   signUpEmail?: string;
   lang: Lang;
@@ -30,13 +31,22 @@ export default function JoinToTakePart({
    *
    * The same two controls, with the paragraph under them left off: at the top of
    * the page they sit beside the title, and three lines of explanation beside a
-   * title is a title nobody reads. The explanation is where it was, at the foot,
-   * with the practical bits.
+   * title is a title nobody reads.
    */
   tight?: boolean;
+  /**
+   * The explanation without the controls.
+   *
+   * Because the controls are in the header, and a second pair of the same two
+   * grey buttons further down the same page does not read as a reminder — it
+   * reads as a page that has been assembled twice. What belongs at the foot is
+   * the answer to "why are those grey", which is a sentence.
+   */
+  wordsOnly?: boolean;
 }) {
   return (
     <section className={tight ? "taking-part taking-part-tight" : "taking-part"}>
+      {wordsOnly ? null : (
       <span className="taking-part-does">
         <button type="button" className="pill pill-solid" disabled aria-disabled="true">
           {say("part.countMeIn")}
@@ -54,6 +64,7 @@ export default function JoinToTakePart({
           {say("part.save")}
         </button>
       </span>
+      )}
 
       {tight ? null : (
       <p className="taking-part-why">

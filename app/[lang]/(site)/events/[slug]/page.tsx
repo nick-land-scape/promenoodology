@@ -217,12 +217,7 @@ export default async function EventPage({ params }: Params) {
               <dd>{event.fed}</dd>
             </div>
           ) : null}
-          {/* The flyer itself. Somebody who wants to bring people to this does
-              not want to send them a link, they want the thing to print. */}
         </dl>
-
-        {/* What a member could do about this, and what it takes to be one. */}
-        {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} /> : null}
 
         {event.note ? (
           <p className="story-text">
@@ -231,8 +226,17 @@ export default async function EventPage({ params }: Params) {
         ) : null}
 
         {/* Why the two buttons at the top are grey, said once, where somebody
-            who has read this far will look for it. */}
-        {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} /> : null}
+            who has read this far will look for it. The buttons themselves stay
+            in the header — a second pair of the same two here would read as a
+            page assembled twice. */}
+        {!over ? (
+          <JoinToTakePart
+            signUpEmail={event.signUpEmail || undefined}
+            lang={lang}
+            say={say}
+            wordsOnly
+          />
+        ) : null}
 
         {/* What is still wanted, and it recruits itself: somebody reading this
             page is exactly the person who owns a pot big enough for forty. */}
