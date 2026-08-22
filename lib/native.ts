@@ -201,3 +201,63 @@ export async function appleSheet(): Promise<
     return { ok: false, why: said };
   }
 }
+
+/* -------------------------------------------------- coming back to the app */
+
+/**
+ * Reloading after a long time away.
+ *
+ * A native app does not reload when you come back to it — the WebView keeps the
+ * page it was on, for hours, across days, until the phone runs out of memory. Which
+ * is right for a minute in your pocket and wrong for a week: the app sits on a
+ * version of itself that was published before whatever changed. It is how somebody
+ * ends up looking at yesterday's screen and reasonably concluding nothing was
+ * fixed.
+ *
+ * So: away for more than half an hour, come back to a fresh copy. Under that,
+ * nothing happens, because reloading an app somebody just glanced away from throws
+ * away what they were reading.
+ *
+ * Anything half-written is protected the only way it can be — the check is skipped
+ * while a field has focus or a form is dirty, because a reload that eats a post
+ * somebody is writing is worse than a stale screen.
+ */
+export function reloadWhenStale(minutes = 30): () => void {
+  const found = bridge();
+  const app = (
+    found?.Plugins as unknown as {
+      App?: {
+        addListener: (
+          event: string,
+          fn: (state: { isActive: boolean }) => void,
+        ) => Promise<{ remove: () => void }>;
+      };
+    } | undefined
+  )?.App;
+  if (!app) return () => {};
+
+  let left = 0;
+  const watching = app.addListener("appStateChange", (state) => {
+    if (!state.isActive) {
+      left = Date.now();
+      return;
+    }
+    if (!left) return;
+
+    const away = (Date.now() - left) / 60000;
+    left = 0;
+    if (away < minutes) return;
+
+    // Not while somebody is in the middle of writing something.
+    const busy =
+      document.activeElement instanceof HTMLInputElement ||
+      document.activeElement instanceof HTMLTextAreaElement;
+    if (busy) return;
+
+    window.location.reload();
+  });
+
+  return () => {
+    void watching.then((handle) => handle.remove()).catch(() => {});
+  };
+}

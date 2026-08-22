@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { liftTheCurtain } from "@/lib/native";
+import { liftTheCurtain, reloadWhenStale } from "@/lib/native";
 import type { Film } from "@/lib/source";
 
 /**
@@ -66,6 +66,12 @@ export default function Splash({ films }: { films: Film[] }) {
      early, but never load-bearing. */
   useEffect(() => {
     void liftTheCurtain();
+    /* And while we are in the layout: come back to a fresh copy after a long
+       time away. A WebView keeps its page for days, so an app left in the
+       background sits on a version of itself that was published before whatever
+       changed — which is how somebody ends up looking at yesterday's screen and
+       reasonably concluding nothing was fixed. */
+    return reloadWhenStale(30);
   }, []);
 
   useEffect(() => {

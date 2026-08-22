@@ -23,7 +23,15 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+/* Which browser, and how to drive it.
+ *
+ * Chrome's new headless mode refuses to start on some machines with "Trying to
+ * load the allocator multiple times" and then hangs until it is killed — which is
+ * what happened the first time this was run. The old headless mode does not do
+ * that, so it is tried first and the new one is the fallback rather than the other
+ * way round. SHOT_CHROME points it at Chromium, Edge, or Brave instead. */
+const CHROME =
+  process.env.SHOT_CHROME ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const SITE = process.env.SHOT_SITE ?? "https://www.promenoodology.com";
 const OUT = process.env.SHOT_OUT ?? path.join(process.env.HOME ?? ".", "Desktop/promeNOODology app store");
 const PROFILE = "/tmp/promenood-shots";
@@ -79,11 +87,41 @@ async function wayIn() {
   return `${SITE}/account/confirm?token_hash=${made.hashed_token}&type=magiclink&next=/app`;
 }
 
+const COMMON = [
+  "--disable-gpu",
+  "--hide-scrollbars",
+  "--no-first-run",
+  "--no-default-browser-check",
+  "--disable-extensions",
+  "--disable-background-networking",
+  "--disable-dev-shm-usage",
+  "--no-sandbox",
+];
+
 function chrome(args) {
-  execFileSync(CHROME, ["--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run", `--user-data-dir=${PROFILE}`, ...args], {
-    stdio: "pipe",
-    timeout: 90_000,
-  });
+  let last;
+  // Old headless first: see the note above CHROME.
+  for (const mode of ["--headless=old", "--headless=new", "--headless"]) {
+    try {
+      execFileSync(CHROME, [mode, ...COMMON, `--user-data-dir=${PROFILE}`, ...args], {
+        stdio: "pipe",
+        timeout: 180_000,
+      });
+      return mode;
+    } catch (error) {
+      last = error;
+      const said = String(error?.stderr ?? "");
+      // A real failure of the page rather than of the browser: stop trying modes.
+      if (!/allocator|headless|unrecognized|ETIMEDOUT/i.test(said + (error?.code ?? ""))) break;
+    }
+  }
+  const said = String(last?.stderr ?? "").split("\n").slice(0, 4).join("\n");
+  throw new Error(
+    `${CHROME.split("/").pop()} would not take a screenshot.\n${said}\n\n` +
+      "Two ways round it:\n" +
+      "  SHOT_CHROME=\"/Applications/Chromium.app/Contents/MacOS/Chromium\" node scripts/store-shots.mjs\n" +
+      "  or take them by hand in the iOS Simulator — see the note in the app-store folder.",
+  );
 }
 
 rmSync(PROFILE, { recursive: true, force: true });

@@ -611,10 +611,12 @@ body:has(.app-shell) {
 
 .compose-shut-again {
   display: block;
-  margin: 10px auto 0;
+  margin: 6px auto 0;
   border: 0;
   background: none;
-  padding: 4px;
+  /* Reachable: it was a twenty-five pixel target in the middle of a screen. */
+  min-height: 44px;
+  padding: 10px 18px;
   font: inherit;
   font-size: 0.9rem;
   font-style: italic;
@@ -1924,7 +1926,11 @@ body:has(.app-shell) {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 28px var(--gutter) calc(28px + env(safe-area-inset-bottom));
+  /* Room at the top for the island, and at the bottom for the home bar. This is
+     the one screen with no header to carry that inset for it, and with the
+     keyboard up on a small phone the mark reaches the top of the glass. */
+  padding: calc(28px + env(safe-area-inset-top)) var(--gutter)
+    calc(28px + env(safe-area-inset-bottom));
   text-align: center;
 }
 
@@ -2375,6 +2381,10 @@ body:has(.app-shell) {
 .peek-book {
   display: flex;
   gap: 12px;
+  /* A thumb's worth of height. It was twenty-six pixels of text pretending to be
+     a link to a whole handbook. */
+  min-height: 44px;
+  padding: 4px 0 8px;
   color: inherit;
   text-decoration: none;
 }
