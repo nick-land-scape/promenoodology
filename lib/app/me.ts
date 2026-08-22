@@ -25,6 +25,20 @@ export type Me = {
   since: string;
   /** Their own answer to being on the community page. */
   listed: boolean;
+  /** They have been past "tell us who you are", whether or not they filled it in. */
+  settledIn: boolean;
+  /* Who somebody is, beyond a name. All optional. */
+  city: string;
+  does: string;
+  skills: string[];
+  languages: string[];
+  instagram: string;
+  /** Day and month, as "29.2" — the year is never stored or shown. */
+  birthday: string;
+  birthdayShown: boolean;
+  /** Private: the person and admins only. */
+  cannotEat: string;
+  phone: string;
   admin: boolean;
 };
 
@@ -46,7 +60,9 @@ export async function whoIsThis(): Promise<Me | null> {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, name, country, email, photo_path, member_no, joined_on, listed, role")
+    .select(
+      "id, name, country, city, does, skills, languages, instagram, birthday, birthday_shown, cannot_eat, phone, email, photo_path, member_no, joined_on, listed, settled_in, role",
+    )
     .eq("user_id", user.id)
     .maybeSingle<{
       id: string;
@@ -57,6 +73,16 @@ export async function whoIsThis(): Promise<Me | null> {
       member_no: number | null;
       joined_on: string;
       listed: boolean;
+      settled_in: boolean;
+      city: string;
+      does: string;
+      skills: string[] | null;
+      languages: string[] | null;
+      instagram: string;
+      birthday: string | null;
+      birthday_shown: boolean;
+      cannot_eat: string;
+      phone: string;
       role: string;
     }>();
   if (!data) return null;
@@ -73,6 +99,17 @@ export async function whoIsThis(): Promise<Me | null> {
     memberNo: data.member_no,
     since: data.joined_on,
     listed: data.listed ?? true,
+    settledIn: data.settled_in ?? false,
+    city: data.city ?? "",
+    does: data.does ?? "",
+    skills: data.skills ?? [],
+    languages: data.languages ?? [],
+    instagram: data.instagram ?? "",
+    /* Kept as a date in a year nobody reads; shown and typed as day and month. */
+    birthday: data.birthday ? `${Number(data.birthday.slice(8, 10))}.${Number(data.birthday.slice(5, 7))}` : "",
+    birthdayShown: data.birthday_shown ?? false,
+    cannotEat: data.cannot_eat ?? "",
+    phone: data.phone ?? "",
     admin: data.role === "admin",
   };
 }
@@ -87,6 +124,14 @@ export async function whoIsThis(): Promise<Me | null> {
 export async function requireMember(where: string): Promise<Me> {
   const me = await whoIsThis();
   if (!me) redirect(`/app/enter?from=${encodeURIComponent(where)}`);
+
+  /* Somebody who has just joined is asked once who they are.
+   *
+   * Once: the screen sets the flag whether it is filled in or walked past, so
+   * this cannot become a wall somebody meets every time they open the app. And
+   * not on the screen that does the asking, or it would send itself in circles. */
+  if (!me.settledIn && !where.startsWith("/app/hello")) redirect("/app/hello");
+
   return me;
 }
 
@@ -265,4 +310,42 @@ export async function myWaves(): Promise<{ waves: Wave[]; unseen: number }> {
     });
 
   return { waves, unseen: waves.filter((one) => !one.seen).length };
+}
+
+/**
+ * Who is bringing what to an evening, and what is still wanted.
+ *
+ * The most useful sentence anybody writes about an improvised kitchen is "we still
+ * need a pot big enough for forty", and the second most useful is the list of what
+ * is already coming. Both existed as facts and neither was ever shown: "bringing"
+ * was typed into a form and never read back, so four people brought salad.
+ *
+ * Only for an evening somebody is actually part of — the read policy on bookings
+ * returns your own and an admin's view of all of them, so this is the honest
+ * answer either way: a member sees what they are bringing, and the people running
+ * it see everything.
+ */
+export type Bringing = { who: string; what: string; people: number };
+
+export async function whoIsBringingWhat(eventId: string): Promise<Bringing[]> {
+  const supabase = await supabaseServer();
+  const [{ data: rows }, { data: people }] = await Promise.all([
+    supabase
+      .from("bookings")
+      .select("profile_id, people, bringing, state")
+      .eq("event_id", eventId)
+      .neq("state", "interested")
+      .returns<{ profile_id: string; people: number; bringing: string; state: string }[]>(),
+    supabase.from("profiles").select("id, name").returns<{ id: string; name: string }[]>(),
+  ]);
+
+  const named = new Map((people ?? []).map((one) => [one.id, one.name || "somebody"]));
+
+  return (rows ?? [])
+    .filter((row) => (row.bringing ?? "").trim())
+    .map((row) => ({
+      who: named.get(row.profile_id) ?? "somebody",
+      what: row.bringing.trim(),
+      people: row.people ?? 1,
+    }));
 }

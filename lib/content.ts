@@ -45,6 +45,10 @@ export type ClubEvent = {
   photo: Photo | null;
   /** Who it is being put on with. */
   partners: string[];
+  /** What is still wanted for it, one per line. */
+  needs: string;
+  /** Roughly how many ate, once somebody has counted. */
+  fed: number | null;
   /** How many places have been asked for, over all the asking. */
   asked: number;
   /** The story written about it afterwards, if there is one. */

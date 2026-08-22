@@ -15,6 +15,7 @@ import * as files from "./data";
 import { getHandbook as handbookFromFile } from "./handbook";
 import * as fileStories from "./stories";
 import { type PageSettings, settingsFor } from "./admin/page-settings";
+import { pretty } from "./admin/when";
 import { hasSupabase, mediaUrl } from "./supabase/config";
 import { supabasePublic } from "./supabase/public";
 import type {
@@ -464,6 +465,8 @@ export async function getEvents(): Promise<ClubEvent[]> {
         ? { src: mediaUrl(row.photo_path), width: 1500, height: 1000 }
         : null,
       partners: (row.partners ?? []).map((id) => named.get(id)).filter(Boolean) as string[],
+      needs: row.needs ?? "",
+      fed: row.people_fed ?? null,
       asked: asked.get(row.id) ?? 0,
       story: story ? { slug: story.slug, title: story.title } : null,
     };
@@ -711,6 +714,179 @@ export async function getHeroVideos(): Promise<Film[]> {
     // Before migration 0019 there is no such table.
     return [builtIn];
   }
+}
+
+/* ------------------------------------------------------------- everywhere */
+
+/** One place this has happened: an evening still to come, or a story of one. */
+export type Placed = {
+  id: string;
+  title: string;
+  where: string;
+  when: string;
+  lat: number;
+  lng: number;
+  slug: string | null;
+  ahead: boolean;
+  fed: number | null;
+};
+
+/**
+ * Everywhere this collective has been.
+ *
+ * Both tables, because both are the same thing at different times: an evening is
+ * something that is going to happen in a place, a story is what happened in one.
+ * Only what has been given a position — a pin with no coordinates is not a pin,
+ * and guessing one from a place name would put a kitchen in the wrong country.
+ */
+export async function getEverywhere(): Promise<Placed[]> {
+  if (!hasSupabase()) return [];
+
+  const supabase = supabasePublic();
+  const [{ data: events }, { data: stories }] = await Promise.all([
+    supabase
+      .from("events")
+      .select("id, title, place, happens_on, lat, lng, people_fed, story_id")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .not("lat", "is", null)
+      .returns<
+        {
+          id: string;
+          title: string;
+          place: string | null;
+          happens_on: string;
+          lat: number;
+          lng: number;
+          people_fed: number | null;
+          story_id: string | null;
+        }[]
+      >(),
+    supabase
+      .from("stories")
+      .select("id, slug, title, place, happened, lat, lng, people_fed")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .not("lat", "is", null)
+      .returns<
+        {
+          id: string;
+          slug: string;
+          title: string;
+          place: string | null;
+          happened: string | null;
+          lat: number;
+          lng: number;
+          people_fed: number | null;
+        }[]
+      >(),
+  ]);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const told = new Map<string, string>();
+  for (const story of stories ?? []) told.set(story.id, story.slug);
+
+  const pins: Placed[] = (stories ?? []).map((story) => ({
+    id: `story-${story.id}`,
+    title: story.title,
+    where: story.place ?? "",
+    when: story.happened ?? "",
+    lat: story.lat,
+    lng: story.lng,
+    slug: story.slug,
+    ahead: false,
+    fed: story.people_fed,
+  }));
+
+  for (const event of events ?? []) {
+    /* An evening that has been written up is already on the map as its story.
+       Two pins on one square is a map that looks like a mistake. */
+    if (event.story_id && told.has(event.story_id)) continue;
+    pins.push({
+      id: `event-${event.id}`,
+      title: event.title,
+      where: event.place ?? "",
+      when: pretty(event.happens_on),
+      lat: event.lat,
+      lng: event.lng,
+      slug: event.story_id ? (told.get(event.story_id) ?? null) : null,
+      ahead: event.happens_on >= today,
+      fed: event.people_fed,
+    });
+  }
+
+  return pins;
+}
+
+/**
+ * The numbers this collective is actually testing.
+ *
+ * Not engagement: plates, places, years. The claim is that fun is a currency that
+ * brings public space back to life, and these are the only figures that speak to
+ * it — so they are counted from what is recorded rather than typed into a banner.
+ */
+export async function getTheCount(): Promise<{
+  fed: number;
+  places: number;
+  countries: number;
+  interventions: number;
+  years: number;
+}> {
+  if (!hasSupabase()) return { fed: 0, places: 0, countries: 0, interventions: 0, years: 0 };
+
+  const supabase = supabasePublic();
+  const [{ data: stories }, { data: events }] = await Promise.all([
+    supabase
+      .from("stories")
+      .select("place, happened, people_fed")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .returns<{ place: string | null; happened: string | null; people_fed: number | null }[]>(),
+    supabase
+      .from("events")
+      .select("place, happens_on, people_fed, story_id")
+      .is("deleted_at", null)
+      .eq("published", true)
+      .returns<
+        { place: string | null; happens_on: string; people_fed: number | null; story_id: string | null }[]
+      >(),
+  ]);
+
+  const both = [
+    ...(stories ?? []).map((one) => ({ place: one.place, when: one.happened, fed: one.people_fed })),
+    // An evening with a story is counted once, as the story.
+    ...(events ?? [])
+      .filter((one) => !one.story_id)
+      .map((one) => ({ place: one.place, when: one.happens_on, fed: one.people_fed })),
+  ];
+
+  const places = new Set<string>();
+  const countries = new Set<string>();
+  const years = new Set<string>();
+  let fed = 0;
+
+  for (const one of both) {
+    if (one.fed) fed += one.fed;
+    const where = (one.place ?? "").trim();
+    if (where) {
+      places.add(where.toLowerCase());
+      /* The last thing after a comma is the country, the way anybody writes a
+         place: "the yard, Burngreave, England". Where there is no comma the whole
+         thing is taken as the place and no country is claimed. */
+      const parts = where.split(",").map((part) => part.trim()).filter(Boolean);
+      if (parts.length > 1) countries.add(parts[parts.length - 1].toLowerCase());
+    }
+    const year = (one.when ?? "").match(/\b(20\d{2})\b/);
+    if (year) years.add(year[1]);
+  }
+
+  return {
+    fed,
+    places: places.size,
+    countries: countries.size,
+    interventions: both.length,
+    years: years.size,
+  };
 }
 
 /* ---------------------------------------------------------------- helpers */

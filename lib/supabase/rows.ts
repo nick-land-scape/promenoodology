@@ -7,6 +7,11 @@
  */
 
 export type StoryRow = {
+  /** Where it happened, for the map. Null: not on the map. See migration 0026. */
+  lat: number | null;
+  lng: number | null;
+  /** Roughly how many people ate. */
+  people_fed: number | null;
   id: string;
   slug: string;
   title: string;
@@ -71,6 +76,13 @@ export type PageRow = {
 export type EventRow = {
   id: string;
   happens_on: string;
+  /** Where it is, for the map. Null until somebody places it. */
+  lat: number | null;
+  lng: number | null;
+  /** What is still wanted for it, one per line. */
+  needs: string;
+  /** Roughly how many ate. The evidence, so a rough number beats none. */
+  people_fed: number | null;
   /** The last day, for anything that runs longer than an evening. */
   ends_on: string | null;
   starts_at: string;
@@ -123,6 +135,20 @@ export type ProfileRow = {
   joined_on: string;
   /** Given once and never moved. See migration 0015. */
   member_no: number | null;
+  /* Who somebody is, beyond a name — see migration 0026. */
+  city: string;
+  does: string;
+  skills: string[];
+  languages: string[];
+  instagram: string;
+  /** A date whose year nobody is meant to read; only the day and month are shown. */
+  birthday: string | null;
+  birthday_shown: boolean;
+  /** Private: the person and admins only, never the community page. */
+  cannot_eat: string;
+  phone: string;
+  /** They have been through "tell us who you are", whether or not they filled it in. */
+  settled_in: boolean;
 };
 
 export type AssociationRow = {

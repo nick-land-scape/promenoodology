@@ -43,7 +43,25 @@ function clean(table: TableName, values: RowValues): RowValues {
       continue;
     }
     if (column?.kind === "number") {
+      /* "How many ate" is filled in after the evening, so empty has to mean
+         "nobody has counted" rather than nought — a wall of zeroes would be a
+         claim, and the wrong one. Everything else counted here is a real zero:
+         no places means as many as turn up. */
+      if (value === "" || value === null || value === undefined) {
+        out[key] = key === "people_fed" ? null : 0;
+        continue;
+      }
       out[key] = Number(value) || 0;
+      continue;
+    }
+    /* Two numbers that are only ever a pair. Degrees, and inside the range the
+       planet has: anything else is a typo, and a pin at 900° is a pin nowhere. */
+    if (column?.kind === "where") {
+      const at = Number(value);
+      const limit = key.endsWith("lat") || key === "lat" ? 90 : 180;
+      out[key] = value === "" || value === null || !Number.isFinite(at) || Math.abs(at) > limit
+        ? null
+        : at;
       continue;
     }
     /* A list of people: only what is actually a list of ids, and nothing that

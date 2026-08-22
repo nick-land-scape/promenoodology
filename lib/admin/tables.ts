@@ -39,6 +39,16 @@ export type Column = {
     | "dates"
     | "times"
     /**
+     * Two numbers and a way of finding them.
+     *
+     * A pin needs a latitude and a longitude, and nobody knows either by heart.
+     * This is one cell holding both, with a button that looks the place up by
+     * name — so the person filling it in types "Burngreave, Sheffield" rather
+     * than reading coordinates off another website. The second column is named
+     * in `until`, as with a stretch of days.
+     */
+    | "where"
+    /**
      * A day and an hour as one thing, behind one calendar.
      *
      * An evening's beginning is not a date and, separately, a time — it is a
@@ -205,6 +215,10 @@ export const TABLES: Record<TableName, TableSpec> = {
       photo_path: null,
       partners: [],
       story_id: null,
+      lat: null,
+      lng: null,
+      needs: "",
+      people_fed: null,
     },
     columns: [
       { key: "title", label: "what it is", kind: "text", placeholder: "soup and a walk" },
@@ -218,6 +232,13 @@ export const TABLES: Record<TableName, TableSpec> = {
       },
       { key: "place", label: "where", kind: "text", placeholder: "the yard, Burngreave" },
       {
+        key: "lat",
+        until: "lng",
+        label: "on the map",
+        kind: "where",
+        hint: "Press find it and it looks up whatever is in “where”. Only what has a pin is on the map.",
+      },
+      {
         key: "partners",
         label: "with",
         kind: "partners",
@@ -228,6 +249,20 @@ export const TABLES: Record<TableName, TableSpec> = {
         label: "places",
         kind: "number",
         hint: "How many people can come. 0 means as many as turn up.",
+      },
+      {
+        key: "needs",
+        label: "still wanted",
+        kind: "long",
+        wide: true,
+        placeholder: "a pot big enough for forty\na table\nsomebody with a van",
+        hint: "One per line. Shown in the app beside what people are bringing, and it recruits itself.",
+      },
+      {
+        key: "people_fed",
+        label: "how many ate",
+        kind: "number",
+        hint: "Filled in afterwards. It is the evidence for the whole argument, so a rough number beats none.",
       },
       {
         key: "note",
@@ -274,6 +309,9 @@ export function kindOf(table: TableName, key: string): Column["kind"] | "boolean
   // The hour half of a "when".
   if (spec.columns.some((column) => column.time === key)) return "time";
   const pair = spec.columns.find((column) => column.until === key);
-  // The far end of a stretch behaves exactly like the near end.
-  return pair ? (pair.kind === "dates" ? "date" : "time") : undefined;
+  if (!pair) return undefined;
+  // The far end of a pair behaves exactly like the near end.
+  if (pair.kind === "dates") return "date";
+  if (pair.kind === "times") return "time";
+  return pair.kind;
 }

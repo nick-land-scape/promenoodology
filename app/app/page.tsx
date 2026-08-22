@@ -4,7 +4,7 @@ import AppHeader from "@/components/app/AppHeader";
 import UpcomingEvents from "@/components/app/UpcomingEvents";
 import { dateParts, shortDate, weekday, whenItIs } from "@/lib/app-data";
 import { myBookings, requireMember } from "@/lib/app/me";
-import { getEvents, getNews, getPage, getResources, getStories } from "@/lib/source";
+import { getEvents, getNews, getPage, getResources, getStories, getTheCount } from "@/lib/source";
 
 export const metadata = { title: "Home" };
 
@@ -17,13 +17,14 @@ const FEW = { stories: 2, photographs: 6, news: 3 };
 
 export default async function AppHome() {
   const me = await requireMember("/app");
-  const [all, mine, news, stories, photos, handbook] = await Promise.all([
+  const [all, mine, news, stories, photos, handbook, count] = await Promise.all([
     getEvents(),
     myBookings(),
     getNews(),
     getStories(),
     getResources(),
     getPage("handbook"),
+    getTheCount(),
   ]);
   /* Coming, not merely marked: the front screen says "you are coming" and that
      should be a promise rather than a bookmark. */
@@ -147,6 +148,55 @@ export default async function AppHome() {
               </li>
             ))}
           </ul>
+        </section>
+      ) : null}
+
+      {/*
+       * The figures this collective is actually testing.
+       *
+       * Not engagement — plates, places, countries, years. The claim is that fun is
+       * a currency capable of bringing public space back to life, and these are the
+       * only numbers that speak to it. Counted from what is recorded rather than
+       * typed into a banner, so they cannot flatter anybody: a story with nobody
+       * counted adds nothing to the plates.
+       */}
+      {count.interventions > 0 ? (
+        <section className="app-section">
+          <div className="app-section-head">
+            <h2 className="app-h2">what that adds up to</h2>
+          </div>
+          <dl className="tally">
+            {count.fed > 0 ? (
+              <div>
+                <dt>{count.fed.toLocaleString("en-GB")}</dt>
+                <dd>plates</dd>
+              </div>
+            ) : null}
+            <div>
+              <dt>{count.interventions}</dt>
+              <dd>{count.interventions === 1 ? "intervention" : "interventions"}</dd>
+            </div>
+            <div>
+              <dt>{count.places}</dt>
+              <dd>{count.places === 1 ? "place" : "places"}</dd>
+            </div>
+            {count.countries > 1 ? (
+              <div>
+                <dt>{count.countries}</dt>
+                <dd>countries</dd>
+              </div>
+            ) : null}
+            {count.years > 1 ? (
+              <div>
+                <dt>{count.years}</dt>
+                <dd>years</dd>
+              </div>
+            ) : null}
+          </dl>
+          <p className="app-note">
+            Public space in Europe is turning generic. This is what a bit of nerve and
+            a borrowed kitchen has done about it so far.
+          </p>
         </section>
       ) : null}
 

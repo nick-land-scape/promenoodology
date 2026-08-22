@@ -41,6 +41,11 @@ export type StoryInput = {
   people: string[];
   /** Which organisations it was made with. */
   partners: string[];
+  /** Where it happened, for the map. Null: not on the map. */
+  lat: number | null;
+  lng: number | null;
+  /** Roughly how many people ate. The evidence for the whole argument. */
+  people_fed: number | null;
 };
 
 /** A blank story, opened straight away so there is somewhere to type. */
@@ -155,6 +160,11 @@ export async function saveStory(input: StoryInput): Promise<Saved & { slug?: str
       subtitle: input.subtitle.trim() || null,
       featured_photo_id: input.featured_photo_id,
       place: input.place.trim() || null,
+      /* Where it happened, and roughly how many ate. Both nullable, and both mean
+         "nobody has said" rather than nought when they are. */
+      lat: input.lat,
+      lng: input.lng,
+      people_fed: input.people_fed,
       happened: input.happened.trim() || null,
       made_with: input.made_with.trim() || null,
       sections,

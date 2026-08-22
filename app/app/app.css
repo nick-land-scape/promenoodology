@@ -2658,3 +2658,182 @@ body:has(.app-shell) {
 .app-scroll-flush {
   padding: 0 var(--gutter) 10px;
 }
+
+/* ------------------------------------------------------------- everywhere */
+
+.segmented-four button {
+  font-size: 0.82em;
+  letter-spacing: 0.06em;
+}
+
+/* The map: as tall as it can be without pushing the switcher off the screen. */
+.everywhere {
+  position: relative;
+  padding: 0 var(--gutter);
+}
+
+.everywhere-map {
+  height: min(62vh, 520px);
+  border: 1px solid var(--hair);
+  overflow: hidden;
+}
+
+/* The pins. A dot in the club's purple, and a hollow one for something still to
+   come — the difference between a record and an invitation. */
+.everywhere .pin {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--paper);
+  border-radius: 999px;
+  background: var(--purple);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  padding: 0;
+}
+
+.everywhere .pin-ahead {
+  background: var(--paper);
+  border-color: var(--purple);
+}
+
+.everywhere .pin:active {
+  transform: scale(0.86);
+}
+
+/* What was pressed, as a sheet at the foot of the map rather than a bubble on it:
+   a bubble on a phone covers the thing it is about. */
+.everywhere-said {
+  position: relative;
+  margin-top: -1px;
+  border: 1px solid var(--hair);
+  padding: 14px 16px 16px;
+  background: var(--paper);
+  animation: app-rise 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.everywhere-what {
+  margin: 0 0 2px;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  padding-right: 28px;
+}
+
+.everywhere-said .pill {
+  margin-top: 12px;
+}
+
+.everywhere-shut {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--muted);
+}
+
+/* The library's own furniture, in this club's materials rather than its own. */
+.everywhere .maplibregl-ctrl-group {
+  border-radius: 0;
+  box-shadow: none;
+  border: 1px solid var(--hair);
+  background: var(--paper);
+}
+
+.everywhere .maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--hair);
+}
+
+.everywhere .maplibregl-ctrl-attrib {
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  background: none;
+}
+
+/* ------------------------------------------------------------------ the tally */
+
+/* The figures the collective is actually testing. Set like a claim rather than
+   like a dashboard: the number large in Times, the word small underneath it. */
+.tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 26px;
+  margin: 0;
+  padding: 4px 0 2px;
+}
+
+.tally dt {
+  font-size: 2.1rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tally dd {
+  margin: 3px 0 0;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------- what is wanted, what comes */
+
+/* Two short lists under an evening: what is still needed, and what is already
+   coming. Set as labelled runs rather than bullet lists — an evening's row is not
+   a document. */
+.row-wanted,
+.row-coming {
+  display: block;
+  padding-top: 6px;
+  line-height: 1.5;
+}
+
+.row-wanted em,
+.row-coming em {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.54rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 1px;
+}
+
+.row-wanted span {
+  display: inline-block;
+  margin: 2px 6px 0 0;
+  border: 1px solid var(--purple);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 0.9rem;
+  color: var(--purple);
+}
+
+.row-coming span {
+  display: inline-block;
+  margin: 2px 10px 0 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.row-coming i {
+  font-style: italic;
+  opacity: 0.75;
+}
+
+/* A line of explanation under a field, where the field needs one. */
+.field-said {
+  display: block;
+  padding-top: 4px;
+  font-size: 0.88rem;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--muted);
+}

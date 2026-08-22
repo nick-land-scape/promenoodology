@@ -10,6 +10,7 @@ import { Picker, type Pickable } from "./Pick";
 import { Some } from "./Many";
 import When from "./When";
 import type { Choice } from "./Picker";
+import Placed from "./Placed";
 import { Bin, Empty, Field, Flag, Icon, Problem, SaveBar, Word, pretty, today } from "./ui";
 
 /**
@@ -192,6 +193,23 @@ export default function RowsEditor({
        calendar of our own: the browser's gives a phone a wheel, a laptop a
        proper calendar, and everybody the date format their machine is set to,
        and anything hand-built here would be a worse version of all three. */
+    /* Two numbers and a way of finding them. */
+    if (column.kind === "where") {
+      const other = column.until ?? "lng";
+      return (
+        <Placed
+          lat={row[column.key] as number | null}
+          lng={row[other] as number | null}
+          near={String(row.place ?? row.title ?? "")}
+          onPlace={(lat, lng) => {
+            // Two columns, one act: a pin is both numbers or neither.
+            edit(row.id, column.key, lat);
+            edit(row.id, other, lng);
+          }}
+        />
+      );
+    }
+
     if (column.kind === "dates" || column.kind === "times") {
       const type = column.kind === "dates" ? "date" : "time";
       const far = column.until ?? column.key;

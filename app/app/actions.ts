@@ -348,3 +348,104 @@ export async function tellUs(
 
   return { ok: true };
 }
+
+/* ------------------------------------------------------------ who you are */
+
+export type WhoYouAre = {
+  name: string;
+  city: string;
+  country: string;
+  does: string;
+  skills: string[];
+  languages: string[];
+  /** Day and month only. The year is not asked for and not stored. */
+  birthday: string;
+  birthdayShown: boolean;
+  instagram: string;
+  cannotEat: string;
+  phone: string;
+  listed: boolean;
+};
+
+/**
+ * Saying who you are, once, after joining.
+ *
+ * Everything here is optional except the name, and the reason each field exists is
+ * a reason from this collective rather than a field a form usually has. What
+ * somebody does and what they can bring is how you find out who can weld, who has
+ * a van and who speaks Romanian — which is the actual work of putting a kitchen
+ * together out of what a place already has. What they cannot eat is asked because a
+ * shared kitchen has to know, and it is never shown to anybody but us.
+ *
+ * The birthday is a day and a month. The year is not asked for, not stored, and not
+ * inferable: a date of birth is the most useful field in the world to somebody
+ * impersonating you, and a collective only wants to know it is your birthday.
+ */
+export async function sayWhoYouAre(who: WhoYouAre): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const name = who.name.trim();
+  if (!name) return { ok: false, error: "A name, at least — it is what everybody sees." };
+
+  /* A day and a month, kept as a date in a year nobody reads. 2000 because it is
+     a leap year: somebody born on the twenty-ninth of February exists. */
+  let birthday: string | null = null;
+  if (who.birthday) {
+    const match = /^(\d{1,2})[.\-/](\d{1,2})$/.exec(who.birthday.trim());
+    if (!match) {
+      return { ok: false, error: "A birthday as day and month — 29.2, or 7.11." };
+    }
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      return { ok: false, error: "That is not a day and a month." };
+    }
+    birthday = `2000-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+
+  const tidy = (list: string[]) =>
+    [...new Set(list.map((one) => one.trim()).filter(Boolean))].slice(0, 12);
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      name,
+      city: who.city.trim().slice(0, 80),
+      country: who.country.trim().slice(0, 80),
+      does: who.does.trim().slice(0, 120),
+      skills: tidy(who.skills),
+      languages: tidy(who.languages),
+      birthday,
+      birthday_shown: Boolean(birthday) && who.birthdayShown,
+      instagram: who.instagram.trim().replace(/^@+/, "").slice(0, 60),
+      cannot_eat: who.cannotEat.trim().slice(0, 400),
+      phone: who.phone.trim().slice(0, 40),
+      listed: who.listed,
+      settled_in: true,
+    })
+    .eq("id", me.id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app", "layout");
+  revalidatePath("/community");
+  return { ok: true };
+}
+
+/**
+ * Not now.
+ *
+ * The screen is asked once and it has to be possible to walk past it — somebody
+ * who has just joined to see what is on this Saturday does not owe us a
+ * biography. It is all in their own details afterwards, whenever they feel like it.
+ */
+export async function notJustYet(): Promise<{ ok: boolean }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false };
+
+  const supabase = await supabaseServer();
+  await supabase.from("profiles").update({ settled_in: true }).eq("id", me.id);
+  revalidatePath("/app", "layout");
+  return { ok: true };
+}

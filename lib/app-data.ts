@@ -53,6 +53,8 @@ export function getEvents(): ClubEvent[] {
         note: note.join(", "),
         photo: resourcePhoto(photo),
         partners: [],
+        needs: "",
+        fed: null,
         asked: 0,
         story: null,
       };

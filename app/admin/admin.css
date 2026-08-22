@@ -3975,3 +3975,85 @@ html.admin-dragging * {
   text-transform: uppercase;
   color: var(--admin-faint);
 }
+
+/* --------------------------------------------------------------- on the map */
+
+/* Two numbers nobody has to know, and the way to find them. */
+.admin-placed {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+
+.admin-placed-now {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-placed-now code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-placed-now em {
+  color: var(--admin-faint);
+  font-size: 0.9em;
+}
+
+.admin-placed-ask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-placed-ask input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: none;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+/* Several answers, because a district name is a word in a dozen countries. */
+.admin-placed-found {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--hairline);
+}
+
+.admin-placed-found li + li {
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-placed-found button {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 7px 9px;
+  font: inherit;
+  font-size: 0.88rem;
+  line-height: 1.3;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.admin-placed-found button:hover {
+  background: var(--admin-tint);
+}
+
+.admin-placed-trouble {
+  color: var(--pink);
+  font-size: 0.9em;
+  line-height: 1.35;
+}

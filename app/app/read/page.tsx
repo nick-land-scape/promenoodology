@@ -1,7 +1,7 @@
 import AppHeader from "@/components/app/AppHeader";
 import Reading from "@/components/app/Reading";
 import { requireMember } from "@/lib/app/me";
-import { getPage, getResources, getStories } from "@/lib/source";
+import { getEverywhere, getPage, getResources, getStories } from "@/lib/source";
 
 export const metadata = { title: "Read" };
 
@@ -29,12 +29,14 @@ export default async function ReadPage({
   /* Which of the three to open on, so a preview on the front screen lands where
      it was pointing rather than on the first tab. */
   const { of } = await searchParams;
-  const openAt = of === "archive" || of === "handbook" ? of : "stories";
+  const openAt =
+    of === "archive" || of === "handbook" || of === "map" ? of : "stories";
 
-  const [stories, photos, handbook] = await Promise.all([
+  const [stories, photos, handbook, pins] = await Promise.all([
     getStories(),
     getResources(),
     getPage("handbook"),
+    getEverywhere(),
   ]);
 
   return (
@@ -62,6 +64,17 @@ export default async function ReadPage({
           lead: handbook?.lead ?? "",
           blocks: handbook?.blocks ?? [],
         }}
+        pins={pins.map((pin) => ({
+          id: pin.id,
+          title: pin.title,
+          where: pin.where,
+          when: pin.when,
+          lat: pin.lat,
+          lng: pin.lng,
+          slug: pin.slug,
+          ahead: pin.ahead,
+          fed: pin.fed,
+        }))}
       />
     </>
   );

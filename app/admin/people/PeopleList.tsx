@@ -37,6 +37,17 @@ export type Person = {
   /** An admin's answer, which wins. Null: whatever they said. */
   listedByAdmin: boolean | null;
   colour: string | null;
+  /* What they said about themselves — or what we know about them, for the
+     sixty-odd who were written down from a spreadsheet. */
+  city: string;
+  does: string;
+  skills: string[];
+  languages: string[];
+  /** Day and month, as "7.11". Never a year. */
+  birthday: string;
+  /** Private: here and in their own app, never on the community page. */
+  cannotEat: string;
+  phone: string;
   photo: string | null;
   photoUrl: string | null;
   joined: string;
@@ -198,6 +209,12 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
           listed_by_admin: person.listedByAdmin,
           role: person.role,
           joined_on: person.joined,
+          city: person.city,
+          does: person.does,
+          skills: person.skills,
+          languages: person.languages,
+          cannot_eat: person.cannotEat,
+          phone: person.phone,
         })),
       );
       if (!result.ok) setProblem(result.error ?? "That did not save.");
@@ -390,6 +407,69 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
                     empty="black"
                     label="The colour this name is printed in"
                   />
+                </Field>
+                <Field label="in" hint="Which town or city.">
+                  <input
+                    value={person.city}
+                    onChange={(event) => edit(person.id, { city: event.target.value })}
+                    placeholder="Zürich"
+                  />
+                </Field>
+                <Field label="does" hint="Architecture, cooking, carpentry — whatever it is.">
+                  <input
+                    value={person.does}
+                    onChange={(event) => edit(person.id, { does: event.target.value })}
+                    placeholder="architecture student"
+                  />
+                </Field>
+                <Field
+                  label="can bring"
+                  hint="Commas between them. The one anybody putting an evening together actually reads."
+                  two
+                >
+                  <input
+                    value={person.skills.join(", ")}
+                    onChange={(event) =>
+                      edit(person.id, {
+                        skills: event.target.value.split(",").map((one) => one.trim()),
+                      })
+                    }
+                    placeholder="welding, a van, sourdough"
+                  />
+                </Field>
+                <Field label="speaks" hint="Commas between them.">
+                  <input
+                    value={person.languages.join(", ")}
+                    onChange={(event) =>
+                      edit(person.id, {
+                        languages: event.target.value.split(",").map((one) => one.trim()),
+                      })
+                    }
+                    placeholder="German, English"
+                  />
+                </Field>
+                <Field
+                  label="cannot eat"
+                  hint="Private: this page and their own app, never the community page."
+                >
+                  <input
+                    value={person.cannotEat}
+                    onChange={(event) => edit(person.id, { cannotEat: event.target.value })}
+                    placeholder="no nuts"
+                  />
+                </Field>
+                <Field label="number" hint="Private. For the day of an evening.">
+                  <input
+                    value={person.phone}
+                    onChange={(event) => edit(person.id, { phone: event.target.value })}
+                    placeholder="+41…"
+                  />
+                </Field>
+                <Field
+                  label="birthday"
+                  hint="Day and month, theirs to set. Shown here so nobody has to ask twice."
+                >
+                  <span className="admin-said">{person.birthday || "—"}</span>
                 </Field>
                 <Field label="since">
                   <input

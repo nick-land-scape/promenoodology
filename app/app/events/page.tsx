@@ -1,7 +1,7 @@
 import AppHeader from "@/components/app/AppHeader";
 import SignUpForm, { type Joinable } from "@/components/app/SignUpForm";
 import { whenItIs } from "@/lib/app-data";
-import { myBookings, requireMember } from "@/lib/app/me";
+import { myBookings, requireMember, whoIsBringingWhat } from "@/lib/app/me";
 import { getEvents } from "@/lib/source";
 
 export const metadata = { title: "What's on" };
@@ -16,12 +16,24 @@ export default async function EventsPage() {
   const [all, mine] = await Promise.all([getEvents(), myBookings()]);
   const asked = new Map(mine.map((booking) => [booking.eventId, booking]));
 
+  /* What people are bringing, for the ones still to come only: it is a list for
+     organising an evening, not a record of one that has happened. */
+  const today0 = new Date().toISOString().slice(0, 10);
+  const ahead = all.filter((event) => (event.until || event.date) >= today0);
+  const bringing = new Map(
+    await Promise.all(
+      ahead.map(async (event) => [event.id, await whoIsBringingWhat(event.id)] as const),
+    ),
+  );
+
   const today = new Date().toISOString().slice(0, 10);
   const dressed = (event: (typeof all)[number]): Joinable => {
     const booking = asked.get(event.id);
     return {
       ...event,
       label: whenItIs(event),
+      needs: event.needs,
+      bringing: bringing.get(event.id) ?? [],
       mine: booking
         ? { people: booking.people, bringing: booking.bringing, state: booking.state }
         : null,

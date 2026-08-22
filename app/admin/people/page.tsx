@@ -11,7 +11,7 @@ export default async function PeoplePage() {
   const { data } = await supabase
     .from("profiles")
     .select(
-      "id, user_id, email, name, country, role, listed, listed_by_admin, photo_path, colour, joined_on, member_no",
+      "id, user_id, email, name, country, role, listed, listed_by_admin, photo_path, colour, joined_on, member_no, city, does, skills, languages, birthday, cannot_eat, phone",
     )
     .order("name")
     .returns<
@@ -28,6 +28,13 @@ export default async function PeoplePage() {
         colour: string | null;
         joined_on: string;
         member_no: number | null;
+        city: string;
+        does: string;
+        skills: string[] | null;
+        languages: string[] | null;
+        birthday: string | null;
+        cannot_eat: string;
+        phone: string;
       }[]
     >();
 
@@ -37,6 +44,17 @@ export default async function PeoplePage() {
     hasAccount: row.user_id !== null,
     name: row.name ?? "",
     country: row.country ?? "",
+    city: row.city ?? "",
+    does: row.does ?? "",
+    skills: row.skills ?? [],
+    languages: row.languages ?? [],
+    /* Day and month. The column is a date in a year nobody reads, so the year is
+       thrown away here rather than shown to somebody who might believe it. */
+    birthday: row.birthday
+      ? `${Number(row.birthday.slice(8, 10))}.${Number(row.birthday.slice(5, 7))}`
+      : "",
+    cannotEat: row.cannot_eat ?? "",
+    phone: row.phone ?? "",
     role: row.role,
     listed: row.listed,
     listedByAdmin: row.listed_by_admin,

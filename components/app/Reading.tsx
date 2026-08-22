@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import Everywhere, { type Pin } from "./Everywhere";
 import Lightbox from "../Lightbox";
 import Photo from "../Photo";
 
@@ -30,15 +31,19 @@ export default function Reading({
   stories,
   photos,
   handbook,
+  pins,
   openAt,
 }: {
   stories: Told[];
   photos: Shot[];
   handbook: Book;
+  pins: Pin[];
   /** Which view to open on, when something linked straight to one. */
-  openAt?: "stories" | "archive" | "handbook";
+  openAt?: "stories" | "archive" | "handbook" | "map";
 }) {
-  const [view, setView] = useState<"stories" | "archive" | "handbook">(openAt ?? "stories");
+  const [view, setView] = useState<"stories" | "archive" | "handbook" | "map">(
+    openAt ?? "stories",
+  );
   /* Which photograph is open. An index rather than the photograph itself, so the
      arrows have somewhere to go. */
   const [at, setAt] = useState<number | null>(null);
@@ -72,8 +77,11 @@ export default function Reading({
 
   return (
     <>
-      <div className="segmented segmented-three" role="tablist" aria-label="What to read">
-        {(["stories", "archive", "handbook"] as const).map((option) => (
+      {/* Four ways of looking at the same five years. The map is a way of looking,
+          not a replacement for the list: one answers "what happened", the other
+          answers "where has this been". */}
+      <div className="segmented segmented-four" role="tablist" aria-label="What to read">
+        {(["stories", "map", "archive", "handbook"] as const).map((option) => (
           <button
             key={option}
             type="button"
@@ -152,6 +160,8 @@ export default function Reading({
           </ul>
         </>
       ) : null}
+
+      {view === "map" ? <Everywhere pins={pins} /> : null}
 
       {view === "handbook" ? (
         <div className="app-book">

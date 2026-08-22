@@ -28,6 +28,7 @@ import {
   useDragOrder,
 } from "@/components/admin/ui";
 import { LAYOUTS } from "@/lib/photo-layout";
+import Placed from "@/components/admin/Placed";
 import type { PhotoLayout } from "@/lib/supabase/rows";
 import { saveStory, saveStoryPage, saveStoryPhotos, tagPhotos, untagPhoto } from "../actions";
 import { addPhoto, deletePhoto } from "@/app/admin/photos/actions";
@@ -50,6 +51,9 @@ type Draft = {
   subtitle: string;
   tag: string;
   place: string;
+  lat: number | null;
+  lng: number | null;
+  people_fed: number | null;
   happened: string;
   made_with: string;
   sections: { heading: string; texts: string[] }[];
@@ -208,6 +212,9 @@ export default function StoryEditor({
         featured_photo_id: draft.featured,
         tag: draft.tag,
         place: draft.place,
+        lat: draft.lat,
+        lng: draft.lng,
+        people_fed: draft.people_fed,
         happened: draft.happened,
         made_with: draft.made_with,
         sections: draft.sections.map((section) => ({
@@ -317,6 +324,32 @@ export default function StoryEditor({
               value={draft.place}
               onChange={(event) => set("place", event.target.value)}
               placeholder="Sheffield, England"
+            />
+          </Field>
+          {/* Two numbers nobody has to know: press find it and it looks up
+              whatever is in "where". Only what has a pin is on the map. */}
+          <Field label="on the map" hint="Only what has a pin shows on the map of everywhere we have been.">
+            <Placed
+              lat={draft.lat}
+              lng={draft.lng}
+              near={draft.place || draft.title}
+              onPlace={(lat, lng) => {
+                set("lat", lat);
+                set("lng", lng);
+              }}
+            />
+          </Field>
+          <Field
+            label="how many ate"
+            hint="Roughly. It is the evidence for the whole argument, so a guess beats nothing."
+          >
+            <input
+              inputMode="numeric"
+              value={draft.people_fed ?? ""}
+              onChange={(event) =>
+                set("people_fed", event.target.value === "" ? null : Number(event.target.value) || 0)
+              }
+              placeholder="40"
             />
           </Field>
           <Field label="when" hint="Left empty, the years come from the photographs.">

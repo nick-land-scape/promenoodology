@@ -41,9 +41,24 @@ export type PersonInput = {
    * for all of them, and wrong for every one.
    */
   joined_on: string;
+  /* What somebody said about themselves. Editable here because half of these
+     sixty-six were written down by us from a spreadsheet and have never opened
+     the app — somebody has to be able to fill in that Anna is the one with the
+     van. See migration 0026. */
+  city: string;
+  does: string;
+  skills: string[];
+  languages: string[];
+  /** Private. Shown here and to the person, never on the community page. */
+  cannot_eat: string;
+  phone: string;
 };
 
 const COLOURS = new Set(["orange", "green", "blue"]);
+
+/** A list without blanks, without repeats, and without somebody's whole life. */
+const tidy = (list: string[]) =>
+  [...new Set((list ?? []).map((one) => String(one).trim()).filter(Boolean))].slice(0, 12);
 
 export async function savePeople(people: PersonInput[]): Promise<Saved> {
   const me = await requireAdminAction();
@@ -85,6 +100,12 @@ export async function savePeople(people: PersonInput[]): Promise<Saved> {
         listed: person.listed,
         listed_by_admin: person.listed_by_admin,
         role: person.role === "admin" ? "admin" : "member",
+        city: person.city.trim().slice(0, 80),
+        does: person.does.trim().slice(0, 120),
+        skills: tidy(person.skills),
+        languages: tidy(person.languages),
+        cannot_eat: person.cannot_eat.trim().slice(0, 400),
+        phone: person.phone.trim().slice(0, 40),
         // A date the database will not take is worse than the one already
         // there, so an unreadable one is simply not sent.
         ...(/^\d{4}-\d{2}-\d{2}$/.test(person.joined_on) ? { joined_on: person.joined_on } : {}),

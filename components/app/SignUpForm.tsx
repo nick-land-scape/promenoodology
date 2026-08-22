@@ -10,6 +10,10 @@ import { buzz } from "@/lib/native";
 export type Joinable = ClubEvent & {
   /** When it is, said the way the row says it. */
   label: string;
+  /** What is still wanted, one per line, as written in the back of the house. */
+  needs: string;
+  /** What people are already bringing. */
+  bringing: { who: string; what: string; people: number }[];
   /** Your own place or mark, where you have one. */
   mine: {
     people: number;
@@ -118,6 +122,34 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
               <span className="row-meta">with {event.partners.join(", ")}</span>
             ) : null}
             {event.note ? <span className="row-meta">{event.note}</span> : null}
+
+            {/* What is still wanted, and what is already coming. The two most
+                useful sentences about an improvised kitchen, and until now
+                neither was ever shown: "bringing" was typed into a form and
+                never read back, so four people brought salad. */}
+            {event.needs.trim() ? (
+              <span className="row-wanted">
+                <em>still wanted</em>
+                {event.needs
+                  .split("\n")
+                  .map((line) => line.trim())
+                  .filter(Boolean)
+                  .map((line) => (
+                    <span key={line}>{line}</span>
+                  ))}
+              </span>
+            ) : null}
+
+            {event.bringing.length > 0 ? (
+              <span className="row-coming">
+                <em>coming with</em>
+                {event.bringing.map((one) => (
+                  <span key={`${one.who}-${one.what}`}>
+                    {one.what} <i>{one.who.split(" ")[0]}</i>
+                  </span>
+                ))}
+              </span>
+            ) : null}
 
             {coming(event) ? (
               <span className="row-yes">
