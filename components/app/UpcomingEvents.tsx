@@ -3,6 +3,7 @@
 import Photo from "../Photo";
 import { useState } from "react";
 import type { ClubEvent } from "@/lib/content";
+import Mark from "./Mark";
 
 type Props = {
   events: (ClubEvent & {
@@ -20,13 +21,18 @@ type Props = {
 /** The list of what is coming up, narrowed down by place. */
 export default function UpcomingEvents({ events, places }: Props) {
   const [place, setPlace] = useState<string | null>(null);
-  const shown = place ? events.filter((event) => event.place === place) : events;
+  const shown = place
+    ? events.filter((event) => event.place === place)
+    : events;
 
   return (
     <>
       <div className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">what is coming up</h2>
+          <h2 className="app-h2">
+            <Mark is="calendar" />
+            what is coming up
+          </h2>
           <span className="app-label">
             {shown.length} {shown.length === 1 ? "event" : "events"}
           </span>
@@ -79,10 +85,16 @@ export default function UpcomingEvents({ events, places }: Props) {
                     <span className="row-title">{event.title}</span>
                     <span className="row-meta">{event.when}</span>
                     {event.partners.length > 0 ? (
-                      <span className="row-meta">with {event.partners.join(", ")}</span>
+                      <span className="row-meta">
+                        with {event.partners.join(", ")}
+                      </span>
                     ) : null}
-                    {event.note ? <span className="row-meta">{event.note}</span> : null}
-                    {event.going ? <span className="row-yes">you are coming</span> : null}
+                    {event.note ? (
+                      <span className="row-meta">{event.note}</span>
+                    ) : null}
+                    {event.going ? (
+                      <span className="row-yes">you are coming</span>
+                    ) : null}
                   </span>
                   {event.photo ? (
                     <span className="row-thumb">

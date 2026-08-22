@@ -4,8 +4,13 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import Photo from "../Photo";
 import type { ClubEvent } from "@/lib/content";
-import { cancelMyPlace, markInterested, signUpForEvent } from "@/app/app/actions";
+import {
+  cancelMyPlace,
+  markInterested,
+  signUpForEvent,
+} from "@/app/app/actions";
 import { buzz } from "@/lib/native";
+import Mark from "./Mark";
 
 export type Joinable = ClubEvent & {
   /** When it is, said the way the row says it. */
@@ -34,13 +39,23 @@ export type Joinable = ClubEvent & {
  * had the first — so an evening somebody might come to looked exactly like one they
  * had ignored, and the number of places asked for counted nobody's maybe.
  */
-export default function SignUpForm({ events, past }: { events: Joinable[]; past: Joinable[] }) {
+export default function SignUpForm({
+  events,
+  past,
+}: {
+  events: Joinable[];
+  past: Joinable[];
+}) {
   const [view, setView] = useState<"list" | "month">("list");
   const [place, setPlace] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [people, setPeople] = useState("2");
   const [bringing, setBringing] = useState("");
-  const [said, setSaid] = useState<{ id: string; words: string; bad?: boolean } | null>(null);
+  const [said, setSaid] = useState<{
+    id: string;
+    words: string;
+    bad?: boolean;
+  } | null>(null);
   const [marks, setMarks] = useState<Record<string, boolean>>({});
   const [pending, start] = useTransition();
 
@@ -48,18 +63,26 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
     () => [...new Set(events.map((event) => event.place))].filter(Boolean),
     [events],
   );
-  const shown = place ? events.filter((event) => event.place === place) : events;
+  const shown = place
+    ? events.filter((event) => event.place === place)
+    : events;
 
   /* Which day is being looked at in the month. The first day with something on
      it, so the month opens with an answer rather than an empty afternoon. */
-  const [day, setDay] = useState<string>(() => events[0]?.date ?? new Date().toISOString().slice(0, 10));
+  const [day, setDay] = useState<string>(
+    () => events[0]?.date ?? new Date().toISOString().slice(0, 10),
+  );
 
   function join(event: Joinable) {
     setSaid(null);
     start(async () => {
       const answer = await signUpForEvent(event.id, Number(people), bringing);
       if (!answer.ok) {
-        setSaid({ id: event.id, words: answer.error ?? "That did not go through.", bad: true });
+        setSaid({
+          id: event.id,
+          words: answer.error ?? "That did not go through.",
+          bad: true,
+        });
         return;
       }
       void buzz("medium");
@@ -73,14 +96,22 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
   }
 
   function cancel(event: Joinable) {
-    if (!confirm(`Say you are not coming to “${event.title}” after all?`)) return;
+    if (!confirm(`Say you are not coming to “${event.title}” after all?`))
+      return;
     setSaid(null);
     start(async () => {
       const answer = await cancelMyPlace(event.id);
       setSaid(
         answer.ok
-          ? { id: event.id, words: "Taken off. Sign up again whenever you like." }
-          : { id: event.id, words: answer.error ?? "That did not work.", bad: true },
+          ? {
+              id: event.id,
+              words: "Taken off. Sign up again whenever you like.",
+            }
+          : {
+              id: event.id,
+              words: answer.error ?? "That did not work.",
+              bad: true,
+            },
       );
     });
   }
@@ -91,7 +122,11 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
       const answer = await markInterested(event.id, on);
       if (!answer.ok) {
         setMarks((current) => ({ ...current, [event.id]: !on }));
-        setSaid({ id: event.id, words: answer.error ?? "That did not work.", bad: true });
+        setSaid({
+          id: event.id,
+          words: answer.error ?? "That did not work.",
+          bad: true,
+        });
         return;
       }
       void buzz("light");
@@ -173,7 +208,9 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
               onClick={() => mark(event, !marked(event))}
               disabled={pending}
               aria-pressed={marked(event)}
-              aria-label={marked(event) ? "Take it off your list" : "Keep it on your list"}
+              aria-label={
+                marked(event) ? "Take it off your list" : "Keep it on your list"
+              }
               title={marked(event) ? "On your list" : "Keep it on your list"}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -248,7 +285,11 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
               </div>
             </div>
             <div className="form-actions">
-              <button type="submit" className="pill pill-solid pill-wide" disabled={pending}>
+              <button
+                type="submit"
+                className="pill pill-solid pill-wide"
+                disabled={pending}
+              >
                 {pending ? "signing you up…" : "yes, I am coming"}
               </button>
             </div>
@@ -256,7 +297,10 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
         ) : null}
 
         {said?.id === event.id ? (
-          <p className={said.bad ? "app-error" : "app-note"} style={{ paddingTop: 8 }}>
+          <p
+            className={said.bad ? "app-error" : "app-note"}
+            style={{ paddingTop: 8 }}
+          >
             {said.words}
           </p>
         ) : null}
@@ -283,7 +327,10 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
       {view === "list" ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">still to come</h2>
+            <h2 className="app-h2">
+              <Mark is="calendar" />
+              still to come
+            </h2>
             <span className="app-label">
               {shown.length} {shown.length === 1 ? "evening" : "evenings"}
             </span>
@@ -328,7 +375,12 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
           )}
         </section>
       ) : (
-        <Month events={events} day={day} onDay={setDay} render={(event) => <Evening key={event.id} event={event} />} />
+        <Month
+          events={events}
+          day={day}
+          onDay={setDay}
+          render={(event) => <Evening key={event.id} event={event} />}
+        />
       )}
 
       {/* What has already happened. Half of what this club is is what it has
@@ -336,7 +388,10 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
       {view === "list" && past.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">already happened</h2>
+            <h2 className="app-h2">
+              <Mark is="calendar" />
+              already happened
+            </h2>
             <span className="app-label">{past.length}</span>
           </div>
           <ul className="row-list">
@@ -351,11 +406,16 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
                   <span className="row-body">
                     <span className="row-title">{event.title}</span>
                     <span className="row-meta">{event.label}</span>
-                    {event.mine ? <span className="row-yes">you were there</span> : null}
+                    {event.mine ? (
+                      <span className="row-yes">you were there</span>
+                    ) : null}
                   </span>
                   {/* Where somebody wrote it up afterwards, the way to read it. */}
                   {event.story ? (
-                    <Link className="pill pill-small" href={`/app/read/${event.story.slug}`}>
+                    <Link
+                      className="pill pill-small"
+                      href={`/app/read/${event.story.slug}`}
+                    >
                       read it
                     </Link>
                   ) : null}
@@ -365,7 +425,6 @@ export default function SignUpForm({ events, past }: { events: Joinable[]; past:
           </ul>
         </section>
       ) : null}
-
     </>
   );
 }
@@ -415,7 +474,9 @@ function Month({
 
   const step = (by: number) => {
     const at = new Date(Date.UTC(year, month - 1 + by, 1));
-    setShownMonth(`${at.getUTCFullYear()}-${String(at.getUTCMonth() + 1).padStart(2, "0")}`);
+    setShownMonth(
+      `${at.getUTCFullYear()}-${String(at.getUTCMonth() + 1).padStart(2, "0")}`,
+    );
   };
 
   const today = new Date().toISOString().slice(0, 10);
@@ -425,13 +486,24 @@ function Month({
     <>
       <div className="month">
         <div className="month-head">
-          <button type="button" onClick={() => step(-1)} aria-label="The month before">
+          <button
+            type="button"
+            onClick={() => step(-1)}
+            aria-label="The month before"
+          >
             ‹
           </button>
           <strong>
-            {firstOfMonth.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+            {firstOfMonth.toLocaleDateString("en-GB", {
+              month: "long",
+              year: "numeric",
+            })}
           </strong>
-          <button type="button" onClick={() => step(1)} aria-label="The month after">
+          <button
+            type="button"
+            onClick={() => step(1)}
+            aria-label="The month after"
+          >
             ›
           </button>
         </div>
@@ -486,7 +558,9 @@ function Month({
         </div>
 
         {chosen.length === 0 ? (
-          <p className="app-note">Nothing on that day. The marked ones have something.</p>
+          <p className="app-note">
+            Nothing on that day. The marked ones have something.
+          </p>
         ) : (
           <ul className="row-list">{chosen.map((event) => render(event))}</ul>
         )}

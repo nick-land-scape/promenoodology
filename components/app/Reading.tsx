@@ -13,11 +13,23 @@ type Told = {
   where: string | null;
   when: string | null;
   cover: string | null;
+  /** The story's first paragraph, so the list says what it is about. */
+  lead: string;
 };
 
-type Shot = { src: string; width: number; height: number; credit: string; year: string };
+type Shot = {
+  src: string;
+  width: number;
+  height: number;
+  credit: string;
+  year: string;
+};
 
-type Book = { title: string; lead: string; blocks: { kind: string; text: string }[] };
+type Book = {
+  title: string;
+  lead: string;
+  blocks: { kind: string; text: string }[];
+};
 
 /**
  * Three ways of reading, one tab.
@@ -63,7 +75,10 @@ export default function Reading({
   const [shuffle, setShuffle] = useState(1);
 
   const years = useMemo(
-    () => [...new Set(photos.map((photo) => photo.year).filter(Boolean))].sort().reverse(),
+    () =>
+      [...new Set(photos.map((photo) => photo.year).filter(Boolean))]
+        .sort()
+        .reverse(),
     [photos],
   );
 
@@ -109,10 +124,20 @@ export default function Reading({
      words with a line under the one you are on. */
   const bothWays = (
     <div className="reading-how" role="tablist" aria-label="Stories how">
-      <button type="button" role="tab" aria-selected={!asMap} onClick={() => setAsMap(false)}>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={!asMap}
+        onClick={() => setAsMap(false)}
+      >
         as a list
       </button>
-      <button type="button" role="tab" aria-selected={asMap} onClick={() => setAsMap(true)}>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={asMap}
+        onClick={() => setAsMap(true)}
+      >
         on the map
       </button>
     </div>
@@ -143,15 +168,27 @@ export default function Reading({
               <Link href={`/app/read/${story.slug}`} className="told-card">
                 {story.cover ? (
                   <span className="told-cover">
-                    <Photo src={story.cover} alt="" fill sizes="(max-width: 560px) 100vw, 560px" />
+                    <Photo
+                      src={story.cover}
+                      alt=""
+                      fill
+                      sizes="(max-width: 560px) 100vw, 560px"
+                    />
                   </span>
                 ) : null}
                 <span className="told-words">
                   <span className="told-title">{story.title}</span>
-                  {story.subtitle ? <span className="told-sub">{story.subtitle}</span> : null}
+                  {story.subtitle ? (
+                    <span className="told-sub">{story.subtitle}</span>
+                  ) : null}
                   <span className="row-meta">
                     {[story.where, story.when].filter(Boolean).join(" · ")}
                   </span>
+                  {/* Two lines of the story itself. A list of covers and titles
+                      is a shelf; this is a list you can choose from. */}
+                  {story.lead ? (
+                    <span className="told-lead">{story.lead}</span>
+                  ) : null}
                 </span>
               </Link>
             </li>
@@ -161,13 +198,24 @@ export default function Reading({
 
       {view === "archive" ? (
         <>
-          <div className="app-section-head" style={{ padding: "14px var(--gutter) 8px" }}>
+          <div
+            className="app-section-head"
+            style={{ padding: "14px var(--gutter) 8px" }}
+          >
             <h2 className="app-h2">every photograph</h2>
             <span className="app-label">{wall.length}</span>
           </div>
 
-          <div className="app-scroll app-scroll-flush" role="group" aria-label="Which year">
-            <button type="button" className="chip" onClick={() => setShuffle((n) => n + 1)}>
+          <div
+            className="app-scroll app-scroll-flush"
+            role="group"
+            aria-label="Which year"
+          >
+            <button
+              type="button"
+              className="chip"
+              onClick={() => setShuffle((n) => n + 1)}
+            >
               shuffle
             </button>
             <button
@@ -184,7 +232,9 @@ export default function Reading({
                 type="button"
                 className="chip"
                 aria-pressed={year === value}
-                onClick={() => setYear((current) => (current === value ? null : value))}
+                onClick={() =>
+                  setYear((current) => (current === value ? null : value))
+                }
               >
                 {value}
               </button>
@@ -198,7 +248,11 @@ export default function Reading({
           <ul className="wall">
             {wall.map((photo, index) => (
               <li key={photo.src}>
-                <button type="button" onClick={() => setAt(index)} aria-label="Open">
+                <button
+                  type="button"
+                  onClick={() => setAt(index)}
+                  aria-label="Open"
+                >
                   <Photo
                     src={photo.src}
                     alt=""
@@ -215,14 +269,17 @@ export default function Reading({
 
       {view === "handbook" ? (
         <div className="app-book">
-          {handbook.lead ? <p className="app-book-lead">{handbook.lead}</p> : null}
+          {handbook.lead ? (
+            <p className="app-book-lead">{handbook.lead}</p>
+          ) : null}
           {handbook.blocks.map((block, index) =>
             block.kind === "heading" ? (
               <h2 key={index}>
                 <em>
                   {String(
-                    handbook.blocks.slice(0, index + 1).filter((one) => one.kind === "heading")
-                      .length,
+                    handbook.blocks
+                      .slice(0, index + 1)
+                      .filter((one) => one.kind === "heading").length,
                   ).padStart(2, "0")}
                 </em>
                 {block.text}

@@ -4,7 +4,15 @@ import AppHeader from "@/components/app/AppHeader";
 import UpcomingEvents from "@/components/app/UpcomingEvents";
 import { dateParts, shortDate, weekday, whenItIs } from "@/lib/app-data";
 import { myBookings, requireMember } from "@/lib/app/me";
-import { getEvents, getNews, getPage, getResources, getStories, getTheCount } from "@/lib/source";
+import {
+  getEvents,
+  getNews,
+  getPage,
+  getResources,
+  getStories,
+  getTheCount,
+} from "@/lib/source";
+import Mark from "@/components/app/Mark";
 
 export const metadata = { title: "Home" };
 
@@ -17,19 +25,23 @@ const FEW = { stories: 2, photographs: 6, news: 3 };
 
 export default async function AppHome() {
   const me = await requireMember("/app");
-  const [all, mine, news, stories, photos, handbook, count] = await Promise.all([
-    getEvents(),
-    myBookings(),
-    getNews(),
-    getStories(),
-    getResources(),
-    getPage("handbook"),
-    getTheCount(),
-  ]);
+  const [all, mine, news, stories, photos, handbook, count] = await Promise.all(
+    [
+      getEvents(),
+      myBookings(),
+      getNews(),
+      getStories(),
+      getResources(),
+      getPage("handbook"),
+      getTheCount(),
+    ],
+  );
   /* Coming, not merely marked: the front screen says "you are coming" and that
      should be a promise rather than a bookmark. */
   const asked = new Set(
-    mine.filter((booking) => booking.state !== "interested").map((booking) => booking.eventId),
+    mine
+      .filter((booking) => booking.state !== "interested")
+      .map((booking) => booking.eventId),
   );
 
   const today = new Date().toISOString().slice(0, 10);
@@ -42,7 +54,9 @@ export default async function AppHome() {
       when: whenItIs(event),
       going: asked.has(event.id),
     }));
-  const places = [...new Set(events.map((event) => event.place))].filter(Boolean);
+  const places = [...new Set(events.map((event) => event.place))].filter(
+    Boolean,
+  );
 
   /* The first heading of the handbook and the paragraph under it — enough to see
      what kind of thing it is, and not enough to be reading it here. */
@@ -52,7 +66,10 @@ export default async function AppHome() {
     firstHeading >= 0
       ? {
           heading: blocks[firstHeading].text,
-          text: blocks.slice(firstHeading + 1).find((block) => block.kind !== "heading")?.text ?? "",
+          text:
+            blocks
+              .slice(firstHeading + 1)
+              .find((block) => block.kind !== "heading")?.text ?? "",
         }
       : null;
 
@@ -69,7 +86,10 @@ export default async function AppHome() {
 
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">latest news</h2>
+          <h2 className="app-h2">
+            <Mark is="news" />
+            latest news
+          </h2>
         </div>
         <ul className="row-list">
           {news.slice(0, FEW.news).map((item) => (
@@ -79,10 +99,15 @@ export default async function AppHome() {
                   <span className="row-title">
                     {item.title}
                     {/* The one held at the top says why it is there. */}
-                    {item.pinned ? <em className="row-pinned">kept at the top</em> : null}
+                    {item.pinned ? (
+                      <em className="row-pinned">kept at the top</em>
+                    ) : null}
                   </span>
                   <span className="row-meta">
-                    {[shortDate(item.date), item.by.length > 0 ? said(item.by) : null]
+                    {[
+                      shortDate(item.date),
+                      item.by.length > 0 ? said(item.by) : null,
+                    ]
                       .filter(Boolean)
                       .join(" · ")}
                   </span>
@@ -102,7 +127,10 @@ export default async function AppHome() {
       {stories.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">what we have done</h2>
+            <h2 className="app-h2">
+              <Mark is="book" />
+              what we have done
+            </h2>
             <Link className="app-more" href="/app/read">
               all {stories.length} ›
             </Link>
@@ -117,7 +145,9 @@ export default async function AppHome() {
                     </span>
                   ) : null}
                   <span className="peek-title">{story.title}</span>
-                  <span className="row-meta">{[story.where, story.when].filter(Boolean).join(" · ")}</span>
+                  <span className="row-meta">
+                    {[story.where, story.when].filter(Boolean).join(" · ")}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -128,7 +158,10 @@ export default async function AppHome() {
       {photos.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">the archive</h2>
+            <h2 className="app-h2">
+              <Mark is="camera" />
+              the archive
+            </h2>
             <Link className="app-more" href="/app/read?of=archive">
               all {photos.length} ›
             </Link>
@@ -163,7 +196,10 @@ export default async function AppHome() {
       {count.interventions > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">what that adds up to</h2>
+            <h2 className="app-h2">
+              <Mark is="plate" />
+              what that adds up to
+            </h2>
           </div>
           <dl className="tally">
             {count.fed > 0 ? (
@@ -174,7 +210,9 @@ export default async function AppHome() {
             ) : null}
             <div>
               <dt>{count.interventions}</dt>
-              <dd>{count.interventions === 1 ? "intervention" : "interventions"}</dd>
+              <dd>
+                {count.interventions === 1 ? "intervention" : "interventions"}
+              </dd>
             </div>
             <div>
               <dt>{count.places}</dt>
@@ -194,8 +232,8 @@ export default async function AppHome() {
             ) : null}
           </dl>
           <p className="app-note">
-            Public space in Europe is turning generic. This is what a bit of nerve and
-            a borrowed kitchen has done about it so far.
+            Public space in Europe is turning generic. This is what a bit of
+            nerve and a borrowed kitchen has done about it so far.
           </p>
         </section>
       ) : null}
@@ -203,7 +241,10 @@ export default async function AppHome() {
       {peek ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">the handbook</h2>
+            <h2 className="app-h2">
+              <Mark is="hand" />
+              the handbook
+            </h2>
             <Link className="app-more" href="/app/read?of=handbook">
               read it ›
             </Link>

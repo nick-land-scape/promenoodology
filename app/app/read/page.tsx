@@ -65,6 +65,7 @@ export default async function ReadPage({
           where: story.where,
           when: story.when,
           cover: story.cover?.src ?? null,
+          lead: story.lead ?? "",
         }))}
         photos={photos.map((photo) => ({
           src: photo.photo.src,

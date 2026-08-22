@@ -10,6 +10,7 @@ import { whenItIs } from "@/lib/app-data";
 import { pretty } from "@/lib/admin/when";
 import { myBookings, myPhotos, myPosts, requireMember } from "@/lib/app/me";
 import { getEvents } from "@/lib/source";
+import Mark from "@/components/app/Mark";
 
 export const metadata = { title: "Account" };
 
@@ -76,7 +77,10 @@ export default async function AccountPage() {
 
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">you said yes to</h2>
+          <h2 className="app-h2">
+            <Mark is="tick" />
+            you said yes to
+          </h2>
           {yes.length > SHOWING ? (
             <Link className="app-more" href="/app/account/coming">
               all {yes.length} ›
@@ -87,7 +91,8 @@ export default async function AccountPage() {
         </div>
         {yes.length === 0 ? (
           <p className="app-note">
-            Nothing yet. <Link href="/app/events">Have a look at what is on</Link>.
+            Nothing yet.{" "}
+            <Link href="/app/events">Have a look at what is on</Link>.
           </p>
         ) : (
           <ul className="row-list">
@@ -96,10 +101,15 @@ export default async function AccountPage() {
                 <div className="row">
                   <span className="row-body">
                     <span className="row-title">{event?.title}</span>
-                    <span className="row-meta">{event ? whenItIs(event) : ""}</span>
+                    <span className="row-meta">
+                      {event ? whenItIs(event) : ""}
+                    </span>
                     <span className="row-yes">
-                      {booking.people} {booking.people === 1 ? "place" : "places"}
-                      {booking.bringing ? ` · bringing ${booking.bringing}` : ""}
+                      {booking.people}{" "}
+                      {booking.people === 1 ? "place" : "places"}
+                      {booking.bringing
+                        ? ` · bringing ${booking.bringing}`
+                        : ""}
                       {booking.state === "kept" ? " · kept for you" : ""}
                       {booking.state === "declined" ? " · not this time" : ""}
                     </span>

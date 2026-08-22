@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Photo from "../Photo";
 import type { MyPhoto, MyPost } from "@/lib/app/me";
+import Mark from "./Mark";
 
 /**
  * The three things that are yours, in preview.
@@ -13,11 +14,20 @@ import type { MyPhoto, MyPost } from "@/lib/app/me";
  * "no photographs yet" is a fact about you and a hint about what this is for.
  */
 
-export function PhotoPreview({ photos, most = 6 }: { photos: MyPhoto[]; most?: number }) {
+export function PhotoPreview({
+  photos,
+  most = 6,
+}: {
+  photos: MyPhoto[];
+  most?: number;
+}) {
   return (
     <section className="app-section">
       <div className="app-section-head">
-        <h2 className="app-h2">your photographs</h2>
+        <h2 className="app-h2">
+          <Mark is="camera" />
+          your photographs
+        </h2>
         {photos.length > most ? (
           <Link className="app-more" href="/app/account/photographs">
             all {photos.length} ›
@@ -29,13 +39,20 @@ export function PhotoPreview({ photos, most = 6 }: { photos: MyPhoto[]; most?: n
 
       {photos.length === 0 ? (
         <p className="app-note">
-          None yet. The archive says who took what, and anything credited to you turns up here.
+          None yet. The archive says who took what, and anything credited to you
+          turns up here.
         </p>
       ) : (
         <ul className="mine-grid">
           {photos.slice(0, most).map((photo) => (
             <li key={photo.id}>
-              <Photo src={photo.src} alt="" width={photo.width} height={photo.height} sizes="33vw" />
+              <Photo
+                src={photo.src}
+                alt=""
+                width={photo.width}
+                height={photo.height}
+                sizes="33vw"
+              />
             </li>
           ))}
         </ul>
@@ -44,11 +61,20 @@ export function PhotoPreview({ photos, most = 6 }: { photos: MyPhoto[]; most?: n
   );
 }
 
-export function PostPreview({ posts, most = 2 }: { posts: MyPost[]; most?: number }) {
+export function PostPreview({
+  posts,
+  most = 2,
+}: {
+  posts: MyPost[];
+  most?: number;
+}) {
   return (
     <section className="app-section">
       <div className="app-section-head">
-        <h2 className="app-h2">what you have said</h2>
+        <h2 className="app-h2">
+          <Mark is="speech" />
+          what you have said
+        </h2>
         {posts.length > most ? (
           <Link className="app-more" href="/app/account/posts">
             all {posts.length} ›
@@ -73,9 +99,15 @@ export function PostPreview({ posts, most = 2 }: { posts: MyPost[]; most?: numbe
                   </span>
                 ) : null}
                 <span className="row-body">
-                  <span className="row-title">{post.text || "a picture, no words"}</span>
+                  <span className="row-title">
+                    {post.text || "a picture, no words"}
+                  </span>
                   <span className="row-meta">
-                    {[post.place, post.when, post.replies > 0 ? `${post.replies} replies` : null]
+                    {[
+                      post.place,
+                      post.when,
+                      post.replies > 0 ? `${post.replies} replies` : null,
+                    ]
                       .filter(Boolean)
                       .join(" · ")}
                   </span>

@@ -3,10 +3,17 @@
 import { useRef, useState, useTransition } from "react";
 import Photo from "../Photo";
 import type { Member, Post } from "@/lib/content";
-import { replyTo, say, takeDownMyPost, takeDownMyReply, wave } from "@/app/app/actions";
+import {
+  replyTo,
+  say,
+  takeDownMyPost,
+  takeDownMyReply,
+  wave,
+} from "@/app/app/actions";
 import { buzz } from "@/lib/native";
 import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
 import { mediaUrl } from "@/lib/supabase/config";
+import Mark from "./Mark";
 
 type Props = {
   posts: Post[];
@@ -45,7 +52,14 @@ const MOST = 8;
  * **No likes.** Asked for, and right: a like is a number that makes people watch
  * a number. What is left is answering somebody and passing something on.
  */
-export default function Feed({ posts, people, meId, meName, wavable, waved }: Props) {
+export default function Feed({
+  posts,
+  people,
+  meId,
+  meName,
+  wavable,
+  waved,
+}: Props) {
   const [view, setView] = useState<"feed" | "people">("feed");
   const [hello, setHello] = useState<Record<string, boolean>>(
     Object.fromEntries(waved.map((id) => [id, true])),
@@ -83,7 +97,11 @@ export default function Feed({ posts, people, meId, meName, wavable, waved }: Pr
           ) : (
             <ul className="feed">
               {posts.map((post) => (
-                <PostCard key={post.id} post={post} mine={post.authorId === meId} />
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  mine={post.authorId === meId}
+                />
               ))}
             </ul>
           )}
@@ -91,7 +109,10 @@ export default function Feed({ posts, people, meId, meName, wavable, waved }: Pr
       ) : (
         <div className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">who is around</h2>
+            <h2 className="app-h2">
+              <Mark is="hand" />
+              who is around
+            </h2>
             <span className="app-label">{people.length} people</span>
           </div>
           {/* Two columns of these on a tablet: a name and a country in a row a
@@ -124,12 +145,20 @@ export default function Feed({ posts, people, meId, meName, wavable, waved }: Pr
                     return (
                       <button
                         type="button"
-                        className={already ? "pill pill-small" : "pill pill-small pill-solid"}
+                        className={
+                          already
+                            ? "pill pill-small"
+                            : "pill pill-small pill-solid"
+                        }
                         disabled={already || pending}
                         onClick={() =>
                           start(async () => {
                             const answer = await wave(id);
-                            if (answer.ok) setHello((current) => ({ ...current, [id]: true }));
+                            if (answer.ok)
+                              setHello((current) => ({
+                                ...current,
+                                [id]: true,
+                              }));
                           })
                         }
                       >
@@ -187,7 +216,11 @@ function Composer({ meName }: { meName: string }) {
         const uploaded = await uploadPhoto(picture, `posts/${await me}`);
         setPaths((current) => [...current, uploaded.path]);
       } catch (error) {
-        setTrouble(error instanceof Error ? error.message : `${picture.name} did not go up.`);
+        setTrouble(
+          error instanceof Error
+            ? error.message
+            : `${picture.name} did not go up.`,
+        );
       } finally {
         setBusy((count) => count - 1);
       }
@@ -257,10 +290,18 @@ function Composer({ meName }: { meName: string }) {
         <ul className="compose-pics">
           {paths.map((path) => (
             <li key={path}>
-              <Photo src={mediaUrl(path)} alt="" width={300} height={300} sizes="88px" />
+              <Photo
+                src={mediaUrl(path)}
+                alt=""
+                width={300}
+                height={300}
+                sizes="88px"
+              />
               <button
                 type="button"
-                onClick={() => setPaths((current) => current.filter((one) => one !== path))}
+                onClick={() =>
+                  setPaths((current) => current.filter((one) => one !== path))
+                }
                 aria-label="Take this picture off"
               >
                 ×
@@ -288,7 +329,11 @@ function Composer({ meName }: { meName: string }) {
           className="compose-add"
           onClick={() => file.current?.click()}
           disabled={working || paths.length >= MOST}
-          aria-label={paths.length > 0 ? `Add more pictures (${paths.length} so far)` : "Add pictures"}
+          aria-label={
+            paths.length > 0
+              ? `Add more pictures (${paths.length} so far)`
+              : "Add pictures"
+          }
           title="Add pictures"
         >
           {working ? (
@@ -317,7 +362,14 @@ function Composer({ meName }: { meName: string }) {
               stroke="currentColor"
               strokeWidth="1.5"
             />
-            <circle cx="12" cy="10.4" r="2.2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <circle
+              cx="12"
+              cy="10.4"
+              r="2.2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
           </svg>
           <input
             value={place}
@@ -337,10 +389,15 @@ function Composer({ meName }: { meName: string }) {
         </button>
       </div>
 
-      {/* A way out that is not posting. Only offered while there is nothing to
-          lose by taking it. */}
-      {!started ? (
-        <button type="button" className="compose-shut-again" onClick={() => setOpen(false)}>
+      {/* A way out that is not posting. Only while the thing is open, and only
+          while there is nothing to lose by taking it — shut, it was an offer to
+          close something that was already closed. */}
+      {!shut && !started ? (
+        <button
+          type="button"
+          className="compose-shut-again"
+          onClick={() => setOpen(false)}
+        >
           never mind
         </button>
       ) : null}
@@ -372,7 +429,9 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
       await navigator.clipboard.writeText(`${said}\n${url}`);
       setTrouble("Copied, since this browser has nothing to share with.");
     } catch {
-      setTrouble("This browser will neither share nor copy. Long-press the text instead.");
+      setTrouble(
+        "This browser will neither share nor copy. Long-press the text instead.",
+      );
     }
   }
 
@@ -384,7 +443,9 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
         </span>
         <span className="row-body">
           <span className="post-who">{post.author}</span>
-          <span className="row-meta">{[post.place, post.when].filter(Boolean).join(" · ")}</span>
+          <span className="row-meta">
+            {[post.place, post.when].filter(Boolean).join(" · ")}
+          </span>
         </span>
         {mine ? (
           <button
@@ -394,7 +455,8 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
               if (!confirm("Take this down? The pictures go with it.")) return;
               start(async () => {
                 const answer = await takeDownMyPost(post.id);
-                if (!answer.ok) setTrouble(answer.error ?? "That did not work.");
+                if (!answer.ok)
+                  setTrouble(answer.error ?? "That did not work.");
               });
             }}
             disabled={pending}
@@ -410,25 +472,44 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
           what a phone does with more than one picture. */}
       {post.photos.length === 1 ? (
         <div className="post-photo">
-          <Photo src={post.photos[0].src} alt="" fill sizes="(max-width: 560px) 100vw, 560px" />
+          <Photo
+            src={post.photos[0].src}
+            alt=""
+            fill
+            sizes="(max-width: 560px) 100vw, 560px"
+          />
         </div>
       ) : post.photos.length > 1 ? (
         <ul className="post-strip">
           {post.photos.map((photo) => (
             <li key={photo.src}>
-              <Photo src={photo.src} alt="" width={900} height={900} sizes="72vw" />
+              <Photo
+                src={photo.src}
+                alt=""
+                width={900}
+                height={900}
+                sizes="72vw"
+              />
             </li>
           ))}
         </ul>
       ) : null}
 
       <div className="post-actions">
-        <button type="button" className="post-action" onClick={() => setOpen(!open)}>
+        <button
+          type="button"
+          className="post-action"
+          onClick={() => setOpen(!open)}
+        >
           {post.replies.length === 0
             ? "reply"
             : `${post.replies.length} ${post.replies.length === 1 ? "reply" : "replies"}`}
         </button>
-        <button type="button" className="post-action" onClick={() => void pass()}>
+        <button
+          type="button"
+          className="post-action"
+          onClick={() => void pass()}
+        >
           pass it on
         </button>
       </div>
@@ -452,7 +533,8 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
             setTrouble("");
             start(async () => {
               const answer = await replyTo(post.id, words);
-              if (!answer.ok) setTrouble(answer.error ?? "That did not go through.");
+              if (!answer.ok)
+                setTrouble(answer.error ?? "That did not go through.");
               else setWords("");
             });
           }}
@@ -463,7 +545,11 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
             placeholder={`answer ${post.author.split(" ")[0]}…`}
             aria-label="Your reply"
           />
-          <button type="submit" className="pill pill-small" disabled={pending || !words.trim()}>
+          <button
+            type="submit"
+            className="pill pill-small"
+            disabled={pending || !words.trim()}
+          >
             {pending ? "…" : "send"}
           </button>
         </form>
