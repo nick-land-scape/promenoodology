@@ -63,8 +63,15 @@ export type ClubEvent = {
   spots: number;
   note: string;
   photo: Photo | null;
-  /** Who it is being put on with. */
-  partners: string[];
+  /**
+   * Who it is being put on with.
+   *
+   * Not names any more: the same three things a story's partners carry — what
+   * they are called, their mark where they have one, and where to read about
+   * them. A row of logos is how anybody recognises an organisation, and a
+   * comma-separated list of names is how nobody does.
+   */
+  partners: { name: string; logo: string | null; url: string | null }[];
   /** What is still wanted for it, one per line. */
   needs: string;
   /** Roughly how many ate, once somebody has counted. */
@@ -88,6 +95,13 @@ export type ClubEvent = {
   partOfUrl: string;
   /** The days it runs. Empty for something that happens once. */
   days: EventDay[];
+  /**
+   * The flyer itself, for taking away.
+   *
+   * The page says everything the flyer says; it is not the same as having the
+   * flyer. The thing that gets printed and pinned to a noticeboard is the PDF.
+   */
+  flyer: string | null;
 };
 
 /**

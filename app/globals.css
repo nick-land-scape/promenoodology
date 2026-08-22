@@ -3932,3 +3932,52 @@ body:has(.hero) .edit-this {
   border-right-color: var(--hairline);
   border-bottom-color: var(--hairline);
 }
+
+/* The way back off an evening, and the ways on.
+ *
+ * Back goes to the list it came from rather than to wherever the browser was
+ * last, because "all events" is a place and "back" is only a guess. The three
+ * at the foot are where somebody who has just read about one evening actually
+ * wants to go: everything else, and the photographs of it. */
+.event-back {
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid var(--hairline);
+  padding: 6px 11px;
+  display: inline-block;
+  color: var(--ink);
+}
+
+.event-back:hover {
+  border-color: var(--ink);
+  background: var(--wash);
+}
+
+.event-onward {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+  margin: 46px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--hairline);
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.event-onward a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 2px;
+}
+
+.event-onward a:hover {
+  border-bottom-color: var(--ink);
+}

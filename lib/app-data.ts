@@ -69,6 +69,7 @@ export function getEvents(): ClubEvent[] {
         partOf: "",
         partOfUrl: "",
         days: [],
+        flyer: null,
       };
     })
     .sort((a, b) => a.date.localeCompare(b.date));

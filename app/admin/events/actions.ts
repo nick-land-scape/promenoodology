@@ -57,6 +57,7 @@ export type EventInput = {
   note: string;
   people_fed: number | null;
   photo_path: string | null;
+  flyer_path: string | null;
   partners: string[];
   story_id: string | null;
   published: boolean;
@@ -153,6 +154,7 @@ export async function saveEvent(
       note: input.note.trim(),
       people_fed: input.people_fed === null ? null : Math.max(0, Math.round(input.people_fed)),
       photo_path: input.photo_path,
+      flyer_path: input.flyer_path,
       partners: input.partners.filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 20),
       story_id: input.story_id,
       published: input.published,

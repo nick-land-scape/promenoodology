@@ -159,7 +159,7 @@ export default function SignUpForm({
             </Link>
             <span className="row-meta">{event.label}</span>
             {event.partners.length > 0 ? (
-              <span className="row-meta">with {event.partners.join(", ")}</span>
+              <span className="row-meta">with {event.partners.map((one) => one.name).join(", ")}</span>
             ) : null}
             {event.note ? <span className="row-meta">{event.note}</span> : null}
 

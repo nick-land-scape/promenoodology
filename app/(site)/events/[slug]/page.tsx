@@ -70,12 +70,12 @@ export default async function EventPage({ params }: Params) {
   return (
     <main className="page">
       <header className="story-header">
+        {/* The way back, and it goes to the list this came from rather than to
+            wherever the browser happened to be. Top left, where a back is. */}
         <p className="crumb">
-          {event.story ? (
-            <Link href={`/stories/${event.story.slug}`}>{event.story.title}</Link>
-          ) : (
-            <Link href="/stories">stories</Link>
-          )}
+          <Link href="/events" className="event-back">
+            ← all events
+          </Link>
         </p>
         <h1 className="page-title">{event.title}</h1>
         {event.subtitle ? <p className="story-hook">{event.subtitle}</p> : null}
@@ -166,6 +166,18 @@ export default async function EventPage({ params }: Params) {
               <dd>{event.fed}</dd>
             </div>
           ) : null}
+          {/* The flyer itself. Somebody who wants to bring people to this does
+              not want to send them a link, they want the thing to print. */}
+          {event.flyer ? (
+            <div>
+              <dt>the flyer</dt>
+              <dd>
+                <a href={event.flyer} download target="_blank" rel="noopener noreferrer">
+                  take it as a PDF ↓
+                </a>
+              </dd>
+            </div>
+          ) : null}
         </dl>
 
         {event.note ? <p className="story-text">{event.note}</p> : null}
@@ -205,10 +217,31 @@ export default async function EventPage({ params }: Params) {
             </section>
           ) : null}
 
+          {/* The same row of marks a story ends with. An organisation is
+              recognised by its logo and read as a name only when it has not got
+              one, which is why the name is the fallback rather than the label. */}
           {event.partners.length > 0 ? (
             <section>
               <h2 className="story-label">with</h2>
-              <p className="story-text">{event.partners.join(", ")}</p>
+              <ul className="story-partners">
+                {event.partners.map((partner) => (
+                  <li key={partner.name}>
+                    {partner.url ? (
+                      <a href={partner.url} target="_blank" rel="noopener noreferrer">
+                        {partner.logo ? (
+                          <Photo src={partner.logo} alt={partner.name} width={300} height={200} sizes="130px" />
+                        ) : (
+                          partner.name
+                        )}
+                      </a>
+                    ) : partner.logo ? (
+                      <Photo src={partner.logo} alt={partner.name} width={300} height={200} sizes="130px" />
+                    ) : (
+                      partner.name
+                    )}
+                  </li>
+                ))}
+              </ul>
             </section>
           ) : null}
 
@@ -224,6 +257,14 @@ export default async function EventPage({ params }: Params) {
           ) : null}
         </footer>
       ) : null}
+
+      {/* Where somebody who has just read about one evening actually wants to go
+          next: everything else we have done, and the photographs of it. */}
+      <nav className="event-onward" aria-label="The rest of the site">
+        <Link href="/events">← all events</Link>
+        <Link href="/stories">the stories</Link>
+        <Link href="/archive">the archive</Link>
+      </nav>
     </main>
   );
 }

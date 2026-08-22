@@ -113,6 +113,8 @@ export type EventRow = {
   /** The larger project or festival it belongs to. */
   part_of: string;
   part_of_url: string;
+  /** The flyer as a file in the bucket, for taking away. See migration 0031. */
+  flyer_path: string | null;
 };
 
 /** One day of an event that runs over several. See migration 0028. */

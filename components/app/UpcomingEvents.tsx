@@ -86,7 +86,7 @@ export default function UpcomingEvents({ events, places }: Props) {
                     <span className="row-meta">{event.when}</span>
                     {event.partners.length > 0 ? (
                       <span className="row-meta">
-                        with {event.partners.join(", ")}
+                        with {event.partners.map((one) => one.name).join(", ")}
                       </span>
                     ) : null}
                     {event.note ? (

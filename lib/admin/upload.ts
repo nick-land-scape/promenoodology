@@ -158,6 +158,34 @@ export async function unupload(path: string): Promise<void> {
   await supabaseBrowser().storage.from("media").remove([path]);
 }
 
+/**
+ * A file that is not a picture, straight into the bucket.
+ *
+ * The flyer, and for now only the flyer. Everything above this is about
+ * photographs — measuring them, shrinking them, throwing the EXIF away — and a
+ * PDF wants none of it: it is a document somebody designed, and the whole point
+ * of offering it is that it arrives exactly as it left.
+ */
+export async function uploadFile(file: File, folder: string): Promise<string> {
+  const clean = file.name.replace(/[^a-zA-Z0-9.-]+/g, "-").slice(-40);
+  const path = `${folder}/${crypto.randomUUID()}-${clean}`;
+
+  const { error } = await supabaseBrowser()
+    .storage.from("media")
+    .upload(path, file, { contentType: file.type || "application/pdf", upsert: false });
+
+  if (error) {
+    const stale = /jwt|unauthor|denied|policy|row-level/i.test(error.message);
+    throw new Error(
+      stale
+        ? "That upload was refused. Your sign-in may have gone stale — reload the page and try again."
+        : error.message,
+    );
+  }
+
+  return path;
+}
+
 export async function uploadPhoto(file: File, folder: string): Promise<Uploaded> {
   let ready = file;
 

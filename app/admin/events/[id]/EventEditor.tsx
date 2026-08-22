@@ -7,6 +7,7 @@ import InHead from "@/components/admin/InHead";
 import { Some } from "@/components/admin/Many";
 import { Picker as PhotoPicker, type Pickable } from "@/components/admin/Pick";
 import Dropdown, { type Choice } from "@/components/admin/Picker";
+import Paper from "@/components/admin/Paper";
 import Placed from "@/components/admin/Placed";
 import {
   Bin,
@@ -21,6 +22,7 @@ import {
   Word,
   useUnsaved,
 } from "@/components/admin/ui";
+import { mediaUrl } from "@/lib/supabase/config";
 import { deleteEvent, saveEvent } from "../actions";
 import Programme, { type Session, blankSession } from "./Programme";
 
@@ -57,6 +59,7 @@ export type Draft = {
   note: string;
   people_fed: number | null;
   photo_path: string | null;
+  flyer_path: string | null;
   partners: string[];
   story_id: string | null;
   published: boolean;
@@ -434,6 +437,19 @@ export default function EventEditor({
             </Word>
           ) : null}
         </span>
+      </Panel>
+
+      <Panel
+        name="the flyer"
+        hint="The PDF itself, offered on the evening's page for printing and pinning up."
+      >
+        <Paper
+          path={draft.flyer_path}
+          url={draft.flyer_path ? mediaUrl(draft.flyer_path) : ""}
+          folder="flyers"
+          onDone={(path) => set("flyer_path", path)}
+          onClear={() => set("flyer_path", null)}
+        />
       </Panel>
 
       <Panel

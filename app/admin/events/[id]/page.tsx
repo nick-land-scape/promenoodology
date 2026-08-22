@@ -118,6 +118,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     note: word("note"),
     people_fed: number("people_fed"),
     photo_path: (event.photo_path as string | null) ?? null,
+    flyer_path: (event.flyer_path as string | null) ?? null,
     partners: (event.partners as string[] | null) ?? [],
     story_id: (event.story_id as string | null) ?? null,
     published: event.published === true,

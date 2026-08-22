@@ -173,7 +173,7 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
                 or write to <a href={`mailto:${event.signUpEmail}`}>{event.signUpEmail}</a>
               </li>
             ) : null}
-            {event.partners.length > 0 ? <li>with {event.partners.join(", ")}</li> : null}
+            {event.partners.length > 0 ? <li>with {event.partners.map((one) => one.name).join(", ")}</li> : null}
             {event.partOf ? <li>part of {event.partOf}</li> : null}
             {event.fed ? <li>{event.fed} ate</li> : null}
           </ul>

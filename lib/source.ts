@@ -507,10 +507,10 @@ export async function getEvents(): Promise<ClubEvent[]> {
       >(),
     supabase
       .from("associations")
-      .select("id, name")
+      .select("id, name, logo_path, url")
       .is("deleted_at", null)
       .eq("published", true)
-      .returns<{ id: string; name: string }[]>(),
+      .returns<{ id: string; name: string; logo_path: string | null; url: string | null }[]>(),
     supabase
       .from("stories")
       .select("id, slug, title")
@@ -523,7 +523,7 @@ export async function getEvents(): Promise<ClubEvent[]> {
       .returns<{ event_id: string; people: number }[]>(),
   ]);
 
-  const named = new Map((partners ?? []).map((one) => [one.id, one.name]));
+  const named = new Map((partners ?? []).map((one) => [one.id, one]));
   const told = new Map((stories ?? []).map((one) => [one.id, one]));
   const asked = new Map<string, number>();
   for (const booking of bookings ?? []) {
@@ -546,7 +546,14 @@ export async function getEvents(): Promise<ClubEvent[]> {
       photo: row.photo_path
         ? { src: mediaUrl(row.photo_path), width: 1500, height: 1000 }
         : null,
-      partners: (row.partners ?? []).map((id) => named.get(id)).filter(Boolean) as string[],
+      partners: (row.partners ?? [])
+        .map((id) => named.get(id))
+        .filter(Boolean)
+        .map((one) => ({
+          name: one!.name,
+          logo: one!.logo_path ? mediaUrl(one!.logo_path) : null,
+          url: one!.url || null,
+        })),
       needs: row.needs ?? "",
       fed: row.people_fed ?? null,
       asked: asked.get(row.id) ?? 0,
@@ -559,6 +566,7 @@ export async function getEvents(): Promise<ClubEvent[]> {
       signUpEmail: row.sign_up_email ?? "",
       partOf: row.part_of ?? "",
       partOfUrl: row.part_of_url ?? "",
+      flyer: row.flyer_path ? mediaUrl(row.flyer_path) : null,
       days: (programme ?? [])
         .filter((day) => day.event_id === row.id)
         .map((day) => ({
