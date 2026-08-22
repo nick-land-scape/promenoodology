@@ -1857,8 +1857,13 @@ body:has(.app-shell) {
 .told-sub {
   display: block;
   padding-top: 2px;
-  color: var(--muted);
-  font-style: italic;
+  /* The same purple line the website sets under every story's title. */
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: var(--purple);
 }
 
 /* The handbook, and a story's words: one column, numbered headings. */
@@ -3156,9 +3161,12 @@ body:has(.app-shell) {
 
 .everywhere-row-hook {
   display: block;
-  font-style: italic;
-  color: var(--muted);
-  line-height: 1.25;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: var(--purple);
 }
 
 .everywhere-row-lead {
@@ -3225,8 +3233,16 @@ body:has(.app-shell) {
 
 .everywhere-hook {
   margin: 0 0 4px;
-  font-style: italic;
-  color: var(--muted);
+  /* The hook is purple and in the menu's typeface everywhere this club writes
+     one — on the website, on a story, and now here. It is the line that says why
+     an evening was worth doing, and it reads as its own line rather than as the
+     start of the paragraph under it. */
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: var(--purple);
 }
 
 .everywhere-lead {
