@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Contact from "@/components/Contact";
 import Nav from "@/components/Nav";
+import { PLAIN } from "@/lib/lang";
 import { getMenu } from "@/lib/site-pages";
 
 /**
@@ -13,7 +14,7 @@ export default async function NotFound() {
 
   return (
     <>
-      <Nav main={main} more={more} />
+      <Nav main={main} more={more} lang={PLAIN} />
       <main className="page">
         <div className="prose">
           <h1 style={{ font: "inherit", margin: 0 }}>This page took a different walk.</h1>

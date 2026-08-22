@@ -4274,3 +4274,43 @@ body:has(.hero) .edit-this {
 .event-flyer-take:hover {
   border-bottom-color: var(--ink);
 }
+
+/* ------------------------------------------------------------- two languages
+
+   Under the handbook, at the foot of the quiet group: it is a thing about how
+   you are reading rather than a place to go. Two words rather than a dropdown
+   with flags in it — a flag is a country and a language is not, and with two of
+   anything a list you can read beats a control you have to open. */
+
+.nav-langs {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline);
+}
+
+.nav-langs button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  cursor: pointer;
+}
+
+.nav-langs button:hover {
+  color: var(--ink);
+}
+
+/* The one you are reading in. Marked the way the menu marks the section you are
+   in, rather than by taking the button away: a switch with one side missing is
+   a switch nobody can tell the state of. */
+.nav-langs button.is-here {
+  color: var(--purple);
+  cursor: default;
+}

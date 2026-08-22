@@ -84,6 +84,27 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: rememberTheThing }}
         />
+        {/*
+         * Which language the page is in, said to the browser and to anything
+         * reading it out loud.
+         *
+         * It has to be done here and like this. <html> is drawn by this layout,
+         * which sits above the language segment and cannot see it; making it
+         * dynamic enough to would mean giving up static generation for the whole
+         * site to set one attribute. The address already says the answer, so the
+         * page reads it off the address before the first paint — the same trade
+         * the theme above makes, for the same reason.
+         *
+         * What actually tells a search engine which language a page is in is the
+         * hreflang pair in its own metadata, not this.
+         */}
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html:
+              "document.documentElement.lang=location.pathname.split('/')[1]==='fr'?'fr':'en'",
+          }}
+        />
         {/* After globals.css, so it wins; and only what has been changed, so the
             site keeps the look it was drawn with until somebody says otherwise. */}
         {look ? (

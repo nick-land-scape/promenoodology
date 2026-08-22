@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import CommunityGrid from "@/components/CommunityGrid";
 import type { Partner } from "@/lib/source";
 import { getMembers, getPageHead, getPartners } from "@/lib/source";
+import { isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -29,13 +30,16 @@ function Logo({ partner }: { partner: Partner }) {
   return <img src={partner.logo.src} alt={partner.name} loading="lazy" />;
 }
 
-export default async function CommunityPage() {
+export default async function CommunityPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: asked } = await params;
+  const lang = isLang(asked) ? asked : PLAIN;
+
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("community"))) notFound();
 
   const [members, head, partners] = await Promise.all([
     getMembers(),
-    getPageHead("community"),
+    getPageHead("community", lang),
     getPartners(),
   ]);
 

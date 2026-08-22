@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { PLAIN, say, type Lang } from "./lang";
 import { hasSupabase } from "./supabase/config";
 import { supabasePublic } from "./supabase/public";
 
@@ -22,6 +23,8 @@ export type SitePage = {
   group: "main" | "more" | "none";
   position: number;
   visible: boolean;
+  /** The French of this row, where anybody has written any. */
+  fr?: unknown;
 };
 
 /** The menu as it was before there was anywhere to change it. */
@@ -50,6 +53,8 @@ type Row = {
   nav_group: string | null;
   nav_position: number | null;
   visible: boolean | null;
+  /** The French of this row, keyed by the column it translates. */
+  fr: unknown;
 };
 
 /* Asked once per request however many things want to know — a page asks whether
@@ -60,7 +65,7 @@ export const getSitePages = cache(async (): Promise<SitePage[]> => {
   try {
     const { data } = await supabasePublic()
       .from("pages")
-      .select("slug, nav_label, nav_group, nav_position, visible")
+      .select("slug, nav_label, nav_group, nav_position, visible, fr")
       .order("nav_position")
       .returns<Row[]>();
 
@@ -72,6 +77,7 @@ export const getSitePages = cache(async (): Promise<SitePage[]> => {
     return data.map((row) => ({
       slug: row.slug,
       navLabel: row.nav_label,
+      fr: row.fr,
       group: (row.nav_group === "main" || row.nav_group === "more" ? row.nav_group : "none"),
       position: row.nav_position ?? 99,
       visible: row.visible !== false,
@@ -95,7 +101,7 @@ export async function pageIsVisible(slug: string): Promise<boolean> {
 }
 
 /** The two menu groups, in order, with only what is actually shown. */
-export async function getMenu(): Promise<{
+export async function getMenu(lang: Lang = PLAIN): Promise<{
   main: { href: string; label: string }[];
   more: { href: string; label: string }[];
 }> {
@@ -121,7 +127,9 @@ export async function getMenu(): Promise<{
       .map((page) => ({
         href: `/${page.slug}`,
         // The bold ones are set in capitals on the site; the quieter ones are not.
-        label: page.navLabel?.trim() || (group === "main" ? page.slug.toUpperCase() : page.slug),
+        label:
+          say(page.fr, "nav_label", lang, page.navLabel)?.trim() ||
+          (group === "main" ? page.slug.toUpperCase() : page.slug),
       }));
 
   return { main: pick("main"), more: pick("more") };

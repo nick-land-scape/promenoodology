@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import CodeEntry from "@/components/CodeEntry";
 import { CODE_COOKIE, maskEmail } from "@/lib/auth-code";
 import { currentProfile } from "@/lib/supabase/server";
-import { resendCode } from "../actions";
+import { resendCode } from "@/lib/site-actions/account";
 
 export const metadata: Metadata = {
   title: "The code",

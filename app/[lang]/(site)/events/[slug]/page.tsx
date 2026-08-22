@@ -7,9 +7,10 @@ import Photo from "@/components/Photo";
 import StoryBody from "@/components/StoryBody";
 import type { Slide } from "@/lib/content";
 import { pretty } from "@/lib/admin/when";
+import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { getEvent, getEvents } from "@/lib/source";
 
-type Params = { params: Promise<{ slug: string }> };
+type Params = { params: Promise<{ slug: string; lang: string }> };
 
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
@@ -19,8 +20,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { slug } = await params;
-  const event = await getEvent(slug);
+  const { slug, lang } = await params;
+  const event = await getEvent(slug, isLang(lang) ? lang : PLAIN);
   if (!event) return {};
 
   const description =
@@ -29,7 +30,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: event.title,
     description,
-    alternates: { canonical: `/events/${event.slug}` },
+    alternates: {
+      canonical: at(isLang(lang) ? lang : PLAIN, `/events/${event.slug}`),
+      // The same evening in the other language, said to a search engine.
+      languages: { en: `/events/${event.slug}`, fr: `/fr/events/${event.slug}` },
+    },
     openGraph: {
       title: event.title,
       description,
@@ -51,8 +56,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
  * asking to come stays in the app, where the names are.
  */
 export default async function EventPage({ params }: Params) {
-  const { slug } = await params;
-  const event = await getEvent(slug);
+  const { slug, lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const event = await getEvent(slug, lang);
   if (!event) notFound();
 
   const slides: Slide[] = event.blocks
@@ -75,7 +81,7 @@ export default async function EventPage({ params }: Params) {
         {/* The way back, and it goes to the list this came from rather than to
             wherever the browser happened to be. Top left, where a back is. */}
         <p className="crumb">
-          <Link href="/events" className="event-back">
+          <Link href={at(lang, "/events")} className="event-back">
             ← all events
           </Link>
         </p>
@@ -264,7 +270,7 @@ export default async function EventPage({ params }: Params) {
             <section>
               <h2 className="story-label">what came of it</h2>
               <p className="story-text">
-                <Link href={`/stories/${event.story.slug}`}>{event.story.title}</Link>
+                <Link href={at(lang, `/stories/${event.story.slug}`)}>{event.story.title}</Link>
               </p>
             </section>
           ) : null}
@@ -274,9 +280,9 @@ export default async function EventPage({ params }: Params) {
       {/* Where somebody who has just read about one evening actually wants to go
           next: everything else we have done, and the photographs of it. */}
       <nav className="event-onward" aria-label="The rest of the site">
-        <Link href="/events">← all events</Link>
-        <Link href="/stories">the stories</Link>
-        <Link href="/archive">the archive</Link>
+        <Link href={at(lang, "/events")}>← all events</Link>
+        <Link href={at(lang, "/stories")}>the stories</Link>
+        <Link href={at(lang, "/archive")}>the archive</Link>
       </nav>
     </main>
   );

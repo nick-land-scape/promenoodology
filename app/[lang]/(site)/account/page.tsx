@@ -4,7 +4,7 @@ import ProfileForm from "@/components/ProfileForm";
 import { pretty } from "@/lib/admin/when";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { ProfileRow } from "@/lib/supabase/rows";
-import { signOut } from "./actions";
+import { signOut } from "@/lib/site-actions/account";
 
 export const metadata: Metadata = {
   title: "Your profile",

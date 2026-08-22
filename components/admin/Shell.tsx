@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "@/app/(site)/account/actions";
+import { signOut } from "@/lib/site-actions/account";
 import DarkSwitch from "@/components/DarkSwitch";
 import { GROUPS, sectionsIn, viewFor } from "@/lib/admin/sections";
 import { Icon } from "./ui";

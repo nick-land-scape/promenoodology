@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import NewsletterForm from "@/components/NewsletterForm";
+import { isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
 import { getPageHead } from "@/lib/source";
 
@@ -11,11 +12,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/newsletter" },
 };
 
-export default async function NewsletterPage() {
+export default async function NewsletterPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: asked } = await params;
+  const lang = isLang(asked) ? asked : PLAIN;
+
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("newsletter"))) notFound();
 
-  const head = await getPageHead("newsletter");
+  const head = await getPageHead("newsletter", lang);
 
   return (
     <main className="page">

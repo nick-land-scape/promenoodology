@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Archive, { type StoryFilter } from "@/components/Archive";
 import { getFilters, getPageHead, getQuotes, getResources, getStories } from "@/lib/source";
+import { isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -14,7 +15,10 @@ export const metadata: Metadata = {
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
 
-export default async function ResourcesPage() {
+export default async function ResourcesPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: asked } = await params;
+  const lang = isLang(asked) ? asked : PLAIN;
+
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("archive"))) notFound();
 
@@ -22,7 +26,7 @@ export default async function ResourcesPage() {
     getResources(),
     getQuotes(),
     getStories(),
-    getPageHead("archive"),
+    getPageHead("archive", lang),
   ]);
 
   const slides = resources.map((item) => ({

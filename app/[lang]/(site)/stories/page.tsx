@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Photo from "@/components/Photo";
+import { at, isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
 import { getPageHead, getStories } from "@/lib/source";
 
@@ -14,11 +15,14 @@ export const metadata: Metadata = {
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
 
-export default async function StoriesPage() {
+export default async function StoriesPage({ params }: { params: Promise<{ lang: string }> }) {
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("stories"))) notFound();
 
-  const [stories, head] = await Promise.all([getStories(), getPageHead("stories")]);
+  const { lang: asked } = await params;
+  const lang = isLang(asked) ? asked : PLAIN;
+
+  const [stories, head] = await Promise.all([getStories(lang), getPageHead("stories", lang)]);
 
   return (
     <main className="page">
@@ -33,7 +37,7 @@ export default async function StoriesPage() {
       ) : (
         <p className="page-intro">
           What we did, who was there and what we would do differently. Take any of it and do your
-          own version — the <Link href="/handbook">handbook</Link> tells you how.
+          own version — the <Link href={at(lang, "/handbook")}>handbook</Link> tells you how.
         </p>
       )}
 
@@ -44,7 +48,7 @@ export default async function StoriesPage() {
       >
         {stories.map((story) => (
           <li key={story.slug} className="story-card">
-            <Link href={`/stories/${story.slug}`}>
+            <Link href={at(lang, `/stories/${story.slug}`)}>
               {story.cover ? (
                 <span className="story-cover">
                   <Photo src={story.cover.src} alt="" fill sizes="(max-width: 767px) 45vw, 320px" />

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import AppleSignIn from "./AppleSignIn";
 import { useActionState } from "react";
-import { join, type Result, sendCode } from "@/app/(site)/account/actions";
+import { join, type Result, sendCode } from "@/lib/site-actions/account";
 
 /**
  * The two ways in, and neither of them has a password.

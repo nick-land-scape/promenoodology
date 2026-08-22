@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { changeMyEmail } from "@/app/(site)/account/actions";
+import { changeMyEmail } from "@/lib/site-actions/account";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 /**

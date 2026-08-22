@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import Photo from "../Photo";
 import { notJustYet, sayWhoYouAre } from "@/app/app/actions";
-import { setMyPhoto } from "@/app/(site)/account/actions";
+import { setMyPhoto } from "@/lib/site-actions/account";
 import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
 import { buzz } from "@/lib/native";
 import { mediaUrl } from "@/lib/supabase/config";

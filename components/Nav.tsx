@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 import { useKnock } from "@/lib/knock";
+import { at, type Lang } from "@/lib/lang";
+import LanguageSwitch from "./LanguageSwitch";
 import DarkSwitch from "./DarkSwitch";
 import Photo from "./Photo";
 import { SessionButton } from "./SessionLink";
@@ -13,11 +15,14 @@ export type NavLink = { href: string; label: string };
 export default function Nav({
   main,
   more,
+  lang,
 }: {
   /** The bold links. Which pages these are is set in the back of the house. */
   main: NavLink[];
   /** The quieter second group underneath. */
   more: NavLink[];
+  /** Which language the site is being read in. */
+  lang: Lang;
 }) {
   const pathname = usePathname();
 
@@ -27,21 +32,21 @@ export default function Nav({
    * home waits a moment, so the second and third knocks land on the same page as
    * the first.
    */
-  const knock = useKnock("/account/sign-in", "/");
+  const knock = useKnock(at(lang, "/account/sign-in"), at(lang, "/"));
 
   // /stories/dinner-for-500 keeps STORIES marked as the section you are in.
   const current = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <nav className="nav">
-      <Link href="/" className="nav-mark" aria-label="promeNOODology — home" onClick={knock}>
+      <Link href={at(lang, "/")} className="nav-mark" aria-label="promeNOODology — home" onClick={knock}>
         <Photo src="/logo-mark.png" alt="" width={600} height={582} priority sizes="74px" />
       </Link>
 
       <div className="nav-links">
         {main.map((link) => (
           <Fragment key={link.href}>
-            <Link href={link.href} aria-current={current(link.href) ? "page" : undefined}>
+            <Link href={at(lang, link.href)} aria-current={current(at(lang, link.href)) ? "page" : undefined}>
               {link.label}
             </Link>
             {/* A page with filters of its own puts them in here. */}
@@ -54,12 +59,16 @@ export default function Nav({
         {more.map((link) => (
           <Link
             key={link.href}
-            href={link.href}
-            aria-current={current(link.href) ? "page" : undefined}
+            href={at(lang, link.href)}
+            aria-current={current(at(lang, link.href)) ? "page" : undefined}
           >
             {link.label}
           </Link>
         ))}
+
+        {/* Under the handbook, at the foot of the quiet group: it is a thing
+            about how you are reading rather than a place to go. */}
+        <LanguageSwitch lang={lang} />
         {/* The way into the back of the house used to be here. It is in the
             strip along the top now, on every page, where it also says who you
             are — two links to the same place is one link too many. */}

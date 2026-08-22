@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { apply, type Result } from "@/app/(site)/handbook/actions";
+import { apply, type Result } from "@/lib/site-actions/handbook";
 
 /**
  * Applying for support.

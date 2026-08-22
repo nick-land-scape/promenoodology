@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Photo from "@/components/Photo";
 import { getDonations, getPageHead } from "@/lib/source";
+import { isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -21,11 +22,14 @@ export const metadata: Metadata = {
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
 
-export default async function DonationsPage() {
+export default async function DonationsPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: asked } = await params;
+  const lang = isLang(asked) ? asked : PLAIN;
+
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("donations"))) notFound();
 
-  const [donations, head] = await Promise.all([getDonations(), getPageHead("donations")]);
+  const [donations, head] = await Promise.all([getDonations(), getPageHead("donations", lang)]);
 
   return (
     <main className="page">

@@ -5,6 +5,7 @@ import EventsCalendar from "@/components/EventsCalendar";
 import Photo from "@/components/Photo";
 import type { ClubEvent } from "@/lib/content";
 import { pretty } from "@/lib/admin/when";
+import { at, isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
 import { getEvents, getPageHead } from "@/lib/source";
 
@@ -29,11 +30,14 @@ export const revalidate = 60;
  * "is it this week" are the two questions anybody has of a page like this, and a
  * list sorted by date makes you work them out from the dates.
  */
-export default async function EventsPage() {
+export default async function EventsPage({ params }: { params: Promise<{ lang: string }> }) {
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("events"))) notFound();
 
-  const [events, head] = await Promise.all([getEvents(), getPageHead("events")]);
+  const { lang: asked } = await params;
+  const lang = isLang(asked) ? asked : PLAIN;
+
+  const [events, head] = await Promise.all([getEvents(lang), getPageHead("events", lang)]);
 
   const today = new Date().toISOString().slice(0, 10);
   const listed = events.filter((event) => event.slug);
@@ -107,7 +111,7 @@ export default async function EventsPage() {
         <p className="page-intro">
           What we are putting on next. Everything here is open — come and eat, bring a pot, or
           simply turn up. If you would rather do your own version, the{" "}
-          <Link href="/handbook">handbook</Link> tells you how.
+          <Link href={at(lang, "/handbook")}>handbook</Link> tells you how.
         </p>
       )}
 
@@ -123,14 +127,14 @@ export default async function EventsPage() {
       {groups.map((group) => (
         <section key={group.label} className="events-group">
           <h2 className="story-label">{group.label}</h2>
-          <Evenings events={group.events} nextOn={nextOn} />
+          <Evenings events={group.events} nextOn={nextOn} lang={lang} />
         </section>
       ))}
 
       {been.length > 0 ? (
         <section className="events-group events-been">
           <h2 className="story-label">and what has been</h2>
-          <Evenings events={been} nextOn={nextOn} past />
+          <Evenings events={been} nextOn={nextOn} lang={lang} past />
         </section>
       ) : null}
     </main>
@@ -140,10 +144,12 @@ export default async function EventsPage() {
 function Evenings({
   events,
   nextOn,
+  lang,
   past,
 }: {
   events: ClubEvent[];
   nextOn: (event: ClubEvent) => string | null;
+  lang: "en" | "fr";
   past?: boolean;
 }) {
   return (
@@ -152,7 +158,7 @@ function Evenings({
         const next = nextOn(event);
         return (
           <li key={event.id} className="story-card">
-            <Link href={`/events/${event.slug}`}>
+            <Link href={at(lang, `/events/${event.slug}`)}>
               <span className="story-cover event-cover-card">
                 {event.photo ? (
                   <Photo src={event.photo.src} alt="" fill sizes="(max-width: 767px) 45vw, 320px" />

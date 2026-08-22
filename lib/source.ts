@@ -17,6 +17,7 @@ import { getHandbook as handbookFromFile } from "./handbook";
 import * as fileStories from "./stories";
 import { type PageSettings, settingsFor } from "./admin/page-settings";
 import { pretty } from "./admin/when";
+import { PLAIN, say, type Lang } from "./lang";
 import { hasSupabase, mediaUrl } from "./supabase/config";
 import { supabasePublic } from "./supabase/public";
 import type {
@@ -45,7 +46,7 @@ import type {
 
 /* --------------------------------------------------------------- stories */
 
-export async function getStories(): Promise<Story[]> {
+export async function getStories(lang: Lang = PLAIN): Promise<Story[]> {
   if (!hasSupabase()) return fileStories.getStories();
 
   const supabase = supabasePublic();
@@ -55,7 +56,7 @@ export async function getStories(): Promise<Story[]> {
       .is("deleted_at", null)
       .eq("published", true)
       .order("position")
-      .returns<StoryRow[]>(),
+      .returns<(StoryRow & { fr: unknown })[]>(),
     getResources(),
     coverPaths(),
     // Who was there and who it was made with, for every story at once — one
@@ -70,7 +71,7 @@ export async function getStories(): Promise<Story[]> {
       >(),
     supabase
       .from("story_blocks")
-      .select("story_id, position, kind, words, photo_id, layout")
+      .select("story_id, position, kind, words, photo_id, layout, fr")
       .order("position")
       .returns<
         {
@@ -80,6 +81,7 @@ export async function getStories(): Promise<Story[]> {
           words: string;
           photo_id: string | null;
           layout: string | null;
+          fr: unknown;
         }[]
       >(),
     supabase
@@ -114,17 +116,20 @@ export async function getStories(): Promise<Story[]> {
     // and no more than that.
     const picked = row.featured_photo_id ? chosen.get(row.featured_photo_id) : undefined;
     const found = picked ? mine.find((photo) => photo.file === picked) : undefined;
+    /* The French of this story, where anybody has written any. Each field asks
+       for itself by name and gets the English back if nobody has. */
+    const fr = row.fr;
 
     return {
       slug: row.slug,
       tag: row.tag,
-      title: row.title,
-      subtitle: row.subtitle ?? "",
+      title: say(fr, "title", lang, row.title),
+      subtitle: say(fr, "subtitle", lang, row.subtitle ?? ""),
       order: row.position,
-      where: row.place,
+      where: say(fr, "place", lang, row.place),
       when: row.happened || years(mine).join(", ") || null,
       with: row.made_with,
-      sections,
+      sections: say(fr, "sections", lang, sections),
       lead: sections.flatMap((section) => section.texts)[0] ?? "",
       photos: mine,
       credits: unique(mine.map((photo) => photo.credit)),
@@ -148,8 +153,9 @@ export async function getStories(): Promise<Story[]> {
             };
           }
           if (block.kind === "space") return { kind: "space" as const };
-          if (!block.words.trim()) return null;
-          return { kind: block.kind, words: block.words };
+          const words = say(block.fr, "words", lang, block.words);
+          if (!words.trim()) return null;
+          return { kind: block.kind, words };
         })
         .filter((block): block is NonNullable<typeof block> => block !== null),
       topics: (row as StoryRow & { topics?: string[] | null }).topics ?? [],
@@ -172,13 +178,13 @@ export async function getStories(): Promise<Story[]> {
   });
 }
 
-export async function getStory(slug: string) {
-  return (await getStories()).find((story) => story.slug === slug);
+export async function getStory(slug: string, lang: Lang = PLAIN) {
+  return (await getStories(lang)).find((story) => story.slug === slug);
 }
 
 /** The stories before and after this one, wrapping around at the ends. */
-export async function getNeighbours(slug: string) {
-  const stories = await getStories();
+export async function getNeighbours(slug: string, lang: Lang = PLAIN) {
+  const stories = await getStories(lang);
   const index = stories.findIndex((story) => story.slug === slug);
   if (index === -1) return { previous: undefined, next: undefined };
   return {
@@ -331,7 +337,7 @@ const ABOUT: { title: string; lead: string; blocks: PageBlock[] } = {
  * the price of the field, and it is the right way round — the words matter more
  * than the link, and the link is still in the sentence next to it.
  */
-export async function getPageHead(slug: string): Promise<{
+export async function getPageHead(slug: string, lang: Lang = PLAIN): Promise<{
   title: string;
   lead: string;
   settings: PageSettings;
@@ -351,14 +357,14 @@ export async function getPageHead(slug: string): Promise<{
   try {
     const { data } = await supabasePublic()
       .from("pages")
-      .select("title, lead, settings")
+      .select("title, lead, settings, fr")
       .eq("slug", slug)
-      .maybeSingle<Pick<PageRow, "title" | "lead" | "settings">>();
+      .maybeSingle<Pick<PageRow, "title" | "lead" | "settings"> & { fr: unknown }>();
     if (!data) return empty;
 
     return {
-      title: data.title ?? "",
-      lead: data.lead ?? "",
+      title: say(data.fr, "title", lang, data.title ?? ""),
+      lead: say(data.fr, "lead", lang, data.lead ?? ""),
       settings: settingsFor(slug, data.settings),
       saved: true,
     };
@@ -368,7 +374,10 @@ export async function getPageHead(slug: string): Promise<{
   }
 }
 
-export async function getPage(slug: string): Promise<{
+export async function getPage(
+  slug: string,
+  lang: Lang = PLAIN,
+): Promise<{
   title: string;
   lead: string;
   blocks: PageBlock[];
@@ -379,11 +388,15 @@ export async function getPage(slug: string): Promise<{
       .from("pages")
       .select("*")
       .eq("slug", slug)
-      .maybeSingle<PageRow>();
+      .maybeSingle<PageRow & { fr: unknown }>();
     // A row with no blocks in it is a page somebody emptied by accident, not a
     // decision to show nothing: fall through to what the site shipped with.
     if (data && (data.blocks ?? []).length > 0) {
-      return { title: data.title, lead: data.lead, blocks: (data.blocks ?? []) as PageBlock[] };
+      return {
+        title: say(data.fr, "title", lang, data.title),
+        lead: say(data.fr, "lead", lang, data.lead),
+        blocks: say(data.fr, "blocks", lang, (data.blocks ?? []) as PageBlock[]),
+      };
     }
   }
 
@@ -408,27 +421,29 @@ export type Leaf = { id: string; title: string; blocks: PageBlock[] };
  * own headings, which is exactly where a reader would have turned the page
  * anyway.
  */
-export async function getHandbookPages(): Promise<Leaf[]> {
+export async function getHandbookPages(lang: Lang = PLAIN): Promise<Leaf[]> {
   if (hasSupabase()) {
     const supabase = supabasePublic();
     const { data } = await supabase
       .from("handbook_pages")
-      .select("id, title, blocks")
+      .select("id, title, blocks, fr")
       .is("deleted_at", null)
       .eq("published", true)
       .order("position")
-      .returns<{ id: string; title: string; blocks: PageBlock[] | null }[]>();
+      .returns<{ id: string; title: string; blocks: PageBlock[] | null; fr: unknown }[]>();
 
     if (data && data.length > 0) {
       return data.map((leaf) => ({
         id: leaf.id,
-        title: leaf.title ?? "",
-        blocks: (leaf.blocks ?? []).filter((block) => block.text?.trim()),
+        title: say(leaf.fr, "title", lang, leaf.title ?? ""),
+        blocks: say(leaf.fr, "blocks", lang, (leaf.blocks ?? []) as PageBlock[]).filter(
+          (block) => block.text?.trim(),
+        ),
       }));
     }
   }
 
-  const page = await getPage("handbook");
+  const page = await getPage("handbook", lang);
   return page ? intoLeaves(page.blocks) : [];
 }
 
@@ -474,7 +489,7 @@ export function intoLeaves(blocks: PageBlock[]): Leaf[] {
  * unless you are an admin — so this count is what *you* can see, which is why the
  * screens say "places asked for" rather than pretending to a total.
  */
-export async function getEvents(): Promise<ClubEvent[]> {
+export async function getEvents(lang: Lang = PLAIN): Promise<ClubEvent[]> {
   if (!hasSupabase()) return appFiles.getEvents();
 
   const supabase = supabasePublic();
@@ -493,7 +508,7 @@ export async function getEvents(): Promise<ClubEvent[]> {
        above and nothing else. */
     supabase
       .from("event_sessions")
-      .select("event_id, happens_on, starts_at, ends_at, title, what")
+      .select("event_id, happens_on, starts_at, ends_at, title, what, fr")
       .order("happens_on")
       .returns<
         {
@@ -503,6 +518,7 @@ export async function getEvents(): Promise<ClubEvent[]> {
           ends_at: string | null;
           title: string;
           what: string;
+          fr: unknown;
         }[]
       >(),
     supabase
@@ -532,6 +548,9 @@ export async function getEvents(): Promise<ClubEvent[]> {
 
   return (data ?? []).map((row) => {
     const story = row.story_id ? told.get(row.story_id) : undefined;
+    /* The French of this evening, where anybody has written any. Every field
+       below asks for itself by name and gets the English back if nobody has. */
+    const fr = (row as EventRow & { fr?: unknown }).fr;
     return {
       id: row.id,
       date: row.happens_on,
@@ -539,10 +558,10 @@ export async function getEvents(): Promise<ClubEvent[]> {
       until: row.ends_on && row.ends_on !== row.happens_on ? row.ends_on : "",
       time: row.starts_at ?? "",
       endTime: row.ends_at ?? "",
-      title: row.title,
-      place: row.place ?? "",
+      title: say(fr, "title", lang, row.title),
+      place: say(fr, "place", lang, row.place ?? ""),
       spots: row.spots ?? 0,
-      note: row.note ?? "",
+      note: say(fr, "note", lang, row.note ?? ""),
       photo: row.photo_path
         ? { src: mediaUrl(row.photo_path), width: 1500, height: 1000 }
         : null,
@@ -554,17 +573,17 @@ export async function getEvents(): Promise<ClubEvent[]> {
           logo: one!.logo_path ? mediaUrl(one!.logo_path) : null,
           url: one!.url || null,
         })),
-      needs: row.needs ?? "",
+      needs: say(fr, "needs", lang, row.needs ?? ""),
       fed: row.people_fed ?? null,
       asked: asked.get(row.id) ?? 0,
       story: story ? { slug: story.slug, title: story.title } : null,
       slug: row.slug ?? "",
-      subtitle: row.subtitle ?? "",
-      lead: row.lead ?? "",
-      address: row.address ?? "",
-      cost: row.cost ?? "",
+      subtitle: say(fr, "subtitle", lang, row.subtitle ?? ""),
+      lead: say(fr, "lead", lang, row.lead ?? ""),
+      address: say(fr, "address", lang, row.address ?? ""),
+      cost: say(fr, "cost", lang, row.cost ?? ""),
       signUpEmail: row.sign_up_email ?? "",
-      partOf: row.part_of ?? "",
+      partOf: say(fr, "part_of", lang, row.part_of ?? ""),
       partOfUrl: row.part_of_url ?? "",
       flyer: row.flyer_path ? mediaUrl(row.flyer_path) : null,
       days: (programme ?? [])
@@ -573,8 +592,8 @@ export async function getEvents(): Promise<ClubEvent[]> {
           date: day.happens_on,
           time: day.starts_at ?? "",
           endTime: day.ends_at ?? "",
-          title: day.title ?? "",
-          what: day.what ?? "",
+          title: say(day.fr, "title", lang, day.title ?? ""),
+          what: say(day.fr, "what", lang, day.what ?? ""),
         })),
     };
   });
@@ -587,8 +606,8 @@ export async function getEvents(): Promise<ClubEvent[]> {
  * shows evenings shows several — so the evening itself comes from there, and the
  * only thing asked for separately is the page, which nothing else needs.
  */
-export async function getEvent(slug: string): Promise<EventPage | undefined> {
-  const event = (await getEvents()).find((one) => one.slug === slug);
+export async function getEvent(slug: string, lang: Lang = PLAIN): Promise<EventPage | undefined> {
+  const event = (await getEvents(lang)).find((one) => one.slug === slug);
   if (!event) return undefined;
   if (!hasSupabase()) return { ...event, blocks: [] };
 
@@ -596,7 +615,7 @@ export async function getEvent(slug: string): Promise<EventPage | undefined> {
   const [{ data: built }, photos] = await Promise.all([
     supabase
       .from("event_blocks")
-      .select("kind, words, photo_id, layout")
+      .select("kind, words, photo_id, layout, fr")
       .eq("event_id", event.id)
       .order("position")
       .returns<
@@ -605,6 +624,7 @@ export async function getEvent(slug: string): Promise<EventPage | undefined> {
           words: string;
           photo_id: string | null;
           layout: string | null;
+          fr: unknown;
         }[]
       >(),
     getResources(),
@@ -640,8 +660,9 @@ export async function getEvent(slug: string): Promise<EventPage | undefined> {
         };
       }
       if (block.kind === "space") return { kind: "space" as const };
-      if (!block.words.trim()) return null;
-      return { kind: block.kind, words: block.words };
+      const words = say(block.fr, "words", lang, block.words);
+      if (!words.trim()) return null;
+      return { kind: block.kind, words };
     })
     .filter((block): block is NonNullable<typeof block> => block !== null);
 

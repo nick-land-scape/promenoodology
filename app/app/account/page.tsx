@@ -5,7 +5,7 @@ import AppHeader from "@/components/app/AppHeader";
 import Leaving from "@/components/app/Leaving";
 import MemberCard from "@/components/app/MemberCard";
 import { PhotoPreview, PostPreview } from "@/components/app/MyThings";
-import { signOut } from "@/app/(site)/account/actions";
+import { signOut } from "@/lib/site-actions/account";
 import { whenItIs } from "@/lib/app-data";
 import { pretty } from "@/lib/admin/when";
 import { myBookings, myPhotos, myPosts, requireMember } from "@/lib/app/me";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { type Result, verifyCode } from "@/app/(site)/account/actions";
+import { type Result, verifyCode } from "@/lib/site-actions/account";
 import { CODE_LENGTH } from "@/lib/auth-code";
 
 /**

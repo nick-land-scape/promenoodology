@@ -5,6 +5,7 @@ import PageBackground from "@/components/PageBackground";
 import QuoteThis from "@/components/QuoteThis";
 import { getPage, getPageHead } from "@/lib/source";
 import { siteUrl } from "@/lib/site";
+import { isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -17,13 +18,16 @@ export const metadata: Metadata = {
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
 
-export default async function AboutPage() {
+export default async function AboutPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: asked } = await params;
+  const lang = isLang(asked) ? asked : PLAIN;
+
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("about"))) notFound();
 
   // Whatever the back of the house has saved, or the statement the site shipped
   // with — getPage falls back to it, so this is never empty.
-  const [page, head] = await Promise.all([getPage("about"), getPageHead("about")]);
+  const [page, head] = await Promise.all([getPage("about"), getPageHead("about", lang)]);
   const statement = page?.blocks ?? [];
 
   return (

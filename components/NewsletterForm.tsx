@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { type Result, subscribe } from "@/app/(site)/newsletter/actions";
+import { type Result, subscribe } from "@/lib/site-actions/newsletter";
 
 /** Two fields and a button. Nothing is asked for that we do not need. */
 export default function NewsletterForm() {

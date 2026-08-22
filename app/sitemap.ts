@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { LANGS, at } from "@/lib/lang";
 import { SITE_URL } from "@/lib/site";
 import { getSitePages } from "@/lib/site-pages";
 import { getEvents, getSheets, getStories } from "@/lib/source";
@@ -34,9 +35,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ? ["/do-it-yourself", ...sheets.map((sheet) => `/do-it-yourself/${sheet.slug}`)]
     : [];
 
-  return [...pages, ...stories, ...events, ...doing].map((route) => ({
-    url: `${SITE_URL}${route}`,
-    changeFrequency: "monthly",
-    priority: route === "/" ? 1 : 0.7,
-  }));
+  const all = [...pages, ...stories, ...events, ...doing];
+
+  /* Both languages, and each one saying where the other is.
+   *
+   * A French page that no search engine knows is French is a French page nobody
+   * French ever sees, which would make the whole exercise decorative. */
+  return all.flatMap((route) => {
+    const languages = { en: `${SITE_URL}${route}`, fr: `${SITE_URL}${at("fr", route)}` };
+    return LANGS.map((lang) => ({
+      url: `${SITE_URL}${at(lang, route)}`,
+      changeFrequency: "monthly" as const,
+      priority: route === "/" ? 1 : 0.7,
+      alternates: { languages },
+    }));
+  });
 }

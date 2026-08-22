@@ -8,9 +8,10 @@ import Photo from "@/components/Photo";
 import QuoteThis from "@/components/QuoteThis";
 import StoryBody from "@/components/StoryBody";
 import { pretty } from "@/lib/admin/when";
+import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { getEvents, getNeighbours, getStories, getStory } from "@/lib/source";
 
-type Params = { params: Promise<{ slug: string }> };
+type Params = { params: Promise<{ slug: string; lang: string }> };
 
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
@@ -20,8 +21,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { slug } = await params;
-  const story = await getStory(slug);
+  const { slug, lang } = await params;
+  const story = await getStory(slug, isLang(lang) ? lang : PLAIN);
   if (!story) return {};
 
   const description =
@@ -32,7 +33,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: story.title,
     description,
-    alternates: { canonical: `/stories/${story.slug}` },
+    alternates: {
+      canonical: at(isLang(lang) ? lang : PLAIN, `/stories/${story.slug}`),
+      languages: { en: `/stories/${story.slug}`, fr: `/fr/stories/${story.slug}` },
+    },
     openGraph: {
       title: story.title,
       description,
@@ -42,11 +46,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function StoryPage({ params }: Params) {
-  const { slug } = await params;
-  const story = await getStory(slug);
+  const { slug, lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const story = await getStory(slug, lang);
   if (!story) notFound();
 
-  const { previous, next } = await getNeighbours(story.slug);
+  const { previous, next } = await getNeighbours(story.slug, lang);
 
   /* The evenings this is the story of.
    *
@@ -54,7 +59,7 @@ export default async function StoryPage({ params }: Params) {
    * five afternoons and one thing that happened, and the writing about it is the
    * one thing. Each of them keeps its own page — what it was called, who came,
    * what was still wanted that week — and this is the way back to them. */
-  const evenings = (await getEvents())
+  const evenings = (await getEvents(lang))
     .filter((event) => event.story?.slug === story.slug && event.slug)
     .sort((a, b) => a.date.localeCompare(b.date));
 
@@ -69,7 +74,7 @@ export default async function StoryPage({ params }: Params) {
     <main className="page">
       <header className="story-header">
         <p className="crumb">
-          <Link href="/stories">stories</Link>
+          <Link href={at(lang, "/stories")}>stories</Link>
         </p>
         <h1 className="page-title">{story.title}</h1>
         {story.subtitle ? <p className="story-hook">{story.subtitle}</p> : null}
@@ -136,7 +141,7 @@ export default async function StoryPage({ params }: Params) {
           <ul>
             {evenings.map((evening) => (
               <li key={evening.id}>
-                <Link href={`/events/${evening.slug}`}>{evening.title}</Link>
+                <Link href={at(lang, `/events/${evening.slug}`)}>{evening.title}</Link>
                 <span>
                   {[
                     evening.until
@@ -169,9 +174,9 @@ export default async function StoryPage({ params }: Params) {
 
       {previous && next ? (
         <nav className="story-nav" aria-label="Other stories">
-          <Link href={`/stories/${previous.slug}`}>← {previous.title}</Link>
-          <Link href="/stories">all stories</Link>
-          <Link href={`/stories/${next.slug}`}>{next.title} →</Link>
+          <Link href={at(lang, `/stories/${previous.slug}`)}>← {previous.title}</Link>
+          <Link href={at(lang, "/stories")}>all stories</Link>
+          <Link href={at(lang, `/stories/${next.slug}`)}>{next.title} →</Link>
         </nav>
       ) : null}
     </main>

@@ -6,7 +6,7 @@ import {
   type Result,
   saveProfile,
   setMyPhoto,
-} from "@/app/(site)/account/actions";
+} from "@/lib/site-actions/account";
 import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
 import { mediaUrl } from "@/lib/supabase/config";
 import Photo from "./Photo";

@@ -6,6 +6,7 @@ import QuoteThis from "@/components/QuoteThis";
 import Handbook from "@/components/Handbook";
 import { getHandbookPages, getPage, getPageHead } from "@/lib/source";
 import { siteUrl } from "@/lib/site";
+import { isLang, PLAIN } from "@/lib/lang";
 import { pageIsVisible } from "@/lib/site-pages";
 
 export const metadata: Metadata = {
@@ -18,14 +19,17 @@ export const metadata: Metadata = {
 // A page may serve a cached copy for a minute before asking the database again.
 export const revalidate = 60;
 
-export default async function HandbookPage() {
+export default async function HandbookPage({ params }: { params: Promise<{ lang: string }> }) {
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("handbook"))) notFound();
 
+  const { lang: asked } = await params;
+  const lang = isLang(asked) ? asked : PLAIN;
+
   const [handbook, head, leaves] = await Promise.all([
-    getPage("handbook"),
-    getPageHead("handbook"),
-    getHandbookPages(),
+    getPage("handbook", lang),
+    getPageHead("handbook", lang),
+    getHandbookPages(lang),
   ]);
   if (!handbook) notFound();
 
