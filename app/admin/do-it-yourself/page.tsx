@@ -1,84 +1,12 @@
-import BinLink from "@/components/admin/BinLink";
-import Head from "@/components/admin/Head";
-import PageWords from "@/app/admin/pages/[slug]/PageWords";
-import RowsList, { type Listed } from "@/components/admin/RowsList";
-import { requireAdmin } from "@/lib/admin/guard";
-import { headOfPage } from "@/lib/admin/head-of-page";
-import { hay } from "@/lib/admin/find";
-import { supabaseServer } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-/**
- * The sheets, as a list of the places they are about.
- *
- * They were all open at once, every field of every one, which is the shape the
- * back of the house has been growing out of everywhere: a sheet is a page of
- * writing with a photograph and eight steps on it, and three of those in a
- * column is a screen nobody can find anything in.
+/*
+ * This lived in the menu as a section of its own, with the top of its page —
+ * the heading, the line under it, the settings — on a second screen under
+ * Pages. Two screens for one thing, and no telling which one you were meant to
+ * be on. It is all under Pages now; anybody who kept this address is sent
+ * there.
  */
-export default async function SheetsPage() {
-  await requireAdmin();
-  const supabase = await supabaseServer();
-
-  const top = await headOfPage("do-it-yourself");
-
-  const { data: sheets } = await supabase
-    .from("sheets")
-    .select("id, slug, title, hook, words, needs, steps, people_fed, published")
-    .is("deleted_at", null)
-    .order("position")
-    .returns<
-      {
-        id: string;
-        slug: string;
-        title: string;
-        hook: string | null;
-        words: string | null;
-        needs: string | null;
-        steps: string | null;
-        people_fed: number | null;
-        published: boolean;
-      }[]
-    >();
-
-  const rows: Listed[] = (sheets ?? []).map((sheet) => {
-    const steps = (sheet.steps ?? "").split("\n").filter((line) => line.trim()).length;
-    return {
-      id: sheet.id,
-      title: sheet.title,
-      meta:
-        [
-          sheet.slug ? `/do-it-yourself/${sheet.slug}` : "no address yet",
-          steps ? `${steps} step${steps === 1 ? "" : "s"}` : "no steps yet",
-          sheet.hook || null,
-        ]
-          .filter(Boolean)
-          .join(" · "),
-      hay: hay(sheet.title, sheet.slug, sheet.hook, sheet.words, sheet.needs, sheet.steps),
-      published: sheet.published,
-    };
-  });
-
-  return (
-    <Head title="do it yourself" action={<BinLink table="sheets" />}>
-      <p className="admin-intro">
-        One sheet per kind of place: what it takes, what to do in what order, and a photograph of it
-        having worked. These are the only pages here that anybody at all can open — no account, no
-        login — because they are what we hand to somebody who has a courtyard and no idea it is
-        possible. A new one starts hidden, and its address is the thing people paste into messages,
-        so pick it once and leave it alone.
-      </p>
-
-      {/* The heading over the sheets and the line under it, where the sheets are
-          rather than on a screen of its own. */}
-      {top ? <PageWords spec={top.spec} initial={top.initial} /> : null}
-
-      <RowsList
-        table="sheets"
-        initial={rows}
-        at="/admin/do-it-yourself"
-        what="a sheet"
-        untitled="Untitled sheet"
-      />
-    </Head>
-  );
+export default function Moved() {
+  redirect("/admin/pages/do-it-yourself");
 }

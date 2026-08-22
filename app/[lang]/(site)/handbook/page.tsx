@@ -4,6 +4,7 @@ import Link from "next/link";
 import SupportForm from "@/components/SupportForm";
 import QuoteThis from "@/components/QuoteThis";
 import Handbook from "@/components/Handbook";
+import Linked from "@/components/Linked";
 import { getFrench, getHandbookPages, getPage, getPageHead } from "@/lib/source";
 import { speaking } from "@/lib/words";
 import { siteUrl } from "@/lib/site";
@@ -53,10 +54,16 @@ export default async function HandbookPage({ params }: { params: Promise<{ lang:
   const say = speaking(lang, french);
   if (!handbook) notFound();
 
-  /* A book, unless somebody has said otherwise, or unless there is not enough of
-     it to be one. Turning it off in /admin gives back the column of words this
-     page always was — see the note in the settings about why that switch is
-     there at all. */
+  /*
+   * One handbook, shown two ways.
+   *
+   * It used to be two handbooks: a flat list of blocks on the page row for the
+   * column, and pages of their own for the book — so turning the switch changed
+   * not only how it looked but *what it said*, and anything written since the
+   * book arrived simply was not there in the column. The writing is the pages,
+   * always; this switch decides whether they are turned or read straight
+   * through.
+   */
   const asABook = head.settings.asABook !== false && leaves.length > 1;
 
   return (
@@ -82,18 +89,23 @@ export default async function HandbookPage({ params }: { params: Promise<{ lang:
         />
       ) : (
         <div className="handbook">
-          {handbook.blocks.map((block, index) =>
-            block.kind === "heading" ? (
-              <h2 key={index} className="handbook-heading">
-                <span className="handbook-number">{number(handbook.blocks, index)}</span>
-                {block.text}
-              </h2>
-            ) : (
-              <p key={index} className="handbook-text">
-                {block.text}
-              </p>
-            ),
-          )}
+          {/* The same pages, one after another. A page of a book is where a
+              reader would have turned anyway, so read straight through it is
+              simply where the headings fall. */}
+          {leaves
+            .flatMap((leaf) => leaf.blocks)
+            .map((block, index, all) =>
+              block.kind === "heading" ? (
+                <h2 key={index} className="handbook-heading">
+                  <span className="handbook-number">{number(all, index)}</span>
+                  {block.text}
+                </h2>
+              ) : (
+                <p key={index} className="handbook-text">
+                  <Linked>{block.text}</Linked>
+                </p>
+              ),
+            )}
         </div>
       )}
 

@@ -4306,3 +4306,22 @@ html.admin-dragging * {
   align-items: center;
   gap: 8px;
 }
+
+/* Which day of the programme this is. Read rather than set — the dates decide
+   the order, so there is nothing here to drag or to type into. */
+.admin-block-count {
+  display: block;
+  width: 20px;
+  padding-top: 3px;
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  color: var(--admin-faint);
+}
+
+/* A date the programme decided, shown where the field used to be. */
+.admin-when-taken {
+  display: block;
+  padding-top: 2px;
+  font-size: 1.05rem;
+  color: var(--admin-quiet);
+}

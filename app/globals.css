@@ -2793,9 +2793,11 @@ html.has-top-bar {
    The exception is anything pinned to the window rather than laid out in the
    page: this rule is two classes deep and beats a single class, so it quietly
    turned the quote mark from fixed into relative and left it two thousand pixels
-   down the page. Named here, beside the rule that does it, rather than fought
-   with a stronger selector somewhere else. */
-.page > *:not(.page-bg):not(.quote-mark) {
+   down the page. It did the same to an evening's header, which is sticky and was
+   silently made relative — the same bug, the second time, which is why both are
+   named here beside the rule that does it rather than fought with a stronger
+   selector somewhere else. Anything that positions itself must say so here. */
+.page > *:not(.page-bg):not(.quote-mark):not(.event-top) {
   position: relative;
   z-index: 1;
 }
@@ -4074,7 +4076,10 @@ body:has(.hero) .edit-this {
 .flyer-over {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  /* Above everything on either surface. It is hung on the body — see the note in
+     FlyerBook — so this only ever competes with the page's own furniture, and the
+     highest of that is the back of the house's save bar at 95. */
+  z-index: 400;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4126,15 +4131,21 @@ body:has(.hero) .edit-this {
   flex: none;
 }
 
-.flyer-does a {
+/* A button rather than an underlined word: it is the one thing in here you take
+   away with you, and it was reading as a caption. */
+.flyer-take {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   color: var(--paper);
   text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-  padding-bottom: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 7px 13px;
 }
 
-.flyer-does a:hover {
-  border-bottom-color: var(--paper);
+.flyer-take:hover {
+  border-color: var(--paper);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .flyer-does button {
@@ -4250,30 +4261,9 @@ body:has(.hero) .edit-this {
   }
 }
 
-/* The flyer offered two ways, side by side: looked through, or taken away. */
-.event-flyer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px 18px;
-  margin-top: 22px;
-}
-
-.event-flyer-take {
-  font-family: var(--sans);
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink);
-  text-decoration: none;
-  border-bottom: 1px solid var(--hairline);
-  padding-bottom: 3px;
-}
-
-.event-flyer-take:hover {
-  border-bottom-color: var(--ink);
-}
+/* The flyer is offered once, in the header, and taken away from inside the
+   reader — see .flyer-take. Two offers of the same PDF on one page read as two
+   different things. */
 
 /* ------------------------------------------------------------- two languages
 
@@ -4312,4 +4302,69 @@ body:has(.hero) .edit-this {
 .nav-langs .is-here {
   color: var(--purple);
   cursor: default;
+}
+
+/* ------------------------------------------------- the top of an evening, kept
+
+   Everything you can do about an evening is up here: look through the flyer,
+   say you are coming, keep it on your list. On a page with a programme and a
+   page of writing on it they were at the foot, five screens past the point
+   where somebody decides — so they are beside the title, and the title stays. */
+
+.event-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  /* The paper behind it, or the words underneath show through as it passes. */
+  background: var(--paper);
+  padding-bottom: 12px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.event-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+}
+
+.event-top-row .crumb {
+  margin: 0;
+}
+
+.event-top-does {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* In the header, the two controls lose their paragraph and their rule: beside a
+   title they are a pair of buttons, not a section. */
+.taking-part-tight {
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+  max-width: none;
+}
+
+.taking-part-tight .pill {
+  padding: 7px 13px;
+  font-size: 0.58rem;
+}
+
+@media (max-width: 640px) {
+  /* On a phone the row wraps, and a sticky header that has grown to three lines
+     is a header that has eaten the page. It scrolls away like everything else. */
+  .event-top {
+    position: static;
+  }
+
+  .event-top-does {
+    justify-content: flex-start;
+  }
 }

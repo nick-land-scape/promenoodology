@@ -24,7 +24,7 @@ export default async function EditLeafPage({ params }: { params: Promise<{ id: s
   return (
     <Head
       title={leaf.title || blocks.find((block) => block.kind === "heading")?.text || "a page"}
-      back={{ href: "/admin/handbook", label: "the handbook" }}
+      back={{ href: "/admin/pages/handbook", label: "the handbook" }}
     >
       <LeafEditor
         id={leaf.id}

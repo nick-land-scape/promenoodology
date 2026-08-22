@@ -419,7 +419,7 @@ export default function StoryEditor({
            * holds is the thing a story happened inside: an assembly, a
            * festival, a programme. So it says that.
            */}
-          <Field label="part of" hint="An assembly, a festival, a programme it happened inside.">
+          <Field label="part of" hint="An assembly, a festival, a programme it happened inside." wide>
             <input
               {...both("made_with")}
               placeholder={inFrench ? draft.made_with : "EASA COMMONS"}

@@ -218,8 +218,8 @@ export default function LeafList({ initial }: { initial: LeafRow[] }) {
       </ul>
 
       <p className="admin-note" style={{ marginTop: 16 }}>
-        A hidden page is not in the book at all, and the pages after it move up. The heading, the
-        line under it and the form at the foot are under <Link href="/admin/pages/handbook">pages</Link>.
+        A hidden page is not in the book at all, and the pages after it move up. The heading, the line under it and how it is
+        shown are in the panel above.
       </p>
     </>
   );

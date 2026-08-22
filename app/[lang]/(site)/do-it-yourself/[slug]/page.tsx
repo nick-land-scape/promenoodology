@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
 import Photo from "@/components/Photo";
+import QuoteThis from "@/components/QuoteThis";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { breadcrumbs, graph, pageMetadata, picture, trim, US } from "@/lib/seo";
 import { getSheet, getSheets, type Sheet } from "@/lib/source";
@@ -184,6 +185,10 @@ export default async function SheetPage({
           .
         </p>
       </section>
+
+      {/* A sheet is written to be handed on, so the moment somebody marks a
+          passage of it is exactly the moment to give them the reference. */}
+      <QuoteThis title={sheet.title} url={siteUrl(at(lang, `/do-it-yourself/${sheet.slug}`))} />
     </main>
   );
 }

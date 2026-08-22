@@ -61,6 +61,15 @@ export default function When({
   empty = "not set",
   /** The earliest day worth offering — the beginning, when this is the end. */
   notBefore,
+  /**
+   * A day with no hour attached.
+   *
+   * Some of what this holds is genuinely a moment — an evening begins at a time
+   * — and some of it is just a day: the date on a note, the day somebody joined.
+   * The calendar is the same either way; asking "at what time" about the day
+   * somebody joined is asking a question with no answer.
+   */
+  dayOnly = false,
 }: {
   date: string;
   time: string;
@@ -68,6 +77,7 @@ export default function When({
   label: string;
   empty?: string;
   notBefore?: string;
+  dayOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -190,15 +200,19 @@ export default function When({
           </div>
 
           <footer>
-            <label>
-              at
-              <input
-                type="time"
-                value={time}
-                aria-label={`${label} — the time`}
-                onChange={(event) => onChange(date, event.target.value)}
-              />
-            </label>
+            {dayOnly ? (
+              <span />
+            ) : (
+              <label>
+                at
+                <input
+                  type="time"
+                  value={time}
+                  aria-label={`${label} — the time`}
+                  onChange={(event) => onChange(date, event.target.value)}
+                />
+              </label>
+            )}
             {date || time ? (
               <button
                 type="button"

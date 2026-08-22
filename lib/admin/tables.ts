@@ -344,6 +344,7 @@ export const TABLES: Record<TableName, TableSpec> = {
         key: "hook",
         label: "the line",
         kind: "text",
+        wide: true,
         placeholder: "the easiest place to start, and the hardest to be thrown out of",
         hint: "One line, purple, under the title. What this kind of place gives back.",
       },

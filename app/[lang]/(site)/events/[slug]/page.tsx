@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import FlyerBook from "@/components/FlyerBook";
 import JoinToTakePart from "@/components/JoinToTakePart";
 import JsonLd from "@/components/JsonLd";
+import Linked from "@/components/Linked";
 import Photo from "@/components/Photo";
+import QuoteThis from "@/components/QuoteThis";
 import StoryBody from "@/components/StoryBody";
 import type { EventPage as Evening, Slide } from "@/lib/content";
 import { pretty } from "@/lib/admin/when";
@@ -191,21 +193,51 @@ export default async function EventPage({ params }: Params) {
           ]),
         )}
       />
-      <header className="story-header">
-        {/* The way back, and it goes to the list this came from rather than to
-            wherever the browser happened to be. Top left, where a back is. */}
-        <p className="crumb">
-          <Link href={at(lang, "/events")} className="event-back">
-            ← {say("event.allEvents")}
-          </Link>
-        </p>
+      {/*
+       * The top of the evening, and it stays there.
+       *
+       * Everything you can *do* about this evening is up here now — look through
+       * the flyer, say you are coming, keep it on your list — because on a page
+       * this long they were at the foot, five screens past the point where
+       * somebody decides. It sticks so that the decision is never off screen.
+       */}
+      <header className="story-header event-top">
+        <div className="event-top-row">
+          {/* The way back, and it goes to the list this came from rather than to
+              wherever the browser happened to be. Top left, where a back is. */}
+          <p className="crumb">
+            <Link href={at(lang, "/events")} className="event-back">
+              ← {say("event.allEvents")}
+            </Link>
+          </p>
+
+          <span className="event-top-does">
+            {event.flyer ? (
+              <FlyerBook
+                src={event.flyer}
+                title={event.title}
+                words={{
+                  open: say("event.lookThrough"),
+                  take: say("event.takeAsPdf"),
+                  before: say("book.pageBefore"),
+                  after: say("book.nextPage"),
+                }}
+              />
+            ) : null}
+            {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} tight /> : null}
+          </span>
+        </div>
         <h1 className="page-title">{event.title}</h1>
         {event.subtitle ? <p className="story-hook">{event.subtitle}</p> : null}
         <p className="story-meta">
           {[when(event), event.place, event.address].filter(Boolean).join(" · ")}
           {over ? ` · ${say("event.itHasBeen")}` : null}
         </p>
-        {event.lead ? <p className="event-lead">{event.lead}</p> : null}
+        {event.lead ? (
+          <p className="event-lead">
+            <Linked>{event.lead}</Linked>
+          </p>
+        ) : null}
       </header>
 
       {event.photo ? (
@@ -238,7 +270,11 @@ export default async function EventPage({ params }: Params) {
                     .join(", ")}
                 </p>
                 {day.title ? <h3 className="event-day-name">{day.title}</h3> : null}
-                {day.what ? <p className="story-text">{day.what}</p> : null}
+                {day.what ? (
+                  <p className="story-text">
+                    <Linked>{day.what}</Linked>
+                  </p>
+                ) : null}
               </li>
             ))}
           </ol>
@@ -292,32 +328,26 @@ export default async function EventPage({ params }: Params) {
               <dd>{event.fed}</dd>
             </div>
           ) : null}
-          {/* The flyer itself. Somebody who wants to bring people to this does
-              not want to send them a link, they want the thing to print. */}
         </dl>
 
-        {/* The flyer, both ways: looked through here, or taken away to print.
-            The reader who wants to see it and the reader who wants to put it up
-            in a launderette are not the same person. */}
-        {event.flyer ? (
-          <div className="event-flyer">
-            <FlyerBook src={event.flyer} title={event.title} words={{ open: say("event.lookThrough"), take: say("event.takeAsPdf"), before: say("book.pageBefore"), after: say("book.nextPage") }} />
-            <a
-              className="event-flyer-take"
-              href={event.flyer}
-              download
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {say("event.takeAsPdf")}
-            </a>
-          </div>
+        {event.note ? (
+          <p className="story-text">
+            <Linked>{event.note}</Linked>
+          </p>
         ) : null}
 
-        {/* What a member could do about this, and what it takes to be one. */}
-        {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} /> : null}
-
-        {event.note ? <p className="story-text">{event.note}</p> : null}
+        {/* Why the two buttons at the top are grey, said once, where somebody
+            who has read this far will look for it. The buttons themselves stay
+            in the header — a second pair of the same two here would read as a
+            page assembled twice. */}
+        {!over ? (
+          <JoinToTakePart
+            signUpEmail={event.signUpEmail || undefined}
+            lang={lang}
+            say={say}
+            wordsOnly
+          />
+        ) : null}
 
         {/* What is still wanted, and it recruits itself: somebody reading this
             page is exactly the person who owns a pot big enough for forty. */}
@@ -394,6 +424,10 @@ export default async function EventPage({ params }: Params) {
           ) : null}
         </footer>
       ) : null}
+
+      {/* The same offer as on a story: the moment somebody marks a passage is the
+          moment to hand them the reference for it. */}
+      <QuoteThis title={event.title} url={siteUrl(at(lang, `/events/${event.slug}`))} />
 
       {/* Where somebody who has just read about one evening actually wants to go
           next: everything else we have done, and the photographs of it. */}

@@ -9,6 +9,7 @@ import { Picker as PhotoPicker, type Pickable } from "@/components/admin/Pick";
 import Dropdown, { type Choice } from "@/components/admin/Picker";
 import Paper from "@/components/admin/Paper";
 import Placed from "@/components/admin/Placed";
+import When from "@/components/admin/When";
 import {
   Bin,
   Button,
@@ -20,6 +21,7 @@ import {
   Problem,
   SaveBar,
   Word,
+  pretty,
   useUnsaved,
 } from "@/components/admin/ui";
 import { mediaUrl } from "@/lib/supabase/config";
@@ -278,7 +280,7 @@ export default function EventEditor({
               placeholder={inFrench ? draft.title : "soup and a walk"}
             />
           </Field>
-          <Field label="who it is with" hint="The line under the name, as a flyer has one.">
+          <Field label="who it is with" hint="The line under the name, as a flyer has one." wide>
             <input
               {...both("subtitle")}
               placeholder={inFrench ? draft.subtitle : "with the promeNOODology collective"}
@@ -332,12 +334,18 @@ export default function EventEditor({
       >
         <Fields>
           <Field label="the day" hint={days.length ? "Taken from the days below." : undefined}>
-            <input
-              type="date"
-              value={draft.happens_on}
-              disabled={days.length > 0}
-              onChange={(event) => set("happens_on", event.target.value)}
-            />
+            {days.length > 0 ? (
+              <span className="admin-when-taken">{pretty(draft.happens_on) || "—"}</span>
+            ) : (
+              <When
+                label="the day"
+                date={draft.happens_on}
+                time=""
+                dayOnly
+                empty="choose a day"
+                onChange={(day) => set("happens_on", day)}
+              />
+            )}
           </Field>
           <Field label="from — until" two hint={days.length ? "Taken from the days below." : undefined}>
             <span className="admin-range">
@@ -362,13 +370,19 @@ export default function EventEditor({
             label="and the day it ends"
             hint="Only for something that starts and finishes on different days."
           >
-            <input
-              type="date"
-              value={draft.ends_on}
-              min={draft.happens_on || undefined}
-              disabled={days.length > 0}
-              onChange={(event) => set("ends_on", event.target.value)}
-            />
+            {days.length > 0 ? (
+              <span className="admin-when-taken">{pretty(draft.ends_on) || "—"}</span>
+            ) : (
+              <When
+                label="and the day it ends"
+                date={draft.ends_on}
+                time=""
+                dayOnly
+                notBefore={draft.happens_on || undefined}
+                empty="the same day"
+                onChange={(day) => set("ends_on", day)}
+              />
+            )}
           </Field>
         </Fields>
       </Panel>
@@ -389,13 +403,13 @@ export default function EventEditor({
 
       <Panel name="where" hint="A name anybody would use, the street underneath, and a pin.">
         <Fields>
-          <Field label="the place">
+          <Field label="the place" two>
             <input
               {...both("place")}
               placeholder={inFrench ? draft.place : "the yard, Burngreave"}
             />
           </Field>
-          <Field label="the street">
+          <Field label="the street" two>
             <input
               {...both("address")}
               placeholder={inFrench ? draft.address : "Route de Suisse 112-114"}
@@ -435,7 +449,7 @@ export default function EventEditor({
               onChange={(event) => set("spots", Number(event.target.value) || 0)}
             />
           </Field>
-          <Field label="what it costs" hint="Free is worth saying out loud.">
+          <Field label="what it costs" hint="Free is worth saying out loud." wide>
             <input
               {...both("cost")}
               placeholder={inFrench ? draft.cost : "free"}
@@ -484,13 +498,18 @@ export default function EventEditor({
               empty="nobody yet"
             />
           </Field>
-          <Field label="part of" hint="A project, a festival, a programme it happens inside.">
-            <input
+          {/* A sentence rather than a name — "the Devenirs buissons project, run by
+              the association least (laboratory of ecology and art for a society in
+              transition)" — and a sentence in a single line is a sentence you can
+              only read a third of. */}
+          <Field label="part of" hint="A project, a festival, a programme it happens inside." wide>
+            <textarea
+              rows={2}
               {...both("part_of")}
               placeholder={inFrench ? draft.part_of : "a project, a festival, a programme"}
             />
           </Field>
-          <Field label="and where to read about it">
+          <Field label="and where to read about it" wide>
             <input
               type="url"
               value={draft.part_of_url}
