@@ -34,7 +34,14 @@ export default function AboutYou({ me }: { me: Me }) {
           <span className="account-you-photo">
             <Photo src={mediaUrl(me.photoPath)} alt="" width={300} height={400} sizes="120px" />
           </span>
-        ) : null}
+        ) : (
+          /* An empty frame rather than nothing at all: a gap where a face should
+             be is the clearest possible ask for one, and it keeps the row the
+             same shape whether or not anybody has added theirs. */
+          <Link className="account-you-photo account-you-photo-none" href="/app/account/details">
+            add a portrait
+          </Link>
+        )}
         <div>
           <h2 className="app-h2">{me.name || "no name yet"}</h2>
           <p className="app-note">

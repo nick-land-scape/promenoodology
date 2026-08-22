@@ -734,47 +734,54 @@ body:has(.app-shell) {
      or down tilts it *and* scrolls the page underneath, which feels like the card
      is fighting you. Anywhere else on the screen still scrolls normally. */
   touch-action: none;
-  /* Not flat paper. Three layers, and each one is doing something: a cool sheen
-     across the whole face, a wash of the club's purple coming up from the bottom
-     right, and a brushed grain finer than the eye resolves. The band of light
-     that crosses it on its own moves over the top of all three. */
-  background:
+  /* Written as three properties rather than one shorthand, deliberately.
+     A colour is only allowed in the last layer of `background`, and the first
+     version of this had `var(--paper)` in the middle of the list — which makes
+     the whole declaration invalid, so the browser dropped every layer of it and
+     the card came out the colour of the page with no edge at all. Spelled out
+     like this, each layer says where it is painted and nothing is ambiguous. */
+  background-image:
     /* A cool sheen crossing the face, the way rolled metal takes the light. */
     linear-gradient(
-        118deg,
-        rgba(255, 255, 255, 0.72) 0%,
-        rgba(203, 208, 220, 0.3) 26%,
-        rgba(255, 255, 255, 0.66) 46%,
-        rgba(188, 182, 204, 0.26) 66%,
-        rgba(255, 255, 255, 0.6) 100%
-      )
-      padding-box,
+      118deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(203, 208, 220, 0.3) 26%,
+      rgba(255, 255, 255, 0.66) 46%,
+      rgba(188, 182, 204, 0.26) 66%,
+      rgba(255, 255, 255, 0.6) 100%
+    ),
     /* The club's purple, coming up out of the bottom right corner. */
-    linear-gradient(210deg, rgba(139, 63, 255, 0.12), rgba(139, 63, 255, 0) 52%) padding-box,
+    linear-gradient(210deg, rgba(139, 63, 255, 0.12), rgba(139, 63, 255, 0) 52%),
     /* Brushed, not woven: the grain is finer than the eye resolves, so the
-       surface reads as metal that has been drawn under a wheel. */
+       surface reads as metal drawn under a wheel. */
     repeating-linear-gradient(
-        100deg,
-        rgba(0, 0, 0, 0.022) 0px,
-        rgba(0, 0, 0, 0.022) 0.5px,
-        rgba(255, 255, 255, 0.06) 1px,
-        rgba(255, 255, 255, 0.06) 2px
-      )
-      padding-box,
-    var(--paper) padding-box,
-    /* The edge itself. */
+      100deg,
+      rgba(0, 0, 0, 0.022) 0px,
+      rgba(0, 0, 0, 0.022) 0.5px,
+      rgba(255, 255, 255, 0.06) 1px,
+      rgba(255, 255, 255, 0.06) 2px
+    ),
+    /* The metal itself, a shade cooler than the paper it sits on. */
+    linear-gradient(160deg, #f6f4f0, #e6e4e6 55%, #efedee),
+    /* And the edge: light, shade, light, shade around the turn, so each corner
+       takes the light differently — which is the whole reason a real bezel reads
+       as metal rather than as a line drawn round a card. */
     linear-gradient(
-        135deg,
-        #e7e9ef 0%,
-        #56545c 14%,
-        #fbfbfd 30%,
-        #7d7a85 46%,
-        #eceaf2 60%,
-        #4a4850 76%,
-        #d5d8e1 92%,
-        #6f6c76 100%
-      )
-      border-box;
+      135deg,
+      #e7e9ef 0%,
+      #56545c 14%,
+      #fbfbfd 30%,
+      #7d7a85 46%,
+      #eceaf2 60%,
+      #4a4850 76%,
+      #d5d8e1 92%,
+      #6f6c76 100%
+    );
+  background-clip: padding-box, padding-box, padding-box, padding-box, border-box;
+  background-origin: padding-box, padding-box, padding-box, padding-box, border-box;
+  /* Everything the card draws on itself stays on the card: the sheen is wider
+     than the card on purpose, and without this it lies across the screen. */
+  overflow: hidden;
 }
 
 .member-card-lifted {
@@ -1205,11 +1212,23 @@ body:has(.app-shell) {
 
 /* Three shapes, and no two of them alike: a circle to add pictures with, a line
    to write where you were on, and one filled pill that posts. */
+/* The row of controls under the field: pictures, where, and post.
+ *
+ * `display: flex` here used to beat the `hidden` attribute the component sets
+ * when the composer is shut — the browser's own `[hidden] { display: none }` is
+ * a plain rule and loses to any author rule that sets a display. So the camera,
+ * the place and POST were on show under "say something to everyone…" before
+ * anybody had said anything, which is three decisions offered for a sentence
+ * that does not exist yet. */
 .compose-foot {
   display: flex;
   align-items: center;
   gap: 10px;
   padding-top: 12px;
+}
+
+.compose-foot[hidden] {
+  display: none;
 }
 
 .compose-add {
@@ -1471,6 +1490,22 @@ body:has(.app-shell) {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* The frame with nobody in it yet. */
+.account-you-photo-none {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.03);
+  font-family: var(--sans);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
 }
 
 .account-you-list {
