@@ -3,7 +3,6 @@
 import Photo from "../Photo";
 import { useState } from "react";
 import type { ClubEvent } from "@/lib/content";
-import Mark from "./Mark";
 
 type Props = {
   events: (ClubEvent & {
@@ -29,10 +28,7 @@ export default function UpcomingEvents({ events, places }: Props) {
     <>
       <div className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">
-            <Mark is="calendar" />
-            what is coming up
-          </h2>
+          <h2 className="app-h2">what is coming up</h2>
           <span className="app-label">
             {shown.length} {shown.length === 1 ? "event" : "events"}
           </span>

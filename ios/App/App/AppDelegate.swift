@@ -1,4 +1,5 @@
 import UIKit
+import WebKit
 import Capacitor
 
 @UIApplicationMain
@@ -27,6 +28,33 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+
+        // Swipe from the left edge to go back, as in every other app on the phone.
+        //
+        // WKWebView can do this and Capacitor leaves it off. It is the single
+        // biggest tell that something is a website in a wrapper: a person opens a
+        // story, swipes to go back the way they do everywhere else, and nothing
+        // happens. Client-side routing puts its own entries in the web view's
+        // history, so the gesture walks the app's screens exactly as it walks a
+        // browser's pages.
+        //
+        // Set here rather than in a subclass of the bridge's view controller,
+        // because that would mean a new file in the Xcode project and a storyboard
+        // pointing at it — three things to keep in step instead of one line that
+        // is idempotent and runs whenever the app comes forward.
+        if let web = Self.webView(in: window?.rootViewController?.view) {
+            web.allowsBackForwardNavigationGestures = true
+        }
+    }
+
+    /// The bridge's web view, wherever Capacitor has put it in the hierarchy.
+    private static func webView(in view: UIView?) -> WKWebView? {
+        guard let view else { return nil }
+        if let web = view as? WKWebView { return web }
+        for child in view.subviews {
+            if let found = webView(in: child) { return found }
+        }
+        return nil
     }
 
     func applicationWillTerminate(_ application: UIApplication) {

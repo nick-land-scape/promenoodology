@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import Feels from "@/components/app/Feels";
 import Splash from "@/components/app/Splash";
 import TabBar from "@/components/app/TabBar";
-import { getHeroVideos } from "@/lib/source";
+import { sharedFilms } from "@/lib/shared";
 import "./app.css";
 
 export const metadata: Metadata = {
@@ -26,11 +27,14 @@ export const viewport: Viewport = {
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   /* The same films the front page plays. Read here so the splash has them the
      moment it is drawn — it is a curtain, not a thing that waits for a fetch. */
-  const films = await getHeroVideos();
+  const films = await sharedFilms();
 
   return (
     <div className="app-shell">
       <Splash films={films} />
+      {/* The buzz under every press, and the four screens fetched before anybody
+          asks for them. Nothing to look at. */}
+      <Feels />
       <div className="app-column">{children}</div>
       <TabBar />
     </div>

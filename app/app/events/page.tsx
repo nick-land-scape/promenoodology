@@ -2,7 +2,7 @@ import AppHeader from "@/components/app/AppHeader";
 import SignUpForm, { type Joinable } from "@/components/app/SignUpForm";
 import { whenItIs } from "@/lib/app-data";
 import { myBookings, requireMember, whoIsBringingWhat } from "@/lib/app/me";
-import { getEvents } from "@/lib/source";
+import { sharedEvents } from "@/lib/shared";
 
 export const metadata = { title: "What's on" };
 
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function EventsPage() {
   await requireMember("/app/events");
 
-  const [all, mine] = await Promise.all([getEvents(), myBookings()]);
+  const [all, mine] = await Promise.all([sharedEvents(), myBookings()]);
   const asked = new Map(mine.map((booking) => [booking.eventId, booking]));
 
   /* What people are bringing, for the ones still to come only: it is a list for

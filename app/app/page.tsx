@@ -5,14 +5,13 @@ import UpcomingEvents from "@/components/app/UpcomingEvents";
 import { dateParts, shortDate, weekday, whenItIs } from "@/lib/app-data";
 import { myBookings, requireMember } from "@/lib/app/me";
 import {
-  getEvents,
-  getNews,
-  getPage,
-  getResources,
-  getStories,
-  getTheCount,
-} from "@/lib/source";
-import Mark from "@/components/app/Mark";
+  sharedCount,
+  sharedEvents,
+  sharedNews,
+  sharedPage,
+  sharedResources,
+  sharedStories,
+} from "@/lib/shared";
 
 export const metadata = { title: "Home" };
 
@@ -27,13 +26,13 @@ export default async function AppHome() {
   const me = await requireMember("/app");
   const [all, mine, news, stories, photos, handbook, count] = await Promise.all(
     [
-      getEvents(),
+      sharedEvents(),
       myBookings(),
-      getNews(),
-      getStories(),
-      getResources(),
-      getPage("handbook"),
-      getTheCount(),
+      sharedNews(),
+      sharedStories(),
+      sharedResources(),
+      sharedPage("handbook"),
+      sharedCount(),
     ],
   );
   /* Coming, not merely marked: the front screen says "you are coming" and that
@@ -86,10 +85,7 @@ export default async function AppHome() {
 
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">
-            <Mark is="news" />
-            latest news
-          </h2>
+          <h2 className="app-h2">latest news</h2>
         </div>
         <ul className="row-list">
           {news.slice(0, FEW.news).map((item) => (
@@ -127,10 +123,7 @@ export default async function AppHome() {
       {stories.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">
-              <Mark is="book" />
-              what we have done
-            </h2>
+            <h2 className="app-h2">what we have done</h2>
             <Link className="app-more" href="/app/read">
               all {stories.length} ›
             </Link>
@@ -158,10 +151,7 @@ export default async function AppHome() {
       {photos.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">
-              <Mark is="camera" />
-              the archive
-            </h2>
+            <h2 className="app-h2">the archive</h2>
             <Link className="app-more" href="/app/read?of=archive">
               all {photos.length} ›
             </Link>
@@ -196,10 +186,7 @@ export default async function AppHome() {
       {count.interventions > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">
-              <Mark is="plate" />
-              what that adds up to
-            </h2>
+            <h2 className="app-h2">what that adds up to</h2>
           </div>
           <dl className="tally">
             {count.fed > 0 ? (
@@ -241,10 +228,7 @@ export default async function AppHome() {
       {peek ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">
-              <Mark is="hand" />
-              the handbook
-            </h2>
+            <h2 className="app-h2">the handbook</h2>
             <Link className="app-more" href="/app/read?of=handbook">
               read it ›
             </Link>

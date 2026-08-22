@@ -1,7 +1,12 @@
 import AppHeader from "@/components/app/AppHeader";
 import Reading from "@/components/app/Reading";
 import { requireMember } from "@/lib/app/me";
-import { getEverywhere, getPage, getResources, getStories } from "@/lib/source";
+import {
+  sharedEverywhere,
+  sharedPage,
+  sharedResources,
+  sharedStories,
+} from "@/lib/shared";
 
 export const metadata = { title: "Read" };
 
@@ -33,10 +38,10 @@ export default async function ReadPage({
     of === "archive" || of === "handbook" || of === "map" ? of : "stories";
 
   const [stories, photos, handbook, pins] = await Promise.all([
-    getStories(),
-    getResources(),
-    getPage("handbook"),
-    getEverywhere(),
+    sharedStories(),
+    sharedResources(),
+    sharedPage("handbook"),
+    sharedEverywhere(),
   ]);
 
   /* What the map's card shows when a pin is pressed: the photograph, the line

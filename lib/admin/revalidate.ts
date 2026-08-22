@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 
 /**
  * Every page on the site keeps a copy for a minute (`export const revalidate =
@@ -11,6 +11,23 @@ import { revalidatePath } from "next/cache";
  */
 export function refreshSite() {
   revalidatePath("/", "layout");
+  /* And the app's shared reads.
+   *
+   * Every screen in the members' app is dynamic — it reads a cookie — so the
+   * paths above mean nothing to it; what it keeps for a minute is the *data*,
+   * under the "content" tag (see lib/shared.ts). Without this an evening turned
+   * on here reaches the members' phones somewhere in the next sixty seconds,
+   * which is exactly long enough for somebody to turn it on twice.
+   *
+   * `updateTag` rather than `revalidateTag`, because this runs inside a server
+   * action and the person who just pressed save should see their own change in
+   * the answer to that press — not in the one after it. Where it is called from
+   * something that is not an action, the fall-back expires the tag instead. */
+  try {
+    updateTag("content");
+  } catch {
+    revalidateTag("content", { expire: 0 });
+  }
 }
 
 /** A plain, useful answer for a form to show. */
