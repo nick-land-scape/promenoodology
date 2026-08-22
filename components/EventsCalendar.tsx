@@ -37,6 +37,11 @@ export default function EventsCalendar({ events }: { events: ClubEvent[] }) {
 
   const [chosen, setChosen] = useState<string | null>(null);
 
+  /* Folded away until asked for. The list under it is the answer to the first
+     question anybody has of this page; a month is the second, and a month open
+     by default pushes the first answer below the fold to do it. */
+  const [open, setOpen] = useState(false);
+
   const onDays = useMemo(() => {
     const map = new Map<string, ClubEvent[]>();
     for (const event of events) {
@@ -60,6 +65,24 @@ export default function EventsCalendar({ events }: { events: ClubEvent[] }) {
   };
 
   const showing = chosen ? (onDays.get(chosen) ?? []) : [];
+
+  if (!open) {
+    return (
+      <button type="button" className="cal-open" onClick={() => setOpen(true)}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M4 6h16v15H4zM4 10h16M8 3v4M16 3v4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        see it as a month
+      </button>
+    );
+  }
 
   return (
     <div className="cal">
@@ -131,6 +154,10 @@ export default function EventsCalendar({ events }: { events: ClubEvent[] }) {
       ) : (
         <p className="cal-hint">The marked days have something on. Press one.</p>
       )}
+
+      <button type="button" className="cal-shut" onClick={() => setOpen(false)}>
+        back to the list
+      </button>
     </div>
   );
 }

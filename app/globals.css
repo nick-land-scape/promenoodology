@@ -3806,3 +3806,104 @@ body:has(.hero) .edit-this {
   border-top: 1px solid var(--ink);
   max-width: 44em;
 }
+
+/* The date on the picture, where a flyer puts it. A card in a row of cards is
+   read as a picture and a name; the day is the thing being scanned for, and it
+   was three lines down in italics. */
+.event-cover-card {
+  position: relative;
+}
+
+.event-stamp {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  background: var(--paper);
+  color: var(--ink);
+  border-right: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: 5px 9px 4px;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* A card with no picture still has a day, and it should not float over nothing. */
+.event-cover-card:not(:has(img)) {
+  min-height: 34px;
+  background: none;
+}
+
+/* --------------------------------------------------------------- the groups */
+
+.events-group {
+  margin-top: 40px;
+}
+
+.events-group:first-of-type {
+  margin-top: 26px;
+}
+
+.events-group > .story-label {
+  margin-bottom: 14px;
+}
+
+/* Today is the one worth a heavier line: it is the only heading on this page
+   that is also an instruction. */
+.events-group:first-of-type > .story-label {
+  font-size: 0.72rem;
+}
+
+/* The month, folded away. It is offered as a word rather than opened by
+   default: the list under it answers the first question, and a month open on
+   arrival pushes that answer off the screen to answer the second. */
+.cal-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--ink);
+  background: none;
+  color: inherit;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 13px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+.cal-open:hover {
+  background: var(--wash);
+}
+
+.cal-open svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cal-shut {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  background: none;
+  color: var(--quiet);
+  font-family: var(--sans);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 9px 0 0;
+  cursor: pointer;
+}
+
+.cal-shut:hover {
+  color: var(--ink);
+}
