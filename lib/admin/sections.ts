@@ -21,7 +21,7 @@ export type Section = {
   /** One of the shapes in components/admin/ui.tsx. */
   icon: string;
   /** Which heading in the menu it sits under. */
-  group: "content" | "material" | "wall" | "community" | "post" | "settings";
+  group: "content" | "material" | "wall" | "community" | "post" | "settings" | "site";
   /** The page on the public site this looks after, if there is one. */
   view?: string;
 };
@@ -41,7 +41,7 @@ export const SECTIONS: Section[] = [
     blurb:
       "Which pages are on the site at all, what the menu calls them, and what each one says — including the handbook, page by page, and the sheets.",
     icon: "pages",
-    group: "content",
+    group: "site",
   },
   {
     href: "/admin/news",
@@ -162,6 +162,17 @@ export const GROUPS: { key: Section["group"]; label: string }[] = [
   // Everything that arrives from outside rather than being written here.
   { key: "post", label: "the post" },
   { key: "settings", label: "settings" },
+  /*
+   * Last, and on its own.
+   *
+   * Pages sat under "content" with the stories and the evenings, which is not
+   * what it is: those are things you write, and this is the shape of the site
+   * they go on — which pages exist at all, what the menu calls them, what order
+   * they are in. It is the one section that is about the site rather than about
+   * anything on it, so it goes at the bottom where the decisions about the whole
+   * thing are.
+   */
+  { key: "site", label: "the site itself" },
 ];
 
 /**
