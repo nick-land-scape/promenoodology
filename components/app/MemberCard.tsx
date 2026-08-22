@@ -67,7 +67,9 @@ export default function MemberCard({ name, number, since, country, photo }: Prop
         /* The light: one soft, wide highlight that follows the pointer rather
            than a band that sweeps past on a clock. */
         glareEnable
-        glareMaxOpacity={0.38}
+        /* Brighter than it was, because the card is metal now rather than
+           laminated paper: metal returns most of the light it is given. */
+        glareMaxOpacity={0.55}
         glareColor="#ffffff"
         glarePosition="all"
         glareBorderRadius="10px"

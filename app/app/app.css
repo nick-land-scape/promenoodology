@@ -715,17 +715,20 @@ body:has(.app-shell) {
 }
 
 .member-card {
-  border: 1px solid var(--ink);
-  /* A card has corners, and these ones are nearly square: a milled edge rather
-     than a phone icon's. The two inset hairlines are the bevel — light along the
-     top, shade along the bottom — which is what makes an edge read as metal
-     rather than as a border drawn around paper. */
-  border-radius: 4px;
+  /* The edge is milled metal, not a black line.
+     A gradient cannot be a border colour, so the border is transparent and the
+     gradient is the last background layer, painted to the border box while
+     everything above it is painted to the padding box — the one way to get a
+     metal edge without a second element sitting on top of the card. Light,
+     shadow, light, shadow around the turn, so each corner catches differently:
+     that alternation is the whole reason a real bezel reads as metal. */
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  /* And the bevel proper: a bright hairline under the top edge and a dark one
+     above the bottom, inside the metal. */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
-    inset 1px 0 0 rgba(255, 255, 255, 0.35),
-    inset -1px 0 0 rgba(0, 0, 0, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14);
   isolation: isolate;
   /* Dragging on the card tilts it and does nothing else. Without this a drag up
      or down tilts it *and* scrolls the page underneath, which feels like the card
@@ -738,29 +741,58 @@ body:has(.app-shell) {
   background:
     /* A cool sheen crossing the face, the way rolled metal takes the light. */
     linear-gradient(
-      118deg,
-      rgba(255, 255, 255, 0.72) 0%,
-      rgba(203, 208, 220, 0.3) 26%,
-      rgba(255, 255, 255, 0.66) 46%,
-      rgba(188, 182, 204, 0.26) 66%,
-      rgba(255, 255, 255, 0.6) 100%
-    ),
+        118deg,
+        rgba(255, 255, 255, 0.72) 0%,
+        rgba(203, 208, 220, 0.3) 26%,
+        rgba(255, 255, 255, 0.66) 46%,
+        rgba(188, 182, 204, 0.26) 66%,
+        rgba(255, 255, 255, 0.6) 100%
+      )
+      padding-box,
     /* The club's purple, coming up out of the bottom right corner. */
-    linear-gradient(210deg, rgba(139, 63, 255, 0.12), rgba(139, 63, 255, 0) 52%),
+    linear-gradient(210deg, rgba(139, 63, 255, 0.12), rgba(139, 63, 255, 0) 52%) padding-box,
     /* Brushed, not woven: the grain is finer than the eye resolves, so the
        surface reads as metal that has been drawn under a wheel. */
     repeating-linear-gradient(
-      100deg,
-      rgba(0, 0, 0, 0.022) 0px,
-      rgba(0, 0, 0, 0.022) 0.5px,
-      rgba(255, 255, 255, 0.06) 1px,
-      rgba(255, 255, 255, 0.06) 2px
-    ),
-    var(--paper);
+        100deg,
+        rgba(0, 0, 0, 0.022) 0px,
+        rgba(0, 0, 0, 0.022) 0.5px,
+        rgba(255, 255, 255, 0.06) 1px,
+        rgba(255, 255, 255, 0.06) 2px
+      )
+      padding-box,
+    var(--paper) padding-box,
+    /* The edge itself. */
+    linear-gradient(
+        135deg,
+        #e7e9ef 0%,
+        #56545c 14%,
+        #fbfbfd 30%,
+        #7d7a85 46%,
+        #eceaf2 60%,
+        #4a4850 76%,
+        #d5d8e1 92%,
+        #6f6c76 100%
+      )
+      border-box;
 }
 
 .member-card-lifted {
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.19);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 16px 30px rgba(0, 0, 0, 0.19);
+}
+
+/* The tilt library's glare, over the ink rather than under it.
+ *
+ * It draws its own layer last in the DOM but with no stacking order of its own,
+ * so the card's face — which needs a z-index to sit above the sheen — was in
+ * front of it, and the light the pointer carried was hidden behind the writing.
+ * A laminated card is lit across its words, not behind them. */
+.member-card .glare-wrapper {
+  z-index: 4;
+  mix-blend-mode: screen;
 }
 
 .member-card-face {
@@ -1413,6 +1445,58 @@ body:has(.app-shell) {
    the room a header would have taken. */
 .account-top {
   padding: 18px 0 4px;
+}
+
+/* What the club knows about you. Hidden on a phone by width rather than by
+   markup: the same page serves both, and on a phone this is one tap away. */
+.account-you {
+  display: none;
+}
+
+.account-you-head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.account-you-photo {
+  flex: none;
+  width: 84px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--hair);
+}
+
+.account-you-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-you-list {
+  margin: 16px 0 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.account-you-list div {
+  display: grid;
+  gap: 1px;
+  border-top: 1px solid var(--hair);
+  padding-top: 8px;
+}
+
+.account-you-list dt {
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.account-you-list dd {
+  margin: 0;
 }
 
 /* "all 12 ›" — the way through to everything, beside the heading that counts. */
@@ -3054,9 +3138,21 @@ body:has(.app-shell) {
 
   /* The card does not stretch, and it keeps a card's proportions — 85.6 by 54
      millimetres, the size of every card in anybody's pocket. A metre of it is a
-     banner, and a banner is not a membership. */
+     banner, and a banner is not a membership. Beside it, in the half of the
+     screen that was paper, is what the club knows about you. */
+  .account-top {
+    display: grid;
+    grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+    gap: calc(var(--gutter) * 1.6);
+    align-items: start;
+  }
+
+  .account-you {
+    display: block;
+  }
+
   .member-card {
-    max-width: 480px;
+    max-width: 420px;
     aspect-ratio: 85.6 / 54;
   }
 

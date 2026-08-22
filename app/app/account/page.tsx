@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Photo from "@/components/Photo";
+import AboutYou from "@/components/app/AboutYou";
 import AppHeader from "@/components/app/AppHeader";
 import Leaving from "@/components/app/Leaving";
 import MemberCard from "@/components/app/MemberCard";
@@ -67,6 +68,10 @@ export default async function AccountPage() {
           country={me.country}
           photo={me.photoPath}
         />
+        {/* Beside the card on a tablet, and nowhere at all on a phone — where the
+            card is the width of the screen and everything here is one tap away
+            under "your personal information". */}
+        <AboutYou me={me} />
       </div>
 
       <section className="app-section">
