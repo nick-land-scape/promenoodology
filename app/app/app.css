@@ -37,19 +37,14 @@ body:has(.app-shell) {
   }
 
   /*
-   * And the bar stops being the width of the room.
+   * The bar keeps to the column, and keeps its two edges with it.
    *
-   * On an iPad — which is what the reviewer picked up last time — a bar of five
-   * tabs stretched across a thousand points has the tabs at the edges and a
-   * hand's width of nothing in the middle. Held to the column, it reads as the
-   * bottom of the app rather than the bottom of the window.
-   *
-   * It only needs the two edges: the bar centres itself further down the file,
-   * on the same left/right/margin as the column. This block used to move it with
-   * `left: 50%` and a transform, which is exactly the trouble — the base rule
-   * comes later, so it won back the `left` and left the transform standing, and
-   * the bar sat half a bar's width off the left edge of an iPad. Rules that do
-   * the same job twice always end up disagreeing.
+   * It used to be moved here with `left: 50%` and a transform, which is exactly
+   * the trouble — the base rule comes later in the file, so it won the `left`
+   * back and left the transform standing, and the bar sat half a bar's width off
+   * the left edge of an iPad. Rules that do the same job twice always end up
+   * disagreeing; the bar centres itself on the same left/right/margin as the
+   * column, and this block only draws the edges.
    */
   .tabbar {
     border-left: 1px solid var(--hair);
@@ -64,19 +59,34 @@ body:has(.app-shell) {
 }
 
 /*
- * On a tablet the column grows.
+ * On a tablet the app takes the whole window.
  *
  * 560 points is a phone's reading width, and on a thirteen-inch iPad it left a
- * hand's width of paper down both sides — which reads as an app that has not
- * been told what screen it is on. It grows to 780 and stops: a line of Times
- * wider than that stops being a line and becomes a distance, and this is a club
- * that reads. The two hairlines stay. They are the edges of the page, and paper
- * with edges is the whole idea.
+ * hand's width of paper down both sides with the bar stranded in the middle of
+ * it — an app that had not been told what screen it was on. So it fills the
+ * window: no maximum, no edges to draw, and a wider gutter so nothing is stuck
+ * to the bezel. The one thing that does not stretch is a paragraph: running text
+ * keeps a reading width of its own, because a line of Times a thousand points
+ * long stops being a line and becomes a distance.
  */
 @media (min-width: 834px) {
+  .app-shell {
+    --gutter: 30px;
+  }
+
   .app-column,
   .tabbar {
-    max-width: 780px;
+    max-width: none;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  /* Prose keeps its own width inside the wide page. Lists, rows, walls of
+     photographs and the map all take the room; sentences do not. */
+  .app-note,
+  .app-book p,
+  .app-book-lead {
+    max-width: 34rem;
   }
 }
 
