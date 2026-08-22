@@ -168,7 +168,7 @@ export default async function AppHome() {
                     alt=""
                     width={photo.photo.width}
                     height={photo.photo.height}
-                    sizes="33vw"
+                    sizes="(max-width: 833px) 33vw, 25vw"
                   />
                 </Link>
               </li>
