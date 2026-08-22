@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import Crossings from "@/components/app/Crossings";
 import Feels from "@/components/app/Feels";
+import PullDown from "@/components/app/PullDown";
 import Splash from "@/components/app/Splash";
 import TabBar from "@/components/app/TabBar";
 import { sharedFilms } from "@/lib/shared";
@@ -35,6 +37,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {/* The buzz under every press, and the four screens fetched before anybody
           asks for them. Nothing to look at. */}
       <Feels />
+      {/* Pull any screen down to ask the server again. */}
+      <PullDown />
+      {/* One screen becomes the next instead of replacing it. */}
+      <Crossings />
       <div className="app-column">{children}</div>
       <TabBar />
     </div>

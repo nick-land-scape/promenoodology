@@ -29,6 +29,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 
+        // A long press on the icon can also be a long press on a link: WKWebView's
+        // own preview, which is the native context menu, for free.
+        //
         // Swipe from the left edge to go back, as in every other app on the phone.
         //
         // WKWebView can do this and Capacitor leaves it off. It is the single
@@ -44,7 +47,64 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // is idempotent and runs whenever the app comes forward.
         if let web = Self.webView(in: window?.rootViewController?.view) {
             web.allowsBackForwardNavigationGestures = true
+            web.allowsLinkPreview = true
         }
+
+        // A shortcut pressed on the home screen, if the app was already running.
+        if let waiting = Self.waiting {
+            Self.waiting = nil
+            go(to: waiting)
+        }
+    }
+
+    // MARK: - Shortcuts from the home screen
+
+    /// Where a shortcut wants to go, when it arrived before there was a web view.
+    private static var waiting: String?
+
+    func application(
+        _ application: UIApplication,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        /*
+         * Long-press the icon, land on the screen you meant.
+         *
+         * The address is in the shortcut's own userInfo rather than in a switch
+         * here, so adding one is a change to Info.plist and nothing else.
+         *
+         * Two cases, and the difference matters: if the app is already running
+         * the web view is there and can simply be sent somewhere; on a cold start
+         * this is called before it exists, so the destination is held and used the
+         * moment the app becomes active.
+         */
+        let where_ = (shortcutItem.userInfo?["where"] as? String) ?? "/app"
+        if Self.webView(in: window?.rootViewController?.view) == nil {
+            Self.waiting = where_
+        } else {
+            go(to: where_)
+        }
+        completionHandler(true)
+    }
+
+    /// Send the app's own screens somewhere, without reloading the whole thing.
+    private func go(to path: String) {
+        guard let web = Self.webView(in: window?.rootViewController?.view) else { return }
+        /* history.pushState and a popstate, rather than location.href: the second
+           would throw away the loaded app and start it again from the network,
+           which for a shortcut meant to be a shortcut is the wrong end of the
+           trade. This way the router hears a navigation and paints the screen. */
+        let script = """
+        (function () {
+          try {
+            history.pushState({}, '', '\(path)');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          } catch (e) {
+            location.href = '\(path)';
+          }
+        })();
+        """
+        web.evaluateJavaScript(script)
     }
 
     /// The bridge's web view, wherever Capacitor has put it in the hierarchy.

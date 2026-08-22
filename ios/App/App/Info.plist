@@ -92,5 +92,57 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<!--
+	  Long-press the app's icon: three things somebody actually opens the app to do.
+	  Handled in AppDelegate, which tells the web view where to go.
+	-->
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>whats-on</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>What's on</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>The next evenings</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeDate</string>
+			<key>UIApplicationShortcutItemUserInfo</key>
+			<dict>
+				<key>where</key>
+				<string>/app/events</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>say-something</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Say something</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>To everybody</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeCompose</string>
+			<key>UIApplicationShortcutItemUserInfo</key>
+			<dict>
+				<key>where</key>
+				<string>/app/connect</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>your-card</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Your card</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Membership and number</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeContact</string>
+			<key>UIApplicationShortcutItemUserInfo</key>
+			<dict>
+				<key>where</key>
+				<string>/app/account</string>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>
