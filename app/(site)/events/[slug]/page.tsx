@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import FlyerBook from "@/components/FlyerBook";
+import JoinToTakePart from "@/components/JoinToTakePart";
 import Photo from "@/components/Photo";
 import StoryBody from "@/components/StoryBody";
 import type { Slide } from "@/lib/content";
@@ -168,17 +170,28 @@ export default async function EventPage({ params }: Params) {
           ) : null}
           {/* The flyer itself. Somebody who wants to bring people to this does
               not want to send them a link, they want the thing to print. */}
-          {event.flyer ? (
-            <div>
-              <dt>the flyer</dt>
-              <dd>
-                <a href={event.flyer} download target="_blank" rel="noopener noreferrer">
-                  take it as a PDF ↓
-                </a>
-              </dd>
-            </div>
-          ) : null}
         </dl>
+
+        {/* The flyer, both ways: looked through here, or taken away to print.
+            The reader who wants to see it and the reader who wants to put it up
+            in a launderette are not the same person. */}
+        {event.flyer ? (
+          <div className="event-flyer">
+            <FlyerBook src={event.flyer} title={event.title} />
+            <a
+              className="event-flyer-take"
+              href={event.flyer}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              take it as a PDF ↓
+            </a>
+          </div>
+        ) : null}
+
+        {/* What a member could do about this, and what it takes to be one. */}
+        {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} /> : null}
 
         {event.note ? <p className="story-text">{event.note}</p> : null}
 

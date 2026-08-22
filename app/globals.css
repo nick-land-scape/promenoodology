@@ -3981,3 +3981,296 @@ body:has(.hero) .edit-this {
 .event-onward a:hover {
   border-bottom-color: var(--ink);
 }
+
+/* ------------------------------------------------------ taking part, or not
+
+   The app's two controls, on the website, switched off. A disabled button is
+   usually a small cruelty; it earns its place when it is the shape of the thing
+   being explained — you can see what you would press, and the line under it says
+   what it takes to press it. */
+
+.taking-part {
+  margin: 30px 0 0;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--hairline);
+  max-width: 40rem;
+}
+
+.taking-part-does {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.taking-part .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--ink);
+  background: none;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 9px 15px;
+  border-radius: 999px;
+}
+
+.taking-part .pill-solid {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.taking-part .pill[disabled] {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.taking-part-why {
+  margin: 12px 0 0;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--quiet);
+}
+
+.taking-part-why a {
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------- the flyer, opened
+
+   Not the browser's PDF reader — a grey toolbar and somebody else's idea of what
+   a document is — but the same book the handbook is. The pages are drawn out of
+   the PDF when somebody asks to look, and never before: a reader who only wanted
+   the download pays for none of it. */
+
+.flyer-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--ink);
+  background: none;
+  color: inherit;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 13px;
+  cursor: pointer;
+}
+
+.flyer-open:hover {
+  background: var(--wash);
+}
+
+.flyer-open svg {
+  width: 15px;
+  height: 15px;
+}
+
+.flyer-over {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.flyer-ground {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(20, 18, 16, 0.86);
+  cursor: zoom-out;
+}
+
+.flyer-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(1100px, 100%);
+  max-height: 100%;
+}
+
+.flyer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.flyer-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flyer-does {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: none;
+}
+
+.flyer-does a {
+  color: var(--paper);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  padding-bottom: 2px;
+}
+
+.flyer-does a:hover {
+  border-bottom-color: var(--paper);
+}
+
+.flyer-does button {
+  border: 0;
+  background: none;
+  color: var(--paper);
+  font-size: 1.6rem;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.flyer-book {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flyer-leaf {
+  background: #fff;
+}
+
+.flyer-leaf img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.flyer-waiting,
+.flyer-problem {
+  color: var(--paper);
+  font-style: italic;
+  text-align: center;
+  margin: 0;
+}
+
+.flyer-problem a {
+  color: var(--paper);
+}
+
+.flyer-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex: none;
+}
+
+.flyer-foot > button {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: none;
+  color: var(--paper);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 7px 13px;
+  cursor: pointer;
+}
+
+.flyer-foot > button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.flyer-thumbs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px;
+  max-width: 60vw;
+}
+
+.flyer-thumbs button {
+  position: relative;
+  flex: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: none;
+  padding: 0;
+  width: 42px;
+  height: 58px;
+  cursor: pointer;
+}
+
+.flyer-thumbs button.is-here {
+  border-color: var(--paper);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.flyer-thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.flyer-thumbs em {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  font-family: var(--sans);
+  font-size: 0.5rem;
+  font-style: normal;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+}
+
+@media (max-width: 640px) {
+  .flyer-thumbs {
+    max-width: 42vw;
+  }
+}
+
+/* The flyer offered two ways, side by side: looked through, or taken away. */
+.event-flyer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  margin-top: 22px;
+}
+
+.event-flyer-take {
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 3px;
+}
+
+.event-flyer-take:hover {
+  border-bottom-color: var(--ink);
+}
