@@ -19,6 +19,15 @@ export async function savePageWords(input: {
   lead: string;
   blocks: { kind: string; text: string }[];
   settings?: Record<string, unknown>;
+  /**
+   * The French of this page, keyed by the column it translates.
+   *
+   * Only what somebody has actually written: a key that is not here has not
+   * been translated, and the site shows the English in its place. Which is why
+   * empty fields are dropped rather than saved as empty strings — an empty
+   * French title would mean "this page has no name in French", and it does.
+   */
+  fr?: Record<string, unknown>;
 }): Promise<Saved> {
   const admin = await requireAdminAction();
 
@@ -50,6 +59,7 @@ export async function savePageWords(input: {
       // something has to be there for anybody reading the table by hand.
       title: input.title.trim() || spec.name,
       lead: spec.usesLead ? input.lead.trim() : "",
+      ...(input.fr ? { fr: onlyWhatIsWritten(input.fr) } : {}),
       // Only written for the pages that are made of words. A page that is made
       // of stories has none, and writing an empty list over what is there would
       // be a way of losing the handbook by editing the archive.
@@ -107,4 +117,29 @@ export async function savePageList(
 
   refreshSite();
   return { ok: true };
+}
+
+/**
+ * The French, with the fields nobody has filled in taken out.
+ *
+ * The whole of the fallback rests on absence meaning "not translated", so an
+ * empty box in the editor has to leave nothing behind rather than an empty
+ * string — otherwise the French page shows a blank where the English would have
+ * stood in, and there is no way back to it from the form.
+ */
+function onlyWhatIsWritten(fr: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fr)) {
+    if (typeof value === "string") {
+      const said = value.trim();
+      if (said) out[key] = said;
+      continue;
+    }
+    if (Array.isArray(value)) {
+      if (value.length > 0) out[key] = value;
+      continue;
+    }
+    if (value !== null && value !== undefined) out[key] = value;
+  }
+  return out;
 }

@@ -33,7 +33,14 @@ import { savePageWords } from "../actions";
  */
 
 type Block = { kind: string; text: string };
-type Draft = { title: string; lead: string; blocks: Block[]; settings: PageSettings };
+type Draft = {
+  title: string;
+  lead: string;
+  blocks: Block[];
+  settings: PageSettings;
+  /** The French of this page, keyed by the column it translates. */
+  fr: Record<string, string>;
+};
 
 export default function PageWords({ spec, initial }: { spec: PageSpec; initial: Draft }) {
   const router = useRouter();
@@ -45,6 +52,24 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(kept);
   const knobs = PAGE_SETTINGS[spec.slug] ?? [];
+
+  /*
+   * Which language you are typing in.
+   *
+   * One toggle rather than two of every field. Doubling the form would double
+   * the page and put the French of the heading three inches from the heading;
+   * this way the field stays where it is and changes what it is holding, and
+   * the English shows through as the placeholder — which is exactly what the
+   * site will do with it if you leave it empty.
+   */
+  const [saying, setSaying] = useState<"en" | "fr">("en");
+  const inFrench = saying === "fr";
+
+  const french = (key: string) => draft.fr[key] ?? "";
+  const setFrench = (key: string, value: string) => {
+    setDraft((old) => ({ ...old, fr: { ...old.fr, [key]: value } }));
+    setJustSaved(false);
+  };
   const madeOfWords = spec.kinds.length > 0;
 
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
@@ -97,6 +122,26 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
       {spec.usesTitle || spec.usesLead ? (
         <Panel
           name="the top of the page"
+          action={
+            <span className="admin-saying">
+              {(["en", "fr"] as const).map((one) => (
+                <button
+                  key={one}
+                  type="button"
+                  className="admin-flag"
+                  aria-pressed={saying === one}
+                  onClick={() => setSaying(one)}
+                  title={
+                    one === "en"
+                      ? "The words the site is written in"
+                      : "The French. Left empty, the English stands in its place."
+                  }
+                >
+                  {one === "en" ? "English" : "Français"}
+                </button>
+              ))}
+            </span>
+          }
           hint={
             spec.slug === "community"
               ? "The heading here is read out by a screen reader rather than shown — the grid of names is the page."
@@ -105,20 +150,46 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
         >
           <Fields>
             {spec.usesTitle ? (
-              <Field label="heading" hint="The big words at the top.">
-                <input value={draft.title} onChange={(event) => set("title", event.target.value)} />
+              <Field
+                label={inFrench ? "heading, in French" : "heading"}
+                hint={
+                  inFrench
+                    ? "Left empty, the English above stands in for it on the French page."
+                    : "The big words at the top."
+                }
+              >
+                <input
+                  value={inFrench ? french("title") : draft.title}
+                  placeholder={inFrench ? draft.title : undefined}
+                  lang={inFrench ? "fr" : undefined}
+                  onChange={(event) =>
+                    inFrench
+                      ? setFrench("title", event.target.value)
+                      : set("title", event.target.value)
+                  }
+                />
               </Field>
             ) : null}
             {spec.usesLead ? (
               <Field
-                label="the line under it"
-                hint="One or two sentences. Plain text — a link cannot be put in here."
+                label={inFrench ? "the line under it, in French" : "the line under it"}
+                hint={
+                  inFrench
+                    ? "Left empty, the English stands in its place."
+                    : "One or two sentences. Plain text — a link cannot be put in here."
+                }
                 wide
               >
                 <textarea
                   rows={3}
-                  value={draft.lead}
-                  onChange={(event) => set("lead", event.target.value)}
+                  value={inFrench ? french("lead") : draft.lead}
+                  placeholder={inFrench ? draft.lead : undefined}
+                  lang={inFrench ? "fr" : undefined}
+                  onChange={(event) =>
+                    inFrench
+                      ? setFrench("lead", event.target.value)
+                      : set("lead", event.target.value)
+                  }
                 />
               </Field>
             ) : null}

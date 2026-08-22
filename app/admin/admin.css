@@ -4135,3 +4135,10 @@ html.admin-dragging * {
   text-transform: uppercase;
   color: var(--admin-quiet);
 }
+
+/* Which language you are typing in. Beside the panel's name, because it is a
+   thing about the panel rather than a field in it. */
+.admin-saying {
+  display: flex;
+  gap: 6px;
+}
