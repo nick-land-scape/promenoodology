@@ -148,7 +148,17 @@ export default function StoryPage({
             <li
               key={block.id}
               {...dropProps(block, index)}
-              className={["admin-block", `admin-block-${block.kind}`, stateOf(block)]
+              /*
+               * `is-heading`, not `admin-block-heading`.
+               *
+               * The wrapper wore the same class as the field inside it, and the
+               * field sets padding to nothing — so a heading block, and only a
+               * heading block, lost the padding every other block has and sat
+               * flush against both borders of its panel. Nothing in the
+               * stylesheet ever wanted the wrapper by kind; it only ever wanted
+               * the field.
+               */
+              className={["admin-block", `is-${block.kind}`, stateOf(block)]
                 .filter(Boolean)
                 .join(" ")}
             >

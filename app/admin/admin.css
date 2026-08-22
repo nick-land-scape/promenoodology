@@ -4255,6 +4255,9 @@ html.admin-dragging * {
   align-items: flex-start;
   gap: 18px;
   flex-wrap: wrap;
+  /* The same air every field in a panel has. Without it the flyer's first page
+     sat flush against the panel's left border. */
+  padding: 4px 14px 10px;
 }
 
 .admin-paper-sheet {

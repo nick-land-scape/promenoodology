@@ -162,18 +162,17 @@ export const GROUPS: { key: Section["group"]; label: string }[] = [
   // Everything that arrives from outside rather than being written here.
   { key: "post", label: "the post" },
   { key: "settings", label: "settings" },
-  /*
-   * Last, and on its own.
-   *
-   * Pages sat under "content" with the stories and the evenings, which is not
-   * what it is: those are things you write, and this is the shape of the site
-   * they go on — which pages exist at all, what the menu calls them, what order
-   * they are in. It is the one section that is about the site rather than about
-   * anything on it, so it goes at the bottom where the decisions about the whole
-   * thing are.
-   */
-  { key: "site", label: "the site itself" },
 ];
+
+/*
+ * "site" is deliberately not in the list above.
+ *
+ * It holds one thing — pages — and it is drawn at the top of the menu directly
+ * under "everything", with no heading of its own: those two answer the same
+ * question from two sides, what the site has on it and what shape it is
+ * arranged in. Neither is a kind of content, so neither belongs under one of
+ * the headings below them. See components/admin/Shell.
+ */
 
 /**
  * What is under a heading, in alphabetical order.

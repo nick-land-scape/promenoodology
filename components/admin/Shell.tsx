@@ -61,11 +61,29 @@ export default function Shell({
         </Link>
 
         <nav className="admin-nav">
+          {/*
+            * The two ways of looking at the whole site, together and unlabelled:
+            * everything there is, and the shape it is arranged in. Neither is a
+            * kind of content, so neither sits under a heading — and pages is
+            * directly under everything because they answer the same question
+            * from two sides.
+            */}
           <div className="admin-group">
             <Link href="/admin" className="admin-link" aria-current={here("/admin") ? "page" : undefined}>
               <Icon name="home" />
               everything
             </Link>
+            {sectionsIn("site").map((section) => (
+              <Link
+                key={section.href}
+                href={section.href}
+                className="admin-link"
+                aria-current={here(section.href) ? "page" : undefined}
+              >
+                <Icon name={section.icon} />
+                {section.label}
+              </Link>
+            ))}
           </div>
 
           {GROUPS.map((group) => (

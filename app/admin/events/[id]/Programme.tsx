@@ -89,7 +89,7 @@ export default function Programme({
 
       <ul className="admin-blocks">
         {days.map((day, index) => (
-          <li key={day.id} className="admin-block admin-block-day">
+          <li key={day.id} className="admin-block is-day">
             {/* The number is which day of it this is, and it is read rather than
                 set: the dates decide the order, not the other way round. */}
             <span className="admin-block-hold">
