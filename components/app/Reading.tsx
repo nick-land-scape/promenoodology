@@ -274,6 +274,21 @@ export default function Reading({
         </>
       ) : null}
 
+      {/* The invitation, at the top of the handbook rather than at the end of it.
+          The handbook is how this club does it; a sheet is how you do it, and
+          somebody reading the handbook has already asked that question. */}
+      {view === "handbook" ? (
+        <Link className="wide-row wide-row-loud" href="/app/do-it-yourself">
+          <span>
+            put one on yourself
+            <span className="wide-row-under">
+              one sheet per kind of place, made to be handed on
+            </span>
+          </span>
+          <span aria-hidden="true">›</span>
+        </Link>
+      ) : null}
+
       {view === "handbook" ? (
         <div className="app-book">
           {handbook.lead ? (

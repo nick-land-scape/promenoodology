@@ -104,6 +104,10 @@ const NEEDED: Record<TableName, [string, string][]> = {
   ],
   quotes: [["text", "A quote needs some words."]],
   donations: [["given_on", "A gift needs a date."]],
+  sheets: [
+    ["title", "A sheet needs a kind of place."],
+    ["slug", "A sheet needs an address — the end of the link people paste."],
+  ],
 };
 
 function missing(table: TableName, values: RowValues): string | null {

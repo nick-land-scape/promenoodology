@@ -72,7 +72,7 @@ export type Column = {
   options?: { value: string; label: string }[];
 };
 
-export type TableName = "quotes" | "news" | "donations" | "events";
+export type TableName = "quotes" | "news" | "donations" | "events" | "sheets";
 
 export type TableSpec = {
   table: TableName;
@@ -282,6 +282,83 @@ export const TABLES: Record<TableName, TableSpec> = {
         label: "what came of it",
         kind: "storyref",
         hint: "The story written about it afterwards, if there is one.",
+      },
+    ],
+  },
+  sheets: {
+    table: "sheets",
+    one: "a sheet",
+    order: { column: "position", ascending: true },
+    title: "title",
+    publishable: true,
+    startsShown: false,
+    blank: {
+      slug: "",
+      title: "",
+      hook: "",
+      words: "",
+      needs: "",
+      steps: "",
+      photo_path: null,
+      people_fed: null,
+      position: 0,
+    },
+    columns: [
+      {
+        key: "title",
+        label: "what kind of place",
+        kind: "text",
+        placeholder: "a square",
+        hint: "How somebody would describe the place they have: a square, a car park, a courtyard, a verge.",
+      },
+      {
+        key: "slug",
+        label: "its address",
+        kind: "text",
+        placeholder: "a-square",
+        hint: "The end of the link people paste: /do-it-yourself/a-square. Small letters and hyphens, and never change it once anybody has sent it.",
+      },
+      {
+        key: "hook",
+        label: "the line",
+        kind: "text",
+        placeholder: "the easiest place to start, and the hardest to be thrown out of",
+        hint: "One line, purple, under the title. What this kind of place gives back.",
+      },
+      {
+        key: "words",
+        label: "the paragraph",
+        kind: "long",
+        wide: true,
+        placeholder: "Why this kind of place, and what to expect of it.",
+      },
+      {
+        key: "needs",
+        label: "what it takes",
+        kind: "long",
+        wide: true,
+        placeholder: "a table, or two doors and a board\na pot big enough for forty\nsomebody with a van",
+        hint: "One thing per line. This is the materials list, so borrowed things belong on it.",
+      },
+      {
+        key: "steps",
+        label: "what to do",
+        kind: "long",
+        wide: true,
+        placeholder: "Ask nobody. Turn up on a Sunday and look at where the sun is at six.\nCook something that does not need a lid.",
+        hint: "One step per line, in order. The order is most of what a sheet is.",
+      },
+      {
+        key: "people_fed",
+        label: "how many it fed",
+        kind: "number",
+        hint: "From the time it worked. It tells somebody the size of the thing they are taking on.",
+      },
+      {
+        key: "photo_path",
+        label: "picture",
+        kind: "photo",
+        hint: "From the archive. Evidence that this has been done, not decoration.",
       },
     ],
   },

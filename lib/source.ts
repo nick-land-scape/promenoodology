@@ -834,6 +834,78 @@ export async function getEverywhere(): Promise<Placed[]> {
   return pins;
 }
 
+/* ------------------------------------------------------- do it yourself */
+
+export type Sheet = {
+  slug: string;
+  title: string;
+  hook: string;
+  words: string;
+  /** What it takes, one line each. */
+  needs: string[];
+  /** What to do, in order. */
+  steps: string[];
+  photo: string | null;
+  fed: number | null;
+};
+
+/**
+ * The sheets: how to put one of these on, in a kind of place, by yourself.
+ *
+ * Public and unauthenticated on purpose — the claim this collective makes is
+ * that anybody can do this, and a claim behind a login is a claim nobody can be
+ * handed. The table may not exist yet on a database that has not had the
+ * migration; an empty list is the right answer to that rather than a broken
+ * page, which is why the error is swallowed here.
+ */
+export async function getSheets(): Promise<Sheet[]> {
+  if (!hasSupabase()) return [];
+
+  const { data, error } = await supabasePublic()
+    .from("sheets")
+    .select("slug, title, hook, words, needs, steps, photo_path, people_fed")
+    .is("deleted_at", null)
+    .eq("published", true)
+    .order("position")
+    .returns<
+      {
+        slug: string;
+        title: string;
+        hook: string;
+        words: string;
+        needs: string;
+        steps: string;
+        photo_path: string | null;
+        people_fed: number | null;
+      }[]
+    >();
+  if (error) return [];
+
+  return (data ?? []).map((row) => ({
+    slug: row.slug,
+    title: row.title,
+    hook: row.hook,
+    words: row.words,
+    needs: lines(row.needs),
+    steps: lines(row.steps),
+    photo: row.photo_path ? mediaUrl(row.photo_path) : null,
+    fed: row.people_fed,
+  }));
+}
+
+export async function getSheet(slug: string): Promise<Sheet | null> {
+  const all = await getSheets();
+  return all.find((sheet) => sheet.slug === slug) ?? null;
+}
+
+/** One thing per line, blank lines thrown away. */
+function lines(text: string): string[] {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 /**
  * The numbers this collective is actually testing.
  *

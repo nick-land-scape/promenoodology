@@ -44,6 +44,21 @@ export default async function HandbookPage() {
         )}
       </div>
 
+      {/* Straight after the method, before the offer of help: the sheets.
+          Somebody who has read this far has already asked "could I do this", and
+          the sheets are the version of the answer they can take away and hand to
+          somebody else. */}
+      <section className="handbook-sheets">
+        <h2 className="page-title" style={{ fontSize: "1.6rem" }}>
+          or take a sheet
+        </h2>
+        <p className="page-intro">
+          One page per kind of place — a square, a car park, a courtyard — with what
+          it takes and what to do in what order. No account and nothing to join:{" "}
+          <Link href="/do-it-yourself">do it yourself</Link>.
+        </p>
+      </section>
+
       {/* The whole section can be taken away in /admin — heading, form and all.
           The handbook above it is the page; this is an invitation, and there are
           weeks when we are not in a position to make it. */}

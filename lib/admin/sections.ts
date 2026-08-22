@@ -61,6 +61,16 @@ export const SECTIONS: Section[] = [
   },
 
   {
+    href: "/admin/do-it-yourself",
+    label: "do it yourself",
+    blurb:
+      "One sheet per kind of place — what it takes, what to do — public, and made to be handed on.",
+    icon: "sheet",
+    group: "content",
+    view: "/do-it-yourself",
+  },
+
+  {
     href: "/admin/photos",
     label: "archive",
     blurb: "Every photograph: who took it, which year, which story it belongs to.",
