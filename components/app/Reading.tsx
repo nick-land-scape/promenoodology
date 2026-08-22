@@ -282,7 +282,7 @@ export default function Reading({
           <span>
             put one on yourself
             <span className="wide-row-under">
-              one sheet per kind of place, made to be handed on
+              one sheet per kind of place, for getting strangers into the same place
             </span>
           </span>
           <span aria-hidden="true">›</span>

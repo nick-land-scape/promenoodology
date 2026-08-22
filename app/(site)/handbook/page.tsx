@@ -74,8 +74,9 @@ export default async function HandbookPage() {
           or take a sheet
         </h2>
         <p className="page-intro">
-          One page per kind of place — a square, a car park, a courtyard — with what
-          it takes and what to do in what order. No account and nothing to join:{" "}
+          One page per kind of place — a square, a car park, a courtyard, a queue —
+          for getting people who do not know each other into the same place and
+          giving them something to do together. No account and nothing to join:{" "}
           <Link href="/do-it-yourself">do it yourself</Link>.
         </p>
       </section>

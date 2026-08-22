@@ -6,7 +6,7 @@ import { getSheets } from "@/lib/source";
 export const metadata: Metadata = {
   title: "Do it yourself",
   description:
-    "One sheet per kind of place — a square, a car park, a courtyard — with what it takes, what to do, and a photograph of it working. No account, no permission.",
+    "One sheet per kind of place — a square, a car park, a courtyard, a queue — for getting people who do not know each other into the same place on purpose. No account, no permission.",
   alternates: { canonical: "/do-it-yourself" },
 };
 
@@ -27,10 +27,16 @@ export default async function DoItYourselfPage() {
     <main className="page">
       <h1 className="page-title">do it yourself</h1>
       <p className="page-intro">
-        Nothing here is ours to keep. Pick the kind of place you have — a square, a
-        car park, a courtyard, a verge nobody looks at — and take the sheet: what it
-        takes, what to do in what order, and a photograph of it having worked
-        somewhere else. Then tell us how it went, or do not, and put one on anyway.
+        None of this is ours to keep. Every sheet here is about the same thing —
+        getting people who do not know each other into the same place, on purpose,
+        and giving them something to do together once they are there. Cooking is how
+        we usually manage it, because a pot is the most obvious job in the world to
+        share, but the food is the means and never the point.
+      </p>
+      <p className="page-intro">
+        Pick the kind of place you have. Each sheet says what it takes, what to do in
+        what order, and shows it having worked somewhere else. Then tell us how it
+        went, or do not, and do it anyway.
       </p>
 
       {sheets.length === 0 ? (

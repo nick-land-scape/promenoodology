@@ -61,7 +61,7 @@ export default async function SheetPage({ params }: { params: Promise<{ slug: st
           <Photo src={sheet.photo} alt="" width={1600} height={1067} sizes="(max-width: 900px) 100vw, 900px" />
           <figcaption>
             {sheet.fed
-              ? `Somewhere else, on a day like the one you are planning. About ${sheet.fed} ate.`
+              ? `Somewhere else, on a day like the one you are planning. About ${sheet.fed} people stayed and ate.`
               : "Somewhere else, on a day like the one you are planning."}
           </figcaption>
         </figure>
@@ -77,8 +77,10 @@ export default async function SheetPage({ params }: { params: Promise<{ slug: st
               ))}
             </ul>
             <p className="sheet-aside">
-              Borrowed beats bought, every time. Nothing on this list has to match
-              anything else on it.
+              Borrowed beats bought, every time, and nothing on this list has to
+              match anything else on it. Half of it is not cooking equipment: the
+              chalk, the game, the one light and the spare seat are what turn a
+              place into an evening.
             </p>
           </section>
         ) : null}
@@ -99,8 +101,8 @@ export default async function SheetPage({ params }: { params: Promise<{ slug: st
       <section className="sheet-foot">
         <h2>and then</h2>
         <p>
-          Send us a photograph of it. That is the whole ask — no forms, no
-          affiliation, nothing to join. If you want a hand first, the{" "}
+          Send us a photograph of the people, not of the food. That is the whole ask
+          — no forms, no affiliation, nothing to join. If you want a hand first, the{" "}
           <Link href="/handbook">handbook</Link> is the long version of this, and{" "}
           <Link href="/handbook#ask">asking us</Link> costs nothing.
         </p>

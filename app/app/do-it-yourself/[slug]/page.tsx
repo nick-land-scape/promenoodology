@@ -53,7 +53,11 @@ export default async function AppSheetPage({
               <li key={thing}>{thing}</li>
             ))}
           </ul>
-          <p className="app-note">Borrowed beats bought. None of it has to match.</p>
+          <p className="app-note">
+            Borrowed beats bought, and none of it has to match. Half of it is not
+            cooking equipment — the chalk, the game, the one light and the spare seat
+            are what turn a place into an evening.
+          </p>
         </section>
       ) : null}
 
@@ -77,7 +81,7 @@ export default async function AppSheetPage({
         </div>
         <p className="app-note">
           {sheet.fed
-            ? `This one fed about ${sheet.fed}. Somebody you know has a place like it.`
+            ? `About ${sheet.fed} people stayed for that one. Somebody you know has a place like it and has not thought of it.`
             : "Somebody you know has a place like this and has not thought of it."}
         </p>
         <HandItOn title={sheet.title} where={where} />

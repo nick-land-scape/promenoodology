@@ -26,8 +26,9 @@ export default async function SheetsPage() {
       <AppHeader eyebrow="do it yourself" title="put one on yourself" back="/app/read" />
 
       <p className="app-note" style={{ padding: "14px var(--gutter) 4px" }}>
-        One sheet per kind of place. What it takes, what to do in what order, and a
-        photograph of it having worked somewhere else — at an address anybody can
+        One sheet per kind of place, all of them about the same thing: getting people
+        who do not know each other into the same place, and giving them something to
+        do together once they are there. Every sheet lives at an address anybody can
         open without an account, so you can send it to whoever has the courtyard.
       </p>
 
