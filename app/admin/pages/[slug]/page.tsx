@@ -75,9 +75,9 @@ export default async function EditPagePage({
           settings: head.settings,
           fr: french,
         }}
-      />
-
-      {made}
+      >
+        {made}
+      </PageWords>
     </Head>
   );
 }
@@ -94,7 +94,10 @@ async function theHandbook() {
 
   const rows: LeafRow[] = (leaves ?? []).map((leaf) => {
     const blocks = (leaf.blocks ?? []).filter((block) => block.text?.trim());
-    const opening = blocks.find((block) => block.kind !== "heading")?.text ?? blocks[0]?.text ?? "";
+    /* The first words *under* the heading, and nothing where there are none:
+       falling back to the heading printed the same sentence twice on one row,
+       once as the name and once as what it is about. */
+    const opening = blocks.find((block) => block.kind !== "heading")?.text ?? "";
     return {
       id: leaf.id,
       title: leaf.title || blocks.find((block) => block.kind === "heading")?.text || "",

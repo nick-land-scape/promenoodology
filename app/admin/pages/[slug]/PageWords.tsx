@@ -44,7 +44,23 @@ type Draft = {
   fr: Record<string, string>;
 };
 
-export default function PageWords({ spec, initial }: { spec: PageSpec; initial: Draft }) {
+export default function PageWords({
+  spec,
+  initial,
+  children,
+}: {
+  spec: PageSpec;
+  initial: Draft;
+  /**
+   * What the page is *made of*, where that is more than words.
+   *
+   * The handbook's own pages, the sheets. They are drawn inside this editor
+   * rather than after it so that they land above the save button rather than
+   * below it — a list of things to open, under the button that keeps the panel
+   * above them, reads as part of neither.
+   */
+  children?: React.ReactNode;
+}) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(initial);
   const [kept, setKept] = useState<Draft>(initial);
@@ -437,6 +453,8 @@ export default function PageWords({ spec, initial }: { spec: PageSpec; initial: 
       ) : spec.madeOf ? (
         <p className="admin-note">{spec.madeOf}</p>
       ) : null}
+
+      {children}
 
       <SaveBar
         onSave={save}

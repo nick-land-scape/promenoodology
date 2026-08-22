@@ -189,7 +189,7 @@ export default function LeafList({ initial }: { initial: LeafRow[] }) {
                   {row.title || "no heading"}
                 </Link>
                 <span className="admin-row-meta">
-                  {row.opening || "nothing written on it yet"}
+                  {row.opening || "a heading and nothing under it yet"}
                 </span>
               </span>
 

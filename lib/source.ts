@@ -574,11 +574,15 @@ export async function getEvents(lang: Lang = PLAIN): Promise<ClubEvent[]> {
      * and a flyer is a portrait page, so the shape was wrong by a factor of
      * two. Next sizes what it serves from the ratio it is given, which is how a
      * 1127-wide flyer came to be served at 383 and drawn at 654: upscaled, and
-     * soft, from a source that was fine. */
+     * soft, from a source that was fine.
+     *
+     * From the view rather than the table, so a cover does not have to be on the
+     * archive wall for the site to know its shape — see migration 0035. The two
+     * questions were answered by one flag, and a flyer is the public face of a
+     * public evening and has no business on the wall. */
     supabase
-      .from("photos")
+      .from("photo_sizes")
       .select("path, width, height")
-      .is("deleted_at", null)
       .returns<{ path: string; width: number; height: number }[]>(),
   ]);
 
