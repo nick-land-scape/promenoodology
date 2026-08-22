@@ -48,7 +48,7 @@ const PEEK = 128;
  * other four screens have no business paying for it, so both the code and the
  * stylesheet arrive when somebody actually presses "the map".
  */
-export default function Everywhere({ pins }: { pins: Pin[] }) {
+export default function Everywhere({ pins, loud }: { pins: Pin[]; loud?: boolean }) {
   const holder = useRef<HTMLDivElement>(null);
   const sheet = useRef<HTMLDivElement>(null);
   const flyTo = useRef<((pin: Pin) => void) | null>(null);
@@ -58,6 +58,10 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
   const [up, setUp] = useState(false);
   /** Where the sheet is while a thumb is on it, in pixels from the top of its run. */
   const [held, setHeld] = useState<number | null>(null);
+  /* A running account of what the map did, shown only where it is asked for.
+     Temporary, with the /maptest page it belongs to. */
+  const [went, setWent] = useState<string[]>([]);
+  const say = useCallback((line: string) => setWent((was) => [...was, line]), []);
 
   /* How tall the header actually is on this phone, so the map can be exactly the
      rest of the screen. Measured rather than guessed: the header carries the
@@ -97,6 +101,8 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
       }
     }, 6000);
 
+    say(`starting, ${pins.length} pins`);
+
     void (async () => {
       try {
         const [
@@ -107,6 +113,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           // every page's CSS.
           import("maplibre-gl/dist/maplibre-gl.css"),
         ]);
+        say("library here");
         if (dead || !holder.current) return;
 
         const made = new Map({
@@ -126,6 +133,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           pitchWithRotate: false,
         });
         map = made;
+        say("map made");
         /* What the map says when it goes wrong, said out loud.
          *
          * The library reports a missing style, a refused source and a tile that
@@ -163,9 +171,12 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
 
         /* Everything in view, with room around the edges for the pins — and for
            the sheet, which covers the bottom of the map even when it is down. */
+        say(`${pins.length} markers on`);
+
         made.once("load", () => {
           if (dead) return;
           drew = true;
+          say("drew");
           made.fitBounds(edges, {
             padding: { top: 76, right: 48, bottom: PEEK + 32, left: 48 },
             maxZoom: 9,
@@ -177,6 +188,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
           made.flyTo({ center: [pin.lng, pin.lat], zoom: 8.5, duration: 900 });
         };
       } catch (error) {
+        say(`threw: ${error instanceof Error ? error.message : "?"}`);
         /* The library itself did not arrive. Which one it was matters when
            somebody has to fix it, so it is in the line rather than in a console
            nobody on a phone can open. */
@@ -250,6 +262,25 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
   return (
     <div className="everywhere">
       <div className="everywhere-map" ref={holder} />
+
+      {loud ? (
+        <pre
+          style={{
+            position: "absolute",
+            top: 8,
+            left: 8,
+            zIndex: 9,
+            margin: 0,
+            font: "11px ui-monospace, monospace",
+            background: "rgba(255,255,255,0.9)",
+            padding: "6px 8px",
+            maxWidth: "80%",
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          {went.join("\n")}
+        </pre>
+      ) : null}
 
       {/* What was pressed. Above the sheet rather than on the pin: a bubble on a
           phone covers the thing it is about. */}

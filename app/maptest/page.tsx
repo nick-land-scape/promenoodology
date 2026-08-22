@@ -59,7 +59,7 @@ export default function MapOnItsOwn() {
           <h1>the map, on its own</h1>
         </header>
         <div className="reading-stage">
-          <Everywhere pins={pins} />
+          <Everywhere pins={pins} loud />
         </div>
       </div>
     </div>
