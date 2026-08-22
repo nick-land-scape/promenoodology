@@ -526,6 +526,11 @@ body:has(.app-shell) {
    entirely. A square edge and an ink border, so it does not read as the fourth
    item in a list of settings. */
 .wide-row-loud {
+  /* `width: auto`, and it matters: the row it inherits from is `width: 100%`,
+     which with a gutter of margin on each side is a hundred per cent *plus* two
+     gutters — wider than the screen, with the right edge cut off. A block-level
+     box with margins fills what is left on its own. */
+  width: auto;
   margin: 4px var(--gutter) 14px;
   border-color: var(--ink);
   border-radius: 12px;
