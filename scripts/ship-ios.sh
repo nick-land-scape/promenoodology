@@ -41,6 +41,9 @@ stop() { printf '\n\033[31m%s\033[0m\n' "$1" >&2; exit 1; }
 [ -f "$KEY_DIR/AuthKey_$ASC_KEY_ID.p8" ] || \
   stop "No key at $KEY_DIR/AuthKey_$ASC_KEY_ID.p8 — that exact name, that exact folder."
 
+say "Asking Apple whether the key works and the app exists"
+node scripts/asc-check.mjs
+
 say "The web shell into the native project"
 npx cap sync ios
 
