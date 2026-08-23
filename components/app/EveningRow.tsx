@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useTransition } from "react";
 import Photo from "../Photo";
+import JoinSheet from "./JoinSheet";
+import { cancelMyPlace, markInterested } from "@/app/app/actions";
+import { buzz } from "@/lib/native";
 import { useSay } from "./Words";
 
 export type EveningRow = {
@@ -26,6 +30,20 @@ export type EveningRow = {
     guests?: string[];
     state: "interested" | "asked" | "kept" | "declined";
   } | null;
+  /** How many places the evening has altogether. */
+  spots?: number;
+  /*
+   * The programme inside it, where there is one.
+   *
+   * Three kinds of evening, and the third is the one that needed thinking about:
+   * a single day; a stretch of days that is all one thing; and a stretch with a
+   * programme in it — a month long, happening on five of those days, each with
+   * its own name. Nobody comes to the month, so this is what turns "count me in"
+   * into "which days".
+   */
+  days?: { date: string; title: string; time: string; label: string }[];
+  /** The days you already have a place on. */
+  onDays?: string[];
 };
 
 /**
@@ -53,23 +71,52 @@ export type EveningRow = {
 export default function EveningRow({
   event,
   does,
-  marked,
-  pending,
-  onMark,
-  onJoin,
-  onCancel,
 }: {
   event: EveningRow;
-  /** The buttons. Off on the front screen, on where the deciding happens. */
+  /* The buttons.
+   *
+   * The row owns them itself rather than being handed callbacks, and that is what
+   * lets the front screen have them too: a screen renders a row, and the row
+   * knows how to mark an evening, take a place and give one up. Two screens
+   * wiring the same three actions is two screens that drift. */
   does?: boolean;
-  marked?: boolean;
-  pending?: boolean;
-  onMark?: (on: boolean) => void;
-  onJoin?: () => void;
-  onCancel?: () => void;
 }) {
   const say = useSay();
-  const coming = Boolean(event.mine && event.mine.state !== "interested");
+  const [marked, setMarked] = useState(event.mine?.state === "interested");
+  const [coming, setComing] = useState(
+    Boolean(event.mine && event.mine.state !== "interested"),
+  );
+  const [asking, setAsking] = useState(false);
+  const [said, setSaid] = useState("");
+  const [pending, start] = useTransition();
+
+  const programme = event.days ?? [];
+  const mineDays = event.onDays ?? [];
+
+  function mark(on: boolean) {
+    setMarked(on);
+    start(async () => {
+      const answer = await markInterested(event.id, on);
+      if (!answer.ok) {
+        setMarked(!on);
+        setSaid(answer.error ?? say("row.didNotWork"));
+        return;
+      }
+      void buzz("light");
+    });
+  }
+
+  function give() {
+    start(async () => {
+      const answer = await cancelMyPlace(event.id);
+      if (!answer.ok) {
+        setSaid(answer.error ?? say("row.didNotWork"));
+        return;
+      }
+      setComing(false);
+      setSaid(say("row.takenOff"));
+    });
+  }
 
   return (
     <div className="row">
@@ -102,6 +149,15 @@ export default function EveningRow({
         <Link href={`/app/events/${event.id}`} className="row-title">
           {event.title}
         </Link>
+
+        {/* Said out loud, because it changes what "coming" means: an evening with
+            a programme is a month with five days in it, and a place is taken on a
+            day rather than on the month. */}
+        {programme.length > 0 ? (
+          <span className="row-badge">
+            {programme.length} days to choose from
+          </span>
+        ) : null}
         <span className="row-meta">{event.label}</span>
 
         {event.partners && event.partners.length > 0 ? (
@@ -144,8 +200,12 @@ export default function EveningRow({
             {event.mine?.guests?.length
               ? ` · ${say("row.withGuests")} ${event.mine.guests.join(", ")}`
               : null}
-            {event.mine?.state === "kept" ? ` · ${say("row.keptForYou")}` : null}
-            {event.mine?.state === "declined" ? ` · ${say("row.notThisTime")}` : null}
+            {event.mine?.state === "kept"
+              ? ` · ${say("row.keptForYou")}`
+              : null}
+            {event.mine?.state === "declined"
+              ? ` · ${say("row.notThisTime")}`
+              : null}
           </span>
         ) : marked ? (
           <span className="row-maybe">{say("row.onYourList")}</span>
@@ -156,29 +216,39 @@ export default function EveningRow({
         {does ? (
           <span className="row-does">
             {coming ? (
-              <button
-                type="button"
-                className="pill pill-small"
-                onClick={() => onCancel?.()}
-                disabled={pending}
-              >
-                {say("row.notComing")}
-              </button>
+              <span className="row-two">
+                <button
+                  type="button"
+                  className="pill pill-small pill-solid"
+                  onClick={() => setAsking(true)}
+                  disabled={pending}
+                >
+                  {say(programme.length > 0 ? "row.changeDays" : "row.changeIt")}
+                </button>
+                <button
+                  type="button"
+                  className="pill pill-small"
+                  onClick={give}
+                  disabled={pending}
+                >
+                  {say("row.notComing")}
+                </button>
+              </span>
             ) : (
               <button
                 type="button"
                 className="pill pill-small pill-solid"
-                onClick={() => onJoin?.()}
+                onClick={() => setAsking(true)}
                 disabled={pending}
               >
-                {say("row.countMeIn")}
+                {say(programme.length > 0 ? "row.pickYourDays" : "row.countMeIn")}
               </button>
             )}
 
             <button
               type="button"
               className={marked ? "mark mark-on" : "mark"}
-              onClick={() => onMark?.(!marked)}
+              onClick={() => mark(!marked)}
               disabled={pending}
               aria-pressed={marked}
               aria-label={say(marked ? "row.takeOffList" : "row.keepOnList")}
@@ -196,7 +266,26 @@ export default function EveningRow({
             </button>
           </span>
         ) : null}
+        {said ? <span className="row-said">{said}</span> : null}
       </span>
+
+      {does ? (
+        <JoinSheet
+          open={asking}
+          eventId={event.id}
+          title={event.title}
+          when={event.label}
+          spots={event.spots}
+          mine={event.mine ?? null}
+          days={programme.length > 0 ? programme : undefined}
+          chosen={mineDays}
+          onClose={() => setAsking(false)}
+          onDone={(words) => {
+            setComing(true);
+            setSaid(words);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

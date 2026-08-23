@@ -35,6 +35,14 @@ export async function signUpForEvent(
    * is on the door and whoever is laying the table both want names. Optional, and
    * never longer than the places asked for less yourself. */
   guests: string[] = [],
+  /* Which day of a programme this place is for.
+   *
+   * Null — the ordinary case — means the whole thing, which is the only honest
+   * answer for an evening that is one day, or a week where every day is the
+   * point. An evening with a programme inside it (four Saturdays and a Sunday)
+   * is not something anybody comes to as a whole, so those are booked a day at a
+   * time. */
+  onDay: string | null = null,
 ): Promise<Asked> {
   const me = await whoIsThis();
   if (!me) return { ok: false, error: "You are not signed in any more." };
@@ -73,11 +81,15 @@ export async function signUpForEvent(
     people: many,
     bringing: bringing.trim().slice(0, 280),
     state: "asked",
+    on_day: onDay,
   };
 
   const { error } = await supabase
     .from("bookings")
-    .upsert({ ...booking, guests: named }, { onConflict: "event_id,profile_id" });
+    .upsert(
+      { ...booking, guests: named },
+      { onConflict: "event_id,profile_id,on_day" },
+    );
 
   if (error) {
     /* The column may not be there yet.
@@ -92,13 +104,61 @@ export async function signUpForEvent(
 
     const { error: again } = await supabase
       .from("bookings")
-      .upsert(booking, { onConflict: "event_id,profile_id" });
+      .upsert(booking, { onConflict: "event_id,profile_id,on_day" });
     if (again) return { ok: false, error: again.message };
   }
 
   revalidatePath("/app");
   revalidatePath("/app/events");
   revalidatePath("/app/account");
+  return { ok: true, state: "asked" };
+}
+
+/**
+ * Places on several days of one programme, in one press.
+ *
+ * The days somebody picks are the days they have a place on, and the days they
+ * unpick are places given up — so this is not "add these" but "these, and only
+ * these". Doing it in one call rather than one per checkbox is the difference
+ * between a form that saves and a form that half-saves: a browser that loses its
+ * connection halfway through five separate requests leaves somebody down for a
+ * Saturday they did not choose.
+ */
+export async function signUpForDays(
+  eventId: string,
+  days: string[],
+  people: number,
+  bringing: string,
+  guests: string[] = [],
+): Promise<Asked> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const wanted = [...new Set(days.filter(Boolean))].slice(0, 40);
+  const supabase = await supabaseServer();
+
+  /* Gone first, so a day taken off does not survive as a place nobody meant to
+     keep — and only ever this member's own rows on this evening. */
+  const off = await supabase
+    .from("bookings")
+    .delete()
+    .eq("event_id", eventId)
+    .eq("profile_id", me.id)
+    .not("on_day", "is", null);
+  if (off.error) return { ok: false, error: off.error.message };
+
+  if (wanted.length === 0) {
+    revalidatePath("/app");
+    revalidatePath("/app/events");
+    revalidatePath("/app/account");
+    return { ok: true, state: "asked" };
+  }
+
+  for (const day of wanted) {
+    const answer = await signUpForEvent(eventId, people, bringing, guests, day);
+    if (!answer.ok) return answer;
+  }
+
   return { ok: true, state: "asked" };
 }
 

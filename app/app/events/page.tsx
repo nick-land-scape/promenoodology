@@ -18,7 +18,17 @@ export default async function EventsPage() {
   const say = speaking(lang, await getFrench());
 
   const [all, mine] = await Promise.all([sharedEvents(lang), myBookings()]);
-  const asked = new Map(mine.map((booking) => [booking.eventId, booking]));
+  /* A place on the whole thing, and the days somebody has taken where the evening
+     has a programme in it. Two maps, because they are two different promises: one
+     is "I am coming", the other is "I am coming on the sixth and the twentieth". */
+  const asked = new Map(
+    mine.filter((booking) => !booking.onDay).map((booking) => [booking.eventId, booking]),
+  );
+  const onDays = new Map<string, string[]>();
+  for (const booking of mine) {
+    if (!booking.onDay) continue;
+    onDays.set(booking.eventId, [...(onDays.get(booking.eventId) ?? []), booking.onDay]);
+  }
 
   /* What people are bringing, for the ones still to come only: it is a list for
      organising an evening, not a record of one that has happened. */
@@ -44,8 +54,24 @@ export default async function EventsPage() {
       needs: event.needs,
       bringing: bringing.get(event.id) ?? [],
       mine: booking
-        ? { people: booking.people, bringing: booking.bringing, state: booking.state }
+        ? {
+            people: booking.people,
+            bringing: booking.bringing,
+            guests: booking.guests ?? [],
+            state: booking.state,
+          }
         : null,
+      /* The days already taken, and how each day says itself — worked out here for
+         the same reason the date parts are: the row cannot read files. */
+      onDays: onDays.get(event.id) ?? [],
+      dayLabels: event.days.map((one) => ({
+        date: one.date,
+        title: one.title,
+        time: one.time,
+        label: `${dateParts(one.date, lang).day} ${dateParts(one.date, lang).month}${
+          one.time ? ` · ${one.time}` : ""
+        }`,
+      })),
     };
   };
 

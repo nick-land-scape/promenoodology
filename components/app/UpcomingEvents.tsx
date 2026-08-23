@@ -14,6 +14,16 @@ type Props = {
     when: string;
     /** Whether you have asked for a place. */
     going: boolean;
+    /** What you have already said, so the row can offer to change it. */
+    mine: {
+      people: number;
+      bringing: string;
+      guests?: string[];
+      state: "interested" | "asked" | "kept" | "declined";
+    } | null;
+    /** The days already taken, and the programme's own days. */
+    onDays: string[];
+    dayLabels: { date: string; title: string; time: string; label: string }[];
   })[];
   places: string[];
 };
@@ -74,10 +84,12 @@ export default function UpcomingEvents({ events, places }: Props) {
           <ul className="row-list">
             {shown.map((event) => (
               <li key={event.id}>
-                {/* The same row what's on draws, with the buttons switched off:
-                    this screen is a summary, and deciding belongs on the screen
-                    that is about deciding. */}
+                {/* The same row what's on draws, buttons and all: somebody on the
+                    front screen who has just read that an evening is on should be
+                    able to say yes to it there, rather than being sent to another
+                    screen to press the same button. */}
                 <EveningRow
+                  does
                   event={{
                     id: event.id,
                     title: event.title,
@@ -87,6 +99,10 @@ export default function UpcomingEvents({ events, places }: Props) {
                     photo: event.photo,
                     partners: event.partners,
                     note: event.note,
+                    mine: event.mine,
+                    spots: event.spots,
+                    days: event.dayLabels,
+                    onDays: event.onDays,
                   }}
                 />
               </li>

@@ -3094,6 +3094,104 @@ body:has(.app-shell) {
   flex-wrap: wrap;
 }
 
+/* An evening with a programme in it says so, in the club's purple, right under its
+   name — because it changes what "coming" means: a place is taken on a day rather
+   than on the month the programme runs for. */
+.row-badge {
+  display: inline-block;
+  align-self: flex-start;
+  margin: 3px 0 1px;
+  border: 1px solid var(--purple);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+/* Two buttons where there were one: change what you said, or take it back. */
+.row-two {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.row-said {
+  display: block;
+  padding-top: 8px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* Which days, in the pop-up. A list of pressable lines rather than checkboxes:
+   the thing being chosen is an evening with a name, not a setting. */
+.pick-days {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.pick-day {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background: none;
+  padding: 9px 12px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pick-day.is-on {
+  border-color: var(--ink);
+}
+
+.pick-day-tick {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.pick-day.is-on .pick-day-tick {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.pick-day-words {
+  display: grid;
+  min-width: 0;
+}
+
+.pick-day-when {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pick-day-what {
+  font-size: 1.02rem;
+  line-height: 1.2;
+}
+
 /* The link over the whole row.
  *
  * A card that only opens by its heading is a card most people conclude does not

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Sheet from "./Sheet";
-import { signUpForEvent } from "@/app/app/actions";
+import { signUpForDays, signUpForEvent } from "@/app/app/actions";
 import { buzz } from "@/lib/native";
 import { useSay } from "./Words";
 
@@ -29,12 +29,23 @@ export default function JoinSheet({
   when,
   spots,
   mine,
+  days,
+  chosen,
   onClose,
   onDone,
 }: {
   open: boolean;
   eventId: string;
   title: string;
+  /* The programme, where there is one.
+   *
+   * An evening with days inside it is not something anybody comes to as a whole:
+   * "Ateliers olfactifs" runs for a month and happens on five of those days. So
+   * the first question stops being how many and becomes which — and the places
+   * are taken a day at a time. */
+  days?: { date: string; title: string; time: string; label: string }[];
+  /** The days already taken, so re-opening it is editing. */
+  chosen?: string[];
   /** When it is, for the line under the title. */
   when?: string;
   /** How many places the evening has altogether, where it says. */
@@ -48,8 +59,10 @@ export default function JoinSheet({
   const [people, setPeople] = useState(String(mine?.people ?? 1));
   const [guests, setGuests] = useState<string[]>(mine?.guests ?? []);
   const [bringing, setBringing] = useState(mine?.bringing ?? "");
+  const [picked, setPicked] = useState<string[]>(chosen ?? []);
   const [busy, setBusy] = useState(false);
   const [trouble, setTrouble] = useState("");
+  const programme = days ?? [];
 
   /* Opening it again shows what is already down for this evening rather than an
      empty form: changing three places to four is the common case, and starting
@@ -59,8 +72,10 @@ export default function JoinSheet({
     setPeople(String(mine?.people ?? 1));
     setGuests(mine?.guests ?? []);
     setBringing(mine?.bringing ?? "");
+    setPicked(chosen ?? []);
     setTrouble("");
-  }, [open, mine?.people, mine?.bringing, mine?.guests]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, mine?.people, mine?.bringing]);
 
   const many = Number(people) || 1;
   /** One field per person past yourself. */
@@ -69,12 +84,10 @@ export default function JoinSheet({
   async function send() {
     setBusy(true);
     setTrouble("");
-    const answer = await signUpForEvent(
-      eventId,
-      many,
-      bringing,
-      guests.slice(0, asked),
-    );
+    const answer =
+      programme.length > 0
+        ? await signUpForDays(eventId, picked, many, bringing, guests.slice(0, asked))
+        : await signUpForEvent(eventId, many, bringing, guests.slice(0, asked));
     setBusy(false);
     if (!answer.ok) {
       setTrouble(answer.error ?? say("join.didNotGoThrough"));
@@ -98,6 +111,46 @@ export default function JoinSheet({
           void send();
         }}
       >
+        {/* Which days, where there are days to choose. Nothing else on this form
+            makes sense until this is answered, so it is first. */}
+        {programme.length > 0 ? (
+          <div className="field">
+            <span className="field-label">{say("sheet.whichDays")}</span>
+            <ul className="pick-days">
+              {programme.map((day) => {
+                const on = picked.includes(day.date);
+                return (
+                  <li key={day.date}>
+                    <button
+                      type="button"
+                      className={on ? "pick-day is-on" : "pick-day"}
+                      aria-pressed={on}
+                      disabled={busy}
+                      onClick={() =>
+                        setPicked((current) =>
+                          on
+                            ? current.filter((one) => one !== day.date)
+                            : [...current, day.date],
+                        )
+                      }
+                    >
+                      <span className="pick-day-tick" aria-hidden="true">
+                        {on ? "✓" : ""}
+                      </span>
+                      <span className="pick-day-words">
+                        <span className="pick-day-when">{day.label}</span>
+                        {day.title ? (
+                          <span className="pick-day-what">{day.title}</span>
+                        ) : null}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
+
         <div className="field">
           <label htmlFor="join-people">{say("sheet.howMany")}</label>
           <select
@@ -162,7 +215,7 @@ export default function JoinSheet({
           <button
             type="submit"
             className="pill pill-solid pill-wide"
-            disabled={busy}
+            disabled={busy || (programme.length > 0 && picked.length === 0)}
           >
             {say(busy ? "sheet.signingUp" : "sheet.yesComing")}
           </button>

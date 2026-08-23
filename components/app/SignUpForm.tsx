@@ -15,6 +15,10 @@ import { localeOf, useReading, useSay } from "./Words";
 import Photo from "../Photo";
 
 export type Joinable = ClubEvent & {
+  /** The days already taken, where this evening has a programme. */
+  onDays: string[];
+  /** Each day of that programme, with the words the row and the sheet show. */
+  dayLabels: { date: string; title: string; time: string; label: string }[];
   /** When it is, said the way the row says it. */
   label: string;
   /** The day and the month, split on the server: the helper that does it reads
@@ -29,6 +33,7 @@ export type Joinable = ClubEvent & {
   mine: {
     people: number;
     bringing: string;
+    guests?: string[];
     state: "interested" | "asked" | "kept" | "declined";
   } | null;
 };
@@ -171,15 +176,10 @@ export default function SignUpForm({
             needs: event.needs,
             bringing: event.bringing,
             mine: event.mine,
+            spots: event.spots,
+            days: event.dayLabels,
+            onDays: event.onDays,
           }}
-          marked={marked(event)}
-          pending={pending}
-          onMark={(on) => mark(event, on)}
-          onJoin={() => {
-            setOpen(event.id);
-            setSaid(null);
-          }}
-          onCancel={() => cancel(event)}
         />
 
         {said?.id === event.id ? (

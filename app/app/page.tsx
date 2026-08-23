@@ -46,6 +46,17 @@ export default async function AppHome() {
       .map((booking) => booking.eventId),
   );
 
+  /* What was said about each evening, and on which days — the front screen's rows
+     can now be pressed, so they need to know what they are showing the state of. */
+  const wholeThing = new Map(
+    mine.filter((booking) => !booking.onDay).map((booking) => [booking.eventId, booking]),
+  );
+  const onDays = new Map<string, string[]>();
+  for (const booking of mine) {
+    if (!booking.onDay) continue;
+    onDays.set(booking.eventId, [...(onDays.get(booking.eventId) ?? []), booking.onDay]);
+  }
+
   const today = new Date().toISOString().slice(0, 10);
   const events = all
     .filter((event) => (event.until || event.date) >= today)
@@ -55,6 +66,26 @@ export default async function AppHome() {
       weekday: weekday(event.date, lang),
       when: whenItIs(event, lang),
       going: asked.has(event.id),
+      mine: (() => {
+        const booking = wholeThing.get(event.id);
+        return booking
+          ? {
+              people: booking.people,
+              bringing: booking.bringing,
+              guests: booking.guests ?? [],
+              state: booking.state,
+            }
+          : null;
+      })(),
+      onDays: onDays.get(event.id) ?? [],
+      dayLabels: event.days.map((one) => ({
+        date: one.date,
+        title: one.title,
+        time: one.time,
+        label: `${dateParts(one.date, lang).day} ${dateParts(one.date, lang).month}${
+          one.time ? ` · ${one.time}` : ""
+        }`,
+      })),
     }));
   const places = [...new Set(events.map((event) => event.place))].filter(
     Boolean,

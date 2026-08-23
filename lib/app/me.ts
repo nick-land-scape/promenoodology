@@ -57,6 +57,8 @@ export type Me = {
 export type MyBooking = {
   /** First names of whoever is coming with them. */
   guests?: string[];
+  /** The day this place is for, where the evening has a programme of days. */
+  onDay?: string | null;
   id: string;
   eventId: string;
   people: number;
@@ -190,6 +192,7 @@ export async function myBookings(): Promise<MyBooking[]> {
     bringing: string;
     state: string;
     guests?: string[] | null;
+    on_day?: string | null;
   };
 
   /* Asked for with the names, and again without them if the column is not there.
@@ -199,7 +202,7 @@ export async function myBookings(): Promise<MyBooking[]> {
    * means the app forgets every place every member has taken. Worth one retry. */
   let { data } = await supabase
     .from("bookings")
-    .select("id, event_id, people, bringing, state, guests")
+    .select("id, event_id, people, bringing, state, guests, on_day")
     .returns<Row[]>();
 
   if (!data) {
@@ -215,6 +218,7 @@ export async function myBookings(): Promise<MyBooking[]> {
     people: row.people ?? 1,
     bringing: row.bringing ?? "",
     guests: row.guests ?? [],
+    onDay: row.on_day ?? null,
     state: (row.state as MyBooking["state"]) ?? "asked",
   }));
 }
