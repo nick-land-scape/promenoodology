@@ -39,6 +39,30 @@ export default async function proxy(request: NextRequest) {
   const elsewhere = holding(request, signedIn) ?? subdomain(request);
   if (elsewhere) return keepCookies(response, NextResponse.rewrite(elsewhere, { request }));
 
+  /*
+   * The app's front door, decided here rather than in the page.
+   *
+   * `/app` is the address the phone app itself loads, and for anybody without a
+   * session the screen behind it sends them to `/app/enter`. That send is a
+   * `redirect()` inside a server component, which by the time it happens has
+   * already flushed the beginning of the Home screen — so Next finishes the
+   * journey in the browser, with JavaScript. In a browser that is invisible. In
+   * the app's web view it is a blank screen: the very first document a new member
+   * ever loads is one that has to be completed by a script, and if anything is in
+   * the way of that script — and in a web view something is — they get paper and
+   * nothing else.
+   *
+   * One hop, at the edge, before a byte is sent. Only the exact address, because
+   * only the exact address is the one the app opens with; everything under it is
+   * left to the screens, which know more about who is allowed where than this
+   * does.
+   */
+  if (!signedIn && request.nextUrl.pathname === "/app") {
+    const door = new URL("/app/enter", request.url);
+    door.searchParams.set("from", "/app");
+    return keepCookies(response, NextResponse.redirect(door));
+  }
+
   // Somebody who would rather read French, sent to the French address once and
   // then left alone: it is a redirect rather than a rewrite because the address
   // should say which language you are reading.
