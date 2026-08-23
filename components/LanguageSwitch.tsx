@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTransition } from "react";
 import { chooseLanguage } from "@/lib/site-actions/language";
-import { LANGS, NAMED, PLAIN, at, plainly, type Lang } from "@/lib/lang";
+import { LANGS, NAMED, PLAIN, SHORT, at, plainly, type Lang } from "@/lib/lang";
 
 /**
  * English or French, under the handbook.
@@ -45,17 +45,25 @@ export default function LanguageSwitch({ lang }: { lang: Lang }) {
     <div className="nav-langs" role="group" aria-label="Language">
       {LANGS.map((one) =>
         one === lang ? (
-          <span key={one} className="is-here" aria-current="true" lang={one === PLAIN ? "en" : one}>
-            {NAMED[one]}
+          <span
+            key={one}
+            className="is-here"
+            aria-current="true"
+            lang={one === PLAIN ? "en" : one}
+            title={NAMED[one]}
+          >
+            {SHORT[one]}
           </span>
         ) : (
           <Link
             key={one}
             href={at(one, here)}
             lang={one === PLAIN ? "en" : one}
+            title={NAMED[one]}
+            aria-label={NAMED[one]}
             onClick={() => remember(one)}
           >
-            {NAMED[one]}
+            {SHORT[one]}
           </Link>
         ),
       )}

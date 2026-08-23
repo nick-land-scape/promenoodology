@@ -26,6 +26,14 @@ export function isLang(what: string | undefined): what is Lang {
 /** What a language is called, in itself. */
 export const NAMED: Record<Lang, string> = { en: "English", fr: "Français" };
 
+/* Two letters, for the strip along the top of a phone.
+ *
+ * "English" and "Français" side by side in a 34-pixel row next to a face and a
+ * moon is fifteen characters where two will do — and nobody has ever needed the
+ * whole word to know which one they are reading. The full names stay for the
+ * places that have room to be polite. */
+export const SHORT: Record<Lang, string> = { en: "EN", fr: "FR" };
+
 /**
  * An address, in a language.
  *

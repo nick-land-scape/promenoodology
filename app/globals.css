@@ -4425,3 +4425,97 @@ body:has(.hero) .edit-this {
     justify-content: flex-start;
   }
 }
+
+/* ------------------------------------------------------- contact us, in full
+
+   On a wide screen the addresses are the lane up the left margin and this button
+   does not exist. On a phone the lane is gone and so is the footer it became:
+   there is a word in the strip along the top, and pressing it gives the whole
+   screen to two addresses. */
+.contact-open {
+  display: none;
+}
+
+.contact-pop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: var(--paper);
+  animation: fade 0.2s ease-out both;
+}
+
+.contact-shut {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 10px);
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: none;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--quiet);
+  cursor: pointer;
+}
+
+.contact-pop-in {
+  display: grid;
+  gap: 22px;
+  justify-items: center;
+  text-align: center;
+  padding: var(--edge);
+  max-width: 92vw;
+}
+
+.contact-pop-said {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+/* As large as they go and still fit: the address *is* the page. */
+.contact-pop-link {
+  font-size: clamp(1.6rem, 8.5vw, 3rem);
+  line-height: 1.05;
+  text-decoration: none;
+  text-wrap: balance;
+  word-break: break-word;
+}
+
+.contact-pop-link[href^="https://www.instagram"] {
+  color: var(--blue);
+}
+
+.contact-pop-link[href^="mailto"] {
+  color: var(--pink);
+}
+
+/* The same breakpoint the rest of the phone layout uses — 767, not a number of
+   my own, because two breakpoints twelve pixels apart is a window in which the
+   footer and the button are both on the screen. */
+@media screen and (max-width: 767px) {
+  /* The footer goes; the word in the strip takes its place. */
+  .contact {
+    display: none;
+  }
+
+  .contact-open {
+    display: inline-block;
+    border: 0;
+    background: none;
+    padding: 0 2px;
+    font-family: var(--sans);
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--quiet);
+    cursor: pointer;
+  }
+}
