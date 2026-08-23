@@ -46,6 +46,7 @@ export default function Sheet({
 }) {
   const say = useSay();
   const box = useRef<HTMLDivElement>(null);
+  const wall = useRef<HTMLDivElement>(null);
   /* Rendered at the top of the app rather than where it is written.
    *
    * `position: fixed` is only fixed to the window while no ancestor has a
@@ -69,6 +70,39 @@ export default function Sheet({
   useEffect(() => {
     setInto(document.querySelector<HTMLElement>(".app-shell") ?? document.body);
   }, []);
+
+  /* Room for the keyboard.
+   *
+   * A sheet is fixed to the window, and the window does not know the keyboard
+   * exists: iOS puts three hundred points of it over the bottom of the screen and
+   * every measurement stays exactly as it was, so the field somebody is typing
+   * into, the send button and half the form end up underneath it. The visual
+   * viewport is the only thing that does know — it is the part of the window you
+   * can actually see — so the difference between it and the window is the height
+   * of whatever is covering the rest. The sheet keeps that much clear at its foot
+   * and gives up as much of its own height, so it is a shorter sheet sitting on
+   * the keyboard rather than a full-height one behind it. */
+  useEffect(() => {
+    const seen = window.visualViewport;
+    if (!open || !seen) return;
+
+    const measure = () => {
+      const covered = Math.max(
+        0,
+        window.innerHeight - seen.height - seen.offsetTop,
+      );
+      wall.current?.style.setProperty("--covered", `${Math.round(covered)}px`);
+    };
+
+    measure();
+    seen.addEventListener("resize", measure);
+    seen.addEventListener("scroll", measure);
+    return () => {
+      seen.removeEventListener("resize", measure);
+      seen.removeEventListener("scroll", measure);
+      wall.current?.style.removeProperty("--covered");
+    };
+  }, [open]);
 
   /* Escape closes it, and the page behind does not move while it is open. */
   useEffect(() => {
@@ -94,6 +128,7 @@ export default function Sheet({
   return createPortal(
     <div
       className={open ? "sheet is-open" : "sheet"}
+      ref={wall}
       /* Hidden from everything, not only from the eye, when it is shut — but
          still in the document, so what is inside it can take focus the instant it
          is opened. */

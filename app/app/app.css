@@ -984,6 +984,41 @@ body:has(.app-shell) {
   border-bottom: 1px solid var(--hair);
 }
 
+/* Shut, it is a bar at the foot of the feed.
+ *
+ * Sticky rather than fixed, and that is the whole reason it works: fixed would be
+ * measured against the nearest transformed ancestor, and every screen in this app
+ * arrives with a transform on it. Sticky is measured against what scrolls. It
+ * floats a tab bar's height above the bottom of the window for as long as the
+ * feed is on screen, and comes to rest at the end of it.
+ *
+ * The rule above gives every composer a line underneath. This one has it on top
+ * instead: the line belongs between the bar and the feed it is sitting on, and a
+ * bar with a line under it has a line drawn along the bottom of the screen. */
+.compose-shut {
+  position: sticky;
+  bottom: var(--bar-room, calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)));
+  z-index: 4;
+  border-top: 1px solid var(--hair);
+  border-bottom: 0;
+  background: var(--paper);
+  /* Its own band, not a line squeezed between the feed and the menu.
+     A hairline on its own says "the list ends here"; what this is is somewhere
+     you do something, so it gets the air of a section — more above the line of
+     type than the posts get, and more below it than the menu needs, which is what
+     stops the two rows of controls reading as one crowded row. The shadow is what
+     makes the feed pass behind it rather than stop at it. */
+  padding: 16px var(--gutter) 18px;
+  box-shadow: 0 -14px 22px -16px rgba(0, 0, 0, 0.22);
+}
+
+/* On dark paper a black shadow is nothing at all, so it is a heavier one. The
+   root always carries a theme here — the script that reads the device stamps one
+   before the first paint — so this is the only selector dark needs. */
+:root[data-theme="dark"] .compose-shut {
+  box-shadow: 0 -14px 26px -14px rgba(0, 0, 0, 0.6);
+}
+
 /* Shut: one line, and the line is the field itself rather than a button that
    opens one — see the note in Feed. Everything else appears on the first touch, so
    the top of the feed is not four empty fields. */
@@ -991,6 +1026,12 @@ body:has(.app-shell) {
   height: 38px;
   padding-top: 9px;
   border-bottom-color: transparent;
+  /* And no scrollbar. One line of type in a box one line tall overflows it by a
+     point or two, which was enough for a scrollbar — and the page sets those
+     purple, so the door had a purple stripe up its right-hand edge that looked
+     like a cursor sitting in the wrong place. There is nothing to scroll to: the
+     field this stands for is inside the sheet. */
+  overflow: hidden;
 }
 
 .compose-shut-mark {
@@ -1875,6 +1916,10 @@ body:has(.app-shell) {
   height: 17px;
 }
 
+/* Sixteen pixels, and not the 15.2 this was.
+   Under sixteen, iOS decides the field is too small to read and zooms the whole
+   screen in on it — so moving from the words to the place, which is a press of
+   two fields half a line apart in size, zoomed in and then back out again. */
 .compose-where input {
   flex: 1;
   min-width: 0;
@@ -1882,7 +1927,7 @@ body:has(.app-shell) {
   background: none;
   padding: 7px 0;
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--ink);
 }
 
@@ -4513,6 +4558,9 @@ body:has(.app-shell) {
   align-items: flex-end;
   justify-content: center;
   background: rgba(0, 0, 0, 0.34);
+  /* However much of the window the keyboard is covering, measured off the visual
+     viewport in Sheet.tsx. Nothing, until there is a keyboard. */
+  padding-bottom: var(--covered, 0px);
   /* Shut, it is out of the way of every finger and every screen reader — but
      still in the document, so a field inside it can be focused by the same press
      that opens it. Anything else and iOS gives a caret and no keyboard. */
@@ -4529,7 +4577,10 @@ body:has(.app-shell) {
 .sheet-box {
   width: 100%;
   max-width: 560px;
-  max-height: 86dvh;
+  /* Of the window, less the keyboard: `dvh` shrinks for a browser's own toolbars
+     and not for a keyboard, so a sheet allowed the full 86 of them was still tall
+     enough to run off the top of what you could see. */
+  max-height: calc(86dvh - var(--covered, 0px));
   display: flex;
   flex-direction: column;
   background: var(--paper);

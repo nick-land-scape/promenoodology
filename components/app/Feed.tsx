@@ -92,8 +92,6 @@ export default function Feed({
 
       {view === "feed" ? (
         <>
-          <Composer meName={meName} />
-
           {posts.length === 0 ? (
             <p className="app-note" style={{ padding: "18px var(--gutter)" }}>
               {say("con.nothingYet")}
@@ -109,6 +107,14 @@ export default function Feed({
               ))}
             </ul>
           )}
+
+          {/* Under the feed, not over it. It was the first thing on the screen,
+              which put a question before the answers: you arrive at a feed to
+              read it, and what everybody else said was below the fold behind a
+              field nobody had asked for. At the foot it is where a thumb already
+              is, and it stays there while the feed goes past underneath — see the
+              note on .compose-shut. */}
+          <Composer meName={meName} />
         </>
       ) : (
         <div className="app-section">
