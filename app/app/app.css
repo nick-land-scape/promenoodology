@@ -1355,15 +1355,16 @@ body:has(.app-shell) {
   position: absolute;
   inset: 0;
   display: block;
-  /* Asked for, and not relied on. In this web view a face inside a rotated plane
-     is painted whether it faces you or not, so the back of the card arrived with
-     the front's name, number and mark printed through it backwards — the mirror
-     writing this line is supposed to prevent. So which side you can see is said
-     outright as well, and said at the halfway point of the turn: 0.31s is half of
-     the plane's 0.62s, the moment the card is edge-on and there is nothing to see
-     being swapped. */
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+  /* Which side you can see is said outright, at the halfway point of the turn:
+     0.31s is half of the card's 0.62s, the moment it is edge-on and there is
+     nothing to see being swapped.
+     
+     And deliberately *not* `backface-visibility: hidden`, which is the obvious way
+     to do this and does not work here. The card has to clip what it draws on
+     itself, clipping flattens the 3D context, and in a flattened context turned a
+     half turn the browser reads both faces as facing away and draws neither: a
+     card that turned over to show a blank. Opacity has no opinion about which way
+     anything is pointing. */
   transition: opacity 0s linear 0.31s;
 }
 
