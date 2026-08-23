@@ -12,7 +12,7 @@ export default async function AssociationsPage() {
 
   const { data } = await supabase
     .from("associations")
-    .select("id, name, url, logo_path, position, published")
+    .select("id, name, url, logo_path, position, published, on_community")
     .order("position")
     .returns<AssociationRow[]>();
 
@@ -23,6 +23,7 @@ export default async function AssociationsPage() {
     logo: row.logo_path,
     logoUrl: row.logo_path ? mediaUrl(row.logo_path) : null,
     published: row.published,
+    onCommunity: row.on_community !== false,
   }));
 
   return (

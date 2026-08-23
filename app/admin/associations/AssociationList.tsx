@@ -37,6 +37,7 @@ export type Partner = {
   logo: string | null;
   logoUrl: string | null;
   published: boolean;
+  onCommunity: boolean;
 };
 
 /**
@@ -86,6 +87,7 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
           name: row.name,
           url: row.url,
           published: row.published,
+          onCommunity: row.onCommunity,
         })),
       );
       if (!result.ok) {
@@ -122,6 +124,7 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
         logo: null,
         logoUrl: null,
         published: false,
+        onCommunity: true,
       };
       setRows((list) => [...list, fresh]);
       setKept((list) => [...list, fresh]);
@@ -251,6 +254,15 @@ export default function AssociationList({ initial }: { initial: Partner[] }) {
                   on={row.published}
                   onChange={(next) => edit(row.id, { published: next })}
                   labels={["on the page", "hidden"]}
+                />
+                {/* Credited on an evening it paid for, without standing in the
+                    row of logos that says who we work with. One funds a project;
+                    the other is a relationship, and it is not ours to claim on
+                    somebody else's behalf. */}
+                <Flag
+                  on={row.onCommunity}
+                  onChange={(next) => edit(row.id, { onCommunity: next })}
+                  labels={["with us", "only on its own evening"]}
                 />
                 <span
                   style={{

@@ -188,6 +188,14 @@ export type AssociationRow = {
   logo_path: string | null;
   position: number;
   published: boolean;
+  /**
+   * In the row of logos on the community page, as against merely credited.
+   *
+   * Separate from `published`, which is whether it is shown at all: somebody
+   * who funded one evening is credited on that evening without being claimed as
+   * one of the people we work with. See migration 0036.
+   */
+  on_community: boolean;
 };
 
 /** A film for the front page. */

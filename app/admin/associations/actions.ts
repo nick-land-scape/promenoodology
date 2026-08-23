@@ -17,6 +17,8 @@ export type AssociationInput = {
   name: string;
   url: string;
   published: boolean;
+  /** In the row of logos on the community page, as against merely credited. */
+  onCommunity: boolean;
 };
 
 export async function addAssociation(): Promise<Saved & { id?: string }> {
@@ -37,6 +39,7 @@ export async function addAssociation(): Promise<Saved & { id?: string }> {
       position: (last?.position ?? 0) + 1,
       // Nothing with no name and no logo belongs on the page yet.
       published: false,
+      on_community: true,
     })
     .select("id")
     .single<{ id: string }>();
@@ -64,6 +67,7 @@ export async function saveAssociations(rows: AssociationInput[]): Promise<Saved>
         // on a page nobody was asked to check.
         url: /^https?:\/\/\S+$/.test(row.url.trim()) ? row.url.trim() : null,
         published: row.published,
+        on_community: row.onCommunity,
       })
       .eq("id", row.id);
     if (error) return failed(error);

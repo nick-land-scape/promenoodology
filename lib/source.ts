@@ -907,6 +907,10 @@ export async function getPartners(): Promise<Partner[]> {
       .select("id, name, url, logo_path")
     .is("deleted_at", null)
       .eq("published", true)
+      /* The row of logos under "with" is a claim about who we work with, and
+         somebody who funded one evening is credited on that evening without
+         being claimed here. See migration 0036. */
+      .eq("on_community", true)
       .order("position")
       .returns<{ id: string; name: string; url: string | null; logo_path: string | null }[]>();
 
