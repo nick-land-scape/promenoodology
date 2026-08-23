@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import Photo from "../Photo";
 import type { MyPhoto, MyPost } from "@/lib/app/me";
+import { useSay } from "./Words";
 
 /**
  * The three things that are yours, in preview.
@@ -20,13 +23,14 @@ export function PhotoPreview({
   photos: MyPhoto[];
   most?: number;
 }) {
+  const say = useSay();
   return (
     <section className="app-section">
       <div className="app-section-head">
-        <h2 className="app-h2">your photographs</h2>
+        <h2 className="app-h2">{say("mine.photographs")}</h2>
         {photos.length > most ? (
           <Link className="app-more" href="/app/account/photographs">
-            all {photos.length} ›
+            {say("home.allOfThem").replace("{n}", String(photos.length))}
           </Link>
         ) : (
           <span className="app-label">{photos.length}</span>
@@ -35,8 +39,7 @@ export function PhotoPreview({
 
       {photos.length === 0 ? (
         <p className="app-note">
-          None yet. The archive says who took what, and anything credited to you
-          turns up here.
+          {say("mine.noPhotographs")}
         </p>
       ) : (
         <ul className="mine-grid">
@@ -64,13 +67,14 @@ export function PostPreview({
   posts: MyPost[];
   most?: number;
 }) {
+  const say = useSay();
   return (
     <section className="app-section">
       <div className="app-section-head">
-        <h2 className="app-h2">what you have said</h2>
+        <h2 className="app-h2">{say("mine.whatYouSaid")}</h2>
         {posts.length > most ? (
           <Link className="app-more" href="/app/account/posts">
-            all {posts.length} ›
+            {say("home.allOfThem").replace("{n}", String(posts.length))}
           </Link>
         ) : (
           <span className="app-label">{posts.length}</span>
@@ -79,7 +83,8 @@ export function PostPreview({
 
       {posts.length === 0 ? (
         <p className="app-note">
-          Nothing yet. <Link href="/app/connect">Say something</Link>.
+          {say("mine.nothingYet")}{" "}
+          <Link href="/app/connect">{say("mine.saySomething")}</Link>.
         </p>
       ) : (
         <ul className="row-list">

@@ -4,6 +4,7 @@ import type { ClubEvent, NewsItem, Photo, Post } from "./content";
 import { readRows } from "./data";
 import { slugify } from "./admin/slug";
 import { imageSize } from "./image-size";
+import { PLAIN, type Lang } from "@/lib/lang";
 
 /**
  * Content for the members' app. Same idea as the website: plain CSV files in
@@ -22,15 +23,20 @@ const PUBLIC_DIR = path.join(process.cwd(), "public");
  * leave out when they were missing. The back of the house now keeps a last day
  * and a finishing time, and neither was reaching the app at all.
  */
-export function whenItIs(event: {
-  date: string;
-  until?: string;
-  time?: string;
-  endTime?: string;
-  place?: string;
-}): string {
-  const first = shortDate(event.date);
-  const day = event.until ? `${first} – ${shortDate(event.until)}` : `${weekday(event.date)} ${first}`;
+export function whenItIs(
+  event: {
+    date: string;
+    until?: string;
+    time?: string;
+    endTime?: string;
+    place?: string;
+  },
+  lang: Lang = PLAIN,
+): string {
+  const first = shortDate(event.date, lang);
+  const day = event.until
+    ? `${first} – ${shortDate(event.until, lang)}`
+    : `${weekday(event.date, lang)} ${first}`;
   const hours = [event.time, event.endTime].filter(Boolean).join("–");
   return [day, hours, event.place].filter(Boolean).join(" · ");
 }
@@ -123,25 +129,39 @@ function resourcePhoto(file: string | undefined): Photo | null {
 /* Dates are read in UTC on purpose: a date in a CSV is a day, not a moment,
    and no time zone should be able to shift it. */
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-/** "22 Aug", "5 Sep" — short and unambiguous. */
-export function shortDate(iso: string) {
-  const date = new Date(`${iso}T00:00:00Z`);
-  if (Number.isNaN(date.getTime())) return iso;
-  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
-}
-
-export function weekday(iso: string) {
+/*
+ * The names of the months and the days, in the language they are being read in.
+ *
+ * They were two arrays of English, which is how a French member came to be told
+ * their evening was on "Saturday 22 Aug". Nobody should be keeping a list of the
+ * twelve months in two languages when every runtime already has one, so these ask
+ * for it — in UTC, because a date here is a calendar day rather than a moment,
+ * and letting the phone's own zone at it moves the evening a day either way.
+ */
+function named(iso: string, lang: Lang, how: Intl.DateTimeFormatOptions): string {
   const date = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return "";
-  return DAYS[date.getUTCDay()];
+  return date.toLocaleDateString(lang === "fr" ? "fr-CH" : "en-GB", {
+    ...how,
+    timeZone: "UTC",
+  });
+}
+
+/** "22 Aug", "5 Sep" — short and unambiguous. */
+export function shortDate(iso: string, lang: Lang = PLAIN) {
+  return named(iso, lang, { day: "numeric", month: "short" }) || iso;
+}
+
+export function weekday(iso: string, lang: Lang = PLAIN) {
+  return named(iso, lang, { weekday: "long" });
 }
 
 /** Day and month split up, for the little date block on an event card. */
-export function dateParts(iso: string) {
+export function dateParts(iso: string, lang: Lang = PLAIN) {
   const date = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return { day: iso, month: "" };
-  return { day: String(date.getUTCDate()), month: MONTHS[date.getUTCMonth()].toLowerCase() };
+  return {
+    day: String(date.getUTCDate()),
+    month: named(iso, lang, { month: "short" }).replace(".", "").toLowerCase(),
+  };
 }

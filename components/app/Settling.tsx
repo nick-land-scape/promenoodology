@@ -8,6 +8,7 @@ import { setMyPhoto } from "@/lib/site-actions/account";
 import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
 import { buzz } from "@/lib/native";
 import { mediaUrl } from "@/lib/supabase/config";
+import { useSay } from "./Words";
 
 type Props = {
   /** Where to go when it is kept, and whether this is the first time. */
@@ -57,6 +58,7 @@ type Props = {
  * joined to see what is on this Saturday does not owe us a biography.
  */
 export default function Settling(props: Props) {
+  const say = useSay();
   const back = props.back ?? "/app";
   const first = props.first ?? false;
   const router = useRouter();
@@ -90,7 +92,7 @@ export default function Settling(props: Props) {
       if (answer.error) setTrouble(answer.error);
       else setPortrait(uploaded.path);
     } catch (error) {
-      setTrouble(error instanceof Error ? error.message : "That picture did not go up.");
+      setTrouble(error instanceof Error ? error.message : say("me.pictureDidNotGoUp"));
     } finally {
       setBusy(false);
       if (file.current) file.current.value = "";
@@ -117,7 +119,7 @@ export default function Settling(props: Props) {
         listed,
       });
       if (!answer.ok) {
-        setTrouble(answer.error ?? "That did not save.");
+        setTrouble(answer.error ?? say("me.didNotSave"));
         return;
       }
       void buzz("medium");
@@ -157,86 +159,86 @@ export default function Settling(props: Props) {
           className="me-face"
           onClick={() => file.current?.click()}
           disabled={busy}
-          aria-label={portrait ? "Choose another portrait" : "Add a portrait"}
+          aria-label={say(portrait ? "me.anotherPortrait" : "me.addAPortrait")}
         >
           {portrait ? (
             <Photo src={mediaUrl(portrait)} alt="" width={600} height={800} sizes="120px" priority />
           ) : (
-            <span className="me-face-none">add a portrait</span>
+            <span className="me-face-none">{say("me.addPortraitPlain")}</span>
           )}
-          <em>{busy ? "putting it up…" : portrait ? "change" : "add"}</em>
+          <em>{busy ? say("me.puttingItUp") : say(portrait ? "me.change" : "me.add")}</em>
         </button>
         <div className="me-strip-said">
           <p className="app-note" style={{ margin: 0 }}>
-            A face on the community page. Optional, like everything under it.
+            {say("me.faceOnCommunity")}
           </p>
         </div>
       </div>
 
       <div className="field-list">
         <div className="field">
-          <label htmlFor="who-name">your name</label>
+          <label htmlFor="who-name">{say("me.yourName")}</label>
           <input
             id="who-name"
             value={name}
             onChange={(change) => setName(change.target.value)}
-            placeholder="what everybody calls you"
+            placeholder={say("me.whatTheyCallYou")}
             autoComplete="name"
           />
         </div>
 
         <div className="field">
-          <label htmlFor="who-city">where you are</label>
+          <label htmlFor="who-city">{say("me.whereYouAre")}</label>
           <input
             id="who-city"
             value={city}
             onChange={(change) => setCity(change.target.value)}
-            placeholder="Zürich"
+            placeholder={say("me.cityEg")}
             autoComplete="address-level2"
           />
         </div>
 
         <div className="field">
-          <label htmlFor="who-country">and the country</label>
+          <label htmlFor="who-country">{say("me.andCountry")}</label>
           <input
             id="who-country"
             value={country}
             onChange={(change) => setCountry(change.target.value)}
-            placeholder="Switzerland"
+            placeholder={say("me.countryEg")}
             autoComplete="country-name"
           />
         </div>
 
         <div className="field">
-          <label htmlFor="who-does">what you do</label>
+          <label htmlFor="who-does">{say("me.whatYouDo")}</label>
           <input
             id="who-does"
             value={does}
             onChange={(change) => setDoes(change.target.value)}
-            placeholder="architecture student, cook, carpenter…"
+            placeholder={say("me.whatYouDoEg")}
           />
         </div>
 
         <div className="field">
-          <label htmlFor="who-skills">what you can bring</label>
+          <label htmlFor="who-skills">{say("me.whatYouBring")}</label>
           <input
             id="who-skills"
             value={skills}
             onChange={(change) => setSkills(change.target.value)}
-            placeholder="welding, a van, sourdough, Romanian bureaucracy"
+            placeholder={say("me.whatYouBringEg")}
           />
           <em className="field-said">
-            Commas between them. This is the one people actually search.
+            {say("me.commasBetween")}
           </em>
         </div>
 
         <div className="field">
-          <label htmlFor="who-languages">languages</label>
+          <label htmlFor="who-languages">{say("me.languages")}</label>
           <input
             id="who-languages"
             value={languages}
             onChange={(change) => setLanguages(change.target.value)}
-            placeholder="German, English, a little Italian"
+            placeholder={say("me.languagesEg")}
           />
         </div>
 
@@ -244,16 +246,16 @@ export default function Settling(props: Props) {
         {props.language}
 
         <div className="field">
-          <label htmlFor="who-birthday">birthday</label>
+          <label htmlFor="who-birthday">{say("me.birthday")}</label>
           <input
             id="who-birthday"
             value={birthday}
             onChange={(change) => setBirthday(change.target.value)}
-            placeholder="7.11"
+            placeholder={say("me.birthdayEg")}
             inputMode="numeric"
           />
           <em className="field-said">
-            Day and month. We do not ask for the year and we do not keep one.
+            {say("me.dayAndMonth")}
           </em>
         </div>
 
@@ -264,17 +266,17 @@ export default function Settling(props: Props) {
               checked={birthdayShown}
               onChange={(change) => setBirthdayShown(change.target.checked)}
             />
-            <span>let the others see it</span>
+            <span>{say("me.letOthersSee")}</span>
           </label>
         ) : null}
 
         <div className="field">
-          <label htmlFor="who-instagram">instagram</label>
+          <label htmlFor="who-instagram">{say("me.instagram")}</label>
           <input
             id="who-instagram"
             value={instagram}
             onChange={(change) => setInstagram(change.target.value)}
-            placeholder="without the @"
+            placeholder={say("me.withoutTheAt")}
             autoCapitalize="off"
           />
         </div>
@@ -285,30 +287,27 @@ export default function Settling(props: Props) {
           people lie to. */}
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">only for us</h2>
+          <h2 className="app-h2">{say("me.onlyForUs")}</h2>
         </div>
-        <p className="app-note">
-          Never on the community page and never in the app: these two are read by
-          whoever is cooking, and by nobody else.
-        </p>
+        <p className="app-note">{say("me.onlyForUsNote")}</p>
 
         <div className="field-list">
           <div className="field">
-            <label htmlFor="who-eat">what you cannot eat</label>
+            <label htmlFor="who-eat">{say("me.cannotEat")}</label>
             <input
               id="who-eat"
               value={cannotEat}
               onChange={(change) => setCannotEat(change.target.value)}
-              placeholder="no nuts, no pork"
+              placeholder={say("me.cannotEatEg")}
             />
           </div>
           <div className="field">
-            <label htmlFor="who-phone">a number for the day</label>
+            <label htmlFor="who-phone">{say("me.numberForDay")}</label>
             <input
               id="who-phone"
               value={phone}
               onChange={(change) => setPhone(change.target.value)}
-              placeholder="for the afternoon of an evening, not for a list"
+              placeholder={say("me.numberForDayEg")}
               inputMode="tel"
               autoComplete="tel"
             />
@@ -322,7 +321,7 @@ export default function Settling(props: Props) {
           checked={listed}
           onChange={(change) => setListed(change.target.checked)}
         />
-        <span>put me on the community page</span>
+        <span>{say("me.putMeOnCommunity")}</span>
       </label>
 
       {trouble ? <p className="app-error">{trouble}</p> : null}
@@ -334,7 +333,7 @@ export default function Settling(props: Props) {
           onClick={keep}
           disabled={pending || busy || !name.trim()}
         >
-          {pending ? "saving…" : "that is me"}
+          {say(pending ? "me.saving" : "me.thatIsMe")}
         </button>
         {/* Only the first time. Afterwards this screen is a settings screen, and
             a settings screen with "not now" on it is a settings screen that does
@@ -347,7 +346,7 @@ export default function Settling(props: Props) {
             disabled={pending}
             style={{ marginTop: 10 }}
           >
-            not now — I will fill it in later
+            {say("me.notNow")}
           </button>
         ) : null}
       </div>

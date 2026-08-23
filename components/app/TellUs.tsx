@@ -2,11 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { tellUs } from "@/app/app/actions";
+import { useSay } from "./Words";
 
 const KINDS = [
-  { key: "note", label: "a word", hint: "Anything at all — a question, a hello, a complaint." },
-  { key: "bug", label: "a bug", hint: "Something in here is broken. Say which screen and what you did." },
-  { key: "idea", label: "an idea", hint: "Something this could do that it does not." },
+  { key: "note", label: "tell.aWord", hint: "tell.aWordHint" },
+  { key: "bug", label: "tell.aBug", hint: "tell.aBugHint" },
+  { key: "idea", label: "tell.anIdea", hint: "tell.anIdeaHint" },
 ] as const;
 
 /**
@@ -21,6 +22,7 @@ const KINDS = [
  * said out loud on the form rather than collected silently.
  */
 export default function TellUs() {
+  const say = useSay();
   const [kind, setKind] = useState<(typeof KINDS)[number]["key"]>("note");
   const [words, setWords] = useState("");
   const [said, setSaid] = useState("");
@@ -49,7 +51,7 @@ export default function TellUs() {
 
   return (
     <>
-      <div className="segmented segmented-three" role="tablist" aria-label="What kind of thing">
+      <div className="segmented segmented-three" role="tablist" aria-label={say("tell.whatKind")}>
         {KINDS.map((one) => (
           <button
             key={one.key}
@@ -58,7 +60,7 @@ export default function TellUs() {
             aria-selected={kind === one.key}
             onClick={() => setKind(one.key)}
           >
-            {one.label}
+            {say(one.label)}
           </button>
         ))}
       </div>
@@ -77,22 +79,16 @@ export default function TellUs() {
               kind === "bug" ? navigator.userAgent : "",
             );
             if (!answer.ok) {
-              setTrouble(answer.error ?? "That did not send.");
+              setTrouble(answer.error ?? say("tell.didNotSend"));
               return;
             }
-            setSaid(
-              kind === "bug"
-                ? "Thank you — that is written down, with which screen and which browser. We read these."
-                : "Thank you — that is with us. We read these, and you will hear back if it needs an answer.",
-            );
+            setSaid(say(kind === "bug" ? "tell.thanksBug" : "tell.thanks"));
           });
         }}
       >
         <p className="app-note" style={{ paddingBottom: 10 }}>
-          {chosen.hint}
-          {kind === "bug"
-            ? " Which screen you were on and which browser you are using are sent along with it."
-            : null}
+          {say(chosen.hint)}
+          {kind === "bug" ? ` ${say("tell.alsoSent")}` : null}
         </p>
 
         <textarea
@@ -102,12 +98,12 @@ export default function TellUs() {
           onChange={(change) => setWords(change.target.value)}
           placeholder={
             kind === "bug"
-              ? "I pressed… and instead of… it…"
+              ? say("tell.bugEg")
               : kind === "idea"
-                ? "It would be good if…"
+                ? say("tell.ideaEg")
                 : "…"
           }
-          aria-label="What you want to say"
+          aria-label={say("tell.whatToSay")}
         />
 
         {trouble ? <p className="app-error">{trouble}</p> : null}
@@ -118,14 +114,14 @@ export default function TellUs() {
             className="pill pill-solid pill-wide"
             disabled={pending || words.trim().length < 3}
           >
-            {pending ? "sending…" : "send it"}
+            {say(pending ? "tell.sending" : "tell.sendIt")}
           </button>
         </div>
       </form>
 
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">or find us</h2>
+          <h2 className="app-h2">{say("tell.orFindUs")}</h2>
         </div>
         <a className="wide-row" href="https://www.instagram.com/promenoodology/" target="_blank" rel="noreferrer">
           <span>@promeNOODology on Instagram</span>

@@ -1,7 +1,8 @@
 import AppHeader from "@/components/app/AppHeader";
 import Feed from "@/components/app/Feed";
-import { requireMember } from "@/lib/app/me";
-import { getPosts } from "@/lib/source";
+import { readingIn, requireMember } from "@/lib/app/me";
+import { getFrench, getPosts } from "@/lib/source";
+import { speaking } from "@/lib/words";
 import { sharedMembers } from "@/lib/shared";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -13,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ConnectPage() {
   const me = await requireMember("/app/connect");
+  const say = speaking(await readingIn(), await getFrench());
   const [posts, everybody] = await Promise.all([getPosts(), sharedMembers()]);
   const people = everybody.sort((a, b) => a.last.localeCompare(b.last));
 
@@ -33,7 +35,7 @@ export default async function ConnectPage() {
 
   return (
     <>
-      <AppHeader eyebrow="connect" title="what everyone is up to" />
+      <AppHeader eyebrow={say("con.eyebrow")} title={say("con.whatEveryone")} />
       <Feed
         posts={posts}
         people={people}

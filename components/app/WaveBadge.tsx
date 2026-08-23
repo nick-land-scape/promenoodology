@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { myWaves } from "@/lib/app/me";
+import { myWaves, readingIn } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 /**
  * The bubble at the top right: how many people have waved at you.
@@ -9,13 +11,18 @@ import { myWaves } from "@/lib/app/me";
  * it is read once here rather than passed down from four pages.
  */
 export default async function WaveBadge() {
-  const { unseen, waves } = await myWaves();
+  const [{ unseen, waves }, lang, french] = await Promise.all([myWaves(), readingIn(), getFrench()]);
+  const say = speaking(lang, french);
 
   return (
     <Link
       href="/app/waves"
       className="wave-badge"
-      aria-label={unseen > 0 ? `${unseen} people waved at you` : "Who has waved at you"}
+      aria-label={
+        unseen > 0
+          ? say("wave.howMany").replace("{n}", String(unseen))
+          : say("wave.whoHas")
+      }
     >
       <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
         {/* A hand, mid-wave. */}

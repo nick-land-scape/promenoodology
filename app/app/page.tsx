@@ -51,9 +51,9 @@ export default async function AppHome() {
     .filter((event) => (event.until || event.date) >= today)
     .map((event) => ({
       ...event,
-      ...dateParts(event.date),
-      weekday: weekday(event.date),
-      when: whenItIs(event),
+      ...dateParts(event.date, lang),
+      weekday: weekday(event.date, lang),
+      when: whenItIs(event, lang),
       going: asked.has(event.id),
     }));
   const places = [...new Set(events.map((event) => event.place))].filter(
@@ -111,7 +111,7 @@ export default async function AppHome() {
                       ) : null}
                     </span>
                     <span className="row-when-said">
-                      {shortDate(item.date)}
+                      {shortDate(item.date, lang)}
                     </span>
                   </span>
                   {item.by.length > 0 ? (

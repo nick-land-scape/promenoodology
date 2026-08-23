@@ -2,9 +2,10 @@ import { notFound } from "next/navigation";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
 import HandItOn from "@/components/app/HandItOn";
-import { readingIn, requireMember } from "@/lib/app/me";
 import { siteUrl } from "@/lib/site";
-import { getSheet } from "@/lib/source";
+import { getFrench, getSheet } from "@/lib/source";
+import { speaking } from "@/lib/words";
+import { readingIn, requireMember } from "@/lib/app/me";
 
 export const revalidate = 60;
 
@@ -21,6 +22,7 @@ export default async function AppSheetPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const say = speaking(await readingIn(), await getFrench());
   const { slug } = await params;
   await requireMember(`/app/do-it-yourself/${slug}`);
   const lang = await readingIn();
@@ -31,7 +33,11 @@ export default async function AppSheetPage({
 
   return (
     <>
-      <AppHeader eyebrow="do it yourself" title={sheet.title} back="/app/do-it-yourself" />
+      <AppHeader
+        eyebrow={say("pg.doItYourself")}
+        title={sheet.title}
+        back="/app/do-it-yourself"
+      />
 
       {sheet.hook ? <p className="app-sheet-hook">{sheet.hook}</p> : null}
 
@@ -46,7 +52,7 @@ export default async function AppSheetPage({
       {sheet.needs.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">what it takes</h2>
+            <h2 className="app-h2">{say("dsy.whatItTakes")}</h2>
             <span className="app-label">{sheet.needs.length}</span>
           </div>
           <ul className="app-sheet-needs">
@@ -55,9 +61,7 @@ export default async function AppSheetPage({
             ))}
           </ul>
           <p className="app-note">
-            Borrowed beats bought, and none of it has to match. Half of it is not
-            cooking equipment — the chalk, the game, the one light and the spare seat
-            are what turn a place into an evening.
+            {say("dsy.borrowed")}
           </p>
         </section>
       ) : null}
@@ -65,7 +69,7 @@ export default async function AppSheetPage({
       {sheet.steps.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">what to do</h2>
+            <h2 className="app-h2">{say("dsy.whatToDo")}</h2>
             <span className="app-label">{sheet.steps.length}</span>
           </div>
           <ol className="app-sheet-steps">
@@ -78,12 +82,12 @@ export default async function AppSheetPage({
 
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">hand it on</h2>
+          <h2 className="app-h2">{say("dsy.handItOn")}</h2>
         </div>
         <p className="app-note">
           {sheet.fed
-            ? `About ${sheet.fed} people stayed for that one. Somebody you know has a place like it and has not thought of it.`
-            : "Somebody you know has a place like this and has not thought of it."}
+            ? say("dsy.aboutHowMany").replace("{n}", String(sheet.fed))
+            : say("dsy.somebodyKnows")}
         </p>
         <HandItOn title={sheet.title} where={where} />
       </section>

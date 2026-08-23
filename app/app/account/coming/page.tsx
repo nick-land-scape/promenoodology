@@ -2,13 +2,15 @@ import Link from "next/link";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
 import { whenItIs } from "@/lib/app-data";
+import { getEvents, getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 import { myBookings, readingIn, requireMember } from "@/lib/app/me";
-import { getEvents } from "@/lib/source";
 
 export const metadata = { title: "What you said yes to" };
 export const dynamic = "force-dynamic";
 
 export default async function ComingPage() {
+  const say = speaking(await readingIn(), await getFrench());
   await requireMember("/app/account/coming");
   const lang = await readingIn();
   const [mine, events] = await Promise.all([myBookings(), getEvents(lang)]);
@@ -21,14 +23,18 @@ export default async function ComingPage() {
 
   return (
     <>
-      <AppHeader eyebrow="you said yes to" title="everything you joined" back="/app/account" />
+      <AppHeader
+        eyebrow={say("acc.youSaidYesTo")}
+        title={say("pg.everythingJoined")}
+        back="/app/account"
+      />
       <ul className="row-list">
         {yes.map(({ booking, event }) => (
           <li key={booking.id}>
             <div className="row">
               <span className="row-body">
                 <span className="row-title">{event?.title}</span>
-                <span className="row-meta">{event ? whenItIs(event) : ""}</span>
+                <span className="row-meta">{event ? whenItIs(event, lang) : ""}</span>
                 <span className="row-yes">
                   {booking.people} {booking.people === 1 ? "place" : "places"}
                   {booking.bringing ? ` · bringing ${booking.bringing}` : ""}

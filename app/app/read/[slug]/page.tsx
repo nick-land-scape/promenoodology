@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
+import { getFrench, getStory } from "@/lib/source";
+import { speaking } from "@/lib/words";
 import { readingIn, requireMember } from "@/lib/app/me";
-import { getStory } from "@/lib/source";
 
 export const revalidate = 60;
 
@@ -22,6 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
  * wants to see it laid out properly.
  */
 export default async function AppStoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const say = speaking(await readingIn(), await getFrench());
   await requireMember("/app/read");
   const lang = await readingIn();
   const { slug } = await params;
@@ -30,7 +32,7 @@ export default async function AppStoryPage({ params }: { params: Promise<{ slug:
 
   return (
     <>
-      <AppHeader eyebrow="a story" title={story.title} back="/app/read" />
+      <AppHeader eyebrow={say("pg.aStory")} title={story.title} back="/app/read" />
 
       {story.cover ? (
         <div className="post-photo" style={{ marginTop: 0 }}>

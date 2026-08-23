@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { changeMyEmail } from "@/lib/site-actions/account";
 import { supabaseBrowser } from "@/lib/supabase/browser";
+import { useSay } from "./Words";
 
 /**
  * How you get in, on a screen of its own: the address a code goes to, and Apple.
@@ -21,6 +22,7 @@ export default function MySigningIn({ email }: { email: string }) {
 
 /** The address you sign in with, and how to move it. */
 function TheAddress({ email }: { email: string }) {
+  const say = useSay();
   const [changing, setChanging] = useState(false);
   const [said, setSaid] = useState<{ words: string; bad?: boolean } | null>(null);
   const [pending, start] = useTransition();
@@ -28,10 +30,11 @@ function TheAddress({ email }: { email: string }) {
   return (
     <section className="app-section">
       <div className="app-section-head">
-        <h2 className="app-h2">how you sign in</h2>
+        <h2 className="app-h2">{say("in.howYouSignIn")}</h2>
       </div>
       <p className="post-text">
-        A code to <strong>{email}</strong>. No password, so there is nothing to forget.
+        {say("in.aCodeTo")} <strong>{email}</strong>
+        {say("in.noPassword")}
       </p>
 
       {changing ? (
@@ -46,26 +49,25 @@ function TheAddress({ email }: { email: string }) {
           }
         >
           <div className="field">
-            <label htmlFor="me-email">your new address</label>
-            <input id="me-email" name="email" type="email" required placeholder="you@somewhere-else.com" />
+            <label htmlFor="me-email">{say("in.newAddress")}</label>
+            <input id="me-email" name="email" type="email" required placeholder={say("in.newAddressEg")} />
           </div>
           <div className="form-actions">
             <button type="submit" className="pill pill-solid pill-wide" disabled={pending}>
-              {pending ? "sending…" : "send the link"}
+              {say(pending ? "in.sending" : "in.sendTheLink")}
             </button>
             <button type="button" className="pill pill-small" onClick={() => setChanging(false)}>
-              never mind
+              {say("in.neverMind")}
             </button>
             <p className="app-note" style={{ paddingTop: 10 }}>
-              Nothing moves until you open the link in the new inbox. Until then this address still
-              works.
+              {say("in.nothingMoves")}
             </p>
           </div>
         </form>
       ) : (
         <div className="form-actions">
           <button type="button" className="pill pill-small" onClick={() => setChanging(true)}>
-            use a different address
+            {say("in.differentAddress")}
           </button>
         </div>
       )}
@@ -92,6 +94,7 @@ function TheAddress({ email }: { email: string }) {
 function Apple() {
   const [ready, setReady] = useState(false);
   const [connected, setConnected] = useState<string | null>(null);
+  const say = useSay();
   const [only, setOnly] = useState(true);
   const [trouble, setTrouble] = useState("");
   const [busy, setBusy] = useState(false);
@@ -102,7 +105,7 @@ function Apple() {
       const { data, error } = await supabaseBrowser().auth.getUserIdentities();
       if (stale) return;
       if (error) {
-        setTrouble("Could not read how this account signs in.");
+        setTrouble(say("in.couldNotRead"));
         setReady(true);
         return;
       }
@@ -129,7 +132,7 @@ function Apple() {
       setBusy(false);
       setTrouble(
         /manual linking|not enabled/i.test(error.message)
-          ? "Joining accounts is switched off in Supabase — turn on manual linking and this will work."
+          ? say("in.linkingOff")
           : error.message,
       );
     }
@@ -153,16 +156,15 @@ function Apple() {
   return (
     <section className="app-section">
       <div className="app-section-head">
-        <h2 className="app-h2">Sign in with Apple</h2>
+        <h2 className="app-h2">{say("in.appleHeading")}</h2>
       </div>
 
       {!ready ? (
-        <p className="app-note">reading…</p>
+        <p className="app-note">{say("in.reading")}</p>
       ) : connected ? (
         <>
           <p className="post-text">
-            Joined to this account. The button on the Apple sign-in screen brings you straight back
-            here.
+            {say("in.joinedToAccount")}
           </p>
           <div className="form-actions">
             <button
@@ -170,13 +172,13 @@ function Apple() {
               className="pill pill-small"
               onClick={() => void disconnect()}
               disabled={busy || only}
-              title={only ? "It is the only way into this account at the moment" : undefined}
+              title={only ? say("in.onlyWayIn") : undefined}
             >
-              {busy ? "…" : "disconnect it"}
+              {busy ? "…" : say("in.disconnectIt")}
             </button>
             {only ? (
               <p className="app-note" style={{ paddingTop: 8 }}>
-                It is the only way into this account at the moment, so it cannot be taken off yet.
+                {say("in.onlyWayInLong")}
               </p>
             ) : null}
           </div>
@@ -184,9 +186,7 @@ function Apple() {
       ) : (
         <>
           <p className="post-text">
-            Join it to this account and you can sign in with a face rather than a code. Your account
-            stays the same one — this is added to it, not instead of it, so choosing
-            &ldquo;hide my email&rdquo; on the Apple screen changes nothing here.
+            {say("in.joinItOn")}
           </p>
           <div className="form-actions">
             <button
@@ -195,7 +195,7 @@ function Apple() {
               onClick={() => void connect()}
               disabled={busy}
             >
-              {busy ? "asking Apple…" : " Sign in with Apple"}
+              {busy ? say("door.askingApple") : say("in.appleHeading")}
             </button>
           </div>
         </>

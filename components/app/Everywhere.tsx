@@ -4,6 +4,7 @@ import Link from "next/link";
 import Photo from "../Photo";
 import { buzz } from "@/lib/native";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSay } from "./Words";
 
 export type Pin = {
   id: string;
@@ -57,6 +58,7 @@ const PEEK = 128;
  * stylesheet arrive when somebody actually presses "the map".
  */
 export default function Everywhere({ pins }: { pins: Pin[] }) {
+  const say = useSay();
   const holder = useRef<HTMLDivElement>(null);
   const sheet = useRef<HTMLDivElement>(null);
   const flyTo = useRef<((pin: Pin) => void) | null>(null);
@@ -90,9 +92,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
      * moment the screen opens, whatever is or is not loaded by then. */
     const watch = window.setTimeout(() => {
       if (!dead && !drew) {
-        setTrouble(
-          "The map would not draw here. The places are all still listed.",
-        );
+        setTrouble(say("map.wouldNotDraw"));
         setStop(0);
       }
     }, 6000);
@@ -207,8 +207,11 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
            nobody on a phone can open. */
         setTrouble(
           error instanceof Error && /network|fetch|load/i.test(error.message)
-            ? "The map needs a line to the outside. The list works without one."
-            : `The map would not open: ${error instanceof Error ? error.message : "unknown"}`,
+            ? say("map.needsALine")
+            : say("map.wouldNotOpen").replace(
+                "{why}",
+                error instanceof Error ? error.message : say("map.unknown"),
+              ),
         );
         setStop(0);
       }
@@ -352,7 +355,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
             type="button"
             className="everywhere-shut"
             onClick={() => setChosen(null)}
-            aria-label="Close"
+            aria-label={say("map.close")}
           >
             ×
           </button>
@@ -377,7 +380,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
               {[
                 chosen.where,
                 chosen.when,
-                chosen.fed ? `${chosen.fed} ate` : null,
+                chosen.fed ? `${chosen.fed} ${say("map.ate")}` : null,
               ]
                 .filter(Boolean)
                 .join(" · ")}
@@ -390,11 +393,11 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
                 className="pill pill-small"
                 href={`/app/read/${chosen.slug}`}
               >
-                read it
+                {say("map.readIt")}
               </Link>
             ) : chosen.ahead ? (
               <Link className="pill pill-small" href="/app/events">
-                it is still to come
+                {say("map.stillToCome")}
               </Link>
             ) : null}
           </div>
@@ -426,9 +429,13 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
             onClick={() => setStop(stop === 2 ? 0 : 2)}
             aria-expanded={stop !== 2}
           >
-            <span>{pins.length} places</span>
+            <span>
+              {pins.length} {say("map.places")}
+            </span>
             <span className="everywhere-of">
-              {ahead ? `${ahead} still to come` : "five years of them"}
+              {ahead
+                ? say("map.howManyAhead").replace("{n}", String(ahead))
+                : say("map.fiveYears")}
             </span>
           </button>
         </div>
@@ -465,7 +472,7 @@ export default function Everywhere({ pins }: { pins: Pin[] }) {
                     <span className="row-title">
                       {pin.title}
                       {pin.ahead ? (
-                        <span className="everywhere-soon">to come</span>
+                        <span className="everywhere-soon">{say("map.toCome")}</span>
                       ) : null}
                     </span>
                     {pin.hook ? (

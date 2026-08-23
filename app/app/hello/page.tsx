@@ -1,6 +1,8 @@
 import AppHeader from "@/components/app/AppHeader";
 import Settling from "@/components/app/Settling";
-import { requireMember } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
+import { readingIn, requireMember } from "@/lib/app/me";
 
 export const metadata = { title: "Who you are" };
 export const dynamic = "force-dynamic";
@@ -13,11 +15,12 @@ export const dynamic = "force-dynamic";
  * the note in the component.
  */
 export default async function HelloPage() {
+  const say = speaking(await readingIn(), await getFrench());
   const me = await requireMember("/app/hello");
 
   return (
     <>
-      <AppHeader eyebrow="hello" title="who are you, then?" />
+      <AppHeader eyebrow={say("pg.hello")} title={say("pg.whoAreYou")} />
       <Settling
         first
         back="/app"

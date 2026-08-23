@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import AppHeader from "@/components/app/AppHeader";
 import { LEGAL, legalSpec } from "@/lib/legal";
-import { requireMember } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
+import { readingIn, requireMember } from "@/lib/app/me";
 
 export const revalidate = 3600;
 
@@ -28,6 +30,7 @@ export async function generateStaticParams() {
  * way back, and no menu at all.
  */
 export default async function AppLegalPage({ params }: { params: Promise<{ slug: string }> }) {
+  const say = speaking(await readingIn(), await getFrench());
   await requireMember("/app/account");
   const { slug } = await params;
   const spec = legalSpec(slug);
@@ -35,7 +38,7 @@ export default async function AppLegalPage({ params }: { params: Promise<{ slug:
 
   return (
     <>
-      <AppHeader eyebrow="in writing" title={spec.title} back="/app/account" />
+      <AppHeader eyebrow={say("pg.inWriting")} title={spec.title} back="/app/account" />
 
       <div className="app-book">
         <p className="app-book-lead">{spec.lead}</p>

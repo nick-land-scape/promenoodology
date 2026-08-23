@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { buzz, inTheApp, shareNatively } from "@/lib/native";
+import { useSay } from "./Words";
 
 /**
  * Hand this sheet to somebody.
@@ -24,6 +25,7 @@ export default function HandItOn({
   /** The public address of the sheet. */
   where: string;
 }) {
+  const say = useSay();
   const [said, setSaid] = useState("");
 
   async function pass() {
@@ -44,7 +46,7 @@ export default function HandItOn({
        way somebody who pressed this wants the address in their hand. */
     try {
       await navigator.clipboard.writeText(where);
-      setSaid("Copied. Paste it anywhere.");
+      setSaid(say("hand.copied"));
     } catch {
       setSaid(where);
     }
@@ -53,11 +55,11 @@ export default function HandItOn({
   return (
     <div className="hand-on">
       <button type="button" className="pill" onClick={() => void pass()}>
-        send this to somebody
+        {say("hand.sendThis")}
       </button>
       {said ? <p className="app-note">{said}</p> : null}
       <p className="app-note">
-        No account needed at the other end. That is the point of it.
+        {say("hand.noAccountNeeded")}
       </p>
     </div>
   );

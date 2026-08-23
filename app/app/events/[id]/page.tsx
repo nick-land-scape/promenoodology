@@ -67,7 +67,7 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
         ) : null}
 
         {event.subtitle ? <p className="evening-hook">{event.subtitle}</p> : null}
-        <p className="evening-when">{whenItIs(event)}</p>
+        <p className="evening-when">{whenItIs(event, lang)}</p>
         {event.address ? <p className="evening-where">{event.address}</p> : null}
         {event.lead ? (
           <p className="evening-lead">

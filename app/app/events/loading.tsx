@@ -1,11 +1,15 @@
 import AppHeader from "@/components/app/AppHeader";
 import { Bone, BoneHeading, BoneRow } from "@/components/app/Bones";
+import { readingIn } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 /** What's on: the switcher, the places, then evenings with two buttons each. */
-export default function Loading() {
+export default async function Loading() {
+  const say = speaking(await readingIn(), await getFrench());
   return (
     <div className="waiting" aria-busy="true">
-      <AppHeader eyebrow="what's on" title="what would you like to join?" />
+      <AppHeader eyebrow={say("on.eyebrow")} title={say("on.whatToJoin")} />
 
       <div className="waiting-switcher">
         <Bone w="50%" h={40} round />

@@ -1,11 +1,15 @@
 import AppHeader from "@/components/app/AppHeader";
 import { Bone } from "@/components/app/Bones";
+import { readingIn } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 /** Connect: two views, the one-line composer, then posts with pictures. */
-export default function Loading() {
+export default async function Loading() {
+  const say = speaking(await readingIn(), await getFrench());
   return (
     <div className="waiting" aria-busy="true">
-      <AppHeader eyebrow="connect" title="what everyone is up to" />
+      <AppHeader eyebrow={say("con.eyebrow")} title={say("con.whatEveryone")} />
 
       <div className="waiting-switcher">
         <Bone w="50%" h={40} round />

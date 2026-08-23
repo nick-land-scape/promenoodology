@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { supabaseBrowser } from "@/lib/supabase/browser";
+import { useSay } from "./Words";
 
 /**
  * Leaving, asked twice.
@@ -18,6 +19,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
  * none: it takes the person's things and leaves them a login.
  */
 export default function Leaving() {
+  const say = useSay();
   const router = useRouter();
   const [sure, setSure] = useState(false);
   const [trouble, setTrouble] = useState("");
@@ -26,7 +28,7 @@ export default function Leaving() {
   if (!sure) {
     return (
       <button type="button" className="leaving" onClick={() => setSure(true)}>
-        leave the club
+        {say("go.leaveTheClub")}
       </button>
     );
   }
@@ -34,9 +36,7 @@ export default function Leaving() {
   return (
     <div className="leaving-sure">
       <p>
-        Everything goes: your name, your portrait, your member number, what you signed up for, and
-        everything you have written here — with the pictures on it. Your way in is deleted too. None
-        of it can be brought back.
+        {say("go.everythingGoes")}
       </p>
 
       <button
@@ -47,7 +47,7 @@ export default function Leaving() {
           // Twice, and the second one is the machine's own dialogue: a press that
           // deletes everything should have to get past something that is not
           // ours to style.
-          if (!confirm("Delete your account and everything on it? This cannot be undone.")) return;
+          if (!confirm(say("go.reallyDelete"))) return;
           setTrouble("");
           start(async () => {
             const supabase = supabaseBrowser();
@@ -58,8 +58,7 @@ export default function Leaving() {
 
             if (error || !said?.ok) {
               setTrouble(
-                said?.error ??
-                  "That did not finish. Nothing has been deleted — write to info@promeNOODology.com and we will do it by hand.",
+                said?.error ?? say("go.didNotFinish"),
               );
               return;
             }
@@ -71,11 +70,11 @@ export default function Leaving() {
           });
         }}
       >
-        {pending ? "deleting everything…" : "yes, delete everything"}
+        {say(pending ? "go.deleting" : "go.yesDelete")}
       </button>
 
       <button type="button" className="leaving leaving-stay" onClick={() => setSure(false)}>
-        no, stay
+        {say("go.noStay")}
       </button>
 
       {trouble ? <p className="app-error">{trouble}</p> : null}

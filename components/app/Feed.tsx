@@ -6,7 +6,9 @@ import Sheet from "./Sheet";
 import type { Member, Post } from "@/lib/content";
 import {
   replyTo,
-  say,
+  /* Renamed here only: the action that posts and the hook that reads the app's
+     own words were both called `say`, which is a fair name for either. */
+  say as postToEveryone,
   takeDownMyPost,
   takeDownMyReply,
   wave,
@@ -14,6 +16,7 @@ import {
 import { buzz } from "@/lib/native";
 import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
 import { mediaUrl } from "@/lib/supabase/config";
+import { useSay } from "./Words";
 
 type Props = {
   posts: Post[];
@@ -60,6 +63,7 @@ export default function Feed({
   wavable,
   waved,
 }: Props) {
+  const say = useSay();
   const [view, setView] = useState<"feed" | "people">("feed");
   const [hello, setHello] = useState<Record<string, boolean>>(
     Object.fromEntries(waved.map((id) => [id, true])),
@@ -72,7 +76,7 @@ export default function Feed({
 
   return (
     <>
-      <div className="segmented" role="tablist" aria-label="Connect">
+      <div className="segmented" role="tablist" aria-label={say("con.switch")}>
         {(["feed", "people"] as const).map((option) => (
           <button
             key={option}
@@ -81,7 +85,7 @@ export default function Feed({
             aria-selected={view === option}
             onClick={() => setView(option)}
           >
-            {option}
+            {say(`con.${option}`)}
           </button>
         ))}
       </div>
@@ -92,7 +96,7 @@ export default function Feed({
 
           {posts.length === 0 ? (
             <p className="app-note" style={{ padding: "18px var(--gutter)" }}>
-              Nothing here yet. Say the first thing.
+              {say("con.nothingYet")}
             </p>
           ) : (
             <ul className="feed">
@@ -109,8 +113,10 @@ export default function Feed({
       ) : (
         <div className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">who is around</h2>
-            <span className="app-label">{people.length} people</span>
+            <h2 className="app-h2">{say("con.whoIsAround")}</h2>
+            <span className="app-label">
+              {people.length} {say("con.howManyPeople")}
+            </span>
           </div>
           {/* Two columns of these on a tablet: a name and a country in a row a
               thousand points wide is mostly empty room. */}
@@ -159,7 +165,7 @@ export default function Feed({
                           })
                         }
                       >
-                        {already ? "waved" : "wave"}
+                        {say(already ? "con.waved" : "con.wave")}
                       </button>
                     );
                   })()}
@@ -175,6 +181,7 @@ export default function Feed({
 
 /** Saying something, with as many pictures as it takes and where you were. */
 function Composer({ meName }: { meName: string }) {
+  const say = useSay();
   const file = useRef<HTMLInputElement>(null);
   const words_ = useRef<HTMLTextAreaElement>(null);
   /* Shut until it is wanted.
@@ -267,9 +274,9 @@ function Composer({ meName }: { meName: string }) {
   function send() {
     setTrouble("");
     start(async () => {
-      const answer = await say(words, place, paths);
+      const answer = await postToEveryone(words, place, paths);
       if (!answer.ok) {
-        setTrouble(answer.error ?? "That did not go up.");
+        setTrouble(answer.error ?? say("post.didNotGoUp"));
         return;
       }
       void buzz("medium");
@@ -302,7 +309,7 @@ function Composer({ meName }: { meName: string }) {
       <div className="compose compose-shut">
         <div className="compose-top">
           <span className="avatar" aria-hidden="true">
-            {initials(meName) || "you"}
+            {initials(meName) || say("con.you")}
           </span>
           <textarea
             ref={words_}
@@ -321,8 +328,8 @@ function Composer({ meName }: { meName: string }) {
               setOpen(true);
               inside.current?.focus();
             }}
-            placeholder="say something to everyone…"
-            aria-label="Write a post"
+            placeholder={say("post.sayToEveryone")}
+            aria-label={say("post.writeAPost")}
           />
           <span className="compose-shut-mark" aria-hidden="true">
             +
@@ -332,22 +339,22 @@ function Composer({ meName }: { meName: string }) {
 
       <Sheet
         open={open}
-        title="say something"
-        said="Everybody in the club sees this. No likes, only replies."
+        title={say("post.saySomething")}
+        said={say("post.everybodySees")}
         onClose={() => setOpen(false)}
       >
         <div className="compose compose-in-sheet">
           <div className="compose-top">
             <span className="avatar" aria-hidden="true">
-              {initials(meName) || "you"}
+              {initials(meName) || say("con.you")}
             </span>
             <textarea
               ref={inside}
               rows={4}
               value={words}
               onChange={(change) => setWords(change.target.value)}
-              placeholder="say something to everyone…"
-              aria-label="Write a post"
+              placeholder={say("post.sayToEveryone")}
+              aria-label={say("post.writeAPost")}
             />
           </div>
 
@@ -369,7 +376,7 @@ function Composer({ meName }: { meName: string }) {
                         current.filter((one) => one !== path),
                       )
                     }
-                    aria-label="Take this picture off"
+                    aria-label={say("post.takePictureOff")}
                   >
                     ×
                   </button>
@@ -392,8 +399,8 @@ function Composer({ meName }: { meName: string }) {
               className="compose-add"
               onClick={() => file.current?.click()}
               disabled={working}
-              aria-label="Add pictures"
-              title="Add pictures"
+              aria-label={say("post.addPictures")}
+              title={say("post.addPictures")}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -435,8 +442,8 @@ function Composer({ meName }: { meName: string }) {
               <input
                 value={place}
                 onChange={(change) => setPlace(change.target.value)}
-                placeholder="where?"
-                aria-label="Where"
+                placeholder={say("post.where")}
+                aria-label={say("post.whereLabel")}
               />
             </label>
 
@@ -448,7 +455,7 @@ function Composer({ meName }: { meName: string }) {
                 pending || working || (!words.trim() && paths.length === 0)
               }
             >
-              {pending ? "posting…" : "post"}
+              {say(pending ? "post.posting" : "post.post")}
             </button>
           </div>
 
@@ -461,6 +468,7 @@ function Composer({ meName }: { meName: string }) {
 
 /** One post: the words, the pictures, who answered, and passing it on. */
 function PostCard({ post, mine }: { post: Post; mine: boolean }) {
+  const say = useSay();
   const [open, setOpen] = useState(false);
   const [words, setWords] = useState("");
   const [trouble, setTrouble] = useState("");
@@ -479,11 +487,9 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
     }
     try {
       await navigator.clipboard.writeText(`${said}\n${url}`);
-      setTrouble("Copied, since this browser has nothing to share with.");
+      setTrouble(say("post.copied"));
     } catch {
-      setTrouble(
-        "This browser will neither share nor copy. Long-press the text instead.",
-      );
+      setTrouble(say("post.neitherShare"));
     }
   }
 
@@ -504,16 +510,16 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
             type="button"
             className="post-action"
             onClick={() => {
-              if (!confirm("Take this down? The pictures go with it.")) return;
+              if (!confirm(say("post.reallyTakeDown"))) return;
               start(async () => {
                 const answer = await takeDownMyPost(post.id);
                 if (!answer.ok)
-                  setTrouble(answer.error ?? "That did not work.");
+                  setTrouble(answer.error ?? say("join.didNotWork"));
               });
             }}
             disabled={pending}
           >
-            take it down
+            {say("post.takeItDown")}
           </button>
         ) : null}
       </div>
@@ -554,15 +560,17 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
           onClick={() => setOpen(!open)}
         >
           {post.replies.length === 0
-            ? "reply"
-            : `${post.replies.length} ${post.replies.length === 1 ? "reply" : "replies"}`}
+            ? say("post.reply")
+            : `${post.replies.length} ${say(
+                post.replies.length === 1 ? "post.oneReply" : "post.manyReplies",
+              )}`}
         </button>
         <button
           type="button"
           className="post-action"
           onClick={() => void pass()}
         >
-          pass it on
+          {say("post.passItOn")}
         </button>
       </div>
 
@@ -586,7 +594,7 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
             start(async () => {
               const answer = await replyTo(post.id, words);
               if (!answer.ok)
-                setTrouble(answer.error ?? "That did not go through.");
+                setTrouble(answer.error ?? say("join.didNotGoThrough"));
               else setWords("");
             });
           }}
@@ -594,15 +602,15 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
           <input
             value={words}
             onChange={(change) => setWords(change.target.value)}
-            placeholder={`answer ${post.author.split(" ")[0]}…`}
-            aria-label="Your reply"
+            placeholder={say("post.answerName").replace("{name}", post.author.split(" ")[0])}
+            aria-label={say("post.yourReply")}
           />
           <button
             type="submit"
             className="pill pill-small"
             disabled={pending || !words.trim()}
           >
-            {pending ? "…" : "send"}
+            {pending ? "…" : say("post.send")}
           </button>
         </form>
       ) : null}

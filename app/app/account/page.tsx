@@ -111,7 +111,7 @@ export default async function AccountPage() {
                   <span className="row-body">
                     <span className="row-title">{event?.title}</span>
                     <span className="row-meta">
-                      {event ? whenItIs(event) : ""}
+                      {event ? whenItIs(event, lang) : ""}
                     </span>
                     <span className="row-yes">
                       {booking.people}{" "}

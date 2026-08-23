@@ -39,8 +39,8 @@ export default async function EventsPage() {
          The row is a client component, and the helper that splits a date lives in
          a module that reads files — so importing it there pulled node:fs into the
          browser bundle and the build stopped, correctly. */
-      ...dateParts(event.date),
-      label: whenItIs(event),
+      ...dateParts(event.date, lang),
+      label: whenItIs(event, lang),
       needs: event.needs,
       bringing: bringing.get(event.id) ?? [],
       mine: booking

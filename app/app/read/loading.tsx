@@ -1,11 +1,15 @@
 import AppHeader from "@/components/app/AppHeader";
 import { Bone, BoneSmallSwitcher, BoneSwitcher } from "@/components/app/Bones";
+import { readingIn } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 /** Read: three views, the two ways of looking at the stories, then the covers. */
-export default function Loading() {
+export default async function Loading() {
+  const say = speaking(await readingIn(), await getFrench());
   return (
     <div className="waiting" aria-busy="true">
-      <AppHeader eyebrow="read" title="what we have done" />
+      <AppHeader eyebrow={say("read.eyebrow")} title={say("read.whatWeHaveDone")} />
       <BoneSwitcher />
       <BoneSmallSwitcher />
 

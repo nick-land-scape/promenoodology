@@ -1,9 +1,9 @@
 import AppHeader from "@/components/app/AppHeader";
 import ReadingIn from "@/components/app/ReadingIn";
 import Settling from "@/components/app/Settling";
-import { readingIn, requireMember } from "@/lib/app/me";
 import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
+import { readingIn, requireMember } from "@/lib/app/me";
 
 export const metadata = { title: "Your personal information" };
 export const dynamic = "force-dynamic";
@@ -24,8 +24,8 @@ export default async function DetailsPage() {
   return (
     <>
       <AppHeader
-        eyebrow="your personal information"
-        title="who you are here"
+        eyebrow={say("acc.personalInformation")}
+        title={say("pg.whoYouAreHere")}
         back="/app/account"
       />
       <Settling

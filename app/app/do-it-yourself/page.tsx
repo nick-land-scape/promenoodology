@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
-import { readingIn, requireMember } from "@/lib/app/me";
 import { sharedSheets } from "@/lib/shared";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
+import { readingIn, requireMember } from "@/lib/app/me";
 
 export const metadata = { title: "Do it yourself" };
 
@@ -18,26 +20,28 @@ export const revalidate = 60;
  * button to pass one on. A sheet a member cannot forward is a leaflet.
  */
 export default async function SheetsPage() {
+  const say = speaking(await readingIn(), await getFrench());
   await requireMember("/app/do-it-yourself");
   const lang = await readingIn();
   const sheets = await sharedSheets(lang);
 
   return (
     <>
-      <AppHeader eyebrow="do it yourself" title="put one on yourself" back="/app/read" />
+      <AppHeader
+        eyebrow={say("pg.doItYourself")}
+        title={say("read.putOneOn")}
+        back="/app/read"
+      />
 
       <p className="app-note" style={{ padding: "14px var(--gutter) 4px" }}>
-        One sheet per kind of place, all of them about the same thing: getting people
-        who do not know each other into the same place, and giving them something to
-        do together once they are there. Every sheet lives at an address anybody can
-        open without an account, so you can send it to whoever has the courtyard.
+        {say("dsy.oneSheetPer")}
       </p>
 
       {sheets.length === 0 ? (
         <p className="app-note" style={{ padding: "10px var(--gutter) 20px" }}>
-          The first sheets are being written. The handbook under{" "}
-          <Link href="/app/read?of=handbook">read</Link> is the long version in the
-          meantime.
+          {say("dsy.beingWritten")}{" "}
+          <Link href="/app/read?of=handbook">{say("dsy.readLink")}</Link>{" "}
+          {say("dsy.longVersion")}
         </p>
       ) : (
         <ul className="row-list row-list-inset">

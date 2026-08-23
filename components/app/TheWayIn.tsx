@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { appleSheet, buzz } from "@/lib/native";
 import { supabaseBrowser } from "@/lib/supabase/browser";
+import { useSay } from "./Words";
+import type { Said } from "@/lib/words";
 
 const CODE_LENGTH = 8;
 
@@ -34,6 +36,7 @@ const CODE_LENGTH = 8;
  * a door somebody will eventually find and wonder about.
  */
 export default function TheWayIn({ back }: { back: string }) {
+  const say = useSay();
   const router = useRouter();
   const supabase = supabaseBrowser();
 
@@ -107,7 +110,7 @@ export default function TheWayIn({ back }: { back: string }) {
         setBusy("");
         setTrouble(
           /provider is not enabled/i.test(error.message)
-            ? "Sign in with Apple is not switched on yet."
+            ? say("door.appleNotOn")
             : error.message,
         );
       }
@@ -121,7 +124,7 @@ export default function TheWayIn({ back }: { back: string }) {
   async function askForACode() {
     const address = email.trim().toLowerCase();
     if (!address.includes("@")) {
-      setTrouble("Your email address, please.");
+      setTrouble(say("door.emailPlease"));
       return;
     }
     setTrouble("");
@@ -141,17 +144,15 @@ export default function TheWayIn({ back }: { back: string }) {
        * code does not depend on an email having been sent at all. So the code step
        * opens anyway and says what happened. */
       if (/rate limit|too many|security purposes|after \d+ seconds/i.test(error.message)) {
-        setSaid(
-          "No new code just yet — too many have been asked for. If you already have one, it still works.",
-        );
+        setSaid(say("door.noNewCode"));
         setStep("code");
         window.setTimeout(() => codeField.current?.focus(), 120);
         return;
       }
-      setTrouble(friendly(error.message, joining));
+      setTrouble(friendly(error.message, joining, say));
       return;
     }
-    setSaid(`A code is on its way to ${address}.`);
+    setSaid(say("door.codeOnItsWay").replace("{email}", address));
     setStep("code");
     window.setTimeout(() => codeField.current?.focus(), 120);
   }
@@ -200,7 +201,7 @@ export default function TheWayIn({ back }: { back: string }) {
 
     setBusy("");
     setDigits("");
-    setTrouble(friendly(error.message, joining));
+    setTrouble(friendly(error.message, joining, say));
   }
 
   return (
@@ -211,10 +212,10 @@ export default function TheWayIn({ back }: { back: string }) {
 
       {step === "choose" ? (
         <>
-          <h1>{joining ? "join us" : "welcome back"}</h1>
+          <h1>{say(joining ? "door.joinUs" : "door.welcomeBack")}</h1>
 
           <label className="doorway-field">
-            <span>your email</span>
+            <span>{say("door.yourEmail")}</span>
             <input
               type="email"
               inputMode="email"
@@ -227,7 +228,7 @@ export default function TheWayIn({ back }: { back: string }) {
               onKeyDown={(key) => {
                 if (key.key === "Enter") void askForACode();
               }}
-              placeholder="you@wherever.com"
+              placeholder={say("door.emailEg")}
             />
           </label>
 
@@ -237,13 +238,17 @@ export default function TheWayIn({ back }: { back: string }) {
             onClick={() => void askForACode()}
             disabled={busy !== "" || !email.trim()}
           >
-            {busy === "code" ? "sending…" : busy === "in" ? "letting you in…" : "send me a code"}
+            {busy === "code"
+              ? say("door.sending")
+              : busy === "in"
+                ? say("door.lettingYouIn")
+                : say("door.sendMeACode")}
           </button>
 
           {/* Apple under the code, not over it: the code is the way in for
               everybody, and this is the way in for whoever would rather not type
               an address. */}
-          <p className="doorway-or">or</p>
+          <p className="doorway-or">{say("door.or")}</p>
 
           <button
             type="button"
@@ -257,25 +262,27 @@ export default function TheWayIn({ back }: { back: string }) {
                 d="M14.9 11.6c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7 1.4 0 1.8.8 3 .7 1.2 0 2-1.1 2.8-2.2.6-.9.9-1.7 1.1-2.2-2.3-.9-2.3-3.4-2.3-3.4zM12.4 4.3c.6-.8 1-1.9.9-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2.1-.5 2.8-1.3z"
               />
             </svg>
-            {busy === "apple" ? "asking Apple…" : joining ? "Sign up with Apple" : "Sign in with Apple"}
+            {busy === "apple"
+              ? say("door.askingApple")
+              : say(joining ? "door.signUpApple" : "door.signInApple")}
           </button>
 
           {trouble ? <p className="doorway-trouble">{trouble}</p> : null}
 
           <div className="doorway-feet">
             <button type="button" onClick={() => { setJoining(!joining); setTrouble(""); }}>
-              {joining ? "I have been here before" : "I have no account yet"}
+              {say(joining ? "door.beenHereBefore" : "door.noAccountYet")}
             </button>
           </div>
         </>
       ) : (
         <>
-          <h1>check your inbox</h1>
+          <h1>{say("door.checkInbox")}</h1>
           <p className="doorway-said">{said}</p>
 
           {/* One field, eight characters, big enough to read a code back from. */}
           <label className="doorway-field doorway-code">
-            <span>the code</span>
+            <span>{say("door.theCode")}</span>
             <input
               ref={codeField}
               inputMode="numeric"
@@ -293,12 +300,12 @@ export default function TheWayIn({ back }: { back: string }) {
             />
           </label>
 
-          {busy === "in" ? <p className="doorway-said">letting you in…</p> : null}
+          {busy === "in" ? <p className="doorway-said">{say("door.lettingYouIn")}</p> : null}
           {trouble ? <p className="doorway-trouble">{trouble}</p> : null}
 
           <div className="doorway-feet">
             <button type="button" onClick={() => void askForACode()} disabled={busy !== ""}>
-              send another
+              {say("door.sendAnother")}
             </button>
             <button
               type="button"
@@ -308,7 +315,7 @@ export default function TheWayIn({ back }: { back: string }) {
                 setTrouble("");
               }}
             >
-              use a different address
+              {say("door.differentAddress")}
             </button>
           </div>
         </>
@@ -317,20 +324,24 @@ export default function TheWayIn({ back }: { back: string }) {
   );
 }
 
-/** Supabase speaks in error codes; people do not. */
-function friendly(message: string, joining: boolean) {
+/**
+ * Supabase speaks in error codes; people do not.
+ *
+ * The last line hands back whatever Supabase said, which is English whatever the
+ * reader asked for. That is the right way round: an untranslated sentence
+ * somebody can search for beats a translated guess at what went wrong.
+ */
+function friendly(message: string, joining: boolean, say: Said) {
   const text = message.toLowerCase();
   if (text.includes("signups not allowed") || text.includes("not found")) {
-    return joining
-      ? "That did not work. Try again in a moment."
-      : "There is no account with that address yet. Join us instead — it is one press below.";
+    return say(joining ? "door.tryAgainMoment" : "door.noAccountThere");
   }
-  if (text.includes("already registered")) return "There is already an account here. Sign in instead.";
+  if (text.includes("already registered")) return say("door.alreadyAnAccount");
   if (text.includes("rate limit") || text.includes("too many") || text.includes("security purposes")) {
-    return "That is a lot of codes in a short time. Give it a minute.";
+    return say("door.tooManyCodes");
   }
   if (text.includes("expired") || text.includes("invalid") || text.includes("incorrect")) {
-    return "That code is wrong, or it has been used already. Ask for a new one.";
+    return say("door.codeWrong");
   }
   return message;
 }

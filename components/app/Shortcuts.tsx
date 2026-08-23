@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSay } from "./Words";
 
 /**
  * The four rings under the card.
@@ -17,27 +18,25 @@ import { useState } from "react";
  * a share sheet would have offered anyway.
  */
 
-const INVITE = {
-  title: "promeNOODology",
-  text: "Come and cook with us. Everyone is a member.",
-};
+
 
 export default function Shortcuts() {
+  const say = useSay();
   const [said, setSaid] = useState("");
 
   async function tell() {
     const url = "https://promenoodology.com";
     if (navigator.share) {
       try {
-        await navigator.share({ ...INVITE, url });
+        await navigator.share({ title: "promeNOODology", text: say("cut.inviteText"), url });
         return;
       } catch {
         // Dismissed, or refused. Either way, nothing to say about it.
         return;
       }
     }
-    window.location.href = `mailto:?subject=${encodeURIComponent(INVITE.title)}&body=${encodeURIComponent(`${INVITE.text}\n\n${url}`)}`;
-    setSaid("Opening an email — this browser has nothing to share with.");
+    window.location.href = `mailto:?subject=${encodeURIComponent("promeNOODology")}&body=${encodeURIComponent(`${say("cut.inviteText")}\n\n${url}`)}`;
+    setSaid(say("cut.openingEmail"));
   }
 
   return (
@@ -52,7 +51,7 @@ export default function Shortcuts() {
                 <path d="M8 3.5v3M16 3.5v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
             </span>
-            <span>what&rsquo;s on</span>
+            <span>{say("cut.whatsOn")}</span>
           </Link>
         </li>
 
@@ -64,7 +63,7 @@ export default function Shortcuts() {
                 <path d="M5 14v5.5h14V14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
             </span>
-            <span>tell somebody</span>
+            <span>{say("cut.tellSomebody")}</span>
           </button>
         </li>
 
@@ -76,7 +75,7 @@ export default function Shortcuts() {
                 <path d="M12 3.5v2.2M12 18.3v2.2M4.9 7.8l1.9 1.1M17.2 15.1l1.9 1.1M4.9 16.2l1.9-1.1M17.2 8.9l1.9-1.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
             </span>
-            <span>your details</span>
+            <span>{say("cut.yourDetails")}</span>
           </Link>
         </li>
 
@@ -89,7 +88,7 @@ export default function Shortcuts() {
                 <path d="M3.5 6h17v12h-17zM3.5 6l8.5 6.5L20.5 6" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
               </svg>
             </span>
-            <span>get in touch</span>
+            <span>{say("cut.getInTouch")}</span>
           </Link>
         </li>
       </ul>

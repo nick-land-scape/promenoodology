@@ -2,6 +2,9 @@ import Link from "next/link";
 import Photo from "../Photo";
 import { mediaUrl } from "@/lib/supabase/config";
 import type { Me } from "@/lib/app/me";
+import { readingIn } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 /**
  * What the club knows about you, beside the card.
@@ -15,16 +18,17 @@ import type { Me } from "@/lib/app/me";
  * Every line is optional, and a line with nothing in it does not appear. What is
  * left, when somebody has filled in nothing at all, is the invitation to.
  */
-export default function AboutYou({ me }: { me: Me }) {
+export default async function AboutYou({ me }: { me: Me }) {
+  const say = speaking(await readingIn(), await getFrench());
   const lines: { label: string; value: string }[] = [
-    { label: "where you are", value: [me.city, me.country].filter(Boolean).join(", ") },
-    { label: "what you do", value: me.does },
-    { label: "what you can bring", value: me.skills.join(", ") },
-    { label: "languages", value: me.languages.join(", ") },
+    { label: say("me.whereYouAre"), value: [me.city, me.country].filter(Boolean).join(", ") },
+    { label: say("me.whatYouDo"), value: me.does },
+    { label: say("me.whatYouBring"), value: me.skills.join(", ") },
+    { label: say("me.languages"), value: me.languages.join(", ") },
     // The year is never stored, so this is a day and a month, and only if they
     // said it could be seen.
-    { label: "birthday", value: me.birthdayShown ? me.birthday : "" },
-    { label: "instagram", value: me.instagram ? `@${me.instagram}` : "" },
+    { label: say("me.birthday"), value: me.birthdayShown ? me.birthday : "" },
+    { label: say("me.instagram"), value: me.instagram ? `@${me.instagram}` : "" },
   ].filter((line) => line.value);
 
   return (
@@ -39,15 +43,13 @@ export default function AboutYou({ me }: { me: Me }) {
              be is the clearest possible ask for one, and it keeps the row the
              same shape whether or not anybody has added theirs. */
           <Link className="account-you-photo account-you-photo-none" href="/app/account/details">
-            add a portrait
+            {say("you.addPortrait")}
           </Link>
         )}
         <div>
-          <h2 className="app-h2">{me.name || "no name yet"}</h2>
+          <h2 className="app-h2">{me.name || say("you.noNameYet")}</h2>
           <p className="app-note">
-            {me.listed
-              ? "On the community page, where anybody here can find you."
-              : "Not on the community page — only the people cooking see this."}
+            {say(me.listed ? "me.onCommunity" : "me.notOnCommunity")}
           </p>
         </div>
       </div>
@@ -63,9 +65,7 @@ export default function AboutYou({ me }: { me: Me }) {
         </dl>
       ) : (
         <p className="app-note">
-          Nothing filled in yet. The rest of it is how anybody here finds out who can
-          weld, who has a van and who speaks Romanian — which is most of how an
-          evening actually gets built.
+          {say("you.nothingFilledIn")}
         </p>
       )}
 

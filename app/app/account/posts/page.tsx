@@ -1,22 +1,30 @@
 import Link from "next/link";
 import AppHeader from "@/components/app/AppHeader";
 import Photo from "@/components/Photo";
-import { myPosts, requireMember } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
+import { myPosts, readingIn, requireMember } from "@/lib/app/me";
 
 export const metadata = { title: "What you have said" };
 export const dynamic = "force-dynamic";
 
 export default async function MyPostsPage() {
+  const say = speaking(await readingIn(), await getFrench());
   await requireMember("/app/account/posts");
   const posts = await myPosts();
 
   return (
     <>
-      <AppHeader eyebrow="what you have said" title="everything you wrote" back="/app/account" />
+      <AppHeader
+        eyebrow={say("mine.whatYouSaid")}
+        title={say("pg.everythingWrote")}
+        back="/app/account"
+      />
 
       {posts.length === 0 ? (
         <p className="app-note" style={{ padding: "18px var(--gutter)" }}>
-          Nothing yet. <Link href="/app/connect">Say something</Link>.
+          {say("mine.nothingYet")}{" "}
+          <Link href="/app/connect">{say("mine.saySomething")}</Link>.
         </p>
       ) : (
         <ul className="feed">
