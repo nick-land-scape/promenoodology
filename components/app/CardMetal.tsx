@@ -293,12 +293,20 @@ float grain(vec2 p) {
 vec3 room(vec3 r) {
   float up = r.y;
 
-  vec3 ceiling = mix(vec3(0.94, 0.93, 0.96), vec3(0.30, 0.31, 0.36), dark);
-  vec3 middle  = mix(vec3(0.72, 0.72, 0.78), vec3(0.11, 0.11, 0.14), dark);
-  vec3 floor_  = mix(vec3(0.50, 0.49, 0.54), vec3(0.03, 0.03, 0.04), dark);
+  /* Not a ramp from dark to light, which is what a gradient is and what this used
+     to be. A room has a horizon in it: the bright line where a wall meets a
+     ceiling, dimmer above it and dimmer again below. That band is what sweeps
+     across a metal surface when you tilt it, and its absence is why a stack of
+     gradients never looks like metal however many layers it has. */
+  vec3 above  = mix(vec3(0.66, 0.66, 0.71), vec3(0.20, 0.21, 0.25), dark);
+  vec3 band   = mix(vec3(0.97, 0.96, 0.99), vec3(0.34, 0.35, 0.41), dark);
+  vec3 middle = mix(vec3(0.70, 0.70, 0.76), vec3(0.11, 0.11, 0.14), dark);
+  vec3 floor_ = mix(vec3(0.44, 0.43, 0.48), vec3(0.03, 0.03, 0.04), dark);
 
-  vec3 out_ = mix(floor_, middle, smoothstep(-0.65, 0.05, up));
-  out_ = mix(out_, ceiling, smoothstep(0.05, 0.75, up));
+  vec3 out_ = mix(floor_, middle, smoothstep(-0.75, -0.10, up));
+  /* The horizon: narrow, and just above where the eye is. */
+  out_ = mix(out_, band, exp(-pow((up - 0.10) / 0.13, 2.0)));
+  out_ = mix(out_, above, smoothstep(0.30, 0.85, up));
 
   /* The window: a soft rectangle of much brighter light, up and to the left. This
      is the thing that travels across the face as the card turns, and it is the
@@ -343,7 +351,7 @@ void main() {
    * fortieth of the card rolls away from the face, which is what makes a metal
    * edge a metal edge rather than a drawn line.
    */
-  vec2 slope = -p / half_ * 0.06;
+  vec2 slope = -p / half_ * 0.16;
 
   float bezel = smoothstep(-BEZEL * 1.6, 0.0, edge + BEZEL * 0.8) * step(edge, 0.0);
   vec2 outward = normalize(p + vec2(1e-5));
@@ -381,7 +389,7 @@ void main() {
      cool; gunmetal is the same thing with most of the light taken out of it, which
      is what dark paper needs — a white slab in the middle of a dark screen is
      exactly where the eye goes and exactly where it should not be. */
-  vec3 body = mix(vec3(0.99, 0.985, 1.0), vec3(0.16, 0.155, 0.185), dark);
+  vec3 body = mix(vec3(0.90, 0.895, 0.915), vec3(0.16, 0.155, 0.185), dark);
   vec3 colour = body * mix(lit, lit * 0.55 + 0.06, dark);
 
   /* One tight highlight on top of the reflection, stretched along the brush, for
