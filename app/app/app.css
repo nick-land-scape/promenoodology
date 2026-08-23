@@ -492,6 +492,10 @@ body:has(.app-shell) {
 .row-when {
   position: relative;
   flex: none;
+  /* At the top of the row, not the middle of it. A row is three lines of words
+     next to a square, and a square floating halfway down beside them reads as
+     decoration rather than as the day the words are about. */
+  align-self: flex-start;
   width: 72px;
   aspect-ratio: 1;
   overflow: hidden;
@@ -2722,14 +2726,12 @@ body:has(.app-shell) {
   animation: app-arrive 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Except the pop-up, which is not part of the screen arriving and must not be
-   animated *into view* while it is shut. An animation's final frame beats an
+/* The pop-up used to need exempting here — an animation's final frame beats an
    ordinary declaration, so `opacity: 0` on a closed sheet lost to the `opacity: 1`
-   this ends on — and a sheet nobody had opened sat there in the middle of the
-   screen. Which is exactly what it did. */
-.app-column > .sheet {
-  animation: none;
-}
+   this ends on, and a sheet nobody had opened sat in the middle of the screen. It
+   is rendered into the body now, so it is not a child of a screen at all: this
+   animation cannot reach it, and neither can the transform it leaves behind, which
+   is what used to fix a sheet to a row instead of to the window. */
 
 @keyframes app-arrive {
   from {

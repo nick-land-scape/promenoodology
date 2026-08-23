@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSay } from "./Words";
 
 /**
@@ -45,6 +46,16 @@ export default function Sheet({
 }) {
   const say = useSay();
   const box = useRef<HTMLDivElement>(null);
+  /* Rendered into the body rather than where it is written.
+   *
+   * `position: fixed` is only fixed to the window while no ancestor has a
+   * transform — and every screen in this app arrives with one, because each child
+   * of the column is animated in. A sheet written inside a row therefore fixed
+   * itself to the row, which on the front screen meant a form appearing over the
+   * evening it belonged to instead of over the screen. A portal has no ancestors
+   * to inherit that from. */
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
 
   /* Escape closes it, and the page behind does not move while it is open. */
   useEffect(() => {
@@ -65,7 +76,9 @@ export default function Sheet({
     };
   }, [open, onClose]);
 
-  return (
+  if (!ready) return null;
+
+  return createPortal(
     <div
       className={open ? "sheet is-open" : "sheet"}
       /* Hidden from everything, not only from the eye, when it is shut — but
@@ -103,6 +116,7 @@ export default function Sheet({
 
         <div className="sheet-roll">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
