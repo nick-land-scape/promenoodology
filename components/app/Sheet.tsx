@@ -101,17 +101,18 @@ export default function Sheet({
    * measurement arrives, the sheet is exactly as tall as the room above the
    * keyboard; if it does not, the sheet is at the top of the screen and its own
    * scroller reaches the rest, which is the difference between cramped and gone. */
+  const [covered, setCovered] = useState(0);
   useEffect(() => {
     const seen = window.visualViewport;
-    if (!open || !seen) return;
+    if (!open || !seen) {
+      setCovered(0);
+      return;
+    }
 
-    const measure = () => {
-      const covered = Math.max(
-        0,
-        window.innerHeight - seen.height - seen.offsetTop,
+    const measure = () =>
+      setCovered(
+        Math.max(0, Math.round(window.innerHeight - seen.height - seen.offsetTop)),
       );
-      wall.current?.style.setProperty("--covered", `${Math.round(covered)}px`);
-    };
 
     measure();
     seen.addEventListener("resize", measure);
@@ -119,7 +120,6 @@ export default function Sheet({
     return () => {
       seen.removeEventListener("resize", measure);
       seen.removeEventListener("scroll", measure);
-      wall.current?.style.removeProperty("--covered");
     };
   }, [open]);
 
@@ -144,37 +144,25 @@ export default function Sheet({
    * app: a third of a second after the field takes focus, if nothing has moved,
    * the sheet goes to the top of the screen where nothing can be over it. */
   const [typing, setTyping] = useState(false);
+  const [focused, setFocused] = useState(false);
+
   useEffect(() => {
     if (!open) {
-      setTyping(false);
+      setFocused(false);
       return;
     }
 
     const box = wall.current;
-    let waiting = 0;
 
     const raisesAKeyboard = (what: Element | null) => {
-      if (!what) return false;
+      if (!what || !box?.contains(what)) return false;
       if (what.tagName === "TEXTAREA") return true;
       if (what.tagName !== "INPUT") return false;
       const kind = (what as HTMLInputElement).type;
       return !["checkbox", "radio", "range", "button", "submit", "file", "color"].includes(kind);
     };
 
-    const look = () => {
-      window.clearTimeout(waiting);
-      if (!raisesAKeyboard(document.activeElement)) {
-        setTyping(false);
-        return;
-      }
-      waiting = window.setTimeout(() => {
-        // Still typing, and still nothing reported: go up.
-        const covered = parseFloat(
-          box?.style.getPropertyValue("--covered") || "0",
-        );
-        setTyping(raisesAKeyboard(document.activeElement) && !(covered > 0));
-      }, 340);
-    };
+    const look = () => setFocused(raisesAKeyboard(document.activeElement));
 
     /* Asked as well as listened for. Whoever opens this focuses a field in the
        same breath as the press — that is the whole reason the sheet stays mounted
@@ -189,11 +177,33 @@ export default function Sheet({
     const off = () => window.setTimeout(look, 0);
     box?.addEventListener("focusout", off);
     return () => {
-      window.clearTimeout(waiting);
       box?.removeEventListener("focusin", look);
       box?.removeEventListener("focusout", off);
     };
   }, [open]);
+
+  /* And the leap, which is the last resort and knows it.
+   *
+   * If the web view says how tall the keyboard is, the sheet keeps that much clear
+   * at its foot and does not move — a native sheet riding up with the keyboard,
+   * and the only version of this with no jump in it. Inside an app it may say
+   * nothing at all: with `contentInset: never` the visual viewport does not shrink
+   * for a keyboard, and 120 points is the line between "told us something useful"
+   * and "told us about a toolbar, or nothing".
+   *
+   * Then, a third of a second in — long enough for the keyboard to have finished
+   * arriving and said its piece — the sheet goes to the top of the screen, where
+   * nothing can be over it. And it comes straight back down the moment a real
+   * measurement does arrive, which is why this watches `covered` rather than
+   * deciding once. */
+  useEffect(() => {
+    if (!focused || covered >= 120) {
+      setTyping(false);
+      return;
+    }
+    const waiting = window.setTimeout(() => setTyping(true), 340);
+    return () => window.clearTimeout(waiting);
+  }, [focused, covered]);
 
   /* Escape closes it, and the page behind does not move while it is open. */
   useEffect(() => {
@@ -238,6 +248,7 @@ export default function Sheet({
         open ? (typing ? "sheet is-open is-typing" : "sheet is-open") : "sheet"
       }
       ref={wall}
+      style={{ "--covered": `${covered}px` } as React.CSSProperties}
       /* Hidden from everything, not only from the eye, when it is shut — but
          still in the document, so what is inside it can take focus the instant it
          is opened. */

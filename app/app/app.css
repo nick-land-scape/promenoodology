@@ -4726,8 +4726,18 @@ body:has(.app-shell) {
   border-radius: 0 0 16px 16px;
   border-top: 0;
   border-bottom: 1px solid var(--hair);
-  max-height: calc(
-    100dvh - var(--covered, 0px) - env(safe-area-inset-top, 0px) - 16px
+  /* And short enough to stand above a keyboard nobody measured.
+   *
+   * `is-typing` only happens when the web view refused to say how tall the
+   * keyboard is — so there is no number to subtract, and a sheet given the whole
+   * window ran under it: the last day of a five-day programme was behind the top
+   * row of keys. 52 of a hundred is what is left of a phone above a keyboard and
+   * its toolbar, near enough on every size of phone, and the sheet's own scroller
+   * reaches whatever does not fit. Where a measurement *is* given the first term
+   * wins and this line does nothing. */
+  max-height: min(
+    calc(100dvh - var(--covered, 0px) - env(safe-area-inset-top, 0px) - 16px),
+    52dvh
   );
 }
 
