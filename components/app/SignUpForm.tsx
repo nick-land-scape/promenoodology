@@ -172,6 +172,7 @@ export default function SignUpForm({
             month: event.month,
             photo: event.photo,
             partners: event.partners,
+            lead: event.lead,
             note: event.note,
             needs: event.needs,
             bringing: event.bringing,

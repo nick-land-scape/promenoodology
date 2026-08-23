@@ -18,6 +18,12 @@ export type EveningRow = {
   month: string;
   photo: { src: string } | null;
   partners?: { name: string }[];
+  /* The paragraph the evening opens with — `lead` in the database, "the paragraph
+     it opens with" in the back of the house. The row used to show `note` here,
+     which is a different field with a different job: "anything else", the
+     practical sentence, bring a bowl. So a row introduced an evening with its
+     footnote. */
+  lead?: string;
   note?: string;
   /** What is still wanted, one thing per line. */
   needs?: string;
@@ -165,6 +171,10 @@ export default function EveningRow({
             {say("row.with")} {event.partners.map((one) => one.name).join(", ")}
           </span>
         ) : null}
+        {/* What it is, in the words written for it. Two lines here, the whole of
+            it on the evening's own screen: a row is a row. */}
+        {event.lead ? <span className="row-lead">{event.lead}</span> : null}
+
         {event.note ? <span className="row-meta">{event.note}</span> : null}
 
         {/* What is still wanted, and what is already coming. The two most useful

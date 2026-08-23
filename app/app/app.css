@@ -1336,12 +1336,38 @@ body:has(.app-shell) {
   position: absolute;
   inset: 0;
   display: block;
-  /* The side facing away is not drawn. Without this both are painted and the
-     back shows through the front as mirror writing. */
+  /* 8.5, not 9: the card's radius is 10 and its metal edge is 1.5 thick, so the
+     inside of that edge curves at 8.5. At 9 the face's own corner stood a half
+     point outside it, which is a square corner showing past a round one — small,
+     and the kind of small that reads as a mistake rather than as a detail. */
+  border-radius: 8.5px;
+  overflow: hidden;
+  /* Asked for, and not relied on. In this web view a face with `overflow: hidden`
+     inside a rotated plane is painted whether it faces you or not, so the back of
+     the card arrived with the front's name, number and mark printed through it
+     backwards — the mirror writing this line is supposed to prevent. */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  border-radius: 9px;
-  overflow: hidden;
+  /* So which side you can see is said outright instead, and said at the halfway
+     point of the turn: 0.31s is half of the plane's 0.62s, the moment both faces
+     are edge-on and there is nothing to see being swapped. */
+  transition: opacity 0s linear 0.31s;
+}
+
+.member-card-front {
+  opacity: 1;
+}
+
+.member-card-back {
+  opacity: 0;
+}
+
+.member-card-over .member-card-front {
+  opacity: 0;
+}
+
+.member-card-over .member-card-back {
+  opacity: 1;
 }
 
 /* Pre-turned, so that when the plane turns 180 this one arrives face-on. */
@@ -1370,9 +1396,13 @@ body:has(.app-shell) {
   color: var(--muted);
 }
 
+/* The sentence on the back, said quietly. It is the small print on a card — the
+   thing you read once and never again — so it is set as small print rather than at
+   the size of the name on the front. */
 .member-back-said {
   display: block;
   max-width: 34ch;
+  font-size: 0.8rem;
   font-style: italic;
   color: var(--muted);
   line-height: 1.35;
@@ -1394,10 +1424,29 @@ body:has(.app-shell) {
       rgba(0, 0, 0, 0.74) 70%,
       rgba(0, 0, 0, 0.9)
     );
+  /* A hairline of light along each edge, which is what says the stripe is laid on
+     the card rather than cut out of it. It matters most on dark paper: the card
+     there is gunmetal and the stripe is black, and black on charcoal is a stripe
+     nobody can see. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+}
+
+:root[data-theme="dark"] .member-back-stripe {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.3);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .member-card-plane {
+    transition: none;
+  }
+
+  /* And no delay on the swap: with nothing turning there is no halfway point to
+     hide it in, so the sides would change a third of a second after the press. */
+  .member-card-side {
     transition: none;
   }
 }
@@ -3555,6 +3604,21 @@ body:has(.app-shell) {
   line-height: 1.2;
 }
 
+/* What the evening is, in the words written for it. Two lines, because a row that
+   holds a whole paragraph is not a row any more — the rest is on its own screen,
+   one press away. Set in the reading colour rather than the quiet grey the meta
+   lines use: this is the sentence somebody decides on. */
+.row-lead {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 5px;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
 /* The link over the whole row.
  *
  * A card that only opens by its heading is a card most people conclude does not
@@ -3594,14 +3658,11 @@ body:has(.app-shell) {
   padding-top: 14px;
 }
 
-/* With room, they go back beside the words where they started. */
-@media (min-width: 430px) {
-  .row-does {
-    width: auto;
-    flex: none;
-    padding-top: 0;
-  }
-}
+/* This used to take the padding off again above 430 points, on the grounds that
+   with room the buttons go back beside the words. They do not: the words are a
+   column and the buttons are the last thing in it, at every width. So on the
+   widest phones — the ones with the most room for air — the button sat directly
+   against the last line of the paragraph above it. */
 
 /* A bookmark: no promise, no number, nothing sent to anybody. */
 .mark {
