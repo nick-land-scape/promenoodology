@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Tilt from "react-parallax-tilt";
+import CardMetal from "./CardMetal";
 import { buzz } from "@/lib/native";
 import { useSay } from "./Words";
 
@@ -46,6 +47,26 @@ export default function MemberCard({ name, number, since, country }: Props) {
      rather than a picture printed on it — has to be told separately. */
   const [lifted, setLifted] = useState(false);
   const [over, setOver] = useState(false);
+  /* Where the card is leaning, handed to the shader that draws its surface. The
+     library moves the card with a transform; the reflection on it has to know the
+     same numbers, or the light stays where it was put and the whole thing reads as
+     a picture of a card again. */
+  const [lean, setLean] = useState({ x: 0, y: 0 });
+  /* Which paper we are on. Read rather than guessed: the card carries its own
+     ground — it is milled metal, not a box with a background colour — so it cannot
+     take the page's dark tokens and has to be told. */
+  const [dark, setDark] = useState(false);
+  /* Whether the surface has actually been drawn. Until it has — and for good on
+     anything without WebGL — the card is the one the stylesheet describes. */
+  const [drawn, setDrawn] = useState(false);
+  useEffect(() => {
+    const root = document.documentElement;
+    const look = () => setDark(root.dataset.theme === "dark");
+    look();
+    const watching = new MutationObserver(look);
+    watching.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => watching.disconnect();
+  }, []);
 
   function turn() {
     void buzz("medium");
@@ -92,6 +113,12 @@ export default function MemberCard({ name, number, since, country }: Props) {
         glarePosition="all"
         glareBorderRadius="10px"
         gyroscope
+        /* The lean, on its way to the shader. The library reports it on every
+           pointer move; the shader coalesces them into one frame. */
+        onMove={({ tiltAngleX, tiltAngleY }) =>
+          setLean({ x: tiltAngleX, y: tiltAngleY })
+        }
+        onLeave={() => setLean({ x: 0, y: 0 })}
       >
         {/*
          * The card turns over, and both sides are here at once.
@@ -113,15 +140,30 @@ export default function MemberCard({ name, number, since, country }: Props) {
           aria-label={say("card.turnOver")}
           onClick={turn}
         >
-          <span className="member-card-plane">
-            <span className="member-card-side member-card-front">
-              {/* The sheen: a band of light lying across the card, which moves on
-                  its own every few seconds. It is the only thing on this screen
-                  that moves unasked, and it is here for a reason — pressing a card
-                  is not a thing anybody knows to try, and a card that catches the
-                  light by itself is one you are more likely to touch. */}
-              <span className="member-card-metal" aria-hidden="true" />
+          <span className={drawn ? "member-card-plane is-drawn" : "member-card-plane"}>
+            {/* The surface itself, drawn. One canvas for the whole card rather
+                than one per face: it is one card, and the two faces are printing
+                on it. Inside the plane, so it turns when the card turns. */}
+            <CardMetal
+              lean={lean}
+              dark={dark}
+              onDrawn={() => setDrawn(true)}
+            />
 
+            {/* The sheen: a band of light lying across the card, which moves on
+                its own every few seconds. It is the only thing on this screen that
+                moves unasked, and it is here for a reason — pressing a card is not
+                a thing anybody knows to try, and a card that catches the light by
+                itself is one you are more likely to touch.
+
+                In the plane rather than on a face, and there is one of it now
+                rather than one per side: it is light on the card, and the card is
+                one card. It also has to be beside the drawn surface rather than
+                above it in a layer of its own, or the blend has nothing to blend
+                with and the band comes out as a white stripe on nothing. */}
+            <span className="member-card-metal" aria-hidden="true" />
+
+            <span className="member-card-side member-card-front">
               <span className="member-card-face">
                 <span className="member-card-top">
                   {/* The mark itself, not a typographic stand-in for it. Top
@@ -159,7 +201,6 @@ export default function MemberCard({ name, number, since, country }: Props) {
             </span>
 
             <span className="member-card-side member-card-back">
-              <span className="member-card-metal" aria-hidden="true" />
               <span className="member-card-face">
                 <span className="member-card-top">
                   <span className="member-back-label">{say("card.theBack")}</span>
