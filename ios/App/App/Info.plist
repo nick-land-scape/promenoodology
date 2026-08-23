@@ -35,18 +35,28 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<!--
-	  An iPad is held whichever way up somebody is holding it, and the reviewer's
-	  was landscape — the app it rejected before this one was reviewed on an iPad
-	  Air. The screens are a centred column with a hard maximum width, so every
-	  orientation is the same app with more paper around it.
+	  Portrait on an iPad too.
+	
+	  It used to allow every orientation on the grounds that an iPad is held
+	  whichever way up somebody is holding it. What that actually gave was a
+	  thousand-point-wide window holding a five-hundred-point column of app with
+	  paper either side of it — the same app, further away. This is a phone app
+	  that runs on an iPad, and saying so is better than pretending otherwise.
+	
+	  Upside down is out with it: a card, a tab bar and a keyboard have a right way
+	  up, and nothing here is worth reading standing on its head.
 	-->
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!--
+	  And no multitasking, which is the other half of the same sentence: an app
+	  pinned to portrait in a Slide Over pane is an app in a shape it was never
+	  drawn for.
+	-->
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 
@@ -76,19 +86,6 @@
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
-	</array>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
