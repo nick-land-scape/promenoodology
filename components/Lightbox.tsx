@@ -27,17 +27,113 @@ export default function Lightbox({
   storyOf,
 }: Props) {
   const [saving, setSaving] = useState<"" | "working" | "failed">("");
+  /*
+   * Zoom.
+   *
+   * An archive of photographs somebody took in a car park at night is a set of
+   * pictures with things in the corners of them — a face, a sign, how the table
+   * was built — and until now the only way to see any of that was to save the file
+   * and open it somewhere else. So: pinch it, or tap it twice.
+   *
+   * Written by hand rather than left to the browser. A lightbox is a fixed layer
+   * over a page that is not scrolling, and the browser's own pinch zooms the whole
+   * screen — the caption, the arrows and the close button with it — which on a
+   * phone means zooming in and having no way back out. This zooms the photograph
+   * and nothing else.
+   */
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  /* Whether a finger is on it. The jump to 2.5 on a double tap should glide; the
+     picture under a moving hand should not, and a transition there is a photograph
+     trailing a fifth of a second behind the thumb. */
+  const [holding, setHolding] = useState(false);
+  const shot = useRef<HTMLDivElement>(null);
+
+  /** How far the picture may be pushed before its own edge comes inside the glass. */
+  function held(next: { x: number; y: number }, at: number) {
+    const box = shot.current?.getBoundingClientRect();
+    if (!box) return next;
+    /* The rectangle is the drawn one, so it already has the current zoom in it —
+       the room to move is what the picture would overhang at the *new* zoom. */
+    const wide = (box.width / zoom) * at;
+    const tall = (box.height / zoom) * at;
+    const acrossBy = Math.max(0, (wide - window.innerWidth) / 2);
+    const downBy = Math.max(0, (tall - window.innerHeight) / 2);
+    return {
+      x: Math.max(-acrossBy, Math.min(acrossBy, next.x)),
+      y: Math.max(-downBy, Math.min(downBy, next.y)),
+    };
+  }
+
+  /* Zoom about a point rather than about the middle: tapping twice on a face
+     should bring that face closer, not the centre of the picture. */
+  function zoomTo(at: number, about?: { x: number; y: number }) {
+    const next = Math.max(1, Math.min(4, at));
+    if (next === 1) {
+      setZoom(1);
+      setPan({ x: 0, y: 0 });
+      return;
+    }
+    const box = shot.current?.getBoundingClientRect();
+    if (!box || !about) {
+      setZoom(next);
+      setPan((now) => held(now, next));
+      return;
+    }
+    const middleX = box.left + box.width / 2;
+    const middleY = box.top + box.height / 2;
+    const by = next / zoom;
+    setZoom(next);
+    setPan((now) =>
+      held(
+        {
+          x: now.x - (about.x - middleX) * (by - 1),
+          y: now.y - (about.y - middleY) * (by - 1),
+        },
+        next,
+      ),
+    );
+  }
+
   const slide = slides[index];
   const many = slides.length > 1;
   const story = slide && storyOf ? storyOf(slide) : null;
   const step = (by: number) =>
     onIndex((index + by + slides.length) % slides.length);
 
+  /* A new photograph arrives at its own size. Carrying somebody's zoom from one
+     picture to the next lands them in the corner of something else. */
+  useEffect(() => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, [index]);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-      if (event.key === "ArrowRight") step(1);
-      if (event.key === "ArrowLeft") step(-1);
+      /* Escape comes out of the zoom before it comes out of the lightbox, which is
+         the order somebody presses it in. */
+      if (event.key === "Escape") {
+        if (zoom > 1) zoomTo(1);
+        else onClose();
+      }
+      /* And the arrows step through the set only at life size: zoomed in, they are
+         how you move around the picture. */
+      if (event.key === "ArrowRight") {
+        if (zoom > 1) setPan((now) => held({ ...now, x: now.x - 60 }, zoom));
+        else step(1);
+      }
+      if (event.key === "ArrowLeft") {
+        if (zoom > 1) setPan((now) => held({ ...now, x: now.x + 60 }, zoom));
+        else step(-1);
+      }
+      if (event.key === "ArrowUp" && zoom > 1) {
+        setPan((now) => held({ ...now, y: now.y + 60 }, zoom));
+      }
+      if (event.key === "ArrowDown" && zoom > 1) {
+        setPan((now) => held({ ...now, y: now.y - 60 }, zoom));
+      }
+      if (event.key === "+" || event.key === "=") zoomTo(zoom * 1.5);
+      if (event.key === "-") zoomTo(zoom / 1.5);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -111,28 +207,152 @@ export default function Lightbox({
    * a vertical swipe still belongs to the page underneath.
    */
   const from = useRef<{ x: number; y: number } | null>(null);
+  /* What the fingers were doing when they last moved: the gap between two of
+     them, where they were between them, and where the picture was pushed to. All
+     of it in a ref, because none of it should draw a frame by itself — only what
+     it works out should. */
+  const fingers = useRef<{
+    gap: number;
+    middle: { x: number; y: number };
+    zoom: number;
+    pan: { x: number; y: number };
+  } | null>(null);
+  const tapped = useRef(0);
+
+  const gapOf = (touches: React.TouchList) => {
+    const a = touches[0];
+    const b = touches[1];
+    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  };
+  const middleOf = (touches: React.TouchList) => ({
+    x: (touches[0].clientX + touches[1].clientX) / 2,
+    y: (touches[0].clientY + touches[1].clientY) / 2,
+  });
 
   return (
     <div
-      className="lightbox"
+      className={zoom > 1 ? "lightbox is-close" : "lightbox"}
       role="dialog"
       aria-modal="true"
       aria-label={slide.caption}
-      onClick={onClose}
+      /* Zoomed in, a press on the dark is a finger letting go of a drag rather
+         than somebody asking to close. */
+      onClick={() => {
+        if (zoom > 1) return;
+        onClose();
+      }}
       onTouchStart={(touch) => {
+        setHolding(true);
+        if (touch.touches.length === 2) {
+          fingers.current = {
+            gap: gapOf(touch.touches),
+            middle: middleOf(touch.touches),
+            zoom,
+            pan,
+          };
+          from.current = null;
+          return;
+        }
         const one = touch.touches[0];
+        from.current = { x: one.clientX, y: one.clientY };
+        fingers.current = null;
+      }}
+      onTouchMove={(touch) => {
+        /* Two fingers: the gap between them is the zoom, and where they are
+           between them is what stays under them. */
+        const held2 = fingers.current;
+        if (touch.touches.length === 2 && held2) {
+          touch.preventDefault();
+          const next = Math.max(1, Math.min(4, (held2.zoom * gapOf(touch.touches)) / held2.gap));
+          const now = middleOf(touch.touches);
+          const box = shot.current?.getBoundingClientRect();
+          if (!box) return;
+          const middleX = box.left + box.width / 2;
+          const middleY = box.top + box.height / 2;
+          const by = next / held2.zoom;
+          setZoom(next);
+          setPan(
+            held(
+              {
+                x:
+                  held2.pan.x -
+                  (held2.middle.x - middleX) * (by - 1) +
+                  (now.x - held2.middle.x),
+                y:
+                  held2.pan.y -
+                  (held2.middle.y - middleY) * (by - 1) +
+                  (now.y - held2.middle.y),
+              },
+              next,
+            ),
+          );
+          return;
+        }
+
+        // One finger, zoomed in: the picture follows it.
+        const start = from.current;
+        if (!start || zoom <= 1) return;
+        touch.preventDefault();
+        const one = touch.touches[0];
+        setPan((was) =>
+          held(
+            { x: was.x + (one.clientX - start.x), y: was.y + (one.clientY - start.y) },
+            zoom,
+          ),
+        );
         from.current = { x: one.clientX, y: one.clientY };
       }}
       onTouchEnd={(touch) => {
+        setHolding(false);
         const start = from.current;
         from.current = null;
-        if (!start || !many) return;
+        if (fingers.current) {
+          fingers.current = null;
+          /* Let go somewhere near life size and it settles back to it, the way a
+             photograph in any other app does. */
+          if (zoom < 1.15) zoomTo(1);
+          return;
+        }
+        if (!start) return;
+
         const one = touch.changedTouches[0];
         const across = one.clientX - start.x;
         const down = one.clientY - start.y;
+        const moved = Math.abs(across) > 10 || Math.abs(down) > 10;
+
+        /* Two taps in a row, in about the same place: closer, or back to life
+           size. Measured here rather than with a dblclick, which a phone does not
+           send. */
+        if (!moved) {
+          const now = Date.now();
+          if (now - tapped.current < 320) {
+            tapped.current = 0;
+            zoomTo(zoom > 1 ? 1 : 2.5, { x: one.clientX, y: one.clientY });
+            return;
+          }
+          tapped.current = now;
+          return;
+        }
+
+        // Zoomed in, a drag was a drag. The set is stepped through at life size.
+        if (zoom > 1 || !many) return;
         // A swipe, not a scroll and not a tap.
         if (Math.abs(across) < 45 || Math.abs(across) < Math.abs(down)) return;
         step(across < 0 ? 1 : -1);
+      }}
+      /* A trackpad pinch arrives as a wheel with ctrl held; a plain wheel over a
+         photograph on a laptop is somebody expecting it to get bigger. */
+      onWheel={(wheel) => {
+        if (!wheel.ctrlKey && !wheel.metaKey) return;
+        wheel.preventDefault();
+        zoomTo(zoom * (wheel.deltaY < 0 ? 1.12 : 0.89), {
+          x: wheel.clientX,
+          y: wheel.clientY,
+        });
+      }}
+      onDoubleClick={(press) => {
+        press.preventDefault();
+        zoomTo(zoom > 1 ? 1 : 2.5, { x: press.clientX, y: press.clientY });
       }}
     >
       {/* The frame is exactly the size of the photo, so the photo itself ends up
@@ -142,21 +362,32 @@ export default function Lightbox({
         className="lightbox-frame"
         onClick={(event) => event.stopPropagation()}
       >
-        <Photo
-          key={slide.photo.src}
-          src={slide.photo.src}
-          alt=""
-          width={slide.photo.width}
-          height={slide.photo.height}
-          sizes="90vw"
-          priority
-          style={
-            {
-              "--limit": `${Math.round(slide.photo.width * 2.4)}px`,
-              "--ar": slide.photo.width / slide.photo.height,
-            } as React.CSSProperties
-          }
-        />
+        {/* The zoom is on the picture and not on the frame, because the frame is
+            what the caption, the arrows and the close button hang off — and those
+            should stay where they are however close you get to the photograph. */}
+        <div
+          className={holding ? "lightbox-shot is-held" : "lightbox-shot"}
+          ref={shot}
+          style={{
+            transform: `translate3d(${Math.round(pan.x)}px, ${Math.round(pan.y)}px, 0) scale(${zoom})`,
+          }}
+        >
+          <Photo
+            key={slide.photo.src}
+            src={slide.photo.src}
+            alt=""
+            width={slide.photo.width}
+            height={slide.photo.height}
+            sizes="90vw"
+            priority
+            style={
+              {
+                "--limit": `${Math.round(slide.photo.width * 2.4)}px`,
+                "--ar": slide.photo.width / slide.photo.height,
+              } as React.CSSProperties
+            }
+          />
+        </div>
 
         {/* The two things you can do, together, above the top right corner: keep
             it, or close it. They were at opposite corners, which made the save

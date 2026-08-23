@@ -1783,6 +1783,47 @@ body:has(.hero) .contact {
   cursor: default;
 }
 
+/*
+ * What the zoom is applied to: the photograph, and not the frame around it.
+ *
+ * The frame is what the caption, the arrows and the two buttons hang off, and
+ * those stay where they are however close you get. The browser is told to keep
+ * its hands off the touches — a lightbox is a fixed layer over a page that is not
+ * scrolling, and the browser's own pinch would zoom the whole screen, the controls
+ * with it, leaving no way back out on a phone.
+ */
+.lightbox-shot {
+  touch-action: none;
+  transform-origin: center;
+  /* This is for the tap that jumps to 2.5 and the settle back to 1. Not while a
+     finger is on it — see below. */
+  transition: transform 0.22s ease-out;
+  will-change: transform;
+  cursor: zoom-in;
+}
+
+/* Under a moving hand, no transition: a photograph trailing a fifth of a second
+   behind the thumb is a photograph that feels broken. */
+.lightbox-shot.is-held {
+  transition: none;
+}
+
+/* Zoomed: the dark around it closes nothing, because a press out there is a hand
+   letting go of a drag. Say so with the cursor. */
+.lightbox.is-close {
+  cursor: default;
+}
+
+.lightbox.is-close .lightbox-shot {
+  cursor: grab;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-shot {
+    transition: none;
+  }
+}
+
 /* Keep it, or close it: one pair above the photograph's top right corner. They
    were at opposite corners, which read as a caption on the wrong side. */
 .lightbox-tools {
