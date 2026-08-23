@@ -117,7 +117,19 @@ export default function MemberCard({ name, number, since, country }: Props) {
         glareColor="#ffffff"
         glarePosition="all"
         glareBorderRadius="10px"
-        gyroscope
+        /* No gyroscope, and it is not a shrug.
+         *
+         * The library asks for it the moment the card is on the screen, and iOS
+         * only lets a page ask for the motion sensors from inside a gesture — so
+         * the request was refused every time, and the refusal came back as a
+         * rejected promise nobody was catching, which is what put "something in
+         * the app broke" across the bottom of the account screen.
+         *
+         * It could be asked for properly, from the press that turns the card over.
+         * It should not be: what it buys is a card that leans when you move the
+         * phone, and what it costs is the system asking a member for access to
+         * their motion sensors so that a picture of a card can lean. The card
+         * already answers the finger, which is the part anybody notices. */
         /* The lean, on its way to the shader. The library reports it on every
            pointer move; the shader coalesces them into one frame. */
         onMove={({ tiltAngleX, tiltAngleY }) =>
