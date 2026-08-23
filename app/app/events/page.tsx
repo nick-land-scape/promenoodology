@@ -1,6 +1,6 @@
 import AppHeader from "@/components/app/AppHeader";
 import SignUpForm, { type Joinable } from "@/components/app/SignUpForm";
-import { whenItIs } from "@/lib/app-data";
+import { dateParts, whenItIs } from "@/lib/app-data";
 import { myBookings, readingIn, requireMember, whoIsBringingWhat } from "@/lib/app/me";
 import { sharedEvents } from "@/lib/shared";
 
@@ -32,6 +32,11 @@ export default async function EventsPage() {
     const booking = asked.get(event.id);
     return {
       ...event,
+      /* The day and the month, worked out here rather than in the row.
+         The row is a client component, and the helper that splits a date lives in
+         a module that reads files — so importing it there pulled node:fs into the
+         browser bundle and the build stopped, correctly. */
+      ...dateParts(event.date),
       label: whenItIs(event),
       needs: event.needs,
       bringing: bringing.get(event.id) ?? [],

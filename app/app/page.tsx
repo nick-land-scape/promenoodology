@@ -26,16 +26,14 @@ export default async function AppHome() {
   // Their own language: their account first, then whatever the browser was told
   // to remember by the website's switcher. See lib/app/me.
   const lang = await readingIn();
-  const [all, mine, news, stories, handbook, count] = await Promise.all(
-    [
-      sharedEvents(lang),
-      myBookings(),
-      sharedNews(lang),
-      sharedStories(lang),
-      sharedPage("handbook", lang),
-      sharedCount(),
-    ],
-  );
+  const [all, mine, news, stories, handbook, count] = await Promise.all([
+    sharedEvents(lang),
+    myBookings(),
+    sharedNews(lang),
+    sharedStories(lang),
+    sharedPage("handbook", lang),
+    sharedCount(),
+  ]);
   /* Coming, not merely marked: the front screen says "you are coming" and that
      should be a promise rather than a bookmark. */
   const asked = new Set(
@@ -104,7 +102,9 @@ export default async function AppHome() {
                         <em className="row-pinned">kept at the top</em>
                       ) : null}
                     </span>
-                    <span className="row-when-said">{shortDate(item.date)}</span>
+                    <span className="row-when-said">
+                      {shortDate(item.date)}
+                    </span>
                   </span>
                   {item.by.length > 0 ? (
                     <span className="row-meta">{said(item.by)}</span>
@@ -150,6 +150,25 @@ export default async function AppHome() {
         </section>
       ) : null}
 
+      {peek ? (
+        <section className="app-section">
+          <div className="app-section-head">
+            <h2 className="app-h2">the handbook</h2>
+            <Link className="app-more" href="/app/read?of=handbook">
+              read it ›
+            </Link>
+          </div>
+          <Link className="peek-book" href="/app/read?of=handbook">
+            <span className="peek-book-no" aria-hidden="true">
+              01
+            </span>
+            <span>
+              <strong>{peek.heading}</strong>
+              <span className="peek-book-text">{peek.text}</span>
+            </span>
+          </Link>
+        </section>
+      ) : null}
       {/*
        * The figures this collective is actually testing.
        *
@@ -198,26 +217,6 @@ export default async function AppHome() {
             Public space in Europe is turning generic. This is what a bit of
             nerve and a borrowed kitchen has done about it so far.
           </p>
-        </section>
-      ) : null}
-
-      {peek ? (
-        <section className="app-section">
-          <div className="app-section-head">
-            <h2 className="app-h2">the handbook</h2>
-            <Link className="app-more" href="/app/read?of=handbook">
-              read it ›
-            </Link>
-          </div>
-          <Link className="peek-book" href="/app/read?of=handbook">
-            <span className="peek-book-no" aria-hidden="true">
-              01
-            </span>
-            <span>
-              <strong>{peek.heading}</strong>
-              <span className="peek-book-text">{peek.text}</span>
-            </span>
-          </Link>
         </section>
       ) : null}
     </>

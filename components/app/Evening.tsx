@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { cancelMyPlace, markInterested, signUpForEvent } from "@/app/app/actions";
+import JoinSheet from "./JoinSheet";
+import { cancelMyPlace, markInterested } from "@/app/app/actions";
 
 /**
  * Asking to come, on the evening's own screen.
@@ -25,27 +26,13 @@ export default function Evening({
   interested: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [people, setPeople] = useState(String(mine?.people ?? 1));
-  const [bringing, setBringing] = useState(mine?.bringing ?? "");
   const [said, setSaid] = useState<string | null>(null);
   const [problem, setProblem] = useState("");
-  const [coming, setComing] = useState(Boolean(mine) && mine?.state !== "interested");
+  const [coming, setComing] = useState(
+    Boolean(mine) && mine?.state !== "interested",
+  );
   const [marked, setMarked] = useState(interested);
   const [pending, start] = useTransition();
-
-  function join() {
-    setProblem("");
-    start(async () => {
-      const answer = await signUpForEvent(eventId, Number(people), bringing);
-      if (!answer.ok) {
-        setProblem(answer.error ?? "That did not go through.");
-        return;
-      }
-      setComing(true);
-      setOpen(false);
-      setSaid("You are down for it. Somebody will be in touch if anything changes.");
-    });
-  }
 
   function cancel() {
     setProblem("");
@@ -98,7 +85,12 @@ export default function Evening({
         </button>
 
         {coming ? (
-          <button type="button" className="pill" onClick={cancel} disabled={pending}>
+          <button
+            type="button"
+            className="pill"
+            onClick={cancel}
+            disabled={pending}
+          >
             not coming
           </button>
         ) : (
@@ -111,7 +103,7 @@ export default function Evening({
             }}
             disabled={pending}
           >
-            {open ? "close" : "count me in"}
+            count me in
           </button>
         )}
 
@@ -122,51 +114,27 @@ export default function Evening({
 
       {coming ? (
         <p className="row-yes">
-          you are coming{mine?.people ? `, ${mine.people} ${mine.people === 1 ? "place" : "places"}` : ""}
+          you are coming
+          {mine?.people
+            ? `, ${mine.people} ${mine.people === 1 ? "place" : "places"}`
+            : ""}
         </p>
       ) : null}
 
-      {open && !coming ? (
-        <form
-          className="field-block"
-          onSubmit={(submit) => {
-            submit.preventDefault();
-            join();
-          }}
-        >
-          <div className="field-pair">
-            <div className="field">
-              <label htmlFor="evening-people">how many of you</label>
-              <select
-                id="evening-people"
-                value={people}
-                onChange={(change) => setPeople(change.target.value)}
-              >
-                {["1", "2", "3", "4", "5", "6"].map((count) => (
-                  <option key={count} value={count}>
-                    {count}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="evening-bringing">bringing</label>
-              <input
-                id="evening-bringing"
-                value={bringing}
-                onChange={(change) => setBringing(change.target.value)}
-                placeholder="a pot, a friend…"
-              />
-            </div>
-          </div>
-          <div className="form-actions">
-            <button type="submit" className="pill pill-solid pill-wide" disabled={pending}>
-              {pending ? "signing you up…" : "yes, I am coming"}
-            </button>
-          </div>
-          {spots > 0 ? <p className="app-note">{spots} places altogether.</p> : null}
-        </form>
-      ) : null}
+      {/* The same pop-up the list uses, so "count me in" asks the same questions
+          wherever it is pressed — including the names of whoever is coming. */}
+      <JoinSheet
+        open={open && !coming}
+        eventId={eventId}
+        title="count me in"
+        spots={spots}
+        mine={mine}
+        onClose={() => setOpen(false)}
+        onDone={(words) => {
+          setComing(true);
+          setSaid(words);
+        }}
+      />
 
       {said ? <p className="app-note">{said}</p> : null}
     </section>

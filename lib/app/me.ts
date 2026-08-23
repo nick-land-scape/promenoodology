@@ -55,6 +55,8 @@ export type Me = {
 };
 
 export type MyBooking = {
+  /** First names of whoever is coming with them. */
+  guests?: string[];
   id: string;
   eventId: string;
   people: number;
@@ -180,18 +182,39 @@ export async function requireMember(where: string): Promise<Me> {
 /** What you have asked to come to. Only ever your own — the policy sees to that. */
 export async function myBookings(): Promise<MyBooking[]> {
   const supabase = await supabaseServer();
-  const { data } = await supabase
+
+  type Row = {
+    id: string;
+    event_id: string;
+    people: number;
+    bringing: string;
+    state: string;
+    guests?: string[] | null;
+  };
+
+  /* Asked for with the names, and again without them if the column is not there.
+   *
+   * `guests` arrives with migration 0028. PostgREST refuses the whole select for
+   * one unknown column, which would empty this list — and an empty list here
+   * means the app forgets every place every member has taken. Worth one retry. */
+  let { data } = await supabase
     .from("bookings")
-    .select("id, event_id, people, bringing, state")
-    .returns<
-      { id: string; event_id: string; people: number; bringing: string; state: string }[]
-    >();
+    .select("id, event_id, people, bringing, state, guests")
+    .returns<Row[]>();
+
+  if (!data) {
+    ({ data } = await supabase
+      .from("bookings")
+      .select("id, event_id, people, bringing, state")
+      .returns<Row[]>());
+  }
 
   return (data ?? []).map((row) => ({
     id: row.id,
     eventId: row.event_id,
     people: row.people ?? 1,
     bringing: row.bringing ?? "",
+    guests: row.guests ?? [],
     state: (row.state as MyBooking["state"]) ?? "asked",
   }));
 }

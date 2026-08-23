@@ -29,6 +29,12 @@ export async function signUpForEvent(
   eventId: string,
   people: number,
   bringing: string,
+  /* Who is coming with you, by first name.
+   *
+   * "Three places" is a number for a cook and nothing for anybody else: whoever
+   * is on the door and whoever is laying the table both want names. Optional, and
+   * never longer than the places asked for less yourself. */
+  guests: string[] = [],
 ): Promise<Asked> {
   const me = await whoIsThis();
   if (!me) return { ok: false, error: "You are not signed in any more." };
@@ -56,19 +62,39 @@ export async function signUpForEvent(
     .maybeSingle<{ id: string; title: string; spots: number }>();
   if (!event) return { ok: false, error: "That evening is not on any more." };
 
+  const named = guests
+    .map((one) => one.trim().slice(0, 60))
+    .filter(Boolean)
+    .slice(0, Math.max(0, many - 1));
+
+  const booking = {
+    event_id: eventId,
+    profile_id: me.id,
+    people: many,
+    bringing: bringing.trim().slice(0, 280),
+    state: "asked",
+  };
+
   const { error } = await supabase
     .from("bookings")
-    .upsert(
-      {
-        event_id: eventId,
-        profile_id: me.id,
-        people: many,
-        bringing: bringing.trim().slice(0, 280),
-        state: "asked",
-      },
-      { onConflict: "event_id,profile_id" },
-    );
-  if (error) return { ok: false, error: error.message };
+    .upsert({ ...booking, guests: named }, { onConflict: "event_id,profile_id" });
+
+  if (error) {
+    /* The column may not be there yet.
+     *
+     * `guests` arrives with migration 0028, and a database that has not had it
+     * answers 42703 — undefined column. Signing up is the one thing on this
+     * screen that must not stop working while a migration is in the post, so the
+     * names are dropped and the place is kept. Nothing is silently lost that
+     * anybody can see: the names are shown back from the row, so an empty list
+     * says plainly that they did not stick. */
+    if (error.code !== "42703") return { ok: false, error: error.message };
+
+    const { error: again } = await supabase
+      .from("bookings")
+      .upsert(booking, { onConflict: "event_id,profile_id" });
+    if (again) return { ok: false, error: again.message };
+  }
 
   revalidatePath("/app");
   revalidatePath("/app/events");

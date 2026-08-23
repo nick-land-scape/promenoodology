@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Photo from "../Photo";
+import Sheet from "./Sheet";
 import type { Member, Post } from "@/lib/content";
 import {
   replyTo,
@@ -183,6 +184,8 @@ function Composer({ meName }: { meName: string }) {
    * that says what it is for. It opens on the first touch and stays open while
    * there is anything in it, so nothing anybody has typed can be folded away. */
   const [open, setOpen] = useState(false);
+  /** The real field, inside the sheet: the one that gets the keyboard. */
+  const inside = useRef<HTMLTextAreaElement>(null);
   const [words, setWords] = useState("");
   const [place, setPlace] = useState("");
   const [paths, setPaths] = useState<string[]>([]);
@@ -201,8 +204,9 @@ function Composer({ meName }: { meName: string }) {
    * same post button. Nothing is sent anywhere until somebody presses it. */
   useEffect(() => {
     const collect = () => {
-      const box = (window as { __promeShared?: { words?: string; pictures?: string[] } })
-        .__promeShared;
+      const box = (
+        window as { __promeShared?: { words?: string; pictures?: string[] } }
+      ).__promeShared;
       if (!box?.pictures?.length) return;
       delete (window as { __promeShared?: unknown }).__promeShared;
 
@@ -211,7 +215,9 @@ function Composer({ meName }: { meName: string }) {
 
       const files = box.pictures.map((one, index) => {
         const [head, body] = one.split(",");
-        const bytes = Uint8Array.from(atob(body), (letter) => letter.charCodeAt(0));
+        const bytes = Uint8Array.from(atob(body), (letter) =>
+          letter.charCodeAt(0),
+        );
         const type = /:(.*?);/.exec(head)?.[1] ?? "image/jpeg";
         return new File([bytes], `shared-${index + 1}.jpg`, { type });
       });
@@ -277,163 +283,179 @@ function Composer({ meName }: { meName: string }) {
   const working = busy > 0;
   /* Anything typed, chosen or named. While there is, the thing stays open: no
      amount of tidying is worth folding away something somebody has written. */
-  const started = Boolean(words.trim() || place.trim() || paths.length > 0);
-  const shut = !open && !started;
 
-  /* Three shapes, so nothing is mistaken for anything else: a round button with
-     a camera in it adds pictures, a line with a pin on it is where you were, and
-     the one filled pill posts. It was two identical grey pills side by side
-     labelled PICTURES and POST. */
-  /*
-   * The field is always here, and that is the fix rather than the tidiness.
-   *
-   * Shut, this used to be a button that opened the real composer and then focused
-   * it — and on iOS a field focused by code rather than by a finger gets the caret
-   * and no keyboard. The keyboard only comes up for a touch that lands on a field
-   * that already exists. So the field exists, shut is one line of it, and tapping
-   * it is a touch on a real field: the keyboard comes up because iOS was asked by
-   * a finger.
-   */
+  /* Three shapes in the sheet, so nothing is mistaken for anything else: a round
+     button with a camera in it adds pictures, a line with a pin on it is where you
+     were, and the one filled pill posts.
+
+     The line on the screen behind is read-only on purpose. It is a door, not a
+     field: typing into it would put words somewhere the pictures and the place
+     cannot follow, and the real field is one press away with the keyboard already
+     coming up. */
+
   return (
-    <div className={shut ? "compose compose-shut" : "compose"}>
-      <div className="compose-top">
-        <span className="avatar" aria-hidden="true">
-          {initials(meName) || "you"}
-        </span>
-        <textarea
-          ref={words_}
-          rows={shut ? 1 : 3}
-          value={words}
-          onChange={(change) => setWords(change.target.value)}
-          onFocus={() => setOpen(true)}
-          placeholder="say something to everyone…"
-          aria-label="Write a post"
-        />
-        {shut ? (
+    <>
+      {/* The line you press, and nothing else on the screen.
+          The whole composer used to unfold here — three controls, a row of
+          thumbnails and a way out — pushing the feed down the screen before a word
+          had been typed. */}
+      <div className="compose compose-shut">
+        <div className="compose-top">
+          <span className="avatar" aria-hidden="true">
+            {initials(meName) || "you"}
+          </span>
+          <textarea
+            ref={words_}
+            rows={1}
+            value={words}
+            readOnly
+            onFocus={() => {
+              setOpen(true);
+              /* Straight into the real field inside the sheet, in the same breath
+                 as the press. The sheet is always mounted for exactly this reason:
+                 on iOS a field focused any later than the tap that asked for it
+                 gets a caret and no keyboard. */
+              inside.current?.focus();
+            }}
+            onClick={() => {
+              setOpen(true);
+              inside.current?.focus();
+            }}
+            placeholder="say something to everyone…"
+            aria-label="Write a post"
+          />
           <span className="compose-shut-mark" aria-hidden="true">
             +
           </span>
-        ) : null}
+        </div>
       </div>
 
-      {!shut && paths.length > 0 ? (
-        <ul className="compose-pics">
-          {paths.map((path) => (
-            <li key={path}>
-              <Photo
-                src={mediaUrl(path)}
-                alt=""
-                width={300}
-                height={300}
-                sizes="88px"
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  setPaths((current) => current.filter((one) => one !== path))
-                }
-                aria-label="Take this picture off"
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      <div className="compose-foot" hidden={shut}>
-        <input
-          ref={file}
-          type="file"
-          accept={ACCEPTS}
-          multiple
-          hidden
-          onChange={(change) => void take(change.target.files)}
-        />
-
-        {/* A camera in a circle. An icon, because "PICTURES" in a pill was the
-            same object as "POST" in a pill and the eye could not tell them
-            apart. */}
-        <button
-          type="button"
-          className="compose-add"
-          onClick={() => file.current?.click()}
-          disabled={working || paths.length >= MOST}
-          aria-label={
-            paths.length > 0
-              ? `Add more pictures (${paths.length} so far)`
-              : "Add pictures"
-          }
-          title="Add pictures"
-        >
-          {working ? (
-            <span className="compose-count">{busy}</span>
-          ) : (
-            <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
-              <path
-                d="M4 8.5h3l1.4-2h7.2l1.4 2h3V19H4zM12 16.6a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-          {paths.length > 0 ? <em>{paths.length}</em> : null}
-        </button>
-
-        {/* Where you were: a line with a pin on it, so it reads as something to
-            fill in rather than something to press. */}
-        <label className="compose-where">
-          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
-            <path
-              d="M12 21s6.5-6.1 6.5-10.3A6.5 6.5 0 0 0 5.5 10.7C5.5 14.9 12 21 12 21z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
+      <Sheet
+        open={open}
+        title="say something"
+        said="Everybody in the club sees this. No likes, only replies."
+        onClose={() => setOpen(false)}
+      >
+        <div className="compose compose-in-sheet">
+          <div className="compose-top">
+            <span className="avatar" aria-hidden="true">
+              {initials(meName) || "you"}
+            </span>
+            <textarea
+              ref={inside}
+              rows={4}
+              value={words}
+              onChange={(change) => setWords(change.target.value)}
+              placeholder="say something to everyone…"
+              aria-label="Write a post"
             />
-            <circle
-              cx="12"
-              cy="10.4"
-              r="2.2"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
+          </div>
+
+          {paths.length > 0 ? (
+            <ul className="compose-pics">
+              {paths.map((path) => (
+                <li key={path}>
+                  <Photo
+                    src={mediaUrl(path)}
+                    alt=""
+                    width={300}
+                    height={300}
+                    sizes="88px"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPaths((current) =>
+                        current.filter((one) => one !== path),
+                      )
+                    }
+                    aria-label="Take this picture off"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          <div className="compose-foot">
+            <input
+              ref={file}
+              type="file"
+              accept={ACCEPTS}
+              multiple
+              hidden
+              onChange={(change) => void take(change.target.files)}
             />
-          </svg>
-          <input
-            value={place}
-            onChange={(change) => setPlace(change.target.value)}
-            placeholder="where?"
-            aria-label="Where this was"
-          />
-        </label>
+            <button
+              type="button"
+              className="compose-add"
+              onClick={() => file.current?.click()}
+              disabled={working}
+              aria-label="Add pictures"
+              title="Add pictures"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M3.5 7.5h3l1.5-2h8l1.5 2h3v11h-17z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <circle
+                  cx="12"
+                  cy="13"
+                  r="3.2"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+              </svg>
+              {working ? <span className="compose-count">{busy}</span> : null}
+            </button>
 
-        <button
-          type="button"
-          className="compose-post"
-          onClick={send}
-          disabled={pending || working || (!words.trim() && paths.length === 0)}
-        >
-          {pending ? "posting…" : "post"}
-        </button>
-      </div>
+            <label className="compose-where">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 21s6-5.7 6-10a6 6 0 1 0-12 0c0 4.3 6 10 6 10z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <circle
+                  cx="12"
+                  cy="11"
+                  r="2.2"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+              </svg>
+              <input
+                value={place}
+                onChange={(change) => setPlace(change.target.value)}
+                placeholder="where?"
+                aria-label="Where"
+              />
+            </label>
 
-      {/* A way out that is not posting. Only while the thing is open, and only
-          while there is nothing to lose by taking it — shut, it was an offer to
-          close something that was already closed. */}
-      {!shut && !started ? (
-        <button
-          type="button"
-          className="compose-shut-again"
-          onClick={() => setOpen(false)}
-        >
-          never mind
-        </button>
-      ) : null}
+            <button
+              type="button"
+              className="compose-post"
+              onClick={send}
+              disabled={
+                pending || working || (!words.trim() && paths.length === 0)
+              }
+            >
+              {pending ? "posting…" : "post"}
+            </button>
+          </div>
 
-      {trouble ? <p className="app-error">{trouble}</p> : null}
-    </div>
+          {trouble ? <p className="app-error">{trouble}</p> : null}
+        </div>
+      </Sheet>
+    </>
   );
 }
 

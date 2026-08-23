@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import Photo from "../Photo";
+import EveningRow from "./EveningRow";
+import JoinSheet from "./JoinSheet";
 import type { ClubEvent } from "@/lib/content";
 import {
   cancelMyPlace,
@@ -10,10 +11,15 @@ import {
   signUpForEvent,
 } from "@/app/app/actions";
 import { buzz } from "@/lib/native";
+import Photo from "../Photo";
 
 export type Joinable = ClubEvent & {
   /** When it is, said the way the row says it. */
   label: string;
+  /** The day and the month, split on the server: the helper that does it reads
+      files, so a client component cannot ask for it. */
+  day: string;
+  month: string;
   /** What is still wanted, one per line, as written in the back of the house. */
   needs: string;
   /** What people are already bringing. */
@@ -140,171 +146,37 @@ export default function SignUpForm({
   const coming = (event: Joinable) =>
     Boolean(event.mine && event.mine.state !== "interested");
 
+  /* One row per evening, and the same row the front screen draws — one component
+     with the buttons switched on. The pop-up that asks the questions is one
+     component too, shared with the evening's own screen, so "count me in" means
+     the same three questions wherever it is pressed. */
   function Evening({ event }: { event: Joinable }) {
     return (
       <li>
-        <div className="row">
-          {event.photo ? (
-            <span className="row-thumb">
-              <Photo src={event.photo.src} alt="" fill sizes="58px" />
-            </span>
-          ) : null}
-
-          {/* The bookmark, top right of the row.
-              It is the smallest decision on the screen — no promise, no number,
-              nobody told — so it belongs in a corner rather than in a line of
-              buttons under the evening, where it took a third of the width and
-              read as the equal of saying you are coming. */}
-          <button
-            type="button"
-            className={marked(event) ? "mark mark-on" : "mark"}
-            onClick={() => mark(event, !marked(event))}
-            disabled={pending}
-            aria-pressed={marked(event)}
-            aria-label={
-              marked(event) ? "Take it off your list" : "Keep it on your list"
-            }
-            title={marked(event) ? "On your list" : "Keep it on your list"}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M6.5 3.5h11v17l-5.5-4-5.5 4z"
-                fill={marked(event) ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-
-          <span className="row-body">
-            {/* The name opens the evening itself — the programme, what was
-                written about it, who is bringing what. The row keeps the one
-                thing you came to the list for, which is saying you are coming. */}
-            <Link href={`/app/events/${event.id}`} className="row-title">
-              {event.title}
-            </Link>
-            <span className="row-meta">{event.label}</span>
-            {event.partners.length > 0 ? (
-              <span className="row-meta">
-                with {event.partners.map((one) => one.name).join(", ")}
-              </span>
-            ) : null}
-            {event.note ? <span className="row-meta">{event.note}</span> : null}
-
-            {/* What is still wanted, and what is already coming. The two most
-                useful sentences about an improvised kitchen, and until now
-                neither was ever shown: "bringing" was typed into a form and
-                never read back, so four people brought salad. */}
-            {event.needs.trim() ? (
-              <span className="row-wanted">
-                <em>still wanted</em>
-                {event.needs
-                  .split("\n")
-                  .map((line) => line.trim())
-                  .filter(Boolean)
-                  .map((line) => (
-                    <span key={line}>{line}</span>
-                  ))}
-              </span>
-            ) : null}
-
-            {event.bringing.length > 0 ? (
-              <span className="row-coming">
-                <em>coming with</em>
-                {event.bringing.map((one) => (
-                  <span key={`${one.who}-${one.what}`}>
-                    {one.what} <i>{one.who.split(" ")[0]}</i>
-                  </span>
-                ))}
-              </span>
-            ) : null}
-
-            {coming(event) ? (
-              <span className="row-yes">
-                you are coming, {event.mine?.people}{" "}
-                {event.mine?.people === 1 ? "place" : "places"}
-                {event.mine?.state === "kept" ? " · kept for you" : null}
-                {event.mine?.state === "declined" ? " · not this time" : null}
-              </span>
-            ) : marked(event) ? (
-              <span className="row-maybe">on your list</span>
-            ) : null}
-
-            {/* One button, under the evening it is about. */}
-            <span className="row-does">
-              {coming(event) ? (
-                <button
-                  type="button"
-                  className="pill pill-small"
-                  onClick={() => cancel(event)}
-                  disabled={pending}
-                >
-                  not coming
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="pill pill-small pill-solid"
-                  onClick={() => {
-                    setOpen(open === event.id ? null : event.id);
-                    setSaid(null);
-                  }}
-                  disabled={pending}
-                >
-                  {open === event.id ? "close" : "count me in"}
-                </button>
-              )}
-            </span>
-          </span>
-        </div>
-
-        {/* The form opens under the evening it is about, so there is never a
-            question of which one you are signing up for. */}
-        {open === event.id ? (
-          <form
-            className="field-block"
-            onSubmit={(submit) => {
-              submit.preventDefault();
-              join(event);
-            }}
-          >
-            <div className="field-pair">
-              <div className="field">
-                <label htmlFor={`people-${event.id}`}>how many of you</label>
-                <select
-                  id={`people-${event.id}`}
-                  value={people}
-                  onChange={(change) => setPeople(change.target.value)}
-                >
-                  {["1", "2", "3", "4", "5", "6"].map((count) => (
-                    <option key={count} value={count}>
-                      {count}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label htmlFor={`bringing-${event.id}`}>bringing</label>
-                <input
-                  id={`bringing-${event.id}`}
-                  value={bringing}
-                  onChange={(change) => setBringing(change.target.value)}
-                  placeholder="a pot, a friend…"
-                />
-              </div>
-            </div>
-            <div className="form-actions">
-              <button
-                type="submit"
-                className="pill pill-solid pill-wide"
-                disabled={pending}
-              >
-                {pending ? "signing you up…" : "yes, I am coming"}
-              </button>
-            </div>
-          </form>
-        ) : null}
+        <EveningRow
+          does
+          event={{
+            id: event.id,
+            title: event.title,
+            label: event.label,
+            day: event.day,
+            month: event.month,
+            photo: event.photo,
+            partners: event.partners,
+            note: event.note,
+            needs: event.needs,
+            bringing: event.bringing,
+            mine: event.mine,
+          }}
+          marked={marked(event)}
+          pending={pending}
+          onMark={(on) => mark(event, on)}
+          onJoin={() => {
+            setOpen(event.id);
+            setSaid(null);
+          }}
+          onCancel={() => cancel(event)}
+        />
 
         {said?.id === event.id ? (
           <p
@@ -318,8 +190,25 @@ export default function SignUpForm({
     );
   }
 
+  const asking =
+    [...events, ...past].find((event) => event.id === open) ?? null;
+
   return (
     <>
+      {/* One pop-up for the whole list: it says which evening it is about, so
+          there is never a question of which one you are signing up for — which is
+          what the form folding out underneath used to answer. */}
+      <JoinSheet
+        open={Boolean(asking)}
+        eventId={asking?.id ?? ""}
+        title={asking?.title ?? ""}
+        when={asking?.label}
+        spots={asking?.spots}
+        mine={asking?.mine ?? null}
+        onClose={() => setOpen(null)}
+        onDone={(words) => setSaid({ id: asking?.id ?? "", words })}
+      />
+
       <div className="segmented" role="tablist" aria-label="How to look at it">
         {(["list", "month"] as const).map((option) => (
           <button
@@ -462,15 +351,33 @@ function Month({
 
   const onDays = useMemo(() => {
     const map = new Map<string, Joinable[]>();
+    const put = (at: string, event: Joinable) =>
+      map.set(at, [...(map.get(at) ?? []), event]);
+
     for (const event of events) {
-      /* Something that runs over days belongs on each of them, which is the whole
-         point of a calendar: an evening you could still join on the third is not
-         only on the first. */
+      /*
+       * A calendar marks the days something is happening, not the days a season
+       * covers.
+       *
+       * Every day between the first and the last used to be marked, which for a
+       * programme running from the 22nd of August to the 20th of September put an
+       * evening on thirty days — twenty-six of which had nothing on them at all.
+       * A month view that says yes to every day answers nobody's question, which
+       * is "am I free when something is on".
+       *
+       * So: where an evening has its own days written down — four Saturdays and a
+       * Sunday, each with its own name — those are the days. Where it has none, it
+       * is a single day, or a genuinely continuous stretch of them, and the range
+       * is right. The first case is the one that was wrong.
+       */
+      if (event.days.length > 0) {
+        for (const one of event.days) put(one.date, event);
+        continue;
+      }
+
       const first = event.date;
       const last = event.until || event.date;
-      for (const at of daysBetween(first, last)) {
-        map.set(at, [...(map.get(at) ?? []), event]);
-      }
+      for (const at of daysBetween(first, last)) put(at, event);
     }
     return map;
   }, [events]);

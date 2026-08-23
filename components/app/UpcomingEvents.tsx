@@ -1,7 +1,7 @@
 "use client";
 
-import Photo from "../Photo";
 import { useState } from "react";
+import EveningRow from "./EveningRow";
 import type { ClubEvent } from "@/lib/content";
 
 type Props = {
@@ -72,37 +72,21 @@ export default function UpcomingEvents({ events, places }: Props) {
           <ul className="row-list">
             {shown.map((event) => (
               <li key={event.id}>
-                <div className="row">
-                  {/* The day, on the picture.
-                      The date was a column and the photograph was another, which
-                      is two columns of furniture on either side of the words on a
-                      screen four hundred points wide. On the picture it is a stamp
-                      on a postcard, and the evening gets the width back. */}
-                  <span className={event.photo ? "row-when" : "row-when row-when-bare"}>
-                    {event.photo ? (
-                      <Photo src={event.photo.src} alt="" fill sizes="72px" />
-                    ) : null}
-                    <span className="row-date">
-                      <span className="row-day">{event.day}</span>
-                      <span className="row-month">{event.month}</span>
-                    </span>
-                  </span>
-                  <span className="row-body">
-                    <span className="row-title">{event.title}</span>
-                    <span className="row-meta">{event.when}</span>
-                    {event.partners.length > 0 ? (
-                      <span className="row-meta">
-                        with {event.partners.map((one) => one.name).join(", ")}
-                      </span>
-                    ) : null}
-                    {event.note ? (
-                      <span className="row-meta">{event.note}</span>
-                    ) : null}
-                    {event.going ? (
-                      <span className="row-yes">you are coming</span>
-                    ) : null}
-                  </span>
-                </div>
+                {/* The same row what's on draws, with the buttons switched off:
+                    this screen is a summary, and deciding belongs on the screen
+                    that is about deciding. */}
+                <EveningRow
+                  event={{
+                    id: event.id,
+                    title: event.title,
+                    label: event.when,
+                    day: event.day,
+                    month: event.month,
+                    photo: event.photo,
+                    partners: event.partners,
+                    note: event.note,
+                  }}
+                />
               </li>
             ))}
           </ul>
