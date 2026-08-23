@@ -87,10 +87,6 @@ export default function Nav({
        * questions, and CSS answers the second one.
        */}
       <div className="nav-session">
-        {/* Getting in touch, from the strip along the top rather than from a
-            footer nobody reads. On a wide screen the lane up the left margin is
-            still there, so this button is only offered where the lane is not. */}
-        <ContactPop />
         {/* Language and paper together, because they are the same kind of thing:
             how you are reading rather than where you are going. On a phone that
             is the strip along the top, which is where somebody looks for it —
@@ -98,6 +94,10 @@ export default function Nav({
             from anywhere. */}
         <LanguageSwitch lang={lang} />
         <DarkSwitch />
+        {/* Getting in touch, beside the newsletter and dressed the same: one word
+            in a ring. On a wide screen the addresses are still the lane up the
+            left margin and this is not rendered at all. */}
+        <ContactPop />
         <SessionButton />
       </div>
     </nav>

@@ -4460,9 +4460,12 @@ body:has(.hero) .edit-this {
   cursor: pointer;
 }
 
+/* Air between them, and plenty of it. At this size two lines a few points apart
+   read as one paragraph in large type rather than as two addresses — and they are
+   two separate things somebody has to choose between. */
 .contact-pop-in {
   display: grid;
-  gap: 22px;
+  gap: clamp(28px, 7vh, 56px);
   justify-items: center;
   text-align: center;
   padding: var(--edge);
@@ -4470,7 +4473,7 @@ body:has(.hero) .edit-this {
 }
 
 .contact-pop-said {
-  margin: 0;
+  margin: 0 0 clamp(4px, 2vh, 18px);
   font-family: var(--sans);
   font-size: 0.62rem;
   font-weight: 700;
@@ -4505,17 +4508,22 @@ body:has(.hero) .edit-this {
     display: none;
   }
 
+  /* Dressed as the newsletter button beside it, because it is the same kind of
+     thing: one word, in a ring, in the strip along the top. Two buttons of
+     different weights next to each other read as one button and one afterthought. */
   .contact-open {
     display: inline-block;
-    border: 0;
-    background: none;
-    padding: 0 2px;
     font-family: var(--sans);
-    font-size: 0.56rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--quiet);
+    font-style: normal;
+    color: var(--ink);
+    background: none;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    padding: 7px 14px;
     cursor: pointer;
   }
 }
