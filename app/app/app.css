@@ -3587,6 +3587,18 @@ body:has(.app-shell) {
   color: var(--purple);
 }
 
+/* Which project a single day belongs to. Quiet, and above the date rather than
+   below it: it answers "what is this" before the date answers "when". */
+.row-partof {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 3px;
+}
+
 /* The same badge, said beside a name rather than under a title: an admin's row
    wants one word next to who they are, not a line of its own. */
 .row-badge-small {

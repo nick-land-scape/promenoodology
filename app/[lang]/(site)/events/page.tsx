@@ -9,6 +9,7 @@ import { pretty } from "@/lib/admin/when";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { breadcrumbs, graph, itemList, pageMetadata, say as pick, type Bilingual } from "@/lib/seo";
 import { pageIsVisible } from "@/lib/site-pages";
+import { byDay, type Occasion } from "@/lib/occasions";
 import { getEvents, getFrench, getPageHead } from "@/lib/source";
 import { speaking, type Said } from "@/lib/words";
 
@@ -68,16 +69,20 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
   const listed = events.filter((event) => event.slug);
 
   /*
-   * When an evening is next on.
+   * What is on, one card per thing you can turn up to.
    *
-   * Not when it starts: "Ateliers olfactifs" began in August and is next on this
-   * Saturday, and it is the Saturday somebody wants to know about. For anything
-   * without a programme it is the day itself, or today while it is still running.
+   * "Ateliers olfactifs" is one event and five afternoons. As one card it appeared
+   * under "later on" in August and stayed there while four of its five days went
+   * past — so somebody looking for what is on this Saturday could not see that
+   * there was something on this Saturday. Opened out, each afternoon lands in the
+   * group it belongs to, keeps its own name, and says which project it is part of.
+   * They all still open the one page: see lib/occasions.
    */
-  const nextOn = (event: ClubEvent): string | null => {
-    if (event.days.length > 0) {
-      return event.days.map((day) => day.date).filter((day) => day >= today).sort()[0] ?? null;
-    }
+  const upcoming = byDay(listed);
+
+  /* When it is on. An occasion is one day or one continuous stretch, so this is
+     the day itself — or today, while a stretch is still running. */
+  const nextOn = (event: Occasion): string | null => {
     if (!event.date) return null;
     if (event.date >= today) return event.date;
     return (event.until || event.date) >= today ? today : null;
@@ -90,7 +95,7 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
   };
   const inAWeek = soon(7);
 
-  const withNext = listed
+  const withNext = upcoming
     .map((event) => ({ event, next: nextOn(event) }))
     .sort((a, b) => (a.next ?? "9999").localeCompare(b.next ?? "9999"));
 
@@ -112,9 +117,12 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
   ].filter((group) => group.events.length > 0);
 
   // Newest first: the last thing that happened is the one worth reading about.
-  const been = withNext
-    .filter((one) => !one.next)
-    .map((one) => one.event)
+  /* And what has been: one card per project rather than per day. Five copies of a
+     finished programme is not a record of it, and the story written about it
+     afterwards was written about the whole thing. */
+  const been = listed
+    .filter((event) => !nextOn({ ...event, onDay: null, dayOf: null }))
+    .map((event) => ({ ...event, onDay: null, dayOf: null }) as Occasion)
     .reverse();
 
   // How many days have anything on them at all.
@@ -204,8 +212,8 @@ function Evenings({
   say,
   past,
 }: {
-  events: ClubEvent[];
-  nextOn: (event: ClubEvent) => string | null;
+  events: Occasion[];
+  nextOn: (event: Occasion) => string | null;
   lang: "en" | "fr";
   say: Said;
   past?: boolean;
@@ -215,7 +223,7 @@ function Evenings({
       {events.map((event) => {
         const next = nextOn(event);
         return (
-          <li key={event.id} className="story-card">
+          <li key={`${event.id}|${event.onDay ?? ""}`} className="story-card">
             <Link href={at(lang, `/events/${event.slug}`)}>
               <span className="story-cover event-cover-card">
                 {event.photo ? (
@@ -227,14 +235,19 @@ function Evenings({
                 <span className="event-stamp">{stamp(event)}</span>
               </span>
               <span className="story-name">{event.title}</span>
-              {event.subtitle ? <span className="story-hook">{event.subtitle}</span> : null}
+              {/* Which project this afternoon is part of, where it has a name of
+                  its own. Without it, five cards with five different names look
+                  like five unrelated things rather than one thing five times. */}
+              {event.dayOf ? (
+                <span className="story-hook">
+                  {say("on.partOf")} {event.dayOf}
+                </span>
+              ) : event.subtitle ? (
+                <span className="story-hook">{event.subtitle}</span>
+              ) : null}
               <span className="story-meta">
                 {[
-                  // Where an evening runs over days, the day it is next on is
-                  // more use than the day it began.
-                  next && event.days.length > 1
-                    ? `${say("on.nextOn")} ${pretty(next)}`
-                    : when(event),
+                  when(event),
                   event.place,
                 ]
                   .filter(Boolean)

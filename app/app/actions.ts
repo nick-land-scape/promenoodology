@@ -208,16 +208,39 @@ export async function markInterested(eventId: string, on: boolean): Promise<Aske
   return { ok: true, state: on ? "interested" : undefined };
 }
 
-export async function cancelMyPlace(eventId: string): Promise<Asked> {
+export async function cancelMyPlace(
+  eventId: string,
+  /* Which day to give back, where the evening has a programme. Null gives back the
+     place on the whole thing — and *only* that one: somebody who is down for two
+     Saturdays and presses "not coming" on one of them should still be coming on the
+     other. Without this it deleted every booking for the event. */
+  onDay: string | null = null,
+): Promise<Asked> {
   const me = await whoIsThis();
   if (!me) return { ok: false, error: "You are not signed in any more." };
 
   const supabase = await supabaseServer();
-  const { error } = await supabase
+  let taking = supabase
     .from("bookings")
     .delete()
     .eq("event_id", eventId)
     .eq("profile_id", me.id);
+  taking = onDay ? taking.eq("on_day", onDay) : taking.is("on_day", null);
+  /* Where the column does not exist yet the day cannot be named, and giving back
+     "the booking for this event" is the only thing there is to do. */
+  const { error } = await taking;
+  if (error?.code === "42703") {
+    const { error: plainly } = await supabase
+      .from("bookings")
+      .delete()
+      .eq("event_id", eventId)
+      .eq("profile_id", me.id);
+    if (plainly) return { ok: false, error: plainly.message };
+    revalidatePath("/app");
+    revalidatePath("/app/events");
+    revalidatePath("/app/account");
+    return { ok: true };
+  }
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/app");

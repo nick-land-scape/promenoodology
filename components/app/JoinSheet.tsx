@@ -31,6 +31,7 @@ export default function JoinSheet({
   mine,
   days,
   chosen,
+  onDay,
   onClose,
   onDone,
 }: {
@@ -46,6 +47,9 @@ export default function JoinSheet({
   days?: { date: string; title: string; time: string; label: string }[];
   /** The days already taken, so re-opening it is editing. */
   chosen?: string[];
+  /* The one day this is about, where the list has been opened out into its days.
+     Not the same as `days`: that asks which of them, this *is* one of them. */
+  onDay?: string | null;
   /** When it is, for the line under the title. */
   when?: string;
   /** How many places the evening has altogether, where it says. */
@@ -87,7 +91,7 @@ export default function JoinSheet({
     const answer =
       programme.length > 0
         ? await signUpForDays(eventId, picked, many, bringing, guests.slice(0, asked))
-        : await signUpForEvent(eventId, many, bringing, guests.slice(0, asked));
+        : await signUpForEvent(eventId, many, bringing, guests.slice(0, asked), onDay ?? null);
     setBusy(false);
     if (!answer.ok) {
       setTrouble(answer.error ?? say("join.didNotGoThrough"));

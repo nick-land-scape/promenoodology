@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import EveningRow from "./EveningRow";
 import JoinSheet from "./JoinSheet";
-import type { ClubEvent } from "@/lib/content";
+import { placeKey, type Occasion } from "@/lib/occasions";
 import {
   cancelMyPlace,
   markInterested,
@@ -14,7 +14,7 @@ import { buzz } from "@/lib/native";
 import { localeOf, useReading, useSay } from "./Words";
 import Photo from "../Photo";
 
-export type Joinable = ClubEvent & {
+export type Joinable = Occasion & {
   /** The days already taken, where this evening has a programme. */
   onDays: string[];
   /** Each day of that programme, with the words the row and the sheet show. */
@@ -88,7 +88,13 @@ export default function SignUpForm({
   function join(event: Joinable) {
     setSaid(null);
     start(async () => {
-      const answer = await signUpForEvent(event.id, Number(people), bringing);
+      const answer = await signUpForEvent(
+        event.id,
+        Number(people),
+        bringing,
+        [],
+        event.onDay,
+      );
       if (!answer.ok) {
         setSaid({
           id: event.id,
@@ -114,7 +120,7 @@ export default function SignUpForm({
       return;
     setSaid(null);
     start(async () => {
-      const answer = await cancelMyPlace(event.id);
+      const answer = await cancelMyPlace(event.id, event.onDay);
       setSaid(
         answer.ok
           ? {
@@ -180,6 +186,8 @@ export default function SignUpForm({
             spots: event.spots,
             days: event.dayLabels,
             onDays: event.onDays,
+            onDay: event.onDay,
+            dayOf: event.dayOf,
           }}
         />
 
@@ -268,7 +276,7 @@ export default function SignUpForm({
           ) : (
             <ul className="row-list">
               {shown.map((event) => (
-                <Evening key={event.id} event={event} />
+                <Evening key={placeKey(event.id, event.onDay)} event={event} />
               ))}
             </ul>
           )}
@@ -278,7 +286,9 @@ export default function SignUpForm({
           events={events}
           day={day}
           onDay={setDay}
-          render={(event) => <Evening key={event.id} event={event} />}
+          render={(event) => (
+            <Evening key={placeKey(event.id, event.onDay)} event={event} />
+          )}
         />
       )}
 
@@ -292,7 +302,7 @@ export default function SignUpForm({
           </div>
           <ul className="row-list">
             {past.map((event) => (
-              <li key={event.id}>
+              <li key={placeKey(event.id, event.onDay)}>
                 <div className="row row-past">
                   {/* The whole row, not only the name. */}
                   <Link
@@ -373,24 +383,13 @@ function Month({
     for (const event of events) {
       /*
        * A calendar marks the days something is happening, not the days a season
-       * covers.
-       *
-       * Every day between the first and the last used to be marked, which for a
-       * programme running from the 22nd of August to the 20th of September put an
-       * evening on thirty days — twenty-six of which had nothing on them at all.
-       * A month view that says yes to every day answers nobody's question, which
-       * is "am I free when something is on".
-       *
-       * So: where an evening has its own days written down — four Saturdays and a
-       * Sunday, each with its own name — those are the days. Where it has none, it
-       * is a single day, or a genuinely continuous stretch of them, and the range
-       * is right. The first case is the one that was wrong.
+       * covers — and it no longer has to work that out for itself. Every event
+       * arrives here already opened out into the days it happens on, so an occasion
+       * is either one day or a genuinely continuous stretch of them, and the range
+       * below is right for both. What this used to guard against — a programme from
+       * the 22nd of August to the 20th of September marking thirty days, twenty-six
+       * of them empty — is handled before the list is built. See lib/occasions.
        */
-      if (event.days.length > 0) {
-        for (const one of event.days) put(one.date, event);
-        continue;
-      }
-
       const first = event.date;
       const last = event.until || event.date;
       for (const at of daysBetween(first, last)) put(at, event);

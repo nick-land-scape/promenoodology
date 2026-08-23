@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import EveningRow from "./EveningRow";
-import type { ClubEvent } from "@/lib/content";
+import type { Occasion } from "@/lib/occasions";
 import { useSay } from "@/components/app/Words";
 
 type Props = {
-  events: (ClubEvent & {
+  events: (Occasion & {
     day: string;
     month: string;
     weekday: string;
@@ -83,7 +83,7 @@ export default function UpcomingEvents({ events, places }: Props) {
         ) : (
           <ul className="row-list">
             {shown.map((event) => (
-              <li key={event.id}>
+              <li key={`${event.id}|${event.onDay ?? ""}`}>
                 {/* The same row what's on draws, buttons and all: somebody on the
                     front screen who has just read that an evening is on should be
                     able to say yes to it there, rather than being sent to another
@@ -104,6 +104,8 @@ export default function UpcomingEvents({ events, places }: Props) {
                     spots: event.spots,
                     days: event.dayLabels,
                     onDays: event.onDays,
+                    onDay: event.onDay,
+                    dayOf: event.dayOf,
                   }}
                 />
               </li>

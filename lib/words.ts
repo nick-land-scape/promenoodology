@@ -44,6 +44,7 @@ export const PHRASES: Phrase[] = [
   { key: "on.today", en: "today", fr: "aujourd’hui", where: "front", note: "A heading over the evenings that are on today." },
   { key: "on.thisWeek", en: "this week", fr: "cette semaine", where: "front", note: "A heading over the next seven days." },
   { key: "on.later", en: "later on", fr: "plus tard", where: "front", note: "A heading over everything after that." },
+  { key: "on.partOf", en: "part of", fr: "fait partie de", where: "front", note: "Followed by the name of the project a single day belongs to." },
   { key: "on.been", en: "and what has been", fr: "et ce qui a eu lieu", where: "front", note: "A heading over the evenings that have happened." },
   { key: "on.nothing", en: "Nothing is on just now. There will be.", fr: "Rien pour le moment. Cela viendra.", where: "front" },
   { key: "on.asMonth", en: "see it as a month", fr: "voir le mois", where: "front", note: "Opens the calendar." },
@@ -575,6 +576,7 @@ export const PHRASES: Phrase[] = [
   { key: "card.noName", en: "no name yet", fr: "pas encore de nom", where: "app" },
 
   /* ------------------------------------- the back of the house, from a phone */
+  { key: "row.partOf", en: "part of", fr: "fait partie de", where: "app", note: "Followed by the name of the event a single day belongs to." },
   { key: "who.everybody", en: "everybody in the club", fr: "tout le monde dans le club", where: "app", note: "The admin-only screen in Account: the list of people." },
   { key: "who.onlyAdmins", en: "only you and the other admins see this", fr: "vous et les autres administrateurs seulement", where: "app" },
   { key: "who.find", en: "find somebody", fr: "chercher quelqu’un", where: "app", note: "The search field above the list." },

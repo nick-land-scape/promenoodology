@@ -2,6 +2,7 @@ import AppHeader from "@/components/app/AppHeader";
 import SignUpForm, { type Joinable } from "@/components/app/SignUpForm";
 import { dateParts, whenItIs } from "@/lib/app-data";
 import { myBookings, readingIn, requireMember, whoIsBringingWhat } from "@/lib/app/me";
+import { byDay, placeKey } from "@/lib/occasions";
 import { sharedEvents } from "@/lib/shared";
 import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
@@ -17,18 +18,17 @@ export default async function EventsPage() {
   const lang = await readingIn();
   const say = speaking(lang, await getFrench());
 
-  const [all, mine] = await Promise.all([sharedEvents(lang), myBookings()]);
-  /* A place on the whole thing, and the days somebody has taken where the evening
-     has a programme in it. Two maps, because they are two different promises: one
-     is "I am coming", the other is "I am coming on the sixth and the twentieth". */
+  const [events0, mine] = await Promise.all([sharedEvents(lang), myBookings()]);
+  /* Every event, with a programme opened out into the days it happens on — so a
+     Saturday in September sits in the week it belongs to rather than inside a
+     month-long block filed under August. See lib/occasions. */
+  const all = byDay(events0);
+
+  /* One answer per occasion: a place on a day is a different promise from a place
+     on the whole thing, and both are keyed the same way here. */
   const asked = new Map(
-    mine.filter((booking) => !booking.onDay).map((booking) => [booking.eventId, booking]),
+    mine.map((booking) => [placeKey(booking.eventId, booking.onDay ?? null), booking]),
   );
-  const onDays = new Map<string, string[]>();
-  for (const booking of mine) {
-    if (!booking.onDay) continue;
-    onDays.set(booking.eventId, [...(onDays.get(booking.eventId) ?? []), booking.onDay]);
-  }
 
   /* What people are bringing, for the ones still to come only: it is a list for
      organising an evening, not a record of one that has happened. */
@@ -42,7 +42,7 @@ export default async function EventsPage() {
 
   const today = new Date().toISOString().slice(0, 10);
   const dressed = (event: (typeof all)[number]): Joinable => {
-    const booking = asked.get(event.id);
+    const booking = asked.get(placeKey(event.id, event.onDay));
     return {
       ...event,
       /* The day and the month, worked out here rather than in the row.
@@ -61,17 +61,10 @@ export default async function EventsPage() {
             state: booking.state,
           }
         : null,
-      /* The days already taken, and how each day says itself — worked out here for
-         the same reason the date parts are: the row cannot read files. */
-      onDays: onDays.get(event.id) ?? [],
-      dayLabels: event.days.map((one) => ({
-        date: one.date,
-        title: one.title,
-        time: one.time,
-        label: `${dateParts(one.date, lang).day} ${dateParts(one.date, lang).month}${
-          one.time ? ` · ${one.time}` : ""
-        }`,
-      })),
+      /* Nothing to choose between any more: each row *is* one of the days, so it
+         carries the day it is rather than a list to pick from. */
+      onDays: [],
+      dayLabels: [],
     };
   };
 

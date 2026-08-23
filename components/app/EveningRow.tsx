@@ -50,6 +50,12 @@ export type EveningRow = {
   days?: { date: string; title: string; time: string; label: string }[];
   /** The days you already have a place on. */
   onDays?: string[];
+  /* Which day this row is, where the evening has a programme and the list has been
+     opened out into its days. A row that is one day of something books that day,
+     gives back that day, and does not offer to choose between days again. */
+  onDay?: string | null;
+  /** What the whole thing is called, where this row is one day of it. */
+  dayOf?: string | null;
 };
 
 /**
@@ -114,7 +120,7 @@ export default function EveningRow({
 
   function give() {
     start(async () => {
-      const answer = await cancelMyPlace(event.id);
+      const answer = await cancelMyPlace(event.id, event.onDay ?? null);
       if (!answer.ok) {
         setSaid(answer.error ?? say("row.didNotWork"));
         return;
@@ -155,6 +161,15 @@ export default function EveningRow({
         <Link href={`/app/events/${event.id}`} className="row-title">
           {event.title}
         </Link>
+
+        {/* Which thing this is a day of. Said in the row rather than left to be
+            worked out, because five Saturdays in a list with nothing joining them
+            look like five unrelated afternoons — and they are one project. */}
+        {event.dayOf ? (
+          <span className="row-partof">
+            {say("row.partOf")} {event.dayOf}
+          </span>
+        ) : null}
 
         {/* Said out loud, because it changes what "coming" means: an evening with
             a programme is a month with five days in it, and a place is taken on a
@@ -288,6 +303,7 @@ export default function EveningRow({
           spots={event.spots}
           mine={event.mine ?? null}
           days={programme.length > 0 ? programme : undefined}
+          onDay={event.onDay ?? null}
           chosen={mineDays}
           onClose={() => setAsking(false)}
           onDone={(words) => {

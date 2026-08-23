@@ -3,6 +3,7 @@ import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
 import UpcomingEvents from "@/components/app/UpcomingEvents";
 import { dateParts, shortDate, weekday, whenItIs } from "@/lib/app-data";
+import { byDay, placeKey } from "@/lib/occasions";
 import { myBookings, readingIn, requireMember } from "@/lib/app/me";
 import { getFrench } from "@/lib/source";
 import { speaking, type Said } from "@/lib/words";
@@ -46,19 +47,15 @@ export default async function AppHome() {
       .map((booking) => booking.eventId),
   );
 
-  /* What was said about each evening, and on which days — the front screen's rows
-     can now be pressed, so they need to know what they are showing the state of. */
-  const wholeThing = new Map(
-    mine.filter((booking) => !booking.onDay).map((booking) => [booking.eventId, booking]),
+  /* What was said about each occasion — the front screen's rows can be pressed, so
+     they need to know what they are showing the state of, and a place on a day is a
+     different promise from a place on the whole thing. */
+  const answers = new Map(
+    mine.map((booking) => [placeKey(booking.eventId, booking.onDay ?? null), booking]),
   );
-  const onDays = new Map<string, string[]>();
-  for (const booking of mine) {
-    if (!booking.onDay) continue;
-    onDays.set(booking.eventId, [...(onDays.get(booking.eventId) ?? []), booking.onDay]);
-  }
 
   const today = new Date().toISOString().slice(0, 10);
-  const events = all
+  const events = byDay(all)
     .filter((event) => (event.until || event.date) >= today)
     .map((event) => ({
       ...event,
@@ -67,7 +64,7 @@ export default async function AppHome() {
       when: whenItIs(event, lang),
       going: asked.has(event.id),
       mine: (() => {
-        const booking = wholeThing.get(event.id);
+        const booking = answers.get(placeKey(event.id, event.onDay));
         return booking
           ? {
               people: booking.people,
@@ -77,15 +74,10 @@ export default async function AppHome() {
             }
           : null;
       })(),
-      onDays: onDays.get(event.id) ?? [],
-      dayLabels: event.days.map((one) => ({
-        date: one.date,
-        title: one.title,
-        time: one.time,
-        label: `${dateParts(one.date, lang).day} ${dateParts(one.date, lang).month}${
-          one.time ? ` · ${one.time}` : ""
-        }`,
-      })),
+      /* Each row is one of the days now, so there is nothing left to choose
+         between: it carries the day it is instead. See lib/occasions. */
+      onDays: [],
+      dayLabels: [],
     }));
   const places = [...new Set(events.map((event) => event.place))].filter(
     Boolean,
