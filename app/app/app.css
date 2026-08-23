@@ -874,7 +874,10 @@ body:has(.app-shell) {
 
 .choose-list {
   position: absolute;
-  z-index: 30;
+  /* Above the bar at the foot of the screen, which is also 30 — and being later in
+     the document, it won. A year list opened near the bottom of a form went
+     underneath it. */
+  z-index: 40;
   top: calc(100% + 6px);
   left: -10px;
   right: -10px;
@@ -885,7 +888,12 @@ body:has(.app-shell) {
      still there. About eight lines. */
   max-height: 15rem;
   overflow-y: auto;
+  /* The list scrolls; the page behind it does not get dragged when the list
+     reaches its end. And the touch belongs to the list: without this, iOS decides
+     halfway through a flick that it was really a page scroll. */
   overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: 12px;
@@ -4688,7 +4696,12 @@ body:has(.app-shell) {
      that opens it. Anything else and iOS gives a caret and no keyboard. */
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.22s ease;
+  /* The room for the keyboard is given up over a quarter of a second, which is
+     roughly how long iOS takes to raise one — so the sheet rides up with it rather
+     than arriving before it. */
+  transition:
+    opacity 0.22s ease,
+    padding-bottom 0.25s ease;
 }
 
 .sheet.is-open {

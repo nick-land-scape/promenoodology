@@ -198,14 +198,21 @@ export default function Choose({
                   .join(" ") || undefined
               }
               lang={one.lang}
-              /* Pointerdown, not click: the handler that shuts the list on a press
-                 outside also runs on pointerdown, and a click would arrive after
-                 the list had already gone. */
-              onPointerDown={(press) => {
-                press.preventDefault();
-                take(index);
+              /* Click, and not pointerdown with `preventDefault`, which is what
+                 this was and is why the list could not be scrolled on a phone: a
+                 touch inside the list always starts on a line, and cancelling the
+                 pointer event that starts on a line cancels the pan with it. The
+                 press-outside handler that pointerdown was for does not need it —
+                 it asks whether the press was inside this dropdown, and every line
+                 of the list is. */
+              onClick={() => take(index)}
+              /* And the highlight follows a *pointer*. A finger is not hovering
+                 over anything: on touch this fired as the finger went down and
+                 moved the highlight to whatever line the scroll happened to start
+                 on. */
+              onPointerEnter={(over) => {
+                if (over.pointerType === "mouse") setAt(index);
               }}
-              onPointerEnter={() => setAt(index)}
             >
               {one.label}
               {one.value === value ? (

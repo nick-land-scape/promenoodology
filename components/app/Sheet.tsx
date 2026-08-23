@@ -123,12 +123,26 @@ export default function Sheet({
     };
   }, [open]);
 
-  /* Whether anything inside it has focus.
+  /* Whether the sheet has to get out of the way, and this is the fiddliest thing
+   * in the file.
    *
    * A sheet resting on the bottom edge of the window is the right place for it
-   * until there is a keyboard on that edge, and then it is the worst place there
-   * is. This is what moves it: while a field in here is being typed into, the
-   * sheet is at the top of the screen instead, where nothing can be over it. */
+   * until something is standing on that edge. Two things can be: a keyboard, and
+   * iOS's own wheel for a `<select>`.
+   *
+   * The wheel is not our problem. It is the operating system's, it is drawn over
+   * everything, and it goes away by itself — a sheet that leapt to the top of the
+   * screen because somebody tapped "how many of you" and leapt back when they let
+   * go is a sheet that jumps for no reason. So only a field somebody can *type*
+   * into counts, which is a text input or a textarea and not a select.
+   *
+   * And the leap is a last resort, not the first move. If the web view tells us
+   * how tall the keyboard is — see `--covered` above — then the sheet simply keeps
+   * that much clear at its foot and stays where it is, which is what a native
+   * sheet does and the only version of this with no jump in it at all. The leap is
+   * for the case where nothing is reported, which cannot be ruled out inside an
+   * app: a third of a second after the field takes focus, if nothing has moved,
+   * the sheet goes to the top of the screen where nothing can be over it. */
   const [typing, setTyping] = useState(false);
   useEffect(() => {
     if (!open) {
@@ -136,27 +150,47 @@ export default function Sheet({
       return;
     }
 
-    const on = () => setTyping(true);
-    /* Off only when focus leaves the sheet altogether — moving from the words to
-       the place is two events, and a sheet that dropped back down between them
-       would drop and rise on every field. */
-    const off = () => {
-      window.setTimeout(() => {
-        const now = document.activeElement;
-        if (!now || !wall.current?.contains(now)) setTyping(false);
-      }, 0);
+    const box = wall.current;
+    let waiting = 0;
+
+    const raisesAKeyboard = (what: Element | null) => {
+      if (!what) return false;
+      if (what.tagName === "TEXTAREA") return true;
+      if (what.tagName !== "INPUT") return false;
+      const kind = (what as HTMLInputElement).type;
+      return !["checkbox", "radio", "range", "button", "submit", "file", "color"].includes(kind);
     };
 
-    const box = wall.current;
+    const look = () => {
+      window.clearTimeout(waiting);
+      if (!raisesAKeyboard(document.activeElement)) {
+        setTyping(false);
+        return;
+      }
+      waiting = window.setTimeout(() => {
+        // Still typing, and still nothing reported: go up.
+        const covered = parseFloat(
+          box?.style.getPropertyValue("--covered") || "0",
+        );
+        setTyping(raisesAKeyboard(document.activeElement) && !(covered > 0));
+      }, 340);
+    };
+
     /* Asked as well as listened for. Whoever opens this focuses a field in the
        same breath as the press — that is the whole reason the sheet stays mounted
        — so by the time this runs the focus has already happened and there is no
        event left to hear. */
-    if (box?.contains(document.activeElement)) setTyping(true);
-    box?.addEventListener("focusin", on);
+    look();
+    box?.addEventListener("focusin", look);
+    /* Focus out is asked a beat later on purpose: moving from the words to the
+       place is a focusout and a focusin, and reading `activeElement` between them
+       says "nothing", which would drop the sheet and raise it again on every
+       field. */
+    const off = () => window.setTimeout(look, 0);
     box?.addEventListener("focusout", off);
     return () => {
-      box?.removeEventListener("focusin", on);
+      window.clearTimeout(waiting);
+      box?.removeEventListener("focusin", look);
       box?.removeEventListener("focusout", off);
     };
   }, [open]);
