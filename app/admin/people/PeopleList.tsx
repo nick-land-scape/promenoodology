@@ -93,7 +93,24 @@ function initials(name: string) {
   );
 }
 
-export default function PeopleList({ initial }: { initial: Person[] }) {
+export default function PeopleList({
+  initial,
+  alone,
+}: {
+  initial: Person[];
+  /* One person, on their own page.
+   *
+   * The list this was built as is a list no more — sixty-six people at once is a
+   * page nobody reads and a page that saves sixty-six rows at a time. It is the
+   * editor now, and the list that leads to it is next door. Everything about
+   * editing is the same code, deliberately: the one thing worse than a long
+   * component is two of them saving the same table differently.
+   *
+   * What `alone` turns off is the furniture of a list — the tick boxes, the "do
+   * this to all of them" bar, and the panel for adding somebody, which belongs
+   * with the list and not with one person. */
+  alone?: boolean;
+}) {
   const router = useRouter();
   const [people, setPeople] = useState(initial);
   const [kept, setKept] = useState(initial);
@@ -257,14 +274,16 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
       {/* Beside the title, and the panel below opens under it — the form was
           taking up the top of the page every day for the once a month anybody
           adds somebody. */}
-      <InHead>
-        <Button onClick={() => setAdding((was) => !was)}>
-          <Icon name="plus" />
-          {adding ? "never mind" : "add somebody"}
-        </Button>
-      </InHead>
+      {alone ? null : (
+        <InHead>
+          <Button onClick={() => setAdding((was) => !was)}>
+            <Icon name="plus" />
+            {adding ? "never mind" : "add somebody"}
+          </Button>
+        </InHead>
+      )}
 
-      {adding ? (
+      {adding && !alone ? (
       <Panel
         name="somebody new"
         hint="A name is enough. Add an address as well and they are also sent a way in — that is the only way an account gets made now."
@@ -339,14 +358,22 @@ export default function PeopleList({ initial }: { initial: Person[] }) {
 
       <ul className="admin-rows">
         {people.map((person, index) => (
-          <li key={person.id} className="admin-row admin-person">
+          <li
+            key={person.id}
+            className={
+              alone ? "admin-row admin-person admin-person-alone" : "admin-row admin-person"
+            }
+          >
             {/* Choosing comes first, on the left, where the eye starts and
-                where every other list of things you can tick puts it. */}
-            <Tick
-              on={pick.has(person.id)}
-              onChoose={(range) => pick.toggle(person.id, range)}
-              label={`Choose ${person.name || "this person"}`}
-            />
+                where every other list of things you can tick puts it. Nothing to
+                choose between when there is one of them. */}
+            {alone ? null : (
+              <Tick
+                on={pick.has(person.id)}
+                onChoose={(range) => pick.toggle(person.id, range)}
+                label={`Choose ${person.name || "this person"}`}
+              />
+            )}
 
             <span className="admin-person-body">
               <span className="admin-fields admin-person-fields">

@@ -1,8 +1,13 @@
 import Head from "@/components/admin/Head";
+import InHead from "@/components/admin/InHead";
+import PeopleRows, { type PersonRow } from "@/components/admin/PeopleRows";
+import NewPerson from "./NewPerson";
 import { requireAdmin } from "@/lib/admin/guard";
+import { hay } from "@/lib/admin/find";
+import { pretty } from "@/lib/admin/when";
 import { mediaUrl } from "@/lib/supabase/config";
 import { supabaseServer } from "@/lib/supabase/server";
-import PeopleList, { type Person } from "./PeopleList";
+
 
 export default async function PeoplePage() {
   const me = await requireAdmin();
@@ -38,44 +43,64 @@ export default async function PeoplePage() {
       }[]
     >();
 
-  const people: Person[] = (data ?? []).map((row) => ({
-    id: row.id,
-    email: row.email ?? "",
-    hasAccount: row.user_id !== null,
-    name: row.name ?? "",
-    country: row.country ?? "",
-    city: row.city ?? "",
-    does: row.does ?? "",
-    skills: row.skills ?? [],
-    languages: row.languages ?? [],
-    /* Day and month. The column is a date in a year nobody reads, so the year is
-       thrown away here rather than shown to somebody who might believe it. */
-    birthday: row.birthday
-      ? `${Number(row.birthday.slice(8, 10))}.${Number(row.birthday.slice(5, 7))}`
-      : "",
-    cannotEat: row.cannot_eat ?? "",
-    phone: row.phone ?? "",
-    role: row.role,
-    listed: row.listed,
-    listedByAdmin: row.listed_by_admin,
-    colour: row.colour,
-    photo: row.photo_path,
-    photoUrl: row.photo_path ? mediaUrl(row.photo_path) : null,
-    joined: row.joined_on,
-    number: row.member_no,
-    isMe: row.id === me.id,
-  }));
+  /* One row per person, and only what a list is for.
+   *
+   * This page used to hand every field of every person to the browser and open a
+   * form for each of them: sixty-six forms, sixty-six portraits, one save button
+   * for all of it. A list says who somebody is and what state they are in; the
+   * rest is on their own page, which is how the evenings and the notes have always
+   * worked. */
+  const people: PersonRow[] = (data ?? []).map((row) => {
+    const marks: string[] = [];
+    // The three an admin is actually scanning for.
+    if (row.role === "admin") marks.push("admin");
+    if (!(row.listed_by_admin ?? row.listed)) marks.push("not on the page");
+    if (!row.user_id) marks.push(row.email ? "invited" : "no way in");
+
+    return {
+      id: row.id,
+      name: row.name ?? "",
+      meta: [
+        row.member_no ? `no ${String(row.member_no).padStart(4, "0")}` : "not numbered",
+        [row.city, row.country].filter(Boolean).join(", "),
+        row.joined_on ? `since ${pretty(row.joined_on)}` : null,
+        row.does || null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      hay: hay(
+        row.name,
+        row.country,
+        row.city,
+        row.does,
+        row.email,
+        (row.skills ?? []).join(" "),
+        (row.languages ?? []).join(" "),
+        row.member_no ? String(row.member_no) : "",
+        row.role,
+      ),
+      photo: row.photo_path ? mediaUrl(row.photo_path) : null,
+      initials: initialsOf(row.name ?? ""),
+      marks,
+      sortName: (row.name ?? "").toLocaleLowerCase(),
+      joinedOn: row.joined_on ?? "",
+      /* Unnumbered people sort last rather than first: a missing number is not
+         number zero, and putting them at the top of "by number" would say the
+         newest arrivals have been here longest. */
+      memberNo: row.member_no ?? Number.MAX_SAFE_INTEGER,
+    };
+  });
 
   return (
     <Head title="people">
       <p className="admin-intro">
-        Everybody, in alphabetical order — the community page and the list of accounts are one list.
-        Most of them have never signed in to anything, and do not need to: being on the wall was
-        never meant to require a login.
+        Everybody — the community page and the list of accounts are one list. Most of them have never
+        signed in to anything, and do not need to: being on the wall was never meant to require a
+        login. Press a name to edit them.
       </p>
       <p className="admin-note">
-        The number on the left is theirs for good. It is not their place in this list — the list is
-        alphabetical, so the numbers run out of order down the page, and that is the point of them.
+        Their number is theirs for good, and it is not their place in this list: order the list by
+        number and it becomes a history of who has been here longest, which is the point of them.
       </p>
       <p className="admin-note">
         Somebody written down here is on the community page. Somebody invited is also sent a way in —
@@ -83,7 +108,24 @@ export default async function PeoplePage() {
         one. There is no public way to join any more: an account starts with an invitation from this
         page.
       </p>
-      <PeopleList initial={people} />
+      <InHead>
+        <NewPerson />
+      </InHead>
+
+      <PeopleRows people={people} />
     </Head>
+  );
+}
+
+/** A name as two letters, for somebody with no portrait. */
+function initialsOf(name: string) {
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0] ?? "")
+      .join("")
+      .toUpperCase() || "?"
   );
 }

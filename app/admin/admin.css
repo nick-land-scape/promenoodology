@@ -4328,3 +4328,141 @@ html.admin-dragging * {
   font-size: 1.05rem;
   color: var(--admin-quiet);
 }
+
+/* ------------------------------------------------------- people, as a list
+
+   Sixty-six names, read two ways: looking for somebody, and looking at who has
+   just arrived. So the line to type into and the order sit side by side above
+   the rows, and each row is a link to one person rather than a form. */
+
+.admin-people-top {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.admin-people-top > :first-child {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.admin-rows-people .admin-row {
+  padding: 0;
+}
+
+/* The whole row opens the person: a name is a small target and the row is the
+   thing somebody is aiming at. */
+.admin-person-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-person-link:hover,
+.admin-person-link:focus-visible {
+  background: var(--admin-wash, rgba(0, 0, 0, 0.03));
+}
+
+/* A face where there is one, two letters where there is not. Forty pixels: this
+   is a list, and a list of portraits is a different page. */
+.admin-person-face {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--admin-wash, rgba(0, 0, 0, 0.05));
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--admin-quiet);
+}
+
+.admin-person-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-person-said {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-person-name {
+  font-size: 1.02rem;
+  line-height: 1.25;
+}
+
+.admin-person-meta {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: var(--admin-quiet);
+}
+
+/* The state, in words rather than in colours: "admin", "not on the page", "no
+   way in". Three of them at most, and most people have none. */
+.admin-person-marks {
+  flex: none;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.admin-person-marks span {
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--admin-quiet);
+  white-space: nowrap;
+}
+
+.admin-person-on {
+  flex: none;
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  color: var(--admin-quiet);
+}
+
+/* The two ways of adding somebody, side by side: written down, or written down
+   and sent a way in. */
+.admin-doing {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+}
+
+/* One person, on a page rather than in a row.
+   The six-column grid is what makes a list of people readable: every row's fields
+   line up down the page. On a page of its own there is nothing to line up with,
+   and squeezing fourteen fields into one line is worse than the list it came out
+   of — so they get three columns and room to be read. */
+.admin-person-alone .admin-person-fields {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.admin-person-alone .admin-person-fields > .admin-field {
+  border-top: 1px solid var(--hairline);
+}
+
+.admin-person-alone .admin-field-face {
+  grid-column: 1 / -1;
+}
