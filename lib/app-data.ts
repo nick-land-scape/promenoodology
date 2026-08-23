@@ -34,10 +34,19 @@ export function whenItIs(
   lang: Lang = PLAIN,
 ): string {
   const first = shortDate(event.date, lang);
-  const day = event.until
-    ? `${first} – ${shortDate(event.until, lang)}`
+  const spread = Boolean(event.until) && event.until !== event.date;
+  const day = spread
+    ? `${first} – ${shortDate(event.until as string, lang)}`
     : `${weekday(event.date, lang)} ${first}`;
-  const hours = [event.time, event.endTime].filter(Boolean).join("–");
+
+  /* The two times belong to the same day, or they belong to nothing.
+   *
+   * An evening that runs from the 22nd of August to the 20th of September starts
+   * at three on the first day and finishes at one on the last, and pairing those
+   * with a dash produced "15:00–13:00" — an evening that ends two hours before it
+   * begins. Across several days the hours are the programme's business, one line
+   * per day, and this line has already said which days they are. */
+  const hours = spread ? "" : [event.time, event.endTime].filter(Boolean).join("–");
   return [day, hours, event.place].filter(Boolean).join(" · ");
 }
 
