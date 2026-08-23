@@ -8,7 +8,8 @@ import { setMyPhoto } from "@/lib/site-actions/account";
 import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
 import { buzz } from "@/lib/native";
 import { mediaUrl } from "@/lib/supabase/config";
-import { useSay } from "./Words";
+import Choose from "./Choose";
+import { localeOf, useReading, useSay } from "./Words";
 
 type Props = {
   /** Where to go when it is kept, and whether this is the first time. */
@@ -57,8 +58,32 @@ type Props = {
  * All of it optional except a name, and all of it walkable-past: somebody who
  * joined to see what is on this Saturday does not owe us a biography.
  */
+/* Thirty-one, always. Trimming the list to the month somebody has picked would
+   mean a day that quietly disappears when they change the month afterwards —
+   whereas the 31st of February is caught on the way in, once, by the server. */
+const DAYS = Array.from({ length: 31 }, (_, index) => index + 1);
+
+const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
+
+/* Newest first: whoever is filling this in is far likelier to have been born in
+   1998 than in 1926, and a list that opens on the year they want is a list they
+   do not have to scroll. A hundred and ten years is more than enough. */
+const THIS_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 110 }, (_, index) => THIS_YEAR - index);
+
 export default function Settling(props: Props) {
   const say = useSay();
+  /* The names of the months, from the language rather than from a list we keep:
+     "novembre" and "November" are the same month and neither is ours to write
+     down. Numbered from one, because that is what gets stored. */
+  const locale = localeOf(useReading());
+  const months = MONTHS.map((month) => ({
+    value: String(month),
+    label: new Date(Date.UTC(2000, month - 1, 1)).toLocaleDateString(locale, {
+      month: "long",
+      timeZone: "UTC",
+    }),
+  }));
   const back = props.back ?? "/app";
   const first = props.first ?? false;
   const router = useRouter();
@@ -70,7 +95,13 @@ export default function Settling(props: Props) {
   const [does, setDoes] = useState(props.does);
   const [skills, setSkills] = useState(props.skills.join(", "));
   const [languages, setLanguages] = useState(props.languages.join(", "));
-  const [birthday, setBirthday] = useState(props.birthday);
+  /* A day, a month and a year, kept apart rather than as one string somebody has
+     to punctuate correctly. What arrives is "7.11" or "7.11.1990" — see
+     `sayWhoYouAre`, which is the one place that knows that shape. */
+  const [born, setBorn] = useState(() => {
+    const [day = "", month = "", year = ""] = (props.birthday || "").split(".");
+    return { day, month, year };
+  });
   const [birthdayShown, setBirthdayShown] = useState(props.birthdayShown);
   const [instagram, setInstagram] = useState(props.instagram);
   const [cannotEat, setCannotEat] = useState(props.cannotEat);
@@ -111,7 +142,13 @@ export default function Settling(props: Props) {
         does,
         skills: asList(skills),
         languages: asList(languages),
-        birthday,
+        /* Nothing at all unless a day and a month are both there: a month on its
+           own is not a birthday, and sending half of one is how a field ends up
+           holding "0.11". The year rides along only when it was chosen. */
+        birthday:
+          born.day && born.month
+            ? [born.day, born.month, born.year].filter(Boolean).join(".")
+            : "",
         birthdayShown,
         instagram,
         cannotEat,
@@ -246,20 +283,40 @@ export default function Settling(props: Props) {
         {props.language}
 
         <div className="field">
-          <label htmlFor="who-birthday">{say("me.birthday")}</label>
-          <input
-            id="who-birthday"
-            value={birthday}
-            onChange={(change) => setBirthday(change.target.value)}
-            placeholder={say("me.birthdayEg")}
-            inputMode="numeric"
-          />
-          <em className="field-said">
-            {say("me.dayAndMonth")}
-          </em>
+          <span className="field-label">{say("me.birthday")}</span>
+          <div className="birthday-three">
+            <Choose
+              value={born.day}
+              label={say("me.day")}
+              onChange={(day) => setBorn((now) => ({ ...now, day }))}
+              /* Empty, it says what it is rather than "—": three dashes in a row
+                 tell somebody there are three fields and nothing about which is
+                 which, and the year is the one nobody expects. */
+              options={[
+                { value: "", label: say("me.day") },
+                ...DAYS.map((day) => ({ value: String(day), label: String(day) })),
+              ]}
+            />
+            <Choose
+              value={born.month}
+              label={say("me.month")}
+              onChange={(month) => setBorn((now) => ({ ...now, month }))}
+              options={[{ value: "", label: say("me.month") }, ...months]}
+            />
+            <Choose
+              value={born.year}
+              label={say("me.year")}
+              onChange={(year) => setBorn((now) => ({ ...now, year }))}
+              options={[
+                { value: "", label: say("me.year") },
+                ...YEARS.map((year) => ({ value: String(year), label: String(year) })),
+              ]}
+            />
+          </div>
+          <em className="field-said">{say("me.yearIsYours")}</em>
         </div>
 
-        {birthday ? (
+        {born.day && born.month ? (
           <label className="me-check">
             <input
               type="checkbox"

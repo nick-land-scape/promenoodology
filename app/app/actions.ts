@@ -463,9 +463,12 @@ export type WhoYouAre = {
  * together out of what a place already has. What they cannot eat is asked because a
  * shared kitchen has to know, and it is never shown to anybody but us.
  *
- * The birthday is a day and a month. The year is not asked for, not stored, and not
- * inferable: a date of birth is the most useful field in the world to somebody
- * impersonating you, and a collective only wants to know it is your birthday.
+ * The birthday is a day and a month, and a year only if somebody chose to give
+ * one. It used not to take a year at all, on the grounds that a full date of
+ * birth is the most useful field in the world to somebody impersonating you and
+ * that a collective only wants to know it is your birthday. Both of those are
+ * still true, which is why the year is optional and the form says so rather than
+ * asking for it as though it were needed.
  */
 export async function sayWhoYouAre(who: WhoYouAre): Promise<{ ok: boolean; error?: string }> {
   const me = await whoIsThis();
@@ -474,20 +477,43 @@ export async function sayWhoYouAre(who: WhoYouAre): Promise<{ ok: boolean; error
   const name = who.name.trim();
   if (!name) return { ok: false, error: "A name, at least — it is what everybody sees." };
 
-  /* A day and a month, kept as a date in a year nobody reads. 2000 because it is
-     a leap year: somebody born on the twenty-ninth of February exists. */
+  /*
+   * A day, a month, and a year only where one was given.
+   *
+   * The column is a date and a date must have a year, so a birthday with no year
+   * is stored in 2000 — which is also the flag that says "no year was given", and
+   * is read back that way. 2000 because it is a leap year: somebody born on the
+   * twenty-ninth of February exists, and any other choice would refuse them.
+   *
+   * The one thing this cannot represent is somebody born in 2000 who wants their
+   * year kept: theirs reads back as no year at all. That is the price of not
+   * adding a column, and it is the right way round — the failure is that a year
+   * is forgotten, never that one is invented.
+   */
   let birthday: string | null = null;
   if (who.birthday) {
-    const match = /^(\d{1,2})[.\-/](\d{1,2})$/.exec(who.birthday.trim());
+    const match = /^(\d{1,2})[.\-/](\d{1,2})(?:[.\-/](\d{4}))?$/.exec(who.birthday.trim());
     if (!match) {
       return { ok: false, error: "A birthday as day and month — 29.2, or 7.11." };
     }
     const day = Number(match[1]);
     const month = Number(match[2]);
+    const year = match[3] ? Number(match[3]) : 2000;
     if (month < 1 || month > 12 || day < 1 || day > 31) {
       return { ok: false, error: "That is not a day and a month." };
     }
-    birthday = `2000-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const now = new Date().getFullYear();
+    if (year > now || year < now - 120) {
+      return { ok: false, error: "That is not a year anybody was born in." };
+    }
+    /* And the day has to exist in the month: the dropdown offers 31 in every
+       month on purpose, so this is where the 31st of February is turned away.
+       Checked against a leap year, so the 29th of February is not. */
+    const days = new Date(Date.UTC(year === 2000 ? 2000 : year, month, 0)).getUTCDate();
+    if (day > days) {
+      return { ok: false, error: "That day is not in that month." };
+    }
+    birthday = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   }
 
   const tidy = (list: string[]) =>

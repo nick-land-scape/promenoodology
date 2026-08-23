@@ -5,13 +5,19 @@ import { pretty } from "@/lib/admin/when";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { ProfileRow } from "@/lib/supabase/rows";
 import { signOut } from "@/lib/site-actions/account";
+import { isLang, PLAIN, type Lang } from "@/lib/lang";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 export const metadata: Metadata = {
   title: "Your profile",
   robots: { index: false },
 };
 
-export default async function AccountPage() {
+export default async function AccountPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const say = speaking(lang, await getFrench());
   const supabase = await supabaseServer();
   const {
     data: { user },
@@ -36,7 +42,17 @@ export default async function AccountPage() {
           userId={user.id}
           email={user.email ?? ""}
           name={profile?.name ?? ""}
+          city={profile?.city ?? ""}
           country={profile?.country ?? ""}
+          words={{
+            name: say("you.yourName"),
+            showMe: say("you.showMe"),
+            saving: say("you.saving"),
+            save: say("you.save"),
+            town: say("you.theTown"),
+            country: say("you.theCountry"),
+            optional: say("you.optional"),
+          }}
           listed={profile?.listed ?? true}
           photo={profile?.photo_path ?? null}
           memberNo={profile?.member_no ?? null}

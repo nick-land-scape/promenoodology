@@ -70,7 +70,6 @@ export default async function AccountPage() {
           number={me.memberNo}
           since={me.since ? pretty(me.since, lang) : ""}
           country={me.country}
-          photo={me.photoPath}
         />
         {/* Beside the card on a tablet, and nowhere at all on a phone — where the
             card is the width of the screen and everything here is one tap away

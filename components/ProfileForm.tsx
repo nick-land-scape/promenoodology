@@ -12,6 +12,18 @@ import { mediaUrl } from "@/lib/supabase/config";
 import Photo from "./Photo";
 
 type Props = {
+  city: string;
+  /* Handed in rather than looked up here: the words the site says are resolved
+     on the server, which is the only place that knows the language. */
+  words: {
+    name: string;
+    town: string;
+    country: string;
+    optional: string;
+    showMe: string;
+    saving: string;
+    save: string;
+  };
   /** The login, which is also the only folder in the bucket you may write to. */
   userId: string;
   email: string;
@@ -35,6 +47,8 @@ type Props = {
  * facts about you rather than settings, so they are stated and left alone.
  */
 export default function ProfileForm({
+  city,
+  words,
   userId,
   email,
   name,
@@ -136,23 +150,33 @@ export default function ProfileForm({
 
       <form action={action} className="auth-form">
         <label>
-          <span>your name</span>
+          <span>{words.name}</span>
           <input name="name" defaultValue={name} required />
         </label>
+        {/* Two fields, not one.
+            It was one, labelled "where you are from", and it saved into `country`
+            — so somebody answering it with the name of their town, which is what
+            that question gets asked, ended up filed as living in a country called
+            Stuttgart. The app has asked for both all along; this is the same two
+            questions, worded so neither can be mistaken for the other. */}
         <label>
-          <span>where you are from</span>
-          <input name="country" defaultValue={country} placeholder="optional" />
+          <span>{words.town}</span>
+          <input name="city" defaultValue={city} placeholder={words.optional} />
+        </label>
+        <label>
+          <span>{words.country}</span>
+          <input name="country" defaultValue={country} placeholder={words.optional} />
         </label>
         <label className="auth-check">
           <input type="checkbox" name="listed" defaultChecked={listed} />
-          <span>show me on the community page</span>
+          <span>{words.showMe}</span>
         </label>
 
         {state.error ? <p className="auth-error">{state.error}</p> : null}
         {state.message ? <p className="auth-message">{state.message}</p> : null}
 
         <button type="submit" className="join-primary" disabled={pending}>
-          {pending ? "saving…" : "save →"}
+          {pending ? words.saving : words.save}
         </button>
       </form>
 

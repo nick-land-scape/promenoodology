@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { LANGS, NAMED, type Lang } from "@/lib/lang";
+import Choose from "./Choose";
+import { LANGS, NAMED, PLAIN, type Lang } from "@/lib/lang";
 import { chooseLanguage } from "@/lib/site-actions/language";
 
 /**
@@ -22,6 +23,12 @@ import { chooseLanguage } from "@/lib/site-actions/language";
  * It is not the same as the languages on your profile. Those are what you speak,
  * so that somebody can find whoever can talk to the neighbour who came out to
  * see what the noise was.
+ *
+ * A dropdown rather than the two pills it used to be. Two pills say "these are
+ * the two languages there are"; a dropdown says "this is the one you are reading
+ * in, and there are others" — which is the truer thing to say about a site that
+ * will have a third one, and it matches the birthday field three rows down
+ * instead of inventing a second way to ask a closed question.
  */
 export default function ReadingIn({
   chosen,
@@ -55,21 +62,13 @@ export default function ReadingIn({
   return (
     <div className="field">
       <span className="field-label">{words.label}</span>
-      <div className="reading-in">
-        {LANGS.map((lang) => (
-          <button
-            key={lang}
-            type="button"
-            className={lang === now ? "pill pill-solid" : "pill"}
-            aria-pressed={lang === now}
-            disabled={pending}
-            onClick={() => choose(lang)}
-            lang={lang}
-          >
-            {NAMED[lang]}
-          </button>
-        ))}
-      </div>
+      <Choose
+        value={now ?? PLAIN}
+        label={words.label}
+        disabled={pending}
+        onChange={(picked) => choose(picked as Lang)}
+        options={LANGS.map((lang) => ({ value: lang, label: NAMED[lang], lang }))}
+      />
       <em className="field-said">{words.note}</em>
     </div>
   );

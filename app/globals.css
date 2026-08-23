@@ -1937,6 +1937,133 @@ body:has(.hero) .contact {
   mix-blend-mode: normal;
 }
 
+/* --------------------------------------------- the membership card, on dark paper
+
+   The card was the one thing in the app that never turned the light off. Every
+   other surface took the dark tokens; this one is painted in literal greys —
+   it has to be, because it is milled metal rather than a box with a background
+   colour — so on dark paper a black screen had a white slab in the middle of it,
+   which is exactly where the eye goes and exactly what it should not be.
+
+   Dark metal, then: the same construction, gunmetal instead of aluminium. The
+   layers are kept in the same order as the light version so the two can be read
+   side by side — sheen, purple, brush, body, edge. */
+:root[data-theme="dark"] .member-card {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(0, 0, 0, 0.75),
+    0 2px 3px rgba(0, 0, 0, 0.5),
+    0 6px 12px rgba(0, 0, 0, 0.45),
+    0 14px 28px rgba(0, 0, 0, 0.4);
+  background-image:
+    /* The sheen, much weaker: dark metal returns a little light, not most of it. */
+    linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.11) 0%,
+      rgba(150, 160, 185, 0.05) 26%,
+      rgba(255, 255, 255, 0.1) 46%,
+      rgba(120, 110, 145, 0.05) 66%,
+      rgba(255, 255, 255, 0.08) 100%
+    ),
+    /* The club's purple, a little further up than on the light card — on a dark
+       ground it is the only colour there is. Only a little: at a third it stopped
+       being gunmetal with a glow in the corner and became a purple card. */
+    linear-gradient(210deg, rgba(139, 63, 255, 0.17), rgba(139, 63, 255, 0) 48%),
+    repeating-linear-gradient(
+      100deg,
+      rgba(0, 0, 0, 0.16) 0px,
+      rgba(0, 0, 0, 0.16) 0.5px,
+      rgba(255, 255, 255, 0.035) 1px,
+      rgba(255, 255, 255, 0.035) 2px
+    ),
+    /* The body. Not black: a card in a dark room is still lighter than the room,
+       and a black card on black paper has no edges at all. */
+    linear-gradient(160deg, #2b2a31, #1d1c22 55%, #26252c),
+    /* The edge, the same alternation as the light card and half as bright. */
+    linear-gradient(
+      135deg,
+      #6f7280 0%,
+      #17161b 14%,
+      #9a9dab 30%,
+      #24232a 46%,
+      #7c7f8d 60%,
+      #131217 76%,
+      #62656f 92%,
+      #1e1d23 100%
+    );
+}
+
+:root[data-theme="dark"] .member-card-lifted {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(0, 0, 0, 0.8),
+    0 3px 5px rgba(0, 0, 0, 0.55),
+    0 12px 22px rgba(0, 0, 0, 0.5),
+    0 28px 50px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="dark"] .member-card-back {
+  background-image:
+    linear-gradient(
+      118deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(150, 160, 185, 0.04) 30%,
+      rgba(255, 255, 255, 0.07) 62%,
+      rgba(120, 110, 145, 0.04) 100%
+    ),
+    linear-gradient(210deg, rgba(139, 63, 255, 0.13), rgba(139, 63, 255, 0) 48%),
+    linear-gradient(160deg, #26252c, #1a191e 55%, #222128);
+}
+
+/* The stripe is a dark band, and on a dark card a dark band is nothing. Grey,
+   and lighter than the metal around it. */
+:root[data-theme="dark"] .member-back-stripe {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.07) 30%,
+    rgba(255, 255, 255, 0.12) 70%,
+    rgba(255, 255, 255, 0.05)
+  );
+}
+
+/* The ink. The card carries its own ground now rather than the page's, so the
+   writing on it cannot go on inheriting the page's colours — on dark paper the
+   name was near-white on light metal, and now would be dark grey on dark metal. */
+:root[data-theme="dark"] .member-card .member-name,
+:root[data-theme="dark"] .member-card .member-number {
+  color: #f4f1ea;
+}
+
+:root[data-theme="dark"] .member-card .member-since,
+:root[data-theme="dark"] .member-card .member-number span,
+:root[data-theme="dark"] .member-card .member-back-label,
+:root[data-theme="dark"] .member-card .member-back-said {
+  color: rgba(244, 241, 234, 0.62);
+}
+
+/* The mark is purple on white. Inverted it is purple on black, and multiply —
+   which is how the white is removed on light paper — would sink it into the card.
+   Screen removes black instead, which is the same trick the other way up. */
+:root[data-theme="dark"] .member-card-logo {
+  mix-blend-mode: screen;
+}
+
+/* The pointer's highlight, halved. It is white light screened onto the face, and
+   at the strength that reads as a sheen on aluminium it washes gunmetal out. */
+:root[data-theme="dark"] .member-card .glare-wrapper {
+  opacity: 0.5;
+}
+
+/* The travelling band, likewise: `overlay` on a dark ground darkens as much as it
+   lightens, so it is soft light instead, which only ever adds. */
+:root[data-theme="dark"] .member-card-metal {
+  mix-blend-mode: soft-light;
+  opacity: 0.7;
+}
+
 /* A tick, a face, a portrait: images that are meant to look like themselves and
    must not be inverted with the marks above. */
 :root[data-theme="dark"] .session-face img,

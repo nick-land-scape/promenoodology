@@ -245,6 +245,7 @@ export async function saveProfile(_state: Result, form: FormData): Promise<Resul
     .from("profiles")
     .update({
       name: String(form.get("name") ?? "").trim(),
+      city: String(form.get("city") ?? "").trim(),
       country: String(form.get("country") ?? "").trim(),
       listed: form.get("listed") === "on",
     })

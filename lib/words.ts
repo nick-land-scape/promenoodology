@@ -396,9 +396,9 @@ export const PHRASES: Phrase[] = [
   { key: "me.faceOnCommunity", en: "A face on the community page. Optional, like everything under it.", fr: "Un visage sur la page communauté. Facultatif, comme tout ce qui suit.", where: "app" },
   { key: "me.yourName", en: "your name", fr: "votre nom", where: "app" },
   { key: "me.whatTheyCallYou", en: "what everybody calls you", fr: "comme tout le monde vous appelle", where: "app" },
-  { key: "me.whereYouAre", en: "where you are", fr: "où vous êtes", where: "app" },
+  { key: "me.whereYouAre", en: "the town or city you are in", fr: "la ville où vous êtes", where: "app", note: "Deliberately not “where you are”: asked that way, people answer with a country and the country field goes empty." },
   { key: "me.cityEg", en: "Zürich", fr: "Genève", where: "app", note: "An example city in the empty field." },
-  { key: "me.andCountry", en: "and the country", fr: "et le pays", where: "app" },
+  { key: "me.andCountry", en: "and the country", fr: "et le pays", where: "app", note: "Directly under the town, so “and” is doing real work — it says there are two of them." },
   { key: "me.countryEg", en: "Switzerland", fr: "Suisse", where: "app", note: "An example country in the empty field." },
   { key: "me.whatYouDo", en: "what you do", fr: "ce que vous faites", where: "app" },
   { key: "me.whatYouDoEg", en: "architecture student, cook, carpenter…", fr: "étudiant·e en architecture, cuisinier·ère, menuisier·ère…", where: "app" },
@@ -409,7 +409,7 @@ export const PHRASES: Phrase[] = [
   { key: "me.languagesEg", en: "German, English, a little Italian", fr: "allemand, anglais, un peu d’italien", where: "app" },
   { key: "me.birthday", en: "birthday", fr: "anniversaire", where: "app" },
   { key: "me.birthdayEg", en: "7.11", fr: "7.11", where: "app", note: "A day and a month, in the order the language writes them." },
-  { key: "me.dayAndMonth", en: "Day and month. We do not ask for the year and we do not keep one.", fr: "Jour et mois. Nous ne demandons pas l’année et n’en gardons aucune.", where: "app" },
+  
   { key: "me.letOthersSee", en: "let the others see it", fr: "laisser les autres le voir", where: "app" },
   { key: "me.instagram", en: "instagram", fr: "instagram", where: "app" },
   { key: "me.withoutTheAt", en: "without the @", fr: "sans le @", where: "app" },
@@ -556,6 +556,33 @@ export const PHRASES: Phrase[] = [
   { key: "card.no", en: "no", fr: "n°", where: "app", note: "Before the member number on the card, as in “no 0003”." },
 
   { key: "legal.lastChanged", en: "Last changed {when}. Anything wrong or missing:", fr: "Dernière modification le {when}. Une erreur ou un oubli :", where: "app", note: "Followed by an email address. Keep {when} exactly as it is." },
+
+  { key: "me.day", en: "day", fr: "jour", where: "app", note: "The first of the three birthday fields." },
+  { key: "me.month", en: "month", fr: "mois", where: "app" },
+  { key: "me.year", en: "year", fr: "année", where: "app" },
+  { key: "me.notSaid", en: "—", fr: "—", where: "app", note: "The empty choice in a dropdown. An em dash; it means nothing has been chosen." },
+  {
+    key: "me.yearIsYours",
+    en: "The year is yours to leave out, and most people should: we only want to know it is your birthday. A full date of birth is the single most useful thing to somebody pretending to be you.",
+    fr: "L’année, vous pouvez la laisser vide, et c’est ce que nous conseillons : nous voulons seulement savoir que c’est votre anniversaire. Une date de naissance complète est ce qu’il y a de plus utile à qui voudrait se faire passer pour vous.",
+    where: "app",
+  },
+
+  { key: "card.turnOver", en: "Turn the card over", fr: "Retourner la carte", where: "app", note: "Read out for the card itself; not shown." },
+  { key: "card.theBack", en: "the back", fr: "le dos", where: "app", note: "On the reverse of the membership card." },
+  { key: "card.whatItIs", en: "This card is not a ticket and it is not proof of anything. It says somebody knows you.", fr: "Cette carte n’est ni un billet ni une preuve de quoi que ce soit. Elle dit que quelqu’un vous connaît.", where: "app" },
+  { key: "card.notNumbered", en: "not numbered yet", fr: "pas encore de numéro", where: "app" },
+  { key: "card.noName", en: "no name yet", fr: "pas encore de nom", where: "app" },
+
+  /* -------------------------------------------- the website: your own profile */
+  { key: "you.theTown", en: "the town or city you are in", fr: "la ville où vous êtes", where: "front", note: "On your profile. Deliberately not “where you are”, which people answer with a country." },
+  { key: "you.theCountry", en: "the country", fr: "le pays", where: "front" },
+  { key: "you.optional", en: "optional", fr: "facultatif", where: "front", note: "The grey text in a field nobody has to fill in." },
+
+  { key: "you.yourName", en: "your name", fr: "votre nom", where: "front" },
+  { key: "you.showMe", en: "show me on the community page", fr: "m’afficher sur la page communauté", where: "front" },
+  { key: "you.saving", en: "saving…", fr: "enregistrement…", where: "front" },
+  { key: "you.save", en: "save →", fr: "enregistrer →", where: "front" },
 
   /* --------------------------------------------------------- the back of the house
 

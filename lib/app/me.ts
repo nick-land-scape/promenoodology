@@ -132,7 +132,9 @@ export const whoIsThis = cache(async (): Promise<Me | null> => {
     languages: data.languages ?? [],
     instagram: data.instagram ?? "",
     /* Kept as a date in a year nobody reads; shown and typed as day and month. */
-    birthday: data.birthday ? `${Number(data.birthday.slice(8, 10))}.${Number(data.birthday.slice(5, 7))}` : "",
+    /* "7.11", or "7.11.1990" where a year was given. A birthday stored in the
+       year 2000 means no year was given — see `sayWhoYouAre`. */
+    birthday: data.birthday ? said(data.birthday) : "",
     birthdayShown: data.birthday_shown ?? false,
     cannotEat: data.cannot_eat ?? "",
     phone: data.phone ?? "",
@@ -417,4 +419,12 @@ export async function whoIsBringingWhat(eventId: string): Promise<Bringing[]> {
       what: row.bringing.trim(),
       people: row.people ?? 1,
     }));
+}
+
+/** A stored birthday, as the form and the profile say it. */
+function said(iso: string): string {
+  const year = Number(iso.slice(0, 4));
+  const day = Number(iso.slice(8, 10));
+  const month = Number(iso.slice(5, 7));
+  return year === 2000 ? `${day}.${month}` : `${day}.${month}.${year}`;
 }
