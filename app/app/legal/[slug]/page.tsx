@@ -4,6 +4,7 @@ import { LEGAL, legalSpec } from "@/lib/legal";
 import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 import { readingIn, requireMember } from "@/lib/app/me";
+import { pretty } from "@/lib/admin/when";
 
 export const revalidate = 3600;
 
@@ -30,15 +31,30 @@ export async function generateStaticParams() {
  * way back, and no menu at all.
  */
 export default async function AppLegalPage({ params }: { params: Promise<{ slug: string }> }) {
-  const say = speaking(await readingIn(), await getFrench());
+  const lang = await readingIn();
+  const say = speaking(lang, await getFrench());
   await requireMember("/app/account");
   const { slug } = await params;
   const spec = legalSpec(slug);
   if (!spec) notFound();
 
+  /* The name of the page, from the same phrase the row in the account uses.
+   *
+   * The four of them are named twice — once in the list you press and once at the
+   * top of what opens — and they were reading from two places, so a French member
+   * pressed "ce que nous faisons de vos données" and arrived at "what we do with
+   * your data". The words underneath are still English until somebody writes the
+   * French, which is the same fallback everything else on this site has. */
+  const named: Record<string, string> = {
+    support: "acc.help",
+    privacy: "acc.privacy",
+    terms: "acc.terms",
+    imprint: "acc.imprint",
+  };
+
   return (
     <>
-      <AppHeader eyebrow={say("pg.inWriting")} title={spec.title} back="/app/account" />
+      <AppHeader eyebrow={say("pg.inWriting")} title={named[spec.slug] ? say(named[spec.slug]) : spec.title} back="/app/account" />
 
       <div className="app-book">
         <p className="app-book-lead">{spec.lead}</p>
@@ -52,7 +68,7 @@ export default async function AppLegalPage({ params }: { params: Promise<{ slug:
         )}
 
         <p className="app-note" style={{ padding: "18px 0 0" }}>
-          Last changed {spec.changed}. Anything wrong or missing:{" "}
+          {say("legal.lastChanged").replace("{when}", pretty(spec.changed, lang))}{" "}
           <a href="mailto:info@promeNOODology.com">info@promeNOODology.com</a>.
         </p>
       </div>

@@ -28,7 +28,7 @@ export default async function Loading() {
         <BoneRow key={row} thumb lines={2} button />
       ))}
 
-      <span className="visually-hidden">Coming…</span>
+      <span className="visually-hidden">{say("wait.coming")}</span>
     </div>
   );
 }

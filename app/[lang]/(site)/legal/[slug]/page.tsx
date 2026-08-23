@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { LEGAL, legalSpec } from "@/lib/legal";
+import { pretty } from "@/lib/admin/when";
 
 export const dynamic = "force-static";
 
@@ -73,7 +74,7 @@ export default async function LegalPage({ params }: { params: Promise<{ slug: st
         )}
 
         <p className="legal-when">
-          Last changed {spec.changed}. Anything wrong or missing:{" "}
+          Last changed {pretty(spec.changed)}. Anything wrong or missing:{" "}
           <a href="mailto:info@promeNOODology.com">info@promeNOODology.com</a>.
         </p>
 

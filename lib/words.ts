@@ -542,6 +542,12 @@ export const PHRASES: Phrase[] = [
 
   { key: "tell.whatKind", en: "What kind of thing", fr: "De quel genre", where: "app", note: "Read out by a screen reader over “a word / a bug / an idea”; not shown." },
 
+  { key: "wait.coming", en: "Coming…", fr: "Chargement…", where: "app", note: "Read out by a screen reader while a screen is still arriving; not shown." },
+  { key: "card.memberSince", en: "member since {when}", fr: "membre depuis le {when}", where: "app", note: "On the membership card. Keep {when} exactly as it is." },
+  { key: "card.no", en: "no", fr: "n°", where: "app", note: "Before the member number on the card, as in “no 0003”." },
+
+  { key: "legal.lastChanged", en: "Last changed {when}. Anything wrong or missing:", fr: "Dernière modification le {when}. Une erreur ou un oubli :", where: "app", note: "Followed by an email address. Keep {when} exactly as it is." },
+
   /* --------------------------------------------------------- the back of the house
 
      Nothing yet, and the section is drawn anyway — see WHERES. The words in

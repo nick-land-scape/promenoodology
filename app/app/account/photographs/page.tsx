@@ -21,7 +21,7 @@ export default async function MyPhotographsPage() {
       />
       {photos.length === 0 ? (
         <p className="app-note" style={{ padding: "18px var(--gutter)" }}>
-          None yet. The archive says who took what, and anything credited to you turns up here.
+          {say("mine.noPhotographs")}
         </p>
       ) : (
         <ul className="mine-grid mine-grid-all">

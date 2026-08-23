@@ -68,7 +68,7 @@ export default async function AccountPage() {
         <MemberCard
           name={me.name}
           number={me.memberNo}
-          since={me.since ? pretty(me.since) : ""}
+          since={me.since ? pretty(me.since, lang) : ""}
           country={me.country}
           photo={me.photoPath}
         />

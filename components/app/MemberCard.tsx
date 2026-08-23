@@ -5,6 +5,7 @@ import { useState } from "react";
 import Tilt from "react-parallax-tilt";
 import Photo from "../Photo";
 import { mediaUrl } from "@/lib/supabase/config";
+import { useSay } from "./Words";
 
 type Props = {
   name: string;
@@ -35,6 +36,7 @@ type Props = {
  * turns underneath it.
  */
 export default function MemberCard({ name, number, since, country, photo }: Props) {
+  const say = useSay();
   /* Whether it is being held. The library only sets a transform, so the shadow
      under the card — the thing that makes it look like an object off the page
      rather than a picture printed on it — has to be told separately. */
@@ -108,13 +110,15 @@ export default function MemberCard({ name, number, since, country, photo }: Prop
 
           <p className="member-name">{name || "no name yet"}</p>
           <p className="member-since">
-            {[since ? `member since ${since}` : null, country || null].filter(Boolean).join(" · ")}
+            {[since ? say("card.memberSince").replace("{when}", since) : null, country || null]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
 
           <p className="member-number">
             {number ? (
               <>
-                <span aria-hidden="true">no</span> {String(number).padStart(4, "0")}
+                <span aria-hidden="true">{say("card.no")}</span> {String(number).padStart(4, "0")}
               </>
             ) : (
               "not numbered yet"

@@ -24,6 +24,7 @@ export type LegalSpec = {
   slug: "privacy" | "imprint" | "terms" | "support";
   title: string;
   lead: string;
+  /** The day it last changed, as a date rather than as English. */
   changed: string;
   parts: LegalPart[];
 };
@@ -36,7 +37,7 @@ export const LEGAL: LegalSpec[] = [
     slug: "support",
     title: "help",
     lead: "Something not working, or a question. Both reach a person.",
-    changed: "21 August 2026",
+    changed: "2026-08-21",
     parts: [
       {
         text: "There is no ticket system here and no chatbot. Write to info@promeNOODology.com and somebody who can actually do something about it will read it, usually the same week.",
@@ -74,7 +75,7 @@ export const LEGAL: LegalSpec[] = [
     slug: "privacy",
     title: "what we do with your data",
     lead: "Who holds what about you, why, for how long, and how to make us stop.",
-    changed: "21 August 2026",
+    changed: "2026-08-21",
     parts: [
       {
         text: "This notice describes how promeNOODology handles personal data on promenoodology.com and in the promeNOODology members\u2019 app. It is written to be read rather than to be survived, and it is accurate: everything named below is something the site actually does.",
@@ -184,7 +185,7 @@ export const LEGAL: LegalSpec[] = [
     slug: "terms",
     title: "terms and conditions",
     lead: "What you can expect of us, what we ask of you, and who is answerable for what.",
-    changed: "21 August 2026",
+    changed: "2026-08-21",
     parts: [
       { heading: "1. Who these terms are between" },
       {
@@ -288,7 +289,7 @@ export const LEGAL: LegalSpec[] = [
     slug: "imprint",
     title: "imprint",
     lead: "Who is behind this website, and who is answerable for it.",
-    changed: "21 August 2026",
+    changed: "2026-08-21",
     parts: [
       {
         text: "An imprint states who is legally responsible for a website. The lines marked below cannot be invented and are the ones still to be completed \u2014 they are missing rather than withheld.",

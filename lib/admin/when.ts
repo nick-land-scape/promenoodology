@@ -7,8 +7,16 @@
  * so nothing in here should have been behind "use client".
  */
 
-/** A plain day, or a moment, in words. */
-export function pretty(iso: string) {
+import { PLAIN, type Lang } from "@/lib/lang";
+
+/**
+ * A plain day, or a moment, in words.
+ *
+ * English unless asked otherwise, which is right for the back of the house: it
+ * is read by whoever looks after the site and by nobody else. The app asks
+ * otherwise — a French member's card should not say "member since 20 August".
+ */
+export function pretty(iso: string, lang: Lang = PLAIN) {
   if (!iso) return "";
   /* "2026-08-21" needs a time bolted on to be read as UTC rather than as local
      midnight; "2026-08-21T13:05:22Z" already is one, and bolting a second time
@@ -17,7 +25,11 @@ export function pretty(iso: string) {
   const moment = iso.includes("T");
   const date = new Date(moment ? iso : `${iso}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  return date.toLocaleDateString(lang === "fr" ? "fr-CH" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 /** Today, as the date inputs want it. */
