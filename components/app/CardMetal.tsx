@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 
 /**
  * The card's surface, drawn rather than described.
@@ -23,19 +23,25 @@ import { useEffect, useRef, useState } from "react";
  * happened: the card was leaned, the paper changed, the window resized. A card
  * sitting still on a screen is a card sitting still, and an idle render loop in a
  * web view inside an app is a battery bill for nothing.
+ *
+ * And the lean arrives by hand rather than as a prop, which is not a style
+ * preference. The tilt library emits its position *while it is updating*, so
+ * putting that number into React state means: state changes, component renders,
+ * library emits, state changes — "maximum update depth exceeded", and a blank
+ * screen where the card was. A lean is not application state anyway. It is one
+ * number, sixty times a second, that nothing but this canvas has any use for.
  */
-export default function CardMetal({
-  /* Where the card is leaning, in degrees, as the tilt reports it. */
-  lean,
-  dark,
-  /* Said once, when there is a picture. Until then the card is the CSS one
-     underneath, which is also what it stays as where there is no WebGL. */
-  onDrawn,
-}: {
-  lean: { x: number; y: number };
-  dark: boolean;
-  onDrawn?: () => void;
-}) {
+
+export type Metal = { paint: (lean: { x: number; y: number }) => void };
+const CardMetal = forwardRef<
+  Metal,
+  {
+    dark: boolean;
+    /* Said once, when there is a picture. Until then the card is the CSS one
+       underneath, which is also what it stays as where there is no WebGL. */
+    onDrawn?: () => void;
+  }
+>(function CardMetal({ dark, onDrawn }, handle) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const gl = useRef<WebGLRenderingContext | null>(null);
   const where = useRef<{
@@ -46,13 +52,18 @@ export default function CardMetal({
   }>({ lean: null, size: null, dark: null, radius: null });
   const asked = useRef(0);
   const said = useRef(false);
+  /* The setup effect runs before the one that knows how to draw, so it asks
+     through here rather than calling something that does not exist yet. */
+  const soonest = useRef<(() => void) | null>(null);
   /* The latest of everything, read at draw time. A draw asked for twice in one
      frame is one draw with the newer numbers. */
-  const now = useRef({ lean, dark });
-  now.current = { lean, dark };
-  /* The card's width, only so that a resize can ask for a picture through the same
-     path everything else does. Two ways to draw is two ways to drift. */
-  const [size, setSize] = useState(0);
+  const now = useRef({ lean: { x: 0, y: 0 }, dark });
+  now.current.dark = dark;
+  /* Held in a ref rather than depended on. An inline arrow is a new function every
+     render, and a `useCallback` that depends on one is a new callback every render
+     — which makes every effect below re-run, and with them a draw, for ever. */
+  const told = useRef(onDrawn);
+  told.current = onDrawn;
 
   useEffect(() => {
     const board = canvas.current;
@@ -74,6 +85,12 @@ export default function CardMetal({
       const one = context.createShader(kind)!;
       context.shaderSource(one, source);
       context.compileShader(one);
+      /* Said out loud when it fails. A shader that will not compile fails
+         silently: the card falls back to the CSS one, which looks like a decision
+         somebody made rather than like a bug, and nothing anywhere says why. */
+      if (!context.getShaderParameter(one, context.COMPILE_STATUS)) {
+        console.warn("the card's shader would not compile:", context.getShaderInfoLog(one));
+      }
       return one;
     };
 
@@ -82,6 +99,7 @@ export default function CardMetal({
     context.attachShader(program, shader(context.FRAGMENT_SHADER, FRAGMENT));
     context.linkProgram(program);
     if (!context.getProgramParameter(program, context.LINK_STATUS)) {
+      console.warn("the card's shader would not link:", context.getProgramInfoLog(program));
       gl.current = null;
       return;
     }
@@ -106,6 +124,11 @@ export default function CardMetal({
       radius: context.getUniformLocation(program, "radius"),
     };
 
+    /* There is something to draw now, so draw it: the effect below runs before
+       this one on the first pass and found no program to use. */
+    if (document.hidden) window.setTimeout(() => soonest.current?.(), 0);
+    else window.requestAnimationFrame(() => soonest.current?.());
+
     return () => {
       context.deleteProgram(program);
       context.deleteBuffer(quad);
@@ -113,74 +136,97 @@ export default function CardMetal({
     };
   }, []);
 
-  /* One draw, at whatever size the card is on the screen now. */
+  /* One picture, at whatever size the card is on the screen now. */
+  const draw = useCallback(() => {
+    asked.current = 0;
+    const board = canvas.current;
+    const context = gl.current;
+    if (!board || !context) return;
+
+    /* The card is about 400 points wide and the shading is smooth, so there is
+       nothing in it that wants three device pixels per point. Two is plenty and a
+       quarter of the fragments of three. */
+    const ratio = Math.min(2, window.devicePixelRatio || 1);
+    const wide = Math.max(1, Math.round(board.clientWidth * ratio));
+    const tall = Math.max(1, Math.round(board.clientHeight * ratio));
+    if (board.width !== wide || board.height !== tall) {
+      board.width = wide;
+      board.height = tall;
+    }
+    context.viewport(0, 0, wide, tall);
+
+    const { lean: at, dark: night } = now.current;
+    context.uniform2f(where.current.lean, at.x, at.y);
+    context.uniform2f(where.current.size, wide, tall);
+    context.uniform1f(where.current.dark, night ? 1 : 0);
+    /* The corner, in the shader's own units, worked out from the card's real size
+       on the screen: ten points, which is the radius the stylesheet gives it, over
+       half the canvas's height. A hard-coded number here means the drawn corner and
+       the clipped one disagree the moment the card is a different size, and a
+       rounded card inside a slightly-more-rounded mask is a hairline of paper at
+       each corner. */
+    context.uniform1f(where.current.radius, (20 * ratio) / tall);
+
+    context.clearColor(0, 0, 0, 0);
+    context.clear(context.COLOR_BUFFER_BIT);
+    context.drawArrays(context.TRIANGLE_STRIP, 0, 4);
+
+    if (!said.current) {
+      said.current = true;
+      told.current?.();
+    }
+  }, []);
+
+  /* Coalesced into the next frame, because a lean arrives as a stream of pointer
+     events and each one is not worth its own picture — except where no frame is
+     ever coming. A hidden document does not get one, which is the ordinary case in
+     a preview pane, where the card would otherwise never be drawn at all and look
+     like a shader that does not work. */
+  const soon = useCallback(() => {
+    if (document.hidden) {
+      draw();
+      return;
+    }
+    if (!asked.current) asked.current = window.requestAnimationFrame(draw);
+  }, [draw]);
+  soonest.current = soon;
+
+  /* The lean, by hand. See the note at the top: this must not go through React. */
+  useImperativeHandle(
+    handle,
+    () => ({
+      paint: (lean: { x: number; y: number }) => {
+        now.current.lean = lean;
+        soon();
+      },
+    }),
+    [soon],
+  );
+
+  /* The paper changing is worth a picture, and so is the first one. */
   useEffect(() => {
-    const draw = () => {
-      asked.current = 0;
-      const board = canvas.current;
-      const context = gl.current;
-      if (!board || !context) return;
-
-      /* The card is about 400 points wide and the shading is smooth, so there is
-         nothing in it that wants three device pixels per point. Two is plenty and
-         a quarter of the fragments of three. */
-      const ratio = Math.min(2, window.devicePixelRatio || 1);
-      const wide = Math.max(1, Math.round(board.clientWidth * ratio));
-      const tall = Math.max(1, Math.round(board.clientHeight * ratio));
-      if (board.width !== wide || board.height !== tall) {
-        board.width = wide;
-        board.height = tall;
-      }
-      context.viewport(0, 0, wide, tall);
-
-      const { lean: at, dark: night } = now.current;
-      context.uniform2f(where.current.lean, at.x, at.y);
-      context.uniform2f(where.current.size, wide, tall);
-      context.uniform1f(where.current.dark, night ? 1 : 0);
-      /* The corner, in the shader's own units, worked out from the card's real
-         size on the screen: ten points, which is the radius the stylesheet gives
-         it, over half the canvas's height. Hard-coding a number here means the
-         drawn corner and the clipped one disagree the moment the card is a
-         different size, and a rounded card inside a slightly-more-rounded mask is
-         a hairline of paper at each corner. */
-      context.uniform1f(where.current.radius, (20 * ratio) / tall);
-
-      context.clearColor(0, 0, 0, 0);
-      context.clear(context.COLOR_BUFFER_BIT);
-      context.drawArrays(context.TRIANGLE_STRIP, 0, 4);
-      if (!said.current) {
-        said.current = true;
-        onDrawn?.();
-      }
-    };
-
-    /* Coalesced into the next frame, because a lean arrives as a stream of pointer
-       events and each one is not worth its own picture. `requestAnimationFrame`
-       and not a timer: this is a draw, and a draw belongs to a frame.
-       
-       Except where no frame is ever coming. A hidden document does not get one —
-       which is the ordinary case in a preview pane, where the card would otherwise
-       never be drawn at all and look like a shader that does not work. */
-    if (document.hidden) draw();
-    else if (!asked.current) asked.current = window.requestAnimationFrame(draw);
+    soon();
     return () => {
       if (asked.current) window.cancelAnimationFrame(asked.current);
       asked.current = 0;
     };
-  }, [lean, dark, size, onDrawn]);
+  }, [dark, soon]);
+
 
   /* And once more whenever the card changes size, which on a phone is a rotation
      and on a tablet is the layout changing its mind. */
   useEffect(() => {
     const board = canvas.current;
     if (!board || typeof ResizeObserver === "undefined") return;
-    const watching = new ResizeObserver(() => setSize(board.clientWidth));
+    const watching = new ResizeObserver(() => soon());
     watching.observe(board);
     return () => watching.disconnect();
-  }, []);
+  }, [soon]);
 
   return <canvas className="member-card-metal-gl" ref={canvas} aria-hidden="true" />;
-}
+});
+
+export default CardMetal;
 
 const VERTEX = `
 attribute vec2 corner;
