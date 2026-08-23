@@ -255,7 +255,7 @@ uniform vec2 size;
 uniform float dark;
 uniform float radius;
 
-const float BEZEL = 0.020;    // how much of the edge is turned metal, of the half-height
+const float BEZEL = 0.009;    // how much of the edge is turned metal, of the half-height
 
 /* Distance to a rounded rectangle, negative inside. The card's own outline: it is
    what gives the edge somewhere to be and the corners something to catch. */
@@ -293,9 +293,9 @@ float grain(vec2 p) {
 vec3 room(vec3 r) {
   float up = r.y;
 
-  vec3 ceiling = mix(vec3(1.02, 1.01, 1.04), vec3(0.30, 0.31, 0.36), dark);
-  vec3 middle  = mix(vec3(0.80, 0.80, 0.86), vec3(0.11, 0.11, 0.14), dark);
-  vec3 floor_  = mix(vec3(0.44, 0.43, 0.47), vec3(0.03, 0.03, 0.04), dark);
+  vec3 ceiling = mix(vec3(0.94, 0.93, 0.96), vec3(0.30, 0.31, 0.36), dark);
+  vec3 middle  = mix(vec3(0.72, 0.72, 0.78), vec3(0.11, 0.11, 0.14), dark);
+  vec3 floor_  = mix(vec3(0.50, 0.49, 0.54), vec3(0.03, 0.03, 0.04), dark);
 
   vec3 out_ = mix(floor_, middle, smoothstep(-0.65, 0.05, up));
   out_ = mix(out_, ceiling, smoothstep(0.05, 0.75, up));
@@ -305,7 +305,7 @@ vec3 room(vec3 r) {
      whole reason the card reads as metal rather than as a grey gradient. */
   vec2 win = vec2(r.x + 0.42, r.y - 0.44);
   float pane = exp(-dot(win * vec2(1.7, 3.1), win * vec2(1.7, 3.1)) * 5.5);
-  out_ += pane * mix(vec3(1.5, 1.5, 1.55), vec3(0.85, 0.86, 0.95), dark);
+  out_ += pane * mix(vec3(0.85, 0.85, 0.92), vec3(0.85, 0.86, 0.95), dark);
 
   /* And a lamp, warm, low and to the right, so the two ends of the card are not
      lit by the same colour. */
@@ -345,18 +345,28 @@ void main() {
    */
   vec2 slope = -p / half_ * 0.06;
 
-  float bezel = smoothstep(-BEZEL * 2.0, 0.0, edge + BEZEL) * step(edge, 0.0);
+  float bezel = smoothstep(-BEZEL * 1.6, 0.0, edge + BEZEL * 0.8) * step(edge, 0.0);
   vec2 outward = normalize(p + vec2(1e-5));
-  slope += outward * bezel * 1.35;
+  slope += outward * bezel * 0.9;
 
-  /* The brush: a fine grain running the long way, perturbing the normal across the
-     grain only. Anisotropy done the honest way — the highlight stretches because
-     the surface really does vary in one direction more than the other. */
-  float brush = grain(vec2(p.x * 12.0, p.y * 620.0)) - 0.5;
-  slope.y += brush * 0.055;
+  /*
+   * The brush: a fine grain running the long way, perturbing the normal across the
+   * grain only. Anisotropy done the honest way — the surface really does vary in
+   * one direction more than the other, so the highlight really does stretch.
+   *
+   * The frequency is tied to how many pixels there are rather than picked, and
+   * that is the whole difference between brushed metal and static: a grain finer
+   * than the pixel grid cannot be drawn, so it aliases, and aliased noise is
+   * exactly the horizontal streaking that made the first version of this look like
+   * a bad photograph of a card. A quarter of the available rows is as fine as this
+   * can honestly go.
+   */
+  float rows = size.y * 0.22;
+  float brush = grain(vec2(p.x * 9.0, p.y * rows)) - 0.5;
+  slope.y += brush * 0.028;
   /* A few longer scratches, which is what a card that has been used has. */
-  float scratch = grain(vec2(p.x * 3.0 + 11.0, p.y * 90.0)) - 0.5;
-  slope.y += scratch * 0.02;
+  float scratch = grain(vec2(p.x * 2.5 + 11.0, p.y * 70.0)) - 0.5;
+  slope.y += scratch * 0.012;
 
   vec3 n = normalize(vec3(slope, 1.0));
 
@@ -371,13 +381,13 @@ void main() {
      cool; gunmetal is the same thing with most of the light taken out of it, which
      is what dark paper needs — a white slab in the middle of a dark screen is
      exactly where the eye goes and exactly where it should not be. */
-  vec3 body = mix(vec3(0.92, 0.91, 0.93), vec3(0.16, 0.155, 0.185), dark);
+  vec3 body = mix(vec3(0.99, 0.985, 1.0), vec3(0.16, 0.155, 0.185), dark);
   vec3 colour = body * mix(lit, lit * 0.55 + 0.06, dark);
 
   /* One tight highlight on top of the reflection, stretched along the brush, for
      the moment the window lines up with the surface. */
   float gloss = pow(max(r.y * 0.35 + r.z, 0.0), 42.0);
-  colour += gloss * mix(0.30, 0.16, dark);
+  colour += gloss * mix(0.18, 0.16, dark);
 
   /* The club's purple, out of the bottom right, and only a little: at a third it
      stops being a metal card with a glow in the corner and becomes a purple one. */
@@ -387,8 +397,8 @@ void main() {
   /* The bezel again, in light rather than in shape: the turned edge is closer to
      the room than the face is, so it is brighter, and brightest where it happens
      to be pointing at the window. */
-  float rim = bezel * (0.35 + 0.65 * max(dot(normalize(vec3(outward, 0.9)), normalize(vec3(-0.5, 0.6, 0.7))), 0.0));
-  colour += rim * mix(0.34, 0.22, dark);
+  float rim = bezel * (0.30 + 0.70 * max(dot(normalize(vec3(outward, 0.9)), normalize(vec3(-0.5, 0.6, 0.7))), 0.0));
+  colour += rim * mix(0.22, 0.22, dark);
 
   /* And the hairline where the face meets the bezel, which is the line that says
      the card has a thickness. */
