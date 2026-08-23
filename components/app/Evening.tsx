@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import JoinSheet from "./JoinSheet";
 import { cancelMyPlace, markInterested } from "@/app/app/actions";
+import { useSay } from "./Words";
 
 /**
  * Asking to come, on the evening's own screen.
@@ -25,6 +26,7 @@ export default function Evening({
   mine: { people: number; bringing: string; state: string } | null;
   interested: boolean;
 }) {
+  const say = useSay();
   const [open, setOpen] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
   const [problem, setProblem] = useState("");
@@ -39,11 +41,11 @@ export default function Evening({
     start(async () => {
       const answer = await cancelMyPlace(eventId);
       if (!answer.ok) {
-        setProblem(answer.error ?? "That did not go through.");
+        setProblem(answer.error ?? say("join.didNotGoThrough"));
         return;
       }
       setComing(false);
-      setSaid("Taken off. Come anyway if the day turns out differently.");
+      setSaid(say("eve.takenOff"));
     });
   }
 
@@ -53,7 +55,7 @@ export default function Evening({
     start(async () => {
       const answer = await markInterested(eventId, on);
       if (!answer.ok) {
-        setProblem(answer.error ?? "That did not go through.");
+        setProblem(answer.error ?? say("join.didNotGoThrough"));
         setMarked(!on);
       }
     });
@@ -70,8 +72,8 @@ export default function Evening({
           onClick={() => mark(!marked)}
           disabled={pending}
           aria-pressed={marked}
-          aria-label={marked ? "Take it off your list" : "Keep it on your list"}
-          title={marked ? "On your list" : "Keep it on your list"}
+          aria-label={say(marked ? "row.takeOffList" : "row.keepOnList")}
+          title={say(marked ? "row.onYourList" : "row.keepOnList")}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -91,7 +93,7 @@ export default function Evening({
             onClick={cancel}
             disabled={pending}
           >
-            not coming
+            {say("row.notComing")}
           </button>
         ) : (
           <button
@@ -103,20 +105,20 @@ export default function Evening({
             }}
             disabled={pending}
           >
-            count me in
+            {say("row.countMeIn")}
           </button>
         )}
 
         <Link className="pill" href="/app/events">
-          everything on
+          {say("eve.everythingOn")}
         </Link>
       </div>
 
       {coming ? (
         <p className="row-yes">
-          you are coming
+          {say("eve.youAreComing")}
           {mine?.people
-            ? `, ${mine.people} ${mine.people === 1 ? "place" : "places"}`
+            ? `, ${mine.people} ${say(mine.people === 1 ? "row.place" : "row.places")}`
             : ""}
         </p>
       ) : null}
@@ -126,7 +128,7 @@ export default function Evening({
       <JoinSheet
         open={open && !coming}
         eventId={eventId}
-        title="count me in"
+        title={say("row.countMeIn")}
         spots={spots}
         mine={mine}
         onClose={() => setOpen(false)}

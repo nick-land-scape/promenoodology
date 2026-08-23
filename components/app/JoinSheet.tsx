@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Sheet from "./Sheet";
 import { signUpForEvent } from "@/app/app/actions";
 import { buzz } from "@/lib/native";
+import { useSay } from "./Words";
 
 const MOST = 6;
 
@@ -43,6 +44,7 @@ export default function JoinSheet({
   onClose: () => void;
   onDone?: (said: string) => void;
 }) {
+  const say = useSay();
   const [people, setPeople] = useState(String(mine?.people ?? 1));
   const [guests, setGuests] = useState<string[]>(mine?.guests ?? []);
   const [bringing, setBringing] = useState(mine?.bringing ?? "");
@@ -75,12 +77,14 @@ export default function JoinSheet({
     );
     setBusy(false);
     if (!answer.ok) {
-      setTrouble(answer.error ?? "That did not go through.");
+      setTrouble(answer.error ?? say("join.didNotGoThrough"));
       return;
     }
     void buzz("medium");
     onDone?.(
-      `You are down for ${many} ${many === 1 ? "place" : "places"}.`,
+      say("join.youAreDownFor")
+        .replace("{n}", String(many))
+        .replace("{places}", say(many === 1 ? "row.place" : "row.places")),
     );
     onClose();
   }
@@ -95,7 +99,7 @@ export default function JoinSheet({
         }}
       >
         <div className="field">
-          <label htmlFor="join-people">how many of you</label>
+          <label htmlFor="join-people">{say("sheet.howMany")}</label>
           <select
             id="join-people"
             value={people}
@@ -119,7 +123,9 @@ export default function JoinSheet({
         {Array.from({ length: asked }, (_, index) => (
           <div className="field" key={index}>
             <label htmlFor={`join-guest-${index}`}>
-              {asked === 1 ? "who with you" : `and number ${index + 2}`}
+              {asked === 1
+                ? say("sheet.whoWith")
+                : say("sheet.andNumber").replace("{n}", String(index + 2))}
             </label>
             <input
               id={`join-guest-${index}`}
@@ -131,7 +137,7 @@ export default function JoinSheet({
                   return next;
                 })
               }
-              placeholder="a first name is plenty"
+              placeholder={say("sheet.firstNamePlenty")}
               autoComplete="off"
               disabled={busy}
             />
@@ -139,18 +145,15 @@ export default function JoinSheet({
         ))}
 
         <div className="field">
-          <label htmlFor="join-bringing">bringing</label>
+          <label htmlFor="join-bringing">{say("sheet.bringing")}</label>
           <input
             id="join-bringing"
             value={bringing}
             onChange={(change) => setBringing(change.target.value)}
-            placeholder="a pot, a salad, a speaker…"
+            placeholder={say("sheet.bringingEg")}
             disabled={busy}
           />
-          <em className="field-said">
-            What is still wanted is listed on the evening. Anything else is
-            welcome anyway.
-          </em>
+          <em className="field-said">{say("sheet.anythingWelcome")}</em>
         </div>
 
         {trouble ? <p className="app-error">{trouble}</p> : null}
@@ -161,10 +164,10 @@ export default function JoinSheet({
             className="pill pill-solid pill-wide"
             disabled={busy}
           >
-            {busy ? "signing you up…" : "yes, I am coming"}
+            {say(busy ? "sheet.signingUp" : "sheet.yesComing")}
           </button>
           {spots && spots > 0 ? (
-            <p className="app-note">{spots} places altogether.</p>
+            <p className="app-note">{say("sheet.altogether").replace("{n}", String(spots))}</p>
           ) : null}
         </div>
       </form>

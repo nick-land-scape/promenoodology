@@ -1,6 +1,8 @@
 import AppHeader from "@/components/app/AppHeader";
 import Reading from "@/components/app/Reading";
 import { readingIn, requireMember } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 import {
   sharedEverywhere,
   sharedPage,
@@ -32,6 +34,7 @@ export default async function ReadPage({
 }) {
   await requireMember("/app/read");
   const lang = await readingIn();
+  const say = speaking(lang, await getFrench());
   /* Which of the three to open on, so a preview on the front screen lands where
      it was pointing rather than on the first tab. */
   const { of } = await searchParams;
@@ -41,7 +44,7 @@ export default async function ReadPage({
   const [stories, photos, handbook, pins] = await Promise.all([
     sharedStories(lang),
     sharedResources(),
-    sharedPage("handbook"),
+    sharedPage("handbook", lang),
     sharedEverywhere(),
   ]);
 
@@ -61,7 +64,7 @@ export default async function ReadPage({
 
   return (
     <>
-      <AppHeader eyebrow="read" title="what we have done" />
+      <AppHeader eyebrow={say("read.eyebrow")} title={say("read.whatWeHaveDone")} />
       <Reading
         openAt={openAt}
         stories={stories.map((story) => ({
@@ -81,7 +84,7 @@ export default async function ReadPage({
           year: photo.year,
         }))}
         handbook={{
-          title: handbook?.title ?? "the handbook",
+          title: handbook?.title ?? say("home.theHandbook"),
           lead: handbook?.lead ?? "",
           blocks: handbook?.blocks ?? [],
         }}

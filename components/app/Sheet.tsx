@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useSay } from "./Words";
 
 /**
  * The one pop-up in this app.
@@ -42,6 +43,7 @@ export default function Sheet({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const say = useSay();
   const box = useRef<HTMLDivElement>(null);
 
   /* Escape closes it, and the page behind does not move while it is open. */
@@ -92,7 +94,7 @@ export default function Sheet({
             type="button"
             className="sheet-shut"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={say("sheet.close")}
             tabIndex={open ? 0 : -1}
           >
             ×

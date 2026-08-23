@@ -11,6 +11,7 @@ import {
   signUpForEvent,
 } from "@/app/app/actions";
 import { buzz } from "@/lib/native";
+import { localeOf, useReading, useSay } from "./Words";
 import Photo from "../Photo";
 
 export type Joinable = ClubEvent & {
@@ -77,6 +78,7 @@ export default function SignUpForm({
   const [day, setDay] = useState<string>(
     () => events[0]?.date ?? new Date().toISOString().slice(0, 10),
   );
+  const say = useSay();
 
   function join(event: Joinable) {
     setSaid(null);
@@ -85,7 +87,7 @@ export default function SignUpForm({
       if (!answer.ok) {
         setSaid({
           id: event.id,
-          words: answer.error ?? "That did not go through.",
+          words: answer.error ?? say("join.didNotGoThrough"),
           bad: true,
         });
         return;
@@ -95,13 +97,15 @@ export default function SignUpForm({
       setBringing("");
       setSaid({
         id: event.id,
-        words: `You are down for ${people} ${people === "1" ? "place" : "places"}.`,
+        words: say("join.youAreDownFor")
+          .replace("{n}", people)
+          .replace("{places}", say(people === "1" ? "row.place" : "row.places")),
       });
     });
   }
 
   function cancel(event: Joinable) {
-    if (!confirm(`Say you are not coming to “${event.title}” after all?`))
+    if (!confirm(say("join.reallyNotComing").replace("{title}", event.title)))
       return;
     setSaid(null);
     start(async () => {
@@ -110,11 +114,11 @@ export default function SignUpForm({
         answer.ok
           ? {
               id: event.id,
-              words: "Taken off. Sign up again whenever you like.",
+              words: say("join.takenOff"),
             }
           : {
               id: event.id,
-              words: answer.error ?? "That did not work.",
+              words: answer.error ?? say("join.didNotWork"),
               bad: true,
             },
       );
@@ -129,7 +133,7 @@ export default function SignUpForm({
         setMarks((current) => ({ ...current, [event.id]: !on }));
         setSaid({
           id: event.id,
-          words: answer.error ?? "That did not work.",
+          words: answer.error ?? say("join.didNotWork"),
           bad: true,
         });
         return;
@@ -209,7 +213,7 @@ export default function SignUpForm({
         onDone={(words) => setSaid({ id: asking?.id ?? "", words })}
       />
 
-      <div className="segmented" role="tablist" aria-label="How to look at it">
+      <div className="segmented" role="tablist" aria-label={say("join.howToLook")}>
         {(["list", "month"] as const).map((option) => (
           <button
             key={option}
@@ -218,7 +222,7 @@ export default function SignUpForm({
             aria-selected={view === option}
             onClick={() => setView(option)}
           >
-            {option === "list" ? "what's next" : "by month"}
+            {say(option === "list" ? "join.whatsNext" : "join.byMonth")}
           </button>
         ))}
       </div>
@@ -226,23 +230,23 @@ export default function SignUpForm({
       {view === "list" ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">still to come</h2>
+            <h2 className="app-h2">{say("join.stillToCome")}</h2>
             <span className="app-label">
-              {shown.length} {shown.length === 1 ? "evening" : "evenings"}
+              {shown.length} {say(shown.length === 1 ? "join.evening" : "join.evenings")}
             </span>
           </div>
 
           {/* The places, under the heading they narrow down — the same row the
               front screen has, because it is the same question. */}
           {places.length > 1 ? (
-            <div className="app-scroll" role="group" aria-label="Which place">
+            <div className="app-scroll" role="group" aria-label={say("up.whichPlace")}>
               <button
                 type="button"
                 className="chip"
                 aria-pressed={place === null}
                 onClick={() => setPlace(null)}
               >
-                everywhere
+                {say("up.everywhere")}
               </button>
               {places.map((name) => (
                 <button
@@ -259,9 +263,7 @@ export default function SignUpForm({
           ) : null}
 
           {shown.length === 0 ? (
-            <p className="app-note">
-              Nothing to come to just yet. It goes up here the moment there is.
-            </p>
+            <p className="app-note">{say("join.nothingToCome")}</p>
           ) : (
             <ul className="row-list">
               {shown.map((event) => (
@@ -284,7 +286,7 @@ export default function SignUpForm({
       {view === "list" && past.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">already happened</h2>
+            <h2 className="app-h2">{say("join.alreadyHappened")}</h2>
             <span className="app-label">{past.length}</span>
           </div>
           <ul className="row-list">
@@ -312,7 +314,7 @@ export default function SignUpForm({
                     </Link>
                     <span className="row-meta">{event.label}</span>
                     {event.mine ? (
-                      <span className="row-yes">you were there</span>
+                      <span className="row-yes">{say("join.youWereThere")}</span>
                     ) : null}
                   </span>
                   {/* Where somebody wrote it up afterwards, the way to read it. */}
@@ -321,7 +323,7 @@ export default function SignUpForm({
                       className="pill pill-small"
                       href={`/app/read/${event.story.slug}`}
                     >
-                      read it
+                      {say("join.readIt")}
                     </Link>
                   ) : null}
                 </div>
@@ -352,6 +354,12 @@ function Month({
   onDay: (day: string) => void;
   render: (event: Joinable) => React.ReactNode;
 }) {
+  const say = useSay();
+  /* The month's name, the weekday and the ordering of "3 September" are the
+     language's business rather than ours, so they come from the locale. Only
+     the seven initials along the top are written down: a locale gives "lun."
+     where a calendar wants one letter. */
+  const locale = localeOf(useReading());
   /* Which month is on screen. It follows the chosen day, so pressing into
      September and back is one control rather than two. */
   const [shownMonth, setShownMonth] = useState(() => day.slice(0, 7));
@@ -412,12 +420,12 @@ function Month({
           <button
             type="button"
             onClick={() => step(-1)}
-            aria-label="The month before"
+            aria-label={say("month.before")}
           >
             ‹
           </button>
           <strong>
-            {firstOfMonth.toLocaleDateString("en-GB", {
+            {firstOfMonth.toLocaleDateString(locale, {
               month: "long",
               year: "numeric",
             })}
@@ -425,14 +433,14 @@ function Month({
           <button
             type="button"
             onClick={() => step(1)}
-            aria-label="The month after"
+            aria-label={say("month.after")}
           >
             ›
           </button>
         </div>
 
         <div className="month-week" aria-hidden="true">
-          {["M", "T", "W", "T", "F", "S", "S"].map((letter, index) => (
+          {say("month.weekLetters").split(" ").map((letter, index) => (
             <span key={`${letter}-${index}`}>{letter}</span>
           ))}
         </div>
@@ -458,7 +466,11 @@ function Month({
                   .join(" ")}
                 disabled={!on}
                 onClick={() => onDay(date)}
-                aria-label={`${index + 1} — ${on ? `${on.length} on` : "nothing on"}`}
+                aria-label={`${index + 1} — ${
+                  on
+                    ? say("month.howManyOn").replace("{n}", String(on.length))
+                    : say("month.nothingOn")
+                }`}
               >
                 {index + 1}
                 {on ? <em aria-hidden="true" /> : null}
@@ -471,7 +483,7 @@ function Month({
       <section className="app-section">
         <div className="app-section-head">
           <h2 className="app-h2">
-            {new Date(`${day}T00:00:00Z`).toLocaleDateString("en-GB", {
+            {new Date(`${day}T00:00:00Z`).toLocaleDateString(locale, {
               weekday: "long",
               day: "numeric",
               month: "long",
@@ -481,9 +493,7 @@ function Month({
         </div>
 
         {chosen.length === 0 ? (
-          <p className="app-note">
-            Nothing on that day. The marked ones have something.
-          </p>
+          <p className="app-note">{say("month.nothingThatDay")}</p>
         ) : (
           <ul className="row-list">{chosen.map((event) => render(event))}</ul>
         )}

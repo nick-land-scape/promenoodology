@@ -3,6 +3,7 @@
 import { useState } from "react";
 import EveningRow from "./EveningRow";
 import type { ClubEvent } from "@/lib/content";
+import { useSay } from "@/components/app/Words";
 
 type Props = {
   events: (ClubEvent & {
@@ -19,6 +20,7 @@ type Props = {
 
 /** The list of what is coming up, narrowed down by place. */
 export default function UpcomingEvents({ events, places }: Props) {
+  const say = useSay();
   const [place, setPlace] = useState<string | null>(null);
   const shown = place
     ? events.filter((event) => event.place === place)
@@ -28,9 +30,9 @@ export default function UpcomingEvents({ events, places }: Props) {
     <>
       <div className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">what is coming up</h2>
+          <h2 className="app-h2">{say("up.comingUp")}</h2>
           <span className="app-label">
-            {shown.length} {shown.length === 1 ? "event" : "events"}
+            {shown.length} {say(shown.length === 1 ? "up.event" : "up.events")}
           </span>
         </div>
 
@@ -43,14 +45,14 @@ export default function UpcomingEvents({ events, places }: Props) {
          * only shown when there is more than one place to choose between.
          */}
         {places.length > 1 ? (
-          <div className="app-scroll" role="group" aria-label="Which place">
+          <div className="app-scroll" role="group" aria-label={say("up.whichPlace")}>
             <button
               type="button"
               className="chip"
               aria-pressed={place === null}
               onClick={() => setPlace(null)}
             >
-              everywhere
+              {say("up.everywhere")}
             </button>
             {places.map((name) => (
               <button
@@ -67,7 +69,7 @@ export default function UpcomingEvents({ events, places }: Props) {
         ) : null}
 
         {shown.length === 0 ? (
-          <p className="app-note">Nothing here yet. Try everywhere.</p>
+          <p className="app-note">{say("up.nothingHere")}</p>
         ) : (
           <ul className="row-list">
             {shown.map((event) => (

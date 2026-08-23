@@ -4,7 +4,10 @@ import Crossings from "@/components/app/Crossings";
 import Feels from "@/components/app/Feels";
 import Splash from "@/components/app/Splash";
 import TabBar from "@/components/app/TabBar";
-import { whoIsThis } from "@/lib/app/me";
+import { Words } from "@/components/app/Words";
+import { readingIn, whoIsThis } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { saying } from "@/lib/words";
 import { mediaUrl } from "@/lib/supabase/config";
 import "./app.css";
 
@@ -28,22 +31,28 @@ export const viewport: Viewport = {
 
 /** The members' app: one column, made for a phone, with tabs along the bottom. */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  /* Whose app this is, for the last tab — which shows their face rather than a
-     drawing of a person. Read here because the bar is in the layout: asking on
-     every screen for something that never changes between them would be five
-     questions for one answer. Nobody signed in yet is null, and the tab falls
-     back to the drawing. */
-  const me = await whoIsThis();
+  /* Three things every screen under here needs, asked for once.
+   *
+   * Whose app this is, for the last tab — which shows their face rather than a
+   * drawing of a person; the language they read us in; and whatever French has
+   * been written in the back of the house. The tab bar is in the layout, so
+   * asking on every screen for something that never changes between them would
+   * be five questions for one answer. Nobody signed in yet is null, and the tab
+   * falls back to the drawing. */
+  const [me, lang, french] = await Promise.all([whoIsThis(), readingIn(), getFrench()]);
+
   return (
-    <div className="app-shell">
-      <Splash />
-      {/* The buzz under every press, and the four screens fetched before anybody
-          asks for them. Nothing to look at. */}
-      <Feels />
-      {/* One screen becomes the next instead of replacing it. */}
-      <Crossings />
-      <div className="app-column">{children}</div>
-      <TabBar face={me?.photoPath ? mediaUrl(me.photoPath) : null} />
-    </div>
+    <Words lang={lang} words={saying(lang, french, "app")}>
+      <div className="app-shell" lang={lang}>
+        <Splash />
+        {/* The buzz under every press, and the four screens fetched before
+            anybody asks for them. Nothing to look at. */}
+        <Feels />
+        {/* One screen becomes the next instead of replacing it. */}
+        <Crossings />
+        <div className="app-column">{children}</div>
+        <TabBar face={me?.photoPath ? mediaUrl(me.photoPath) : null} />
+      </div>
+    </Words>
   );
 }

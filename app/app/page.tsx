@@ -4,6 +4,8 @@ import AppHeader from "@/components/app/AppHeader";
 import UpcomingEvents from "@/components/app/UpcomingEvents";
 import { dateParts, shortDate, weekday, whenItIs } from "@/lib/app-data";
 import { myBookings, readingIn, requireMember } from "@/lib/app/me";
+import { getFrench } from "@/lib/source";
+import { speaking, type Said } from "@/lib/words";
 import {
   sharedCount,
   sharedEvents,
@@ -26,6 +28,8 @@ export default async function AppHome() {
   // Their own language: their account first, then whatever the browser was told
   // to remember by the website's switcher. See lib/app/me.
   const lang = await readingIn();
+  // What this screen says on its own behalf, in that language.
+  const say = speaking(lang, await getFrench());
   const [all, mine, news, stories, handbook, count] = await Promise.all([
     sharedEvents(lang),
     myBookings(),
@@ -76,15 +80,19 @@ export default async function AppHome() {
       {/* No "website ↗". Inside the app the website is not somewhere to go —
           everything on it that is worth reading is in here, under Read. */}
       <AppHeader
-        eyebrow="welcome"
-        title={me.name ? `hello, ${me.name.split(" ")[0]}` : "hello"}
+        eyebrow={say("home.welcome")}
+        title={
+          me.name
+            ? say("home.helloName").replace("{name}", me.name.split(" ")[0])
+            : say("home.hello")
+        }
       />
 
       <UpcomingEvents events={events} places={places} />
 
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">latest news</h2>
+          <h2 className="app-h2">{say("home.latestNews")}</h2>
         </div>
         <ul className="row-list">
           {news.slice(0, FEW.news).map((item) => (
@@ -99,7 +107,7 @@ export default async function AppHome() {
                       {item.title}
                       {/* The one held at the top says why it is there. */}
                       {item.pinned ? (
-                        <em className="row-pinned">kept at the top</em>
+                        <em className="row-pinned">{say("home.keptAtTop")}</em>
                       ) : null}
                     </span>
                     <span className="row-when-said">
@@ -107,7 +115,7 @@ export default async function AppHome() {
                     </span>
                   </span>
                   {item.by.length > 0 ? (
-                    <span className="row-meta">{said(item.by)}</span>
+                    <span className="row-meta">{said(item.by, say)}</span>
                   ) : null}
                   <p className="post-text" style={{ paddingTop: 4 }}>
                     {item.text}
@@ -125,9 +133,9 @@ export default async function AppHome() {
       {stories.length > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">what we have done</h2>
+            <h2 className="app-h2">{say("home.whatWeHaveDone")}</h2>
             <Link className="app-more" href="/app/read">
-              all {stories.length} ›
+              {say("home.allOfThem").replace("{n}", String(stories.length))}
             </Link>
           </div>
           <ul className="peek-stories">
@@ -153,9 +161,9 @@ export default async function AppHome() {
       {peek ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">the handbook</h2>
+            <h2 className="app-h2">{say("home.theHandbook")}</h2>
             <Link className="app-more" href="/app/read?of=handbook">
-              read it ›
+              {say("home.readIt")}
             </Link>
           </div>
           <Link className="peek-book" href="/app/read?of=handbook">
@@ -181,42 +189,41 @@ export default async function AppHome() {
       {count.interventions > 0 ? (
         <section className="app-section">
           <div className="app-section-head">
-            <h2 className="app-h2">what that adds up to</h2>
+            <h2 className="app-h2">{say("home.addsUpTo")}</h2>
           </div>
           <dl className="tally">
             {count.fed > 0 ? (
               <div>
-                <dt>{count.fed.toLocaleString("en-GB")}</dt>
-                <dd>plates</dd>
+                {/* Grouped the way the language groups them: 1 200 in French,
+                    1,200 in English. */}
+                <dt>{count.fed.toLocaleString(lang === "fr" ? "fr-CH" : "en-GB")}</dt>
+                <dd>{say("home.plates")}</dd>
               </div>
             ) : null}
             <div>
               <dt>{count.interventions}</dt>
               <dd>
-                {count.interventions === 1 ? "intervention" : "interventions"}
+                {say(count.interventions === 1 ? "home.intervention" : "home.interventions")}
               </dd>
             </div>
             <div>
               <dt>{count.places}</dt>
-              <dd>{count.places === 1 ? "place" : "places"}</dd>
+              <dd>{say(count.places === 1 ? "home.place" : "home.places")}</dd>
             </div>
             {count.countries > 1 ? (
               <div>
                 <dt>{count.countries}</dt>
-                <dd>countries</dd>
+                <dd>{say("home.countries")}</dd>
               </div>
             ) : null}
             {count.years > 1 ? (
               <div>
                 <dt>{count.years}</dt>
-                <dd>years</dd>
+                <dd>{say("home.years")}</dd>
               </div>
             ) : null}
           </dl>
-          <p className="app-note">
-            Public space in Europe is turning generic. This is what a bit of
-            nerve and a borrowed kitchen has done about it so far.
-          </p>
+          <p className="app-note">{say("home.whatItIsFor")}</p>
         </section>
       ) : null}
     </>
@@ -224,7 +231,10 @@ export default async function AppHome() {
 }
 
 /** "by Nick", "by Nick and Gabriel", "by Nick, Gabriel and Carla". */
-function said(names: string[]): string {
-  if (names.length === 1) return `by ${names[0]}`;
-  return `by ${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+function said(names: string[], say: Said): string {
+  const written =
+    names.length === 1
+      ? names[0]
+      : `${names.slice(0, -1).join(", ")} ${say("by.and")} ${names[names.length - 1]}`;
+  return say("by.one").replace("{names}", written);
 }

@@ -157,6 +157,161 @@ export const PHRASES: Phrase[] = [
     where: "app",
   },
 
+  /* -------------------------------------------------------- the app: the tabs */
+  { key: "tab.main", en: "Main", fr: "Principal", where: "app", note: "Read out by a screen reader for the bar along the bottom; not shown." },
+  { key: "tab.home", en: "Home", fr: "Accueil", where: "app" },
+  { key: "tab.whatsOn", en: "What’s on", fr: "À l’affiche", where: "app" },
+  { key: "tab.read", en: "Read", fr: "Lire", where: "app" },
+  { key: "tab.connect", en: "Connect", fr: "Rencontrer", where: "app" },
+  { key: "tab.account", en: "Account", fr: "Compte", where: "app" },
+
+  /* ------------------------------------------------------ the app: front screen */
+  { key: "home.welcome", en: "welcome", fr: "bienvenue", where: "app", note: "The small line above “hello”." },
+  { key: "home.hello", en: "hello", fr: "bonjour", where: "app", note: "On its own when we do not know the name." },
+  { key: "home.helloName", en: "hello, {name}", fr: "bonjour, {name}", where: "app", note: "{name} is their first name. Keep {name} exactly as it is." },
+  { key: "home.latestNews", en: "latest news", fr: "dernières nouvelles", where: "app" },
+  { key: "home.keptAtTop", en: "kept at the top", fr: "épinglé", where: "app", note: "Beside the one note that is held above the others." },
+  { key: "home.whatWeHaveDone", en: "what we have done", fr: "ce que nous avons fait", where: "app" },
+  { key: "home.allOfThem", en: "all {n} ›", fr: "les {n} ›", where: "app", note: "{n} is a number. Opens the full list." },
+  { key: "home.theHandbook", en: "the handbook", fr: "le manuel", where: "app" },
+  { key: "home.readIt", en: "read it ›", fr: "le lire ›", where: "app" },
+  { key: "home.addsUpTo", en: "what that adds up to", fr: "ce que cela représente", where: "app", note: "Over the plates, places, countries and years." },
+  { key: "home.plates", en: "plates", fr: "assiettes", where: "app" },
+  { key: "home.intervention", en: "intervention", fr: "intervention", where: "app", note: "One of them." },
+  { key: "home.interventions", en: "interventions", fr: "interventions", where: "app", note: "More than one." },
+  { key: "home.place", en: "place", fr: "lieu", where: "app", note: "One of them." },
+  { key: "home.places", en: "places", fr: "lieux", where: "app", note: "More than one. Places on a map, not seats at a table." },
+  { key: "home.countries", en: "countries", fr: "pays", where: "app" },
+  { key: "home.years", en: "years", fr: "années", where: "app" },
+  {
+    key: "home.whatItIsFor",
+    en: "Public space in Europe is turning generic. This is what a bit of nerve and a borrowed kitchen has done about it so far.",
+    fr: "L’espace public européen s’uniformise. Voilà ce qu’un peu d’audace et une cuisine empruntée y ont changé jusqu’ici.",
+    where: "app",
+    note: "Under the figures.",
+  },
+  { key: "by.one", en: "by {names}", fr: "par {names}", where: "app", note: "Who wrote a note. Keep {names} exactly as it is." },
+  { key: "by.and", en: "and", fr: "et", where: "app", note: "Joins the last two names: “by Nick, Gabriel and Carla”." },
+
+  /* ------------------------------------------- the app: what is coming up */
+  { key: "up.comingUp", en: "what is coming up", fr: "ce qui arrive", where: "app" },
+  { key: "up.event", en: "event", fr: "événement", where: "app", note: "One of them, after a number." },
+  { key: "up.events", en: "events", fr: "événements", where: "app", note: "More than one, after a number." },
+  { key: "up.whichPlace", en: "Which place", fr: "Quel lieu", where: "app", note: "Read out by a screen reader over the row of places; not shown." },
+  { key: "up.everywhere", en: "everywhere", fr: "partout", where: "app", note: "The chip that stops narrowing by place." },
+  { key: "up.nothingHere", en: "Nothing here yet. Try everywhere.", fr: "Rien ici pour l’instant. Essayez « partout ».", where: "app" },
+
+  /* ---------------------------------------------- the app: the header of a screen */
+  { key: "head.back", en: "Back", fr: "Retour", where: "app", note: "Read out by a screen reader for the arrow, top left; not shown." },
+
+  /* -------------------------------------------------- the app: the what’s on screen */
+  { key: "on.eyebrow", en: "what’s on", fr: "à l’affiche", where: "app", note: "The small line above the title." },
+  { key: "on.whatToJoin", en: "what would you like to join?", fr: "à quoi voulez-vous participer ?", where: "app" },
+
+  /* ------------------------------------------------ the app: one evening, in a row */
+  { key: "row.with", en: "with", fr: "avec", where: "app", note: "Before the partners' names on a row." },
+  { key: "row.stillWanted", en: "still wanted", fr: "encore nécessaire", where: "app", note: "Over what people could bring." },
+  { key: "row.comingWith", en: "coming with", fr: "apporte", where: "app", note: "Over what people are already bringing." },
+  { key: "row.youAreComing", en: "you are coming,", fr: "vous venez,", where: "app", note: "Followed by a number of places." },
+  { key: "row.place", en: "place", fr: "place", where: "app", note: "One seat at the table." },
+  { key: "row.places", en: "places", fr: "places", where: "app", note: "More than one seat at the table." },
+  { key: "row.withGuests", en: "with", fr: "avec", where: "app", note: "Before the names of the people they are bringing." },
+  { key: "row.keptForYou", en: "kept for you", fr: "réservé pour vous", where: "app" },
+  { key: "row.notThisTime", en: "not this time", fr: "pas cette fois", where: "app", note: "Their request was turned down." },
+  { key: "row.onYourList", en: "on your list", fr: "dans votre liste", where: "app" },
+  { key: "row.notComing", en: "not coming", fr: "je ne viens plus", where: "app", note: "The button that gives a place back." },
+  { key: "row.countMeIn", en: "count me in", fr: "je viens", where: "app" },
+  { key: "row.takeOffList", en: "Take it off your list", fr: "Retirer de votre liste", where: "app", note: "The bookmark, when it is already marked." },
+  { key: "row.keepOnList", en: "Keep it on your list", fr: "Garder dans votre liste", where: "app", note: "The bookmark, when it is not." },
+
+  /* --------------------------------------- the app: signing up for an evening */
+  { key: "join.howToLook", en: "How to look at it", fr: "Comment l’afficher", where: "app", note: "Read out by a screen reader over the list/month switch; not shown." },
+  { key: "join.whatsNext", en: "what’s next", fr: "la suite", where: "app", note: "The list, as against the month." },
+  { key: "join.byMonth", en: "by month", fr: "par mois", where: "app" },
+  { key: "join.stillToCome", en: "still to come", fr: "encore à venir", where: "app" },
+  { key: "join.evening", en: "evening", fr: "soirée", where: "app", note: "One of them, after a number." },
+  { key: "join.evenings", en: "evenings", fr: "soirées", where: "app", note: "More than one, after a number." },
+  { key: "join.nothingToCome", en: "Nothing to come to just yet. It goes up here the moment there is.", fr: "Rien à quoi participer pour l’instant. Cela apparaîtra ici dès qu’il y aura quelque chose.", where: "app" },
+  { key: "join.alreadyHappened", en: "already happened", fr: "déjà passé", where: "app" },
+  { key: "join.youWereThere", en: "you were there", fr: "vous y étiez", where: "app" },
+  { key: "join.readIt", en: "read it", fr: "le lire", where: "app", note: "Opens the story written about an evening afterwards." },
+  { key: "join.didNotGoThrough", en: "That did not go through.", fr: "Cela n’a pas fonctionné.", where: "app", note: "When signing up failed and the server said nothing useful." },
+  { key: "join.didNotWork", en: "That did not work.", fr: "Cela n’a pas fonctionné.", where: "app" },
+  { key: "join.youAreDownFor", en: "You are down for {n} {places}.", fr: "Vous êtes inscrit·e pour {n} {places}.", where: "app", note: "{n} is a number and {places} is the word below. Keep both exactly as they are." },
+  { key: "join.takenOff", en: "Taken off. Sign up again whenever you like.", fr: "C’est annulé. Vous pouvez vous réinscrire quand vous voulez.", where: "app" },
+  { key: "join.reallyNotComing", en: "Say you are not coming to “{title}” after all?", fr: "Annuler votre venue à « {title} » ?", where: "app", note: "The phone asks this before giving a place back. Keep {title} exactly as it is." },
+
+  /* ----------------------------------------------------- the app: the month */
+  { key: "month.before", en: "The month before", fr: "Le mois précédent", where: "app", note: "Read out by a screen reader; not shown." },
+  { key: "month.after", en: "The month after", fr: "Le mois suivant", where: "app", note: "Read out by a screen reader; not shown." },
+  { key: "month.weekLetters", en: "M T W T F S S", fr: "L M M J V S D", where: "app", note: "The initials of the seven days, Monday first, separated by single spaces." },
+  { key: "month.howManyOn", en: "{n} on", fr: "{n} ce jour-là", where: "app", note: "Read out for a day with something on it. Keep {n} exactly as it is." },
+  { key: "month.nothingOn", en: "nothing on", fr: "rien ce jour-là", where: "app", note: "Read out for an empty day." },
+  { key: "month.nothingThatDay", en: "Nothing on that day. The marked ones have something.", fr: "Rien ce jour-là. Les jours marqués ont quelque chose.", where: "app" },
+
+  /* ------------------------------------------------- the app: the join pop-up */
+  { key: "sheet.howMany", en: "how many of you", fr: "combien êtes-vous", where: "app" },
+  { key: "sheet.whoWith", en: "who with you", fr: "qui vous accompagne", where: "app", note: "Asked when they are bringing one person." },
+  { key: "sheet.andNumber", en: "and number {n}", fr: "et la personne {n}", where: "app", note: "Asked for each further person. Keep {n} exactly as it is." },
+  { key: "sheet.firstNamePlenty", en: "a first name is plenty", fr: "un prénom suffit", where: "app", note: "The grey text in an empty name field." },
+  { key: "sheet.bringing", en: "bringing", fr: "j’apporte", where: "app" },
+  { key: "sheet.bringingEg", en: "a pot, a salad, a speaker…", fr: "une marmite, une salade, une enceinte…", where: "app", note: "The grey text in the empty field." },
+  { key: "sheet.anythingWelcome", en: "What is still wanted is listed on the evening. Anything else is welcome anyway.", fr: "Ce qui manque encore est indiqué sur la soirée. Tout le reste est bienvenu aussi.", where: "app" },
+  { key: "sheet.signingUp", en: "signing you up…", fr: "inscription en cours…", where: "app" },
+  { key: "sheet.yesComing", en: "yes, I am coming", fr: "oui, je viens", where: "app" },
+  { key: "sheet.altogether", en: "{n} places altogether.", fr: "{n} places en tout.", where: "app", note: "Keep {n} exactly as it is." },
+  { key: "sheet.close", en: "Close", fr: "Fermer", where: "app", note: "Read out for the cross that shuts a pop-up." },
+
+  /* ----------------------------------------- the app: one evening, in full */
+  { key: "eve.everythingOn", en: "everything on", fr: "tout le programme", where: "app", note: "Back to the list of evenings." },
+  { key: "eve.youAreComing", en: "you are coming", fr: "vous venez", where: "app" },
+  { key: "eve.takenOff", en: "Taken off. Come anyway if the day turns out differently.", fr: "C’est annulé. Venez quand même si la journée en décide autrement.", where: "app" },
+  { key: "eve.itHasBeen", en: "It has been. What is here is what it was.", fr: "C’est passé. Ce qui est ici est ce que c’était.", where: "app" },
+  { key: "eve.programme", en: "the programme", fr: "le programme", where: "app" },
+  { key: "eve.stillWanted", en: "still wanted", fr: "encore nécessaire", where: "app" },
+  { key: "eve.comingWith", en: "coming with", fr: "apporté par", where: "app" },
+  { key: "eve.practicalBits", en: "the practical bits", fr: "en pratique", where: "app" },
+  { key: "eve.orWriteTo", en: "or write to", fr: "ou écrivez à", where: "app" },
+  { key: "eve.with", en: "with", fr: "avec", where: "app", note: "Before the partners' names." },
+  { key: "eve.partOf", en: "part of", fr: "dans le cadre de", where: "app" },
+  { key: "eve.ate", en: "ate", fr: "repas servis", where: "app", note: "After a number: “120 ate”." },
+  { key: "eve.readWhatCame", en: "read what came of it", fr: "lire ce qui en est sorti", where: "app" },
+
+  /* ------------------------------------------------------- the app: reading */
+  { key: "read.eyebrow", en: "read", fr: "lire", where: "app", note: "The small line above the title." },
+  { key: "read.whatWeHaveDone", en: "what we have done", fr: "ce que nous avons fait", where: "app" },
+  { key: "read.whatToRead", en: "What to read", fr: "Quoi lire", where: "app", note: "Read out by a screen reader over the three-way switch; not shown." },
+  { key: "read.stories", en: "stories", fr: "récits", where: "app" },
+  { key: "read.archive", en: "archive", fr: "archive", where: "app" },
+  { key: "read.handbook", en: "handbook", fr: "manuel", where: "app" },
+  { key: "read.storiesHow", en: "Stories how", fr: "Affichage des récits", where: "app", note: "Read out by a screen reader over “as a list / on the map”; not shown." },
+  { key: "read.asAList", en: "as a list", fr: "en liste", where: "app" },
+  { key: "read.onTheMap", en: "on the map", fr: "sur la carte", where: "app" },
+  { key: "read.everyPhotograph", en: "every photograph", fr: "toutes les photographies", where: "app" },
+  { key: "read.whichYear", en: "Which year", fr: "Quelle année", where: "app", note: "Read out by a screen reader over the row of years; not shown." },
+  { key: "read.shuffle", en: "shuffle", fr: "mélanger", where: "app", note: "Deals the photographs again in another order." },
+  { key: "read.everyYear", en: "every year", fr: "toutes les années", where: "app" },
+  { key: "read.open", en: "Open", fr: "Ouvrir", where: "app", note: "Read out for a photograph on the wall; not shown." },
+  { key: "read.putOneOn", en: "put one on yourself", fr: "organisez la vôtre", where: "app" },
+  { key: "read.putOneOnUnder", en: "one sheet per kind of place, for getting strangers into the same place", fr: "une fiche par type de lieu, pour réunir des inconnus au même endroit", where: "app" },
+
+  /* ------------------------------------------------- the app: your membership */
+  { key: "acc.eyebrow", en: "you", fr: "vous", where: "app", note: "The small line above the title." },
+  { key: "acc.yourMembership", en: "your membership", fr: "votre adhésion", where: "app" },
+  { key: "acc.youSaidYesTo", en: "you said yes to", fr: "vous avez dit oui à", where: "app" },
+  { key: "acc.nothingYet", en: "Nothing yet.", fr: "Rien pour l’instant.", where: "app" },
+  { key: "acc.haveALook", en: "Have a look at what is on", fr: "Voyez ce qui se passe", where: "app", note: "A link, straight after “Nothing yet.”" },
+  { key: "acc.bringing", en: "bringing", fr: "apporte", where: "app", note: "Followed by what they said they would bring." },
+  { key: "acc.personalInformation", en: "your personal information", fr: "vos informations personnelles", where: "app" },
+  { key: "acc.waysToSignIn", en: "ways to sign in", fr: "façons de se connecter", where: "app" },
+  { key: "acc.getInTouch", en: "get in touch, or report a bug", fr: "nous écrire, ou signaler un problème", where: "app" },
+  { key: "acc.inWriting", en: "in writing", fr: "les textes officiels", where: "app", note: "Over the four legal pages." },
+  { key: "acc.help", en: "help", fr: "aide", where: "app" },
+  { key: "acc.privacy", en: "what we do with your data", fr: "ce que nous faisons de vos données", where: "app" },
+  { key: "acc.terms", en: "terms and conditions", fr: "conditions générales", where: "app" },
+  { key: "acc.imprint", en: "imprint", fr: "mentions légales", where: "app" },
+  { key: "acc.signOut", en: "sign out", fr: "se déconnecter", where: "app" },
+
   /* --------------------------------------------------------- the back of the house
 
      Nothing yet, and the section is drawn anyway — see WHERES. The words in
@@ -210,4 +365,29 @@ export function speaking(lang: "en" | "fr", said: Record<string, string> = {}): 
     if (lang === "en") return phrase.en;
     return said[key]?.trim() || phrase.fr || phrase.en;
   };
+}
+
+/**
+ * Every phrase of one half of the house, resolved, as plain data.
+ *
+ * `speaking` above is a function, which a server component can call and a client
+ * component cannot be handed. The app is mostly client components — a tab bar, a
+ * sheet that slides up, a form that answers as you type — and threading a dozen
+ * strings into each one as props was the reason its own words stayed in English
+ * long after the website's were translated.
+ *
+ * So: the layout resolves the app's phrases once, on the server, where the
+ * language is known, and hands the result down as an ordinary object. About
+ * three kilobytes of text for the whole app, sent once per screen rather than
+ * per component.
+ */
+export function saying(
+  lang: "en" | "fr",
+  said: Record<string, string> = {},
+  where: Where,
+): Record<string, string> {
+  const say = speaking(lang, said);
+  const out: Record<string, string> = {};
+  for (const phrase of PHRASES) if (phrase.where === where) out[phrase.key] = say(phrase.key);
+  return out;
 }

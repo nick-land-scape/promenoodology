@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Photo from "../Photo";
+import { useSay } from "./Words";
 
 export type EveningRow = {
   id: string;
@@ -67,6 +68,7 @@ export default function EveningRow({
   onJoin?: () => void;
   onCancel?: () => void;
 }) {
+  const say = useSay();
   const coming = Boolean(event.mine && event.mine.state !== "interested");
 
   return (
@@ -104,7 +106,7 @@ export default function EveningRow({
 
         {event.partners && event.partners.length > 0 ? (
           <span className="row-meta">
-            with {event.partners.map((one) => one.name).join(", ")}
+            {say("row.with")} {event.partners.map((one) => one.name).join(", ")}
           </span>
         ) : null}
         {event.note ? <span className="row-meta">{event.note}</span> : null}
@@ -113,7 +115,7 @@ export default function EveningRow({
             sentences about an improvised kitchen. */}
         {does && event.needs?.trim() ? (
           <span className="row-wanted">
-            <em>still wanted</em>
+            <em>{say("row.stillWanted")}</em>
             {event.needs
               .split("\n")
               .map((line) => line.trim())
@@ -126,7 +128,7 @@ export default function EveningRow({
 
         {does && event.bringing && event.bringing.length > 0 ? (
           <span className="row-coming">
-            <em>coming with</em>
+            <em>{say("row.comingWith")}</em>
             {event.bringing.map((one) => (
               <span key={`${one.who}-${one.what}`}>
                 {one.what} <i>{one.who.split(" ")[0]}</i>
@@ -137,16 +139,16 @@ export default function EveningRow({
 
         {coming ? (
           <span className="row-yes">
-            you are coming, {event.mine?.people}{" "}
-            {event.mine?.people === 1 ? "place" : "places"}
+            {say("row.youAreComing")} {event.mine?.people}{" "}
+            {say(event.mine?.people === 1 ? "row.place" : "row.places")}
             {event.mine?.guests?.length
-              ? ` · with ${event.mine.guests.join(", ")}`
+              ? ` · ${say("row.withGuests")} ${event.mine.guests.join(", ")}`
               : null}
-            {event.mine?.state === "kept" ? " · kept for you" : null}
-            {event.mine?.state === "declined" ? " · not this time" : null}
+            {event.mine?.state === "kept" ? ` · ${say("row.keptForYou")}` : null}
+            {event.mine?.state === "declined" ? ` · ${say("row.notThisTime")}` : null}
           </span>
         ) : marked ? (
-          <span className="row-maybe">on your list</span>
+          <span className="row-maybe">{say("row.onYourList")}</span>
         ) : null}
 
         {/* The one decision on the left, the bookmark at the right end of the
@@ -160,7 +162,7 @@ export default function EveningRow({
                 onClick={() => onCancel?.()}
                 disabled={pending}
               >
-                not coming
+                {say("row.notComing")}
               </button>
             ) : (
               <button
@@ -169,7 +171,7 @@ export default function EveningRow({
                 onClick={() => onJoin?.()}
                 disabled={pending}
               >
-                count me in
+                {say("row.countMeIn")}
               </button>
             )}
 
@@ -179,8 +181,8 @@ export default function EveningRow({
               onClick={() => onMark?.(!marked)}
               disabled={pending}
               aria-pressed={marked}
-              aria-label={marked ? "Take it off your list" : "Keep it on your list"}
-              title={marked ? "On your list" : "Keep it on your list"}
+              aria-label={say(marked ? "row.takeOffList" : "row.keepOnList")}
+              title={say(marked ? "row.onYourList" : "row.keepOnList")}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path

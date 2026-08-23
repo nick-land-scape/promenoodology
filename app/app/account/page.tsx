@@ -28,10 +28,10 @@ export const dynamic = "force-dynamic";
  * footer, and four ways to wander off into pages that are already in the app under
  * Read. An app that leaks into a website is an app somebody leaves. */
 const LEGAL = [
-  { label: "help", href: "/app/legal/support" },
-  { label: "what we do with your data", href: "/app/legal/privacy" },
-  { label: "terms and conditions", href: "/app/legal/terms" },
-  { label: "imprint", href: "/app/legal/imprint" },
+  { key: "acc.help", href: "/app/legal/support" },
+  { key: "acc.privacy", href: "/app/legal/privacy" },
+  { key: "acc.terms", href: "/app/legal/terms" },
+  { key: "acc.imprint", href: "/app/legal/imprint" },
 ];
 
 const SHOWING = 2;
@@ -62,7 +62,7 @@ export default async function AccountPage() {
       {/* The header stays, and it does not say your name: the card underneath it
           says that, in bigger type, three lines lower. What the header is for is
           telling you which of the four screens you are on. */}
-      <AppHeader eyebrow="you" title="your membership" />
+      <AppHeader eyebrow={say("acc.eyebrow")} title={say("acc.yourMembership")} />
 
       <div className="account-top">
         <MemberCard
@@ -80,10 +80,10 @@ export default async function AccountPage() {
 
       <section className="app-section">
         <div className="app-section-head">
-          <h2 className="app-h2">you said yes to</h2>
+          <h2 className="app-h2">{say("acc.youSaidYesTo")}</h2>
           {yes.length > SHOWING ? (
             <Link className="app-more" href="/app/account/coming">
-              all {yes.length} ›
+              {say("home.allOfThem").replace("{n}", String(yes.length))}
             </Link>
           ) : (
             <span className="app-label">{yes.length}</span>
@@ -91,8 +91,8 @@ export default async function AccountPage() {
         </div>
         {yes.length === 0 ? (
           <p className="app-note">
-            Nothing yet.{" "}
-            <Link href="/app/events">Have a look at what is on</Link>.
+            {say("acc.nothingYet")}{" "}
+            <Link href="/app/events">{say("acc.haveALook")}</Link>.
           </p>
         ) : (
           <ul className="row-list">
@@ -115,12 +115,12 @@ export default async function AccountPage() {
                     </span>
                     <span className="row-yes">
                       {booking.people}{" "}
-                      {booking.people === 1 ? "place" : "places"}
+                      {say(booking.people === 1 ? "row.place" : "row.places")}
                       {booking.bringing
-                        ? ` · bringing ${booking.bringing}`
+                        ? ` · ${say("acc.bringing")} ${booking.bringing}`
                         : ""}
-                      {booking.state === "kept" ? " · kept for you" : ""}
-                      {booking.state === "declined" ? " · not this time" : ""}
+                      {booking.state === "kept" ? ` · ${say("row.keptForYou")}` : ""}
+                      {booking.state === "declined" ? ` · ${say("row.notThisTime")}` : ""}
                     </span>
                   </span>
                   {event?.photo ? (
@@ -141,25 +141,25 @@ export default async function AccountPage() {
       {/* The two screens that are about you. */}
       <section className="app-section">
         <Link className="wide-row" href="/app/account/details">
-          <span>your personal information</span>
+          <span>{say("acc.personalInformation")}</span>
           <span aria-hidden="true">›</span>
         </Link>
         <Link className="wide-row" href="/app/account/signing-in">
-          <span>ways to sign in</span>
+          <span>{say("acc.waysToSignIn")}</span>
           <span aria-hidden="true">›</span>
         </Link>
         <Link className="wide-row" href="/app/contact">
-          <span>get in touch, or report a bug</span>
+          <span>{say("acc.getInTouch")}</span>
           <span aria-hidden="true">›</span>
         </Link>
       </section>
 
       {/* And the things we have to say in writing, which are not settings. */}
       <section className="app-section app-section-legal">
-        <p className="app-label app-label-alone">in writing</p>
+        <p className="app-label app-label-alone">{say("acc.inWriting")}</p>
         {LEGAL.map((row) => (
-          <Link key={row.label} className="wide-row" href={row.href}>
-            <span>{row.label}</span>
+          <Link key={row.key} className="wide-row" href={row.href}>
+            <span>{say(row.key)}</span>
             <span aria-hidden="true">›</span>
           </Link>
         ))}
@@ -167,7 +167,7 @@ export default async function AccountPage() {
 
       <form action={signOut} className="app-section">
         <button type="submit" className="pill pill-wide">
-          sign out
+          {say("acc.signOut")}
         </button>
       </form>
 

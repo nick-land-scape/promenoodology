@@ -4,28 +4,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { buzz } from "@/lib/native";
+import { useSay } from "@/components/app/Words";
 
 /* Five, which is as many as a phone's bar can hold and exactly as many as this
    app has kinds of thing to do: see what is on, say you are coming, read what has
    already happened, talk to people, and look after your own membership. */
 const TABS = [
-  { href: "/app", label: "Home", icon: HomeIcon },
-  { href: "/app/events", label: "What's on", icon: BookIcon },
-  { href: "/app/read", label: "Read", icon: ReadIcon },
-  { href: "/app/connect", label: "Connect", icon: ConnectIcon },
-  { href: "/app/account", label: "Account", icon: AccountIcon },
+  { href: "/app", key: "tab.home", icon: HomeIcon },
+  { href: "/app/events", key: "tab.whatsOn", icon: BookIcon },
+  { href: "/app/read", key: "tab.read", icon: ReadIcon },
+  { href: "/app/connect", key: "tab.connect", icon: ConnectIcon },
+  { href: "/app/account", key: "tab.account", icon: AccountIcon },
 ];
 
 export default function TabBar({ face }: { face?: string | null }) {
   const pathname = usePathname();
+  const say = useSay();
 
   /* Not on the door. There is nothing to switch between until somebody is in,
      and four tabs under a sign-in screen are four dead ends. */
   if (pathname === "/app/enter") return null;
 
   return (
-    <nav className="tabbar" aria-label="Main">
-      {TABS.map(({ href, label, icon: Icon }) => {
+    <nav className="tabbar" aria-label={say("tab.main")}>
+      {TABS.map(({ href, key, icon: Icon }) => {
         const active = href === "/app" ? pathname === "/app" : pathname.startsWith(href);
         return (
           <Link
@@ -53,7 +55,7 @@ export default function TabBar({ face }: { face?: string | null }) {
             ) : (
               <Icon filled={active} />
             )}
-            <span>{label}</span>
+            <span>{say(key)}</span>
           </Link>
         );
       })}

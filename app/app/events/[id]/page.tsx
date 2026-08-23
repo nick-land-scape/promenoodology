@@ -7,7 +7,8 @@ import Photo from "@/components/Photo";
 import { whenItIs } from "@/lib/app-data";
 import { myBookings, readingIn, requireMember, whoIsBringingWhat } from "@/lib/app/me";
 import { pretty } from "@/lib/admin/when";
-import { getEvent, getEvents } from "@/lib/source";
+import { getEvent, getEvents, getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 /* What you have asked for is on it, so it is worked out per request rather than
    cached for a minute. */
@@ -28,6 +29,7 @@ export const dynamic = "force-dynamic";
 export default async function EveningPage({ params }: { params: Promise<{ id: string }> }) {
   await requireMember("/app/events");
   const lang = await readingIn();
+  const say = speaking(lang, await getFrench());
   const { id } = await params;
 
   /* By slug or by id, because both are addresses somebody may have been given:
@@ -48,7 +50,7 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <AppHeader eyebrow="what's on" title={event.title} back="/app/events" />
+      <AppHeader eyebrow={say("on.eyebrow")} title={event.title} back="/app/events" />
 
       <div className="evening">
         {event.photo ? (
@@ -74,7 +76,7 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
         ) : null}
 
         {over ? (
-          <p className="app-note">It has been. What is here is what it was.</p>
+          <p className="app-note">{say("eve.itHasBeen")}</p>
         ) : (
           <Evening
             eventId={event.id}
@@ -90,7 +92,7 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
 
         {event.days.length > 0 ? (
           <section className="evening-days">
-            <h2 className="evening-label">the programme</h2>
+            <h2 className="evening-label">{say("eve.programme")}</h2>
             <ol>
               {event.days.map((day) => (
                 <li key={`${day.date}-${day.title}`}>
@@ -146,7 +148,7 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
         {/* The two most useful sentences about an improvised kitchen. */}
         {!over && event.needs.trim() ? (
           <section className="evening-block">
-            <h2 className="evening-label">still wanted</h2>
+            <h2 className="evening-label">{say("eve.stillWanted")}</h2>
             <ul className="evening-list">
               {event.needs
                 .split("\n")
@@ -161,7 +163,7 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
 
         {bringing.length > 0 ? (
           <section className="evening-block">
-            <h2 className="evening-label">coming with</h2>
+            <h2 className="evening-label">{say("eve.comingWith")}</h2>
             <ul className="evening-list">
               {bringing.map((one) => (
                 <li key={`${one.who}-${one.what}`}>
@@ -173,26 +175,39 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
         ) : null}
 
         <section className="evening-block">
-          <h2 className="evening-label">the practical bits</h2>
+          <h2 className="evening-label">{say("eve.practicalBits")}</h2>
           <ul className="evening-list">
             {event.place ? <li>{event.place}</li> : null}
             {event.cost ? <li>{event.cost}</li> : null}
             {event.note ? <li>{event.note}</li> : null}
             {event.signUpEmail ? (
               <li>
-                or write to <a href={`mailto:${event.signUpEmail}`}>{event.signUpEmail}</a>
+                {say("eve.orWriteTo")}{" "}
+                <a href={`mailto:${event.signUpEmail}`}>{event.signUpEmail}</a>
               </li>
             ) : null}
-            {event.partners.length > 0 ? <li>with {event.partners.map((one) => one.name).join(", ")}</li> : null}
-            {event.partOf ? <li>part of {event.partOf}</li> : null}
-            {event.fed ? <li>{event.fed} ate</li> : null}
+            {event.partners.length > 0 ? (
+              <li>
+                {say("eve.with")} {event.partners.map((one) => one.name).join(", ")}
+              </li>
+            ) : null}
+            {event.partOf ? (
+              <li>
+                {say("eve.partOf")} {event.partOf}
+              </li>
+            ) : null}
+            {event.fed ? (
+              <li>
+                {event.fed} {say("eve.ate")}
+              </li>
+            ) : null}
           </ul>
         </section>
 
         {event.story ? (
           <p className="evening-block">
             <Link className="pill" href={`/app/read/${event.story.slug}`}>
-              read what came of it
+              {say("eve.readWhatCame")}
             </Link>
           </p>
         ) : null}

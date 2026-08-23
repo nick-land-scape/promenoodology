@@ -3,6 +3,8 @@ import SignUpForm, { type Joinable } from "@/components/app/SignUpForm";
 import { dateParts, whenItIs } from "@/lib/app-data";
 import { myBookings, readingIn, requireMember, whoIsBringingWhat } from "@/lib/app/me";
 import { sharedEvents } from "@/lib/shared";
+import { getFrench } from "@/lib/source";
+import { speaking } from "@/lib/words";
 
 export const metadata = { title: "What's on" };
 
@@ -13,6 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function EventsPage() {
   await requireMember("/app/events");
   const lang = await readingIn();
+  const say = speaking(lang, await getFrench());
 
   const [all, mine] = await Promise.all([sharedEvents(lang), myBookings()]);
   const asked = new Map(mine.map((booking) => [booking.eventId, booking]));
@@ -61,7 +64,7 @@ export default async function EventsPage() {
 
   return (
     <>
-      <AppHeader eyebrow="what's on" title="what would you like to join?" />
+      <AppHeader eyebrow={say("on.eyebrow")} title={say("on.whatToJoin")} />
       <SignUpForm events={events} past={past} />
     </>
   );

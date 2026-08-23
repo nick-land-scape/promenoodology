@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import Everywhere, { type Pin } from "./Everywhere";
 import Lightbox from "../Lightbox";
 import Photo from "../Photo";
+import { useSay } from "./Words";
 
 type Told = {
   slug: string;
@@ -57,6 +58,7 @@ export default function Reading({
      "the handbook" as if they were the same kind of question — and made a row of
      four tabs out of a row of three. It belongs inside the stories: a story and
      its place are one thing looked at two ways. */
+  const say = useSay();
   const [view, setView] = useState<"stories" | "archive" | "handbook">(
     openAt === "map" || openAt === undefined ? "stories" : openAt,
   );
@@ -100,7 +102,7 @@ export default function Reading({
      floats on it, and the map runs underneath. Same buttons either way: a second
      copy of them for the map would be a second copy that drifts. */
   const chooser = (
-    <div className="segmented" role="tablist" aria-label="What to read">
+    <div className="segmented" role="tablist" aria-label={say("read.whatToRead")}>
       {(["stories", "archive", "handbook"] as const).map((option) => (
         <button
           key={option}
@@ -109,7 +111,7 @@ export default function Reading({
           aria-selected={view === option}
           onClick={() => setView(option)}
         >
-          {option}
+          {say(`read.${option}`)}
         </button>
       ))}
     </div>
@@ -123,14 +125,14 @@ export default function Reading({
      chooses what you are looking at, this one only chooses how. So it is two
      words with a line under the one you are on. */
   const bothWays = (
-    <div className="reading-how" role="tablist" aria-label="Stories how">
+    <div className="reading-how" role="tablist" aria-label={say("read.storiesHow")}>
       <button
         type="button"
         role="tab"
         aria-selected={!asMap}
         onClick={() => setAsMap(false)}
       >
-        as a list
+        {say("read.asAList")}
       </button>
       <button
         type="button"
@@ -138,7 +140,7 @@ export default function Reading({
         aria-selected={asMap}
         onClick={() => setAsMap(true)}
       >
-        on the map
+        {say("read.onTheMap")}
       </button>
     </div>
   );
@@ -202,21 +204,21 @@ export default function Reading({
             className="app-section-head"
             style={{ padding: "14px var(--gutter) 8px" }}
           >
-            <h2 className="app-h2">every photograph</h2>
+            <h2 className="app-h2">{say("read.everyPhotograph")}</h2>
             <span className="app-label">{wall.length}</span>
           </div>
 
           <div
             className="app-scroll app-scroll-flush"
             role="group"
-            aria-label="Which year"
+            aria-label={say("read.whichYear")}
           >
             <button
               type="button"
               className="chip"
               onClick={() => setShuffle((n) => n + 1)}
             >
-              shuffle
+              {say("read.shuffle")}
             </button>
             <button
               type="button"
@@ -224,7 +226,7 @@ export default function Reading({
               aria-pressed={year === null}
               onClick={() => setYear(null)}
             >
-              every year
+              {say("read.everyYear")}
             </button>
             {years.map((value) => (
               <button
@@ -253,7 +255,7 @@ export default function Reading({
                 <button
                   type="button"
                   onClick={() => setAt(index)}
-                  aria-label="Open"
+                  aria-label={say("read.open")}
                 >
                   <Photo
                     src={photo.src}
@@ -280,10 +282,8 @@ export default function Reading({
       {view === "handbook" ? (
         <Link className="wide-row wide-row-loud" href="/app/do-it-yourself">
           <span>
-            put one on yourself
-            <span className="wide-row-under">
-              one sheet per kind of place, for getting strangers into the same place
-            </span>
+            {say("read.putOneOn")}
+            <span className="wide-row-under">{say("read.putOneOnUnder")}</span>
           </span>
           <span aria-hidden="true">›</span>
         </Link>
