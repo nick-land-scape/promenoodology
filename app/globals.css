@@ -4482,13 +4482,17 @@ body:has(.hero) .edit-this {
   color: var(--quiet);
 }
 
-/* As large as they go and still fit: the address *is* the page. */
+/* As large as they go and still fit on one line.
+   The size is tied to the width of the screen rather than set outright, because
+   the longest of them is twenty-three characters: at anything bigger than this
+   an address breaks in the middle of a word, and half an email address on its own
+   line is not a thing anybody can read or copy. */
 .contact-pop-link {
-  font-size: clamp(1.6rem, 8.5vw, 3rem);
-  line-height: 1.05;
+  font-size: clamp(1.15rem, 6.2vw, 3rem);
+  line-height: 1.1;
   text-decoration: none;
-  text-wrap: balance;
-  word-break: break-word;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .contact-pop-link[href^="https://www.instagram"] {
