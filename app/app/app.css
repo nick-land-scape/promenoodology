@@ -4591,6 +4591,34 @@ body:has(.app-shell) {
   pointer-events: auto;
 }
 
+/* Typing: at the top of the screen, not the bottom of it.
+   The bottom is the right place for a sheet right up until there is a keyboard
+   on that edge, at which point it is the only wrong place. Whether the web view
+   tells us how tall that keyboard is decides how neat this looks; it does not
+   decide whether the form is reachable, which is the point of moving it. Clear of
+   the clock, and the corners turn over — a sheet against the top of the screen
+   with its round corners at the top and its square ones at the bottom looks like
+   it slid too far. */
+.sheet.is-typing {
+  align-items: flex-start;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+}
+
+.sheet.is-typing .sheet-box {
+  border-radius: 0 0 16px 16px;
+  border-top: 0;
+  border-bottom: 1px solid var(--hair);
+  max-height: calc(
+    100dvh - var(--covered, 0px) - env(safe-area-inset-top, 0px) - 16px
+  );
+}
+
+/* The handle is a thing you pull down. There is nothing to pull when the sheet is
+   already at the top, and a bar under the title reads as a rule that is not one. */
+.sheet.is-typing .sheet-bar {
+  display: none;
+}
+
 .sheet-box {
   width: 100%;
   max-width: 560px;

@@ -65,10 +65,21 @@ export default function Sheet({
    * tick beside them. A shorthand holding an undefined variable is invalid at
    * computed-value time, and an invalid border is no border at all.
    *
-   * The shell has no transform of its own, so fixed still means fixed. */
+   * The shell has no transform of its own, so fixed still means fixed.
+   *
+   * Into a node of its own inside the shell, rather than into the shell itself.
+   * The shell is React's: React keeps a list of what is in it and puts that list
+   * back whenever the screen changes. A portalled node is not on that list, so
+   * moving between tabs ended in "the node to be removed is not a child of this
+   * node" and the pop-up vanished from the document altogether. This node is made
+   * here, by hand, and React has never heard of it. */
   const [into, setInto] = useState<HTMLElement | null>(null);
   useEffect(() => {
-    setInto(document.querySelector<HTMLElement>(".app-shell") ?? document.body);
+    const host = document.createElement("div");
+    host.className = "sheet-host";
+    (document.querySelector(".app-shell") ?? document.body).append(host);
+    setInto(host);
+    return () => host.remove();
   }, []);
 
   /* Room for the keyboard.
@@ -81,7 +92,15 @@ export default function Sheet({
    * can actually see — so the difference between it and the window is the height
    * of whatever is covering the rest. The sheet keeps that much clear at its foot
    * and gives up as much of its own height, so it is a shorter sheet sitting on
-   * the keyboard rather than a full-height one behind it. */
+   * the keyboard rather than a full-height one behind it.
+   *
+   * Belt as well as braces, though, because that measurement cannot be relied on:
+   * this is a web view inside an app, not Safari, and what it reports when a
+   * keyboard comes up is the web view's business. So the sheet also comes to the
+   * top of the screen while somebody is typing in it — see `typing` below. If the
+   * measurement arrives, the sheet is exactly as tall as the room above the
+   * keyboard; if it does not, the sheet is at the top of the screen and its own
+   * scroller reaches the rest, which is the difference between cramped and gone. */
   useEffect(() => {
     const seen = window.visualViewport;
     if (!open || !seen) return;
@@ -101,6 +120,39 @@ export default function Sheet({
       seen.removeEventListener("resize", measure);
       seen.removeEventListener("scroll", measure);
       wall.current?.style.removeProperty("--covered");
+    };
+  }, [open]);
+
+  /* Whether anything inside it has focus.
+   *
+   * A sheet resting on the bottom edge of the window is the right place for it
+   * until there is a keyboard on that edge, and then it is the worst place there
+   * is. This is what moves it: while a field in here is being typed into, the
+   * sheet is at the top of the screen instead, where nothing can be over it. */
+  const [typing, setTyping] = useState(false);
+  useEffect(() => {
+    if (!open) {
+      setTyping(false);
+      return;
+    }
+
+    const on = () => setTyping(true);
+    /* Off only when focus leaves the sheet altogether — moving from the words to
+       the place is two events, and a sheet that dropped back down between them
+       would drop and rise on every field. */
+    const off = () => {
+      window.setTimeout(() => {
+        const now = document.activeElement;
+        if (!now || !wall.current?.contains(now)) setTyping(false);
+      }, 0);
+    };
+
+    const box = wall.current;
+    box?.addEventListener("focusin", on);
+    box?.addEventListener("focusout", off);
+    return () => {
+      box?.removeEventListener("focusin", on);
+      box?.removeEventListener("focusout", off);
     };
   }, [open]);
 
@@ -143,7 +195,9 @@ export default function Sheet({
 
   return createPortal(
     <div
-      className={open ? "sheet is-open" : "sheet"}
+      className={
+        open ? (typing ? "sheet is-open is-typing" : "sheet is-open") : "sheet"
+      }
       ref={wall}
       /* Hidden from everything, not only from the eye, when it is shut — but
          still in the document, so what is inside it can take focus the instant it
