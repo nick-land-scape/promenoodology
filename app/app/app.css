@@ -833,6 +833,13 @@ body:has(.app-shell) {
   padding: 14px var(--gutter) 0;
 }
 
+/* Inside a bordered block, the row of buttons needs the same air underneath as
+   above it: with none, the button sat on the block's bottom border and hid it, so
+   the box looked open at the foot and the button looked wider than its box. */
+.field-block .form-actions {
+  padding: 14px;
+}
+
 /* --------------------------------------------------------------------- feed */
 
 /* A block rather than a line: words, then the pictures coming with them, then
