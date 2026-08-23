@@ -11,7 +11,14 @@
         <scene sceneID="EHf-IW-A2E">
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
-                    <imageView key="view" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Splash" id="snD-IY-ifK">
+                    <!-- Fit, not fill. The picture is square and no screen is; scaled to *cover*
+                         a tall screen it is scaled by the height, so the mark came out
+                         twice the width the curtain draws it a second later and lost its
+                         first and last letters off the sides. Fitted, the square is as
+                         wide as the screen, the mark is 74 per cent of that, and 74 per
+                         cent of the short side is exactly what 74vmin means in the CSS.
+                         The paper below fills what the square does not reach. -->
+                    <imageView key="view" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Splash" id="snD-IY-ifK">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <!-- The paper, spelled out. systemBackgroundColor is white

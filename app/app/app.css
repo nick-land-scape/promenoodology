@@ -2653,8 +2653,13 @@ body:has(.app-shell) {
 .curtain-ink {
   position: relative;
   display: block;
+  /* 74 per cent of the short side, and nothing else — no cap.
+     The launch screen is a square picture fitted inside the screen with the mark
+     at 74 per cent of it, which on any shape of screen is 74 per cent of the short
+     side. A `max-width` here held the curtain's mark at 460 points while the still
+     underneath it went on growing, so the two pictures came apart on exactly the
+     screens with the most room to notice it. */
   width: 74vmin;
-  max-width: 460px;
   isolation: isolate;
   animation: curtain-breath 2.6s cubic-bezier(0.4, 0, 0.35, 1) both;
 }
