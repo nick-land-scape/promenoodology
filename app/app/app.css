@@ -498,14 +498,23 @@ body:has(.app-shell) {
   align-self: flex-start;
   width: 72px;
   aspect-ratio: 1;
-  overflow: hidden;
+  background: none;
+}
+
+/* The picture sits a little lower than the date, so the date is on the picture
+   rather than in it: the stamp hangs off the top edge, the way a date does on a
+   flyer that has been printed over. Without the offset the two share a top edge
+   and read as one grey block with numbers in the corner. */
+.row-when img {
+  top: 9px;
+  bottom: 0;
+  height: auto;
+  object-fit: cover;
   background: var(--wash);
 }
 
-.row-when img {
-  object-fit: cover;
-}
-
+/* Nothing to offset where there is no picture: the hairline tile is the square,
+   and it starts where the date does. */
 .row-when-bare {
   background: none;
   border: 1px solid var(--hair);

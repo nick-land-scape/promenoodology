@@ -17,7 +17,6 @@ export type EveningRow = {
   day: string;
   month: string;
   photo: { src: string } | null;
-  partners?: { name: string }[];
   /* The paragraph the evening opens with — `lead` in the database, "the paragraph
      it opens with" in the back of the house. The row used to show `note` here,
      which is a different field with a different job: "anything else", the
@@ -181,11 +180,10 @@ export default function EveningRow({
         ) : null}
         <span className="row-meta">{event.label}</span>
 
-        {event.partners && event.partners.length > 0 ? (
-          <span className="row-meta">
-            {say("row.with")} {event.partners.map((one) => one.name).join(", ")}
-          </span>
-        ) : null}
+        {/* Who it is with is on the evening's own page and not here. Six
+            association names is four lines of a row, above the sentence that says
+            what the thing actually is — so the introduction was the small print
+            and the small print was the introduction. */}
         {/* What it is, in the words written for it. Two lines here, the whole of
             it on the evening's own screen: a row is a row. */}
         {event.lead ? <span className="row-lead">{event.lead}</span> : null}

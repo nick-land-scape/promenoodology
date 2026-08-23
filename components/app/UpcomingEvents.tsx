@@ -97,7 +97,6 @@ export default function UpcomingEvents({ events, places }: Props) {
                     day: event.day,
                     month: event.month,
                     photo: event.photo,
-                    partners: event.partners,
                     lead: event.lead,
                     note: event.note,
                     mine: event.mine,
