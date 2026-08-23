@@ -117,8 +117,24 @@ export default function Sheet({
     const was = body.style.overflow;
     body.style.overflow = "hidden";
 
+    /* And held there, which `overflow: hidden` alone does not do inside an app.
+     *
+     * When a field takes focus, iOS scrolls whatever it is in until it can see it
+     * — and it does that to the web view's own scroll view, which has never heard
+     * of `overflow: hidden`. The field here is inside something fixed to the
+     * window, so there was nothing to reveal and it scrolled anyway: the screen
+     * behind slid up by the height of the keyboard's own toolbar and the header
+     * printed itself across the clock. Whatever the page was showing when the
+     * sheet opened, it goes on showing. */
+    const held = window.scrollY;
+    const hold = () => {
+      if (window.scrollY !== held) window.scrollTo(0, held);
+    };
+    window.addEventListener("scroll", hold);
+
     return () => {
       window.removeEventListener("keydown", key);
+      window.removeEventListener("scroll", hold);
       body.style.overflow = was;
     };
   }, [open, onClose]);
