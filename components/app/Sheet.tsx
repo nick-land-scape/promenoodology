@@ -148,6 +148,11 @@ export default function Sheet({
     };
 
     const box = wall.current;
+    /* Asked as well as listened for. Whoever opens this focuses a field in the
+       same breath as the press — that is the whole reason the sheet stays mounted
+       — so by the time this runs the focus has already happened and there is no
+       event left to hear. */
+    if (box?.contains(document.activeElement)) setTyping(true);
     box?.addEventListener("focusin", on);
     box?.addEventListener("focusout", off);
     return () => {
