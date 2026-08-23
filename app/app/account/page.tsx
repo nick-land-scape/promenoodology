@@ -151,6 +151,16 @@ export default async function AccountPage() {
           <span>{say("acc.getInTouch")}</span>
           <span aria-hidden="true">›</span>
         </Link>
+
+        {/* And, for whoever holds the keys, the list of everybody. Here rather
+            than as a sixth tab: it is not part of being a member, it is a thing
+            two or three people can also do. */}
+        {me.admin ? (
+          <Link className="wide-row" href="/app/account/everybody">
+            <span>{say("who.everybody")}</span>
+            <span aria-hidden="true">›</span>
+          </Link>
+        ) : null}
       </section>
 
       {/* And the things we have to say in writing, which are not settings. */}

@@ -3530,6 +3530,39 @@ body:has(.app-shell) {
   color: var(--purple);
 }
 
+/* The same badge, said beside a name rather than under a title: an admin's row
+   wants one word next to who they are, not a line of its own. */
+.row-badge-small {
+  margin: 0 0 0 7px;
+  padding: 1px 7px;
+  vertical-align: 2px;
+}
+
+/* A row that is a button.
+   The whole row opens the person, and everywhere else in this app that is done
+   with a link stretched over the row. Not here: what this opens is a pop-up, not
+   an address, so it has to be a real button — which means taking a button's own
+   furniture off it and putting an arrow at the end to say that it opens
+   something. */
+.row-pressable {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row-arrow {
+  flex: none;
+  align-self: center;
+  font-family: var(--sans);
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--muted);
+}
+
 /* Two buttons where there were one: change what you said, or take it back. */
 .row-two {
   display: flex;
