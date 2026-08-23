@@ -71,6 +71,19 @@ export default function EveningRow({
 
   return (
     <div className="row">
+      {/* The whole row opens the evening, not only its name.
+          It cannot be one big link: there are buttons inside it, and a button
+          inside an anchor is invalid and behaves differently in every browser. So
+          the link is a sheet stretched over the row, underneath the buttons —
+          which means a press on the picture, the date or any of the words lands on
+          the evening, and a press on a button lands on the button. */}
+      <Link
+        href={`/app/events/${event.id}`}
+        className="row-reach"
+        aria-label={event.title}
+        tabIndex={-1}
+      />
+
       {/* The day, stamped on the picture. Evenings with no photograph keep the
           same tile in paper with a hairline, so the list has one left edge. */}
       <span className={event.photo ? "row-when" : "row-when row-when-bare"}>

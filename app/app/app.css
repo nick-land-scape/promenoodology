@@ -428,7 +428,7 @@ body:has(.app-shell) {
 }
 
 .row {
-  /* Relative, because the bookmark sits in its top right corner. */
+  /* Relative, because a link is stretched over the whole of it. */
   position: relative;
   display: flex;
   align-items: center;
@@ -3092,6 +3092,34 @@ body:has(.app-shell) {
  * about. */
 .row:has(.row-does) {
   flex-wrap: wrap;
+}
+
+/* The link over the whole row.
+ *
+ * A card that only opens by its heading is a card most people conclude does not
+ * open: the target is one line of type in a box a hundred points tall. This
+ * covers the row and sits under everything that does something else, so a press
+ * anywhere lands on the evening and a press on a button lands on the button.
+ * Invisible, and skipped by the keyboard — the heading inside is the link a
+ * keyboard uses, and two tab stops for one destination is one too many. */
+.row-reach {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Everything pressable inside a row sits above that sheet. */
+.row-does,
+.row .mark,
+.row-title,
+.row a,
+.row button {
+  position: relative;
+  z-index: 2;
+}
+
+.row-reach {
+  z-index: 1;
 }
 
 /* The foot of an evening: the decision where its words start, the bookmark at the

@@ -291,6 +291,13 @@ export default function SignUpForm({
             {past.map((event) => (
               <li key={event.id}>
                 <div className="row row-past">
+                  {/* The whole row, not only the name. */}
+                  <Link
+                    className="row-reach"
+                    href={`/app/events/${event.id}`}
+                    aria-label={event.title}
+                    tabIndex={-1}
+                  />
                   {event.photo ? (
                     <span className="row-thumb">
                       <Photo src={event.photo.src} alt="" fill sizes="58px" />

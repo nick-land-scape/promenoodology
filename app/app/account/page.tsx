@@ -99,6 +99,15 @@ export default async function AccountPage() {
             {yes.slice(0, SHOWING).map(({ booking, event }) => (
               <li key={booking.id}>
                 <div className="row">
+                  {/* The whole row opens the evening, as everywhere else. */}
+                  {event ? (
+                    <Link
+                      className="row-reach"
+                      href={`/app/events/${event.id}`}
+                      aria-label={event.title}
+                      tabIndex={-1}
+                    />
+                  ) : null}
                   <span className="row-body">
                     <span className="row-title">{event?.title}</span>
                     <span className="row-meta">

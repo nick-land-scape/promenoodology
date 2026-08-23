@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Photo from "@/components/Photo";
 import AppHeader from "@/components/app/AppHeader";
 import { whenItIs } from "@/lib/app-data";
