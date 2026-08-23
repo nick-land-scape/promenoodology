@@ -1176,7 +1176,28 @@ body:has(.app-shell) {
      on a tablet, where it was obvious; on a phone the content decided the height
      and the thing came out short. */
   aspect-ratio: 85.6 / 54;
+  isolation: isolate;
+  /* The depth the turn is seen through, the same 950 the tilt is given, so a card
+     leaning and a card turning are lit by one geometry. The plane inside cannot
+     keep a 3D context of its own — it has to clip, and clipping flattens — so the
+     perspective has to come from here. Without it the turn is a mirror flip:
+     correct, and dead. */
+  perspective: 950px;
+  /* Dragging on the card tilts it and does nothing else. Without this a drag up
+     or down tilts it *and* scrolls the page underneath, which feels like the card
+     is fighting you. Anywhere else on the screen still scrolls normally. */
+  touch-action: none;
+}
 
+/*
+ * The card itself — and this is the element that turns.
+ *
+ * All of the below used to be on the frame above, which is the element the tilt
+ * library owns and which does not rotate. So the flip turned the writing over and
+ * left the card behind it: a name and a number revolving inside a slab of metal
+ * that never moved. The body belongs to the thing that turns.
+ */
+.member-card-plane {
   /* The edge is milled metal, not a black line.
      A gradient cannot be a border colour, so the border is transparent and the
      gradient is the last background layer, painted to the border box while
@@ -1191,11 +1212,6 @@ body:has(.app-shell) {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.85),
     inset 0 -1px 0 rgba(0, 0, 0, 0.14);
-  isolation: isolate;
-  /* Dragging on the card tilts it and does nothing else. Without this a drag up
-     or down tilts it *and* scrolls the page underneath, which feels like the card
-     is fighting you. Anywhere else on the screen still scrolls normally. */
-  touch-action: none;
   /* Written as three properties rather than one shorthand, deliberately.
      A colour is only allowed in the last layer of `background`, and the first
      version of this had `var(--paper)` in the middle of the list — which makes
@@ -1256,7 +1272,7 @@ body:has(.app-shell) {
  * rather than glued down. The depth reads mostly from the first — a real card
  * has about a millimetre of side to it, and the contact shadow is what shows it.
  */
-.member-card {
+.member-card-plane {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.85),
     inset 0 -1px 0 rgba(0, 0, 0, 0.14),
@@ -1264,10 +1280,9 @@ body:has(.app-shell) {
     0 2px 3px rgba(0, 0, 0, 0.16),
     0 6px 12px rgba(0, 0, 0, 0.14),
     0 14px 28px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.28s ease;
 }
 
-.member-card-lifted {
+.member-card-lifted .member-card-plane {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.85),
     inset 0 -1px 0 rgba(0, 0, 0, 0.14),
@@ -1275,12 +1290,6 @@ body:has(.app-shell) {
     0 3px 5px rgba(0, 0, 0, 0.18),
     0 12px 22px rgba(0, 0, 0, 0.18),
     0 28px 50px rgba(0, 0, 0, 0.16);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .member-card {
-    transition: none;
-  }
 }
 
 /* ------------------------------------------------------------ turning over */
@@ -1317,40 +1326,44 @@ body:has(.app-shell) {
   outline-offset: 3px;
 }
 
-/* The plane both sides are stuck to. It is what turns; the faces do not move
-   relative to each other, which is the whole trick. */
+/* And the turn itself. Both faces are stuck to this and do not move relative to
+   each other; the card, the metal, the edge and the shadow all turn with them,
+   which is what makes it a card turning over rather than its writing revolving
+   inside a frame. */
 .member-card-plane {
   position: relative;
   display: block;
   width: 100%;
   height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.62s cubic-bezier(0.22, 0.68, 0.3, 1);
+  /* Everything the card draws on itself stays on the card: the sheen inside each
+     face is wider than the face on purpose. */
+  overflow: hidden;
+  transition:
+    transform 0.62s cubic-bezier(0.22, 0.68, 0.3, 1),
+    box-shadow 0.28s ease;
 }
 
 .member-card-over .member-card-plane {
   transform: rotateY(180deg);
 }
 
+/* A face is what is printed on that side of the card, and nothing else: the metal
+   under it belongs to the card, which is one card and not two. No clipping of its
+   own either — the plane above does that, on the radius the metal edge actually
+   turns at, so no square corner can stand outside a round one. */
 .member-card-side {
   position: absolute;
   inset: 0;
   display: block;
-  /* 8.5, not 9: the card's radius is 10 and its metal edge is 1.5 thick, so the
-     inside of that edge curves at 8.5. At 9 the face's own corner stood a half
-     point outside it, which is a square corner showing past a round one — small,
-     and the kind of small that reads as a mistake rather than as a detail. */
-  border-radius: 8.5px;
-  overflow: hidden;
-  /* Asked for, and not relied on. In this web view a face with `overflow: hidden`
-     inside a rotated plane is painted whether it faces you or not, so the back of
-     the card arrived with the front's name, number and mark printed through it
-     backwards — the mirror writing this line is supposed to prevent. */
+  /* Asked for, and not relied on. In this web view a face inside a rotated plane
+     is painted whether it faces you or not, so the back of the card arrived with
+     the front's name, number and mark printed through it backwards — the mirror
+     writing this line is supposed to prevent. So which side you can see is said
+     outright as well, and said at the halfway point of the turn: 0.31s is half of
+     the plane's 0.62s, the moment the card is edge-on and there is nothing to see
+     being swapped. */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  /* So which side you can see is said outright instead, and said at the halfway
-     point of the turn: 0.31s is half of the plane's 0.62s, the moment both faces
-     are edge-on and there is nothing to see being swapped. */
   transition: opacity 0s linear 0.31s;
 }
 
@@ -1370,21 +1383,13 @@ body:has(.app-shell) {
   opacity: 1;
 }
 
-/* Pre-turned, so that when the plane turns 180 this one arrives face-on. */
+/* Pre-turned, so that when the card turns 180 this side arrives face-on. The
+   reverse of a card is its duller side — one wash over the same metal, rather than
+   a second set of metal gradients that would have to be kept in step with the
+   first for ever. */
 .member-card-back {
   transform: rotateY(180deg);
-  /* The reverse of a card is the duller side: the same metal, less of the sheen,
-     and the purple further back still. */
-  background-image:
-    linear-gradient(
-      118deg,
-      rgba(255, 255, 255, 0.5) 0%,
-      rgba(203, 208, 220, 0.24) 30%,
-      rgba(255, 255, 255, 0.42) 62%,
-      rgba(188, 182, 204, 0.22) 100%
-    ),
-    linear-gradient(210deg, rgba(139, 63, 255, 0.1), rgba(139, 63, 255, 0) 52%),
-    linear-gradient(160deg, #efedea, #e2e0e2 55%, #eae8e9);
+  background: rgba(120, 116, 130, 0.14);
 }
 
 .member-back-label {
