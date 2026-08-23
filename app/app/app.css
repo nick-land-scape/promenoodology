@@ -46,7 +46,11 @@ body:has(.app-shell) {
    */
   --hair: var(--hairline);
   --muted: var(--quiet);
-  --tabbar: 58px;
+  /* The row the icons and their words sit in, above the home indicator's own
+     inset. It was 58, which with the inset made a bar 98 points tall on a phone
+     whose native one is 83 — and the extra was all under the labels, which is why
+     it read as a band of paper rather than as a bar. */
+  --tabbar: 50px;
   /* One height for the two things at the foot of an evening: the decision and the
      bookmark. They were 30 and 38, which is two buttons side by side that do not
      line up at either edge. */
@@ -138,7 +142,7 @@ body:has(.app-shell) {
   /* The notch's inset stays. It is not padding, it is the part of the screen the
      phone does not own — dropping it, as the first version of this rule did,
      printed the title across the clock. */
-  padding-top: calc(3px + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: 6px;
   gap: 10px;
 }
@@ -3244,15 +3248,28 @@ body:has(.app-shell) {
   }
 }
 
-/* The bottom bar sits above the home indicator rather than under it, and the
-   header below the notch. env() is zero in a browser, so this costs nothing
-   there. */
+/*
+ * The bottom bar sits above the home indicator rather than under it, and the
+ * header below the island. env() is zero in a browser, so this costs nothing
+ * there — and what these two numbers are is the whole point.
+ *
+ * They are what *we* add to what the phone reserves, and they were ten and six,
+ * measured on the screen as twenty-four points of paper between the clock and the
+ * first word of the header. The inset already clears the island: it is 59 points
+ * on this phone while the clock's own ink stops at 51, so eight points of air come
+ * free before anything of ours is added. A large title in a native app starts
+ * about three points under that, not thirteen.
+ *
+ * So: two, and none. The inset stays in both — it is not padding, it is the part
+ * of the screen the phone does not own, and the first version of this rule dropped
+ * it and printed the title across the clock.
+ */
 .tabbar {
-  padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .app-header {
-  padding-top: calc(10px + env(safe-area-inset-top));
+  padding-top: calc(2px + env(safe-area-inset-top));
 }
 
 /* No rubber-band on the whole document — the lists inside it scroll, the app
