@@ -220,6 +220,14 @@ export const PHRASES: Phrase[] = [
   { key: "row.notThisTime", en: "not this time", fr: "pas cette fois", where: "app", note: "Their request was turned down." },
   { key: "row.onYourList", en: "on your list", fr: "dans votre liste", where: "app" },
   { key: "row.notComing", en: "not coming", fr: "je ne viens plus", where: "app", note: "The button that gives a place back." },
+  { key: "row.countMeIn", en: "count me in", fr: "j’en suis", where: "app", note: "The button that takes a place." },
+  { key: "row.pickYourDays", en: "pick your days", fr: "choisissez vos jours", where: "app", note: "For an evening with a programme of days: a place is taken on a day, not on the whole run." },
+  { key: "row.changeDays", en: "change the days", fr: "changer les jours", where: "app" },
+  { key: "row.changeIt", en: "change it", fr: "modifier", where: "app", note: "Change how many places, or what you are bringing." },
+  { key: "row.comingOnDays", en: "you are coming on {n} of {all} days", fr: "vous venez {n} jours sur {all}", where: "app" },
+  { key: "row.daysToChooseFrom", en: "{n} days to choose from", fr: "{n} jours au choix", where: "app", note: "The badge on an evening that has a programme inside it." },
+  { key: "row.didNotWork", en: "That did not work.", fr: "Cela n’a pas fonctionné.", where: "app" },
+  { key: "row.takenOff", en: "Taken off. Sign up again whenever you like.", fr: "Retiré. Reprenez une place quand vous voulez.", where: "app" },
   { key: "row.countMeIn", en: "count me in", fr: "je viens", where: "app" },
   { key: "row.takeOffList", en: "Take it off your list", fr: "Retirer de votre liste", where: "app", note: "The bookmark, when it is already marked." },
   { key: "row.keepOnList", en: "Keep it on your list", fr: "Garder dans votre liste", where: "app", note: "The bookmark, when it is not." },
@@ -250,6 +258,7 @@ export const PHRASES: Phrase[] = [
   { key: "month.nothingThatDay", en: "Nothing on that day. The marked ones have something.", fr: "Rien ce jour-là. Les jours marqués ont quelque chose.", where: "app" },
 
   /* ------------------------------------------------- the app: the join pop-up */
+  { key: "sheet.whichDays", en: "which days", fr: "quels jours", where: "app", note: "The first question for an evening with a programme: nobody comes to a whole month." },
   { key: "sheet.howMany", en: "how many of you", fr: "combien êtes-vous", where: "app" },
   { key: "sheet.whoWith", en: "who with you", fr: "qui vous accompagne", where: "app", note: "Asked when they are bringing one person." },
   { key: "sheet.andNumber", en: "and number {n}", fr: "et la personne {n}", where: "app", note: "Asked for each further person. Keep {n} exactly as it is." },

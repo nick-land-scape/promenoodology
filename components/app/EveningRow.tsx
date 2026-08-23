@@ -155,7 +155,7 @@ export default function EveningRow({
             day rather than on the month. */}
         {programme.length > 0 ? (
           <span className="row-badge">
-            {programme.length} days to choose from
+            {say("row.daysToChooseFrom").replace("{n}", String(programme.length))}
           </span>
         ) : null}
         <span className="row-meta">{event.label}</span>
