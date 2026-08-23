@@ -3108,18 +3108,17 @@ body:has(.app-shell) {
   z-index: 1;
 }
 
-/* Everything pressable inside a row sits above that sheet. */
+/* Everything pressable inside a row sits above that sheet — except the sheet.
+   `.row a` also matches the sheet itself, and it outranks `.row-reach`: one class
+   and one type beats one class, so the sheet was computing `position: relative`,
+   collapsing an empty anchor to nothing, and the whole row opened nowhere. */
 .row-does,
 .row .mark,
 .row-title,
-.row a,
+.row a:not(.row-reach),
 .row button {
   position: relative;
   z-index: 2;
-}
-
-.row-reach {
-  z-index: 1;
 }
 
 /* The foot of an evening: the decision where its words start, the bookmark at the
