@@ -74,20 +74,25 @@ export default function Everybody({ people }: { people: Person[] }) {
           </span>
         </div>
 
-        <div className="field" style={{ marginTop: 10 }}>
-          <label htmlFor="who-find">{say("who.find")}</label>
-          <input
-            id="who-find"
-            value={looking}
-            onChange={(change) => setLooking(change.target.value)}
-            autoComplete="off"
-          />
+        {/* In a block of its own, because a field in this app is a line inside a
+            bordered box — on its own it is a label with nothing under it, which
+            on dark paper is a label with nothing under it and no way to tell. */}
+        <div className="field-block" style={{ margin: "10px 0 0" }}>
+          <div className="field">
+            <label htmlFor="who-find">{say("who.find")}</label>
+            <input
+              id="who-find"
+              value={looking}
+              onChange={(change) => setLooking(change.target.value)}
+              autoComplete="off"
+            />
+          </div>
         </div>
 
         <button
           type="button"
           className="pill pill-small"
-          style={{ marginTop: 12 }}
+          style={{ marginTop: 14 }}
           onClick={() => setAdding(true)}
         >
           {say("who.writeSomebodyDown")}
@@ -320,25 +325,34 @@ function OnePerson({
           />
         </div>
 
-        <label className="me-check">
-          <input
-            type="checkbox"
-            checked={listed}
-            onChange={(change) => setListed(change.target.checked)}
-            disabled={busy}
-          />
-          <span>{say("who.onThePage")}</span>
-        </label>
+        {/* The two switches are rows of the same block as the fields above them,
+            not loose items under it. A `.field` is what gives a row its gutter and
+            the hairline that separates it from the row before; without one they
+            sat flush against the left edge of the pop-up while every label above
+            them started fourteen points in. */}
+        <div className="field">
+          <label className="me-check">
+            <input
+              type="checkbox"
+              checked={listed}
+              onChange={(change) => setListed(change.target.checked)}
+              disabled={busy}
+            />
+            <span>{say("who.onThePage")}</span>
+          </label>
+        </div>
 
-        <label className="me-check">
-          <input
-            type="checkbox"
-            checked={admin}
-            onChange={(change) => setAdmin(change.target.checked)}
-            disabled={busy}
-          />
-          <span>{say("who.canGetIn")}</span>
-        </label>
+        <div className="field">
+          <label className="me-check">
+            <input
+              type="checkbox"
+              checked={admin}
+              onChange={(change) => setAdmin(change.target.checked)}
+              disabled={busy}
+            />
+            <span>{say("who.canGetIn")}</span>
+          </label>
+        </div>
 
         {/* A way in, for somebody who has never had one. Behind a press rather
             than in the form, because sending an email is not saving a field. */}
@@ -364,17 +378,25 @@ function OnePerson({
             </button>
           </div>
         ) : person && !person.user_id ? (
-          <button
-            type="button"
-            className="pill pill-small"
-            onClick={() => setInviting(true)}
-            disabled={busy}
-          >
-            {say("who.sendAWayIn")}
-          </button>
+          <div className="field">
+            <button
+              type="button"
+              className="pill pill-small"
+              onClick={() => setInviting(true)}
+              disabled={busy}
+            >
+              {say("who.sendAWayIn")}
+            </button>
+          </div>
         ) : null}
 
-        {said ? <p className={bad ? "app-error" : "app-note"}>{said}</p> : null}
+        {said ? (
+          <div className="field">
+            <p className={bad ? "app-error" : "app-note"} style={{ margin: 0 }}>
+              {said}
+            </p>
+          </div>
+        ) : null}
 
         <div className="form-actions">
           <button
