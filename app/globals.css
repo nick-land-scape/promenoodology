@@ -218,6 +218,12 @@ img {
   width: fit-content;
 }
 
+/* Only on a phone. On a wide screen the newsletter is the button at the foot of
+   the menu, in the session row — see Nav. Two of them would be two. */
+.nav-post {
+  display: none;
+}
+
 .nav-more a[aria-current="page"],
 .nav-more a:hover {
   color: var(--purple);
@@ -2310,17 +2316,17 @@ html.has-top-bar {
     display: none;
   }
 
-  .session-in {
-    font-family: var(--sans);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-style: normal;
-    border: 1px solid var(--ink);
-    border-radius: 999px;
-    padding: 7px 14px;
+  .nav-post {
+    display: inline;
   }
+
+  /* And out of the strip along the top, where it now is not. What stays up there
+     is who you are: a face, if somebody is signed in. Somebody who is not sees
+     the same word down in the menu with the handbook. */
+  .nav-session .session-in {
+    display: none;
+  }
+
 
   /*
    * On a phone the contact details stop being a lane and become a footer.
@@ -4639,9 +4645,10 @@ body:has(.hero) .edit-this {
     display: none;
   }
 
-  /* Dressed as the newsletter button beside it, because it is the same kind of
-     thing: one word, in a ring, in the strip along the top. Two buttons of
-     different weights next to each other read as one button and one afterthought. */
+  /* One word, in a ring, in the strip along the top — the shape the newsletter
+     wore when it was up here too. It is the only button in the strip now, which
+     suits it: getting in touch is the one thing on this site you do from wherever
+     you happen to be standing. */
   .contact-open {
     display: inline-block;
     font-family: var(--sans);

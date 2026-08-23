@@ -13,6 +13,11 @@ import { SessionButton } from "./SessionLink";
 
 export type NavLink = { href: string; label: string };
 
+/* The newsletter's own name. Every other word in this menu comes from the back
+   of the house, because every other word is a page somebody put there; the
+   newsletter is not in the menu table, so it says its name here. */
+const POST: Record<Lang, string> = { en: "newsletter", fr: "la lettre" };
+
 export default function Nav({
   main,
   more,
@@ -66,6 +71,18 @@ export default function Nav({
             {link.label}
           </Link>
         ))}
+
+        {/* The newsletter, next to the handbook, on a phone.
+            It was in the strip along the top, where it was the widest thing in a
+            fifty-two point strip: a hundred points of ringed capitals beside a
+            face, a language and contact. It is a thing to read, so it belongs
+            with the other thing to read — and the bottom bar is where a thumb
+            already is. On a wide screen it is not this link at all but the last
+            line of the menu, in the session row, where there is room for a
+            button. */}
+        <Link href={at(lang, "/newsletter")} className="nav-post">
+          {POST[lang]}
+        </Link>
 
         {/* The way into the back of the house used to be here. It is in the
             strip along the top now, on every page, where it also says who you
