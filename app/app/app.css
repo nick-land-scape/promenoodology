@@ -4723,6 +4723,44 @@ body:has(.app-shell) {
   }
 }
 
+/* What went wrong, on the paper.
+   Over everything, including the curtain, because the most likely time for this
+   to be the only thing on the screen is before the curtain has lifted. Set in the
+   sans and left ragged: it is a machine's words, not ours, and dressing them up as
+   ours would be pretending we meant them. */
+.broke {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 16px var(--gutter) calc(16px + env(safe-area-inset-bottom, 0px));
+  background: var(--paper);
+  border-top: 2px solid var(--purple);
+  box-shadow: 0 -14px 30px -18px rgba(0, 0, 0, 0.3);
+}
+
+.broke-said {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.broke-what {
+  margin: 0;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--ink);
+  word-break: break-word;
+}
+
 /* ----------------------------------------------------------------- the sheet
 
    The one pop-up: it comes up over everything, says what it is about, and takes

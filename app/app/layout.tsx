@@ -4,6 +4,7 @@ import Crossings from "@/components/app/Crossings";
 import Feels from "@/components/app/Feels";
 import Splash from "@/components/app/Splash";
 import TabBar from "@/components/app/TabBar";
+import Broke from "@/components/app/Broke";
 import { Words } from "@/components/app/Words";
 import { readingIn, whoIsThis } from "@/lib/app/me";
 import { getFrench } from "@/lib/source";
@@ -44,6 +45,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <Words lang={lang} words={saying(lang, french, "app")}>
       <div className="app-shell" lang={lang}>
+        {/* The floor under a white screen: anything uncaught says so on the paper
+            instead of leaving nothing at all. */}
+        <Broke />
         <Splash />
         {/* The buzz under every press, and the four screens fetched before
             anybody asks for them. Nothing to look at. */}
