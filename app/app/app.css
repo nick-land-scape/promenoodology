@@ -1820,6 +1820,11 @@ body:has(.app-shell) {
   cursor: pointer;
 }
 
+.compose-add svg {
+  width: 19px;
+  height: 19px;
+}
+
 .compose-add:disabled {
   opacity: 0.45;
   cursor: default;
@@ -1857,6 +1862,17 @@ body:has(.app-shell) {
   gap: 6px;
   border-bottom: 1px solid var(--hair);
   color: var(--muted);
+}
+
+/* The pin is the label's icon, not the label.
+   An svg with a viewBox and no width has no intrinsic size to speak of, so it
+   takes whatever the box offers — and this box is told to grow. It offered two
+   hundred points, and the composer opened with a map pin the size of a hand in
+   the middle of it. */
+.compose-where > svg {
+  flex: none;
+  width: 17px;
+  height: 17px;
 }
 
 .compose-where input {

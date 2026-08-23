@@ -46,16 +46,29 @@ export default function Sheet({
 }) {
   const say = useSay();
   const box = useRef<HTMLDivElement>(null);
-  /* Rendered into the body rather than where it is written.
+  /* Rendered at the top of the app rather than where it is written.
    *
    * `position: fixed` is only fixed to the window while no ancestor has a
    * transform — and every screen in this app arrives with one, because each child
    * of the column is animated in. A sheet written inside a row therefore fixed
    * itself to the row, which on the front screen meant a form appearing over the
-   * evening it belonged to instead of over the screen. A portal has no ancestors
-   * to inherit that from. */
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
+   * evening it belonged to instead of over the screen.
+   *
+   * Into the shell and not into the body, though, and that part is not a detail:
+   * the app's own measurements — the gutter, the hairline, the grey, the height of
+   * a button — are declared on `.app-shell`, so a sheet parked on the body
+   * inherits none of them. It looked like it worked, because most of what it
+   * declares does not depend on them; what it actually did was quietly drop every
+   * `border: 1px solid var(--hair)` in the pop-up, which is how the days you were
+   * meant to be choosing between arrived as five lines of unboxed text with no
+   * tick beside them. A shorthand holding an undefined variable is invalid at
+   * computed-value time, and an invalid border is no border at all.
+   *
+   * The shell has no transform of its own, so fixed still means fixed. */
+  const [into, setInto] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setInto(document.querySelector<HTMLElement>(".app-shell") ?? document.body);
+  }, []);
 
   /* Escape closes it, and the page behind does not move while it is open. */
   useEffect(() => {
@@ -76,7 +89,7 @@ export default function Sheet({
     };
   }, [open, onClose]);
 
-  if (!ready) return null;
+  if (!into) return null;
 
   return createPortal(
     <div
@@ -117,6 +130,6 @@ export default function Sheet({
         <div className="sheet-roll">{children}</div>
       </div>
     </div>,
-    document.body,
+    into,
   );
 }
