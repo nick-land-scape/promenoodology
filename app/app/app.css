@@ -1010,6 +1010,23 @@ body:has(.app-shell) {
      makes the feed pass behind it rather than stop at it. */
   padding: 16px var(--gutter) 18px;
   box-shadow: 0 -14px 22px -16px rgba(0, 0, 0, 0.22);
+  /* And at the foot of the window even when there is nothing above it to push it
+     there. Sticky only ever pulls a thing up; on an empty feed the bar's own place
+     in the flow is two lines under the switcher, and that is where it sat —
+     floating in the middle of an empty screen. The screen it is on is as tall as
+     the window (see below), so this pushes the bar to the bottom of it. */
+  margin-top: auto;
+}
+
+/* A screen with a bar at its foot is at least a windowful tall. Less the room the
+   tab bar already takes out of the shell, or the column would overflow by exactly
+   the height of the bar and every short screen would scroll by that much. */
+.app-column:has(> .compose-shut) {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(
+    100dvh - var(--bar-room, calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)))
+  );
 }
 
 /* On dark paper a black shadow is nothing at all, so it is a heavier one. The
