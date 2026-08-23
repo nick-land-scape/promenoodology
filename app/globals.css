@@ -2441,22 +2441,32 @@ html.has-top-bar {
     text-align: center;
   }
 
+  /* The way through the set, fixed to the bottom of the screen.
+     It used to be hung forty points under the photograph — which on a phone is
+     off the bottom of the screen for anything taller than a postcard, so the one
+     control somebody uses repeatedly was simply not there. */
   .lightbox-controls {
-    top: calc(100% + 40px);
+    position: fixed;
+    top: auto;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     left: 0;
     right: 0;
     justify-content: center;
     gap: 22px;
+    z-index: 2;
   }
 
-  /* And the way out goes where a way out goes on a phone: the top right of the
-     screen, where a thumb is, rather than tucked over the corner of the picture. */
-  .lightbox-close {
+  /* Keeping it and closing it, together, where a thumb is: the top right of the
+     screen rather than the corner of the picture. They were at opposite ends —
+     one pinned to the screen, one to the photograph — which read as two unrelated
+     things. */
+  .lightbox-tools {
     position: fixed;
-    top: calc(env(safe-area-inset-top) + 14px);
+    top: calc(env(safe-area-inset-top) + 12px);
     right: 16px;
     bottom: auto;
     z-index: 2;
+    gap: 16px;
   }
 
   .hero-video,
