@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { inTheApp, shareNatively } from "@/lib/native";
+import { keepThePhoto } from "@/lib/native";
 import Photo from "./Photo";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -143,33 +143,44 @@ export default function Lightbox({
   /**
    * Saving the photograph.
    *
-   * Not `<a download>`: the files are on the storage host rather than on this
-   * one, and a browser ignores the download attribute across origins — it would
-   * open the picture in a tab and leave whoever pressed it to work out the rest.
-   * Fetching the bytes and handing over a blob works because the bucket is public
-   * and sends the headers for it, and it means the file arrives with a name that
-   * says what it is rather than a UUID.
+   * Two ways, one button. In the app the bytes go to a file and the phone's sheet
+   * is opened over it, so the picture can go into Photos — see below, and
+   * keepThePhoto in lib/native.
+   *
+   * In a browser: not `<a download>` on the address, because the files are on the
+   * storage host rather than on this one and a browser ignores the download
+   * attribute across origins — it would open the picture in a tab and leave
+   * whoever pressed it to work out the rest. Fetching the bytes and handing over a
+   * blob works because the bucket is public and sends the headers for it, and it
+   * means the file arrives with a name that says what it is rather than a UUID.
    */
   async function save() {
     if (!slide) return;
     setSaving("working");
 
-    /* Inside the app there is nothing to download *to*.
+    const ext = slide.photo.src.split(".").pop()?.split("?")[0] ?? "jpg";
+    const named = (slide.caption || "promeNOODology")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 60);
+    const file = `${named || "photograph"}.${ext}`;
+
+    /* Inside the app, the photograph really is saved.
      *
      * A web view has no downloads folder and no download manager: an anchor with
      * a `download` attribute — blob URL or not — does nothing at all, silently,
-     * which is exactly what "the save button does not work" was. What a phone has
-     * instead is the share sheet, so that is what the button opens; from there the
-     * picture goes to Messages, to AirDrop, or to Safari where it can be held and
-     * saved. Saving straight into Photos needs a native file plugin and therefore
-     * a build, and is worth doing next time one is going out anyway. */
-    if (inTheApp()) {
-      const gone = await shareNatively({
-        title: slide.caption || "promeNOODology",
-        url: slide.photo.src,
-      });
-      setSaving(gone ? "" : "failed");
-      if (gone) return;
+     * which is exactly what "the save button does not work" was. So the bytes are
+     * written to a file on the phone and the phone's own sheet is opened over
+     * *that*, which is what puts "Save Image" in it — straight into Photos, or
+     * AirDrop, or Messages with the picture in it rather than a link to it. See
+     * keepThePhoto in lib/native.
+     *
+     * "notHere" means there is no phone, and the browser's own way follows. */
+    const kept = await keepThePhoto(slide.photo.src, file);
+    if (kept !== "notHere") {
+      setSaving(kept === "kept" ? "" : "failed");
+      return;
     }
 
     try {
@@ -177,16 +188,10 @@ export default function Lightbox({
       if (!answer.ok) throw new Error(String(answer.status));
       const blob = await answer.blob();
       const url = URL.createObjectURL(blob);
-      const ext = slide.photo.src.split(".").pop()?.split("?")[0] ?? "jpg";
-      const named = (slide.caption || "promeNOODology")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")
-        .slice(0, 60);
 
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${named || "photograph"}.${ext}`;
+      link.download = file;
       document.body.append(link);
       link.click();
       link.remove();

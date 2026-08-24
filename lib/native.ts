@@ -14,6 +14,15 @@
 
 type Plugins = {
   Share?: { share: (options: { title?: string; text?: string; url?: string }) => Promise<unknown> };
+  Filesystem?: {
+    writeFile: (options: {
+      path: string;
+      data: string;
+      directory?: string;
+      recursive?: boolean;
+    }) => Promise<{ uri: string }>;
+    deleteFile: (options: { path: string; directory?: string }) => Promise<void>;
+  };
   Haptics?: { impact: (options: { style: string }) => Promise<void> };
   StatusBar?: { setStyle: (options: { style: string }) => Promise<void> };
   SplashScreen?: { hide: (options?: { fadeOutDuration?: number }) => Promise<void> };
@@ -304,4 +313,74 @@ export function whenTheKeyboard(
       void one.then((handle) => handle.remove()).catch(() => {});
     }
   };
+}
+
+/**
+ * A photograph, kept.
+ *
+ * The save button used to hand the share sheet the picture's *address*, which is
+ * how you send somebody a link — not how you keep a photograph. What arrives in
+ * Messages is a URL, and "Save Image" is not offered at all, because there is no
+ * image in the sheet to save.
+ *
+ * So the bytes come down first and are written into the app's own cache, and the
+ * sheet is opened over the *file*. iOS then offers what it offers for a real
+ * image: Save Image, straight into Photos; AirDrop; Messages with the picture in
+ * it. Android offers the same through its own sheet.
+ *
+ * The cache rather than Documents, because this copy is a step on the way
+ * somewhere else — the phone empties it when it needs the room, and the picture
+ * somebody chose to keep is by then in Photos where they put it.
+ *
+ * Base64 rather than the blob, because that is the only shape the bridge can
+ * carry: everything crossing between the web view and Swift is JSON.
+ *
+ * Three answers, because they mean three different things to whoever pressed the
+ * button: "kept" — the sheet was opened and it is theirs to place; "notHere" —
+ * there is no phone, so download it the way a browser does; "failed" — there is a
+ * phone and it did not work, which is the only one worth saying out loud.
+ */
+export async function keepThePhoto(
+  url: string,
+  called: string,
+): Promise<"kept" | "failed" | "notHere"> {
+  const files = bridge()?.Plugins?.Filesystem;
+  const share = bridge()?.Plugins?.Share;
+  /* No phone here: the caller downloads it the way a browser does. */
+  if (!files || !share) return "notHere";
+
+  let written: { uri: string };
+  try {
+    const answer = await fetch(url, { mode: "cors" });
+    if (!answer.ok) return "failed";
+    const bytes = await answer.arrayBuffer();
+
+    /* In chunks, and not for tidiness: `String.fromCharCode(...array)` on a
+       three-megabyte photograph is three million arguments in one call, which
+       overflows the stack and throws. Thirty-two thousand at a time does not. */
+    let raw = "";
+    const all = new Uint8Array(bytes);
+    for (let at = 0; at < all.length; at += 32_768) {
+      raw += String.fromCharCode(...all.subarray(at, at + 32_768));
+    }
+
+    written = await files.writeFile({
+      path: called,
+      data: btoa(raw),
+      directory: "CACHE",
+      recursive: true,
+    });
+  } catch {
+    return "failed";
+  }
+
+  /* The sheet, separately: closing it without choosing anything rejects on some
+     versions of iOS, and somebody who changed their mind does not need telling
+     that it did not work. */
+  try {
+    await share.share({ title: called, url: written.uri });
+  } catch {
+    // Dismissed.
+  }
+  return "kept";
 }
