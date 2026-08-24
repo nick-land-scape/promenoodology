@@ -238,10 +238,18 @@ img {
 /* Your own face, at the bottom of the menu. It used to follow the quieter links
    immediately, which put it in the middle of the page on a short menu and made
    it read as one more link rather than as who you are. */
+/* The last line of the menu — the newsletter, or your own face once you are
+   signed in — directly under the handbook rather than pushed to the foot of the
+   window.
+   
+   `margin-top: auto` held it against the bottom of a menu that is as tall as the
+   screen, which on a long display left half a metre of paper between the last
+   thing to read and the thing under it, and made a five-line menu read as two
+   menus. The switches are not in this row on a wide screen — they are fixed in
+   the corner — so what moves up is the one link. */
 .nav-session {
   display: flex;
-  margin-top: auto;
-  padding-top: 14px;
+  margin-top: 10px;
 }
 
 .session-in {
@@ -2449,17 +2457,13 @@ html.has-top-bar {
     font-size: 0.72em;
   }
 
-  /* Stacked, not side by side: the newsletter goes under the handbook.
-  
-     They were a row because two short words fit on one line, and that is the
-     wrong reason — a row makes them look like two halves of one thing, and they
-     are two separate things to read. Under it, each is a line of its own, and the
-     column reads down from the menu above it instead of starting a new direction
-     at the bottom of it. */
+  /* Side by side on a phone, where the bottom bar is two lines high and a third
+     line costs more than the pairing does. */
   .nav-more {
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px 12px;
     font-size: 0.78em;
   }
 
