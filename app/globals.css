@@ -2130,11 +2130,22 @@ body:has(.hero) .contact {
  * eleven characters of explanation for a button that needs none once you have
  * pressed it a first time.
  */
-.dark-switch {
+/* The corner where the two ways of reading live: which language, and which paper.
+   The row is what is pinned; the buttons inside it are ordinary. */
+.corner-switches {
   position: fixed;
   right: var(--edge);
   bottom: var(--edge);
   z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The language you are not reading in, in the same box as the paper switch. Both
+   of them open to their own name on hover, so neither is a mystery glyph. */
+.lang-switch,
+.dark-switch {
   display: flex;
   align-items: center;
   gap: 0;
@@ -2149,12 +2160,50 @@ body:has(.hero) .contact {
   transition: max-width 0.22s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
+.lang-switch,
+.dark-switch {
+  align-items: center;
+  gap: 0;
+  max-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  color: var(--quiet);
+  cursor: pointer;
+  overflow: hidden;
+  text-decoration: none;
+  font-style: normal;
+  transition:
+    max-width 0.22s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.lang-switch b {
+  flex: none;
+  width: 16px;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.lang-switch:hover,
+.lang-switch:focus-visible {
+  max-width: 200px;
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
 .dark-switch svg {
   flex: none;
   width: 16px;
   height: 16px;
 }
 
+.lang-switch span,
 .dark-switch span {
   padding-left: 8px;
   font-family: var(--sans);
@@ -2419,6 +2468,27 @@ html.has-top-bar {
    * Only the glyph: there is no hover on a phone to open the words with, and the
    * strip has room for a face, a mark and one more thing.
    */
+  /* On a phone the pair is not a corner, it is two things in the strip along the
+     top — so the box stops being a box and its children go back to being siblings
+     of the face and the contact button. */
+  .corner-switches {
+    display: contents;
+  }
+
+  .lang-switch {
+    max-width: 34px;
+    width: 34px;
+    justify-content: center;
+    padding: 0;
+    margin: 0 2px 0 0;
+    border-color: transparent;
+    background: none;
+  }
+
+  .lang-switch span {
+    display: none;
+  }
+
   /* In the row, not floating over it. It is a sibling of the face and of the
      NEWSLETTER button, so whichever of those is there decides where this ends up
      and nothing has to guess a width. */

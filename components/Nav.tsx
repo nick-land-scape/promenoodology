@@ -109,8 +109,17 @@ export default function Nav({
             is the strip along the top, which is where somebody looks for it —
             under the handbook at the foot of a long menu it was three scrolls
             from anywhere. */}
-        <LanguageSwitch lang={lang} />
-        <DarkSwitch />
+        {/* The two of them in one box, and that box is what sits in the corner.
+            They are the same kind of control — how you are reading — and they are
+            the same shape, so they belong side by side. In one row rather than two
+            fixed corners for a plain reason: the paper switch grows to say its own
+            name, and something anchored to its left would have been slid over. On
+            a phone the box is `display: contents`, so both of them go back to being
+            what they were in the strip along the top. */}
+        <div className="corner-switches">
+          <LanguageSwitch lang={lang} />
+          <DarkSwitch />
+        </div>
         {/* Getting in touch, beside the newsletter and dressed the same: one word
             in a ring. On a wide screen the addresses are still the lane up the
             left margin and this is not rendered at all. */}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { inTheApp, shareNatively } from "@/lib/native";
 import Photo from "./Photo";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Slide } from "@/lib/content";
 
 type Props = {
@@ -197,9 +198,39 @@ export default function Lightbox({
     }
   }
 
-  if (!slide) return null;
+  /*
+   * Rendered into a node of its own at the end of the body.
+   *
+   * A photograph on its own is over everything, and it cannot be over everything
+   * from inside the page. The lightbox is opened from wherever the pictures are —
+   * a story, the archive wall, an evening — so it was a child of that page's own
+   * wrapper, while the site's menu and the strip along the top are children of the
+   * body. A z-index only orders things inside the box they are in: on a phone the
+   * save and close buttons are pinned to the top right of the screen and the menu
+   * to the bottom, so both ended up *underneath* the site's own furniture. Nothing
+   * was the wrong colour; the buttons were behind a bar.
+   *
+   * Into a node made by hand rather than into the body itself, because React keeps
+   * a list of what is in the body's tree and puts that list back on every render —
+   * see the same note in components/app/Sheet.
+   */
+  const [into, setInto] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    const host = document.createElement("div");
+    host.className = "lightbox-host";
+    document.body.append(host);
+    setInto(host);
+    return () => host.remove();
+  }, []);
 
-  /* Swiping.
+  /* Everything below is a hook, and every hook has to be called on every render —
+     including the renders that end in the early return under them. They were
+     written after it, which React tolerated only while the early return happened
+     to be rare; the moment there was a second reason to take it (waiting for the
+     node this is drawn into) the order of hooks changed between renders and React
+     said so. Hooks first, decisions after.
+
+     Swiping.
    *
    * Arrows are for a mouse. On a phone the way through a set of photographs is a
    * thumb, and a lightbox that ignores one feels like a web page — which is what
@@ -219,6 +250,9 @@ export default function Lightbox({
   } | null>(null);
   const tapped = useRef(0);
 
+  if (!slide || !into) return null;
+
+
   const gapOf = (touches: React.TouchList) => {
     const a = touches[0];
     const b = touches[1];
@@ -229,7 +263,7 @@ export default function Lightbox({
     y: (touches[0].clientY + touches[1].clientY) / 2,
   });
 
-  return (
+  return createPortal(
     <div
       className={zoom > 1 ? "lightbox is-close" : "lightbox"}
       role="dialog"
@@ -486,6 +520,7 @@ export default function Lightbox({
           })}
         </div>
       ) : null}
-    </div>
+    </div>,
+    into,
   );
 }
