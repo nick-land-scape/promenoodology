@@ -55,9 +55,13 @@ export default function JoinToTakePart({
             when there is a pointer on it — which is what buys the room for the
             calendar link beside it. The name is still there for a keyboard and for
             anything reading the page out; it is the *drawing* that carries it. */}
+        {/* The bookmark is built the way the language and paper switches are — see
+            .icon-switch — because it is the same kind of control: a drawing that
+            says its own name when you point at it. Three attempts at making a pill
+            do this came to nothing; the switches had it right all along. */}
         <button
           type="button"
-          className="pill pill-quiet"
+          className="icon-switch"
           disabled
           aria-disabled="true"
           aria-label={say("part.save")}

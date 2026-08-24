@@ -44,13 +44,13 @@ export default function AddToCalendar({
   const single = event.days.length === 0;
 
   if (tight) {
-    /* The same shape as the bookmark beside it: a drawing that says its own name
-       when there is a pointer on it. Three controls in one bar all shouting their
-       words is a bar nobody reads, and of the three this is the one whose icon —
-       a calendar — needs no explaining. */
+    /* Built the way the bookmark beside it is, which is the way the language and
+       paper switches are: see .icon-switch. Three controls in one bar all shouting
+       their words is a bar nobody reads, and of the three this is the one whose
+       icon — a calendar — needs no explaining. */
     return (
       <a
-        className="pill pill-quiet"
+        className="icon-switch"
         href={`/events/${event.slug}/calendar.ics`}
         download
         aria-label={say("cal.addToCalendar")}

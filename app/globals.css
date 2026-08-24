@@ -2142,8 +2142,23 @@ body:has(.hero) .contact {
   gap: 8px;
 }
 
-/* The language you are not reading in, in the same box as the paper switch. Both
-   of them open to their own name on hover, so neither is a mystery glyph. */
+/*
+ * A drawing that says its own name when you point at it.
+ *
+ * Four things on this site behave this way — the language, the paper, the bookmark
+ * and the calendar — and they behave this way because of three lines that are easy
+ * to get wrong and were: the *whole* box is capped at its own height with its
+ * overflow hidden, the icon is told not to shrink, and the words are left-aligned
+ * behind it. Miss the first and it is a pill with a hole in it. Miss the second and
+ * a flex row squashes the drawing to nothing while the words, which cannot be
+ * squashed, push themselves into view — a button that looks empty with a sliver of
+ * text at one edge. Miss the third and a centred overflow hides both ends and shows
+ * you the middle.
+ *
+ * Written once here rather than approximated per button, which is what the last
+ * three attempts at the bookmark were.
+ */
+.icon-switch,
 .lang-switch,
 .dark-switch {
   display: flex;
@@ -2160,6 +2175,7 @@ body:has(.hero) .contact {
   transition: max-width 0.22s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
+.icon-switch,
 .lang-switch,
 .dark-switch {
   align-items: center;
@@ -2191,10 +2207,34 @@ body:has(.hero) .contact {
 }
 
 .lang-switch:hover,
-.lang-switch:focus-visible {
+.lang-switch:focus-visible,
+.icon-switch:hover,
+.icon-switch:focus-visible {
   max-width: 200px;
   color: var(--ink);
   border-color: var(--ink);
+}
+
+/* In the evening's own bar these stand beside a filled button, so they are drawn
+   in ink rather than in the quiet grey the corner switches use — and 33 tall, which
+   is what the button beside them measures. */
+.icon-switch {
+  height: 33px;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.icon-switch svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+}
+
+/* Switched off, like the two controls it stands with: a member's buttons, shown to
+   everybody, working for nobody until they have an account. */
+.icon-switch:disabled {
+  cursor: default;
+  opacity: 0.55;
 }
 
 .dark-switch svg {
@@ -2203,6 +2243,7 @@ body:has(.hero) .contact {
   height: 16px;
 }
 
+.icon-switch span,
 .lang-switch span,
 .dark-switch span {
   padding-left: 8px;
@@ -4349,7 +4390,10 @@ body:has(.hero) .edit-this {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   padding: 9px 15px;
-  border-radius: 999px;
+  /* Square, like everything else that is drawn with a line on this site: the field
+     blocks, the archive's tiles, the back of the house. The rounded ends were the
+     one borrowed shape on the page. */
+  border-radius: 0;
 }
 
 .taking-part .pill-solid {
@@ -4384,56 +4428,6 @@ body:has(.hero) .edit-this {
   background: var(--paper);
   border-color: var(--ink);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
-}
-
-/*
- * A control that is a drawing until you point at it.
- *
- * The bookmark and the calendar both are: their icons need no explaining, and
- * three controls in one bar all shouting their words is a bar nobody reads. The
- * name is still in the markup for a keyboard and for anything reading the page
- * out; it is the *drawing* that carries it the rest of the time.
- *
- * The padding is the fiddly part. A pill is padded for words, so collapsing the
- * words left a pill with an icon at one end and fifteen points of nothing at the
- * other — which is what "it looks off" was. Collapsed, it is square around its own
- * icon; opened, it takes the padding back with the same easing as the words, so the
- * whole thing grows as one object.
- */
-/*
- * Collapsed, it is a square with a drawing in it. Opened, it says its name.
- *
- * Done the way the paper switch in the corner does it, because that one is right
- * and this one was not: the *whole button* is capped at its own height with its
- * overflow hidden, so what is inside cannot make it wider. Padding was the wrong
- * lever — a pill is padded for words, and matching the two sides only made the
- * emptiness symmetrical. It was still emptiness.
- */
-.pill-quiet {
-  gap: 0;
-  justify-content: center;
-  max-width: 33px;
-  padding-left: 0;
-  padding-right: 0;
-  overflow: hidden;
-  transition:
-    max-width 0.22s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.pill-quiet span {
-  padding-left: 7px;
-  white-space: nowrap;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .pill-quiet:hover,
-  .pill-quiet:focus-visible {
-    max-width: 16rem;
-    padding-left: 12px;
-    padding-right: 15px;
-  }
 }
 
 /* Two quiet links, under the heading that says how to come. */
@@ -4955,7 +4949,10 @@ body:has(.hero) .edit-this {
     color: var(--ink);
     background: none;
     border: 1px solid var(--ink);
-    border-radius: 999px;
+    /* Square, with the other three. It was a ring to match the newsletter button
+       beside it; the newsletter is a word in the menu now, so this was the last
+       rounded thing in the strip and the only borrowed shape left up there. */
+    border-radius: 0;
     padding: 7px 14px;
     cursor: pointer;
   }
