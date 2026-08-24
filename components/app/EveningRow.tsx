@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import Photo from "../Photo";
-import JoinSheet from "./JoinSheet";
-import { cancelMyPlace, markInterested } from "@/app/app/actions";
+import { markInterested } from "@/app/app/actions";
 import { buzz } from "@/lib/native";
 import { useSay } from "./Words";
 
@@ -72,8 +71,17 @@ export type EveningRow = {
  * So there is one, and `does` decides how much of it appears. On the front screen
  * it is the picture, the day, the words and nothing to press — that screen is a
  * summary and pressing belongs on the screen that is about deciding. On what's on
- * the same row grows a line of two buttons: the one real decision, and the
- * bookmark for the evening you have not decided about.
+ * the same row grows one control: the bookmark, at the top right, level with the
+ * name.
+ *
+ * Taking a place is not among them any more, on either screen. "Count me in" from
+ * a list opened a sheet asking how many of you are coming, which days, and what
+ * you are bringing — three questions about an evening somebody had not opened yet,
+ * and the answers were given without the practical paragraph, the address or what
+ * is still wanted ever being read. Deciding belongs on the evening's own screen,
+ * where the evening is. A bookmark is the honest thing to offer from a list: it
+ * promises nothing and asks nothing, which is exactly what somebody scrolling
+ * past can mean.
  *
  * The date is on the picture in both, which is the arrangement that gives the
  * words the width: a date column and a photograph column either side of them is
@@ -94,15 +102,13 @@ export default function EveningRow({
 }) {
   const say = useSay();
   const [marked, setMarked] = useState(event.mine?.state === "interested");
-  const [coming, setComing] = useState(
-    Boolean(event.mine && event.mine.state !== "interested"),
-  );
-  const [asking, setAsking] = useState(false);
   const [said, setSaid] = useState("");
   const [pending, start] = useTransition();
 
+  /* Whether you already have a place. Read from what the server said rather than
+     held in state: nothing in a row can change it any more. */
+  const coming = Boolean(event.mine && event.mine.state !== "interested");
   const programme = event.days ?? [];
-  const mineDays = event.onDays ?? [];
 
   function mark(on: boolean) {
     setMarked(on);
@@ -114,18 +120,6 @@ export default function EveningRow({
         return;
       }
       void buzz("light");
-    });
-  }
-
-  function give() {
-    start(async () => {
-      const answer = await cancelMyPlace(event.id, event.onDay ?? null);
-      if (!answer.ok) {
-        setSaid(answer.error ?? say("row.didNotWork"));
-        return;
-      }
-      setComing(false);
-      setSaid(say("row.takenOff"));
     });
   }
 
@@ -237,83 +231,37 @@ export default function EveningRow({
         {said ? <span className="row-said">{said}</span> : null}
       </span>
 
-      {/* Beside the words where there is room for them, under the words where
-          there is not — which is why they are a column of the row rather than the
-          last thing in the column of words. Inside the words they had no choice:
-          the last item of a block is a line of its own at every width, so on a wide
-          screen two buttons sat alone with a thousand points of paper to their
-          right. */}
-        {does ? (
-          <span className="row-does">
-            {coming ? (
-              <span className="row-two">
-                <button
-                  type="button"
-                  className="pill pill-small pill-solid"
-                  onClick={() => setAsking(true)}
-                  disabled={pending}
-                >
-                  {say(programme.length > 0 ? "row.changeDays" : "row.changeIt")}
-                </button>
-                <button
-                  type="button"
-                  className="pill pill-small"
-                  onClick={give}
-                  disabled={pending}
-                >
-                  {say("row.notComing")}
-                </button>
-              </span>
-            ) : (
-              <button
-                type="button"
-                className="pill pill-small pill-solid"
-                onClick={() => setAsking(true)}
-                disabled={pending}
-              >
-                {say(programme.length > 0 ? "row.pickYourDays" : "row.countMeIn")}
-              </button>
-            )}
-
-            <button
-              type="button"
-              className={marked ? "mark mark-on" : "mark"}
-              onClick={() => mark(!marked)}
-              disabled={pending}
-              aria-pressed={marked}
-              aria-label={say(marked ? "row.takeOffList" : "row.keepOnList")}
-              title={say(marked ? "row.onYourList" : "row.keepOnList")}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M6.5 3.5h11v17l-5.5-4-5.5 4z"
-                  fill={marked ? "currentColor" : "none"}
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </span>
-        ) : null}
-
+      {/* The bookmark, at the top right, level with the evening's name and the
+          line under it.
+          
+          It sat under the paragraph beside a "count me in" button, as a pair of
+          things to do about an evening. With the deciding gone there is one thing,
+          and one thing does not belong on a line of its own at the foot of a row:
+          up here it is beside the name it applies to, and every row in the list
+          has its marks in one column instead of at whatever height each
+          paragraph happened to end. */}
       {does ? (
-        <JoinSheet
-          open={asking}
-          eventId={event.id}
-          title={event.title}
-          when={event.label}
-          spots={event.spots}
-          mine={event.mine ?? null}
-          days={programme.length > 0 ? programme : undefined}
-          onDay={event.onDay ?? null}
-          chosen={mineDays}
-          onClose={() => setAsking(false)}
-          onDone={(words) => {
-            setComing(true);
-            setSaid(words);
-          }}
-        />
+        <span className="row-mark">
+          <button
+            type="button"
+            className={marked ? "mark mark-on" : "mark"}
+            onClick={() => mark(!marked)}
+            disabled={pending}
+            aria-pressed={marked}
+            aria-label={say(marked ? "row.takeOffList" : "row.keepOnList")}
+            title={say(marked ? "row.onYourList" : "row.keepOnList")}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M6.5 3.5h11v17l-5.5-4-5.5 4z"
+                fill={marked ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </span>
       ) : null}
     </div>
   );

@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import Photo from "@/components/Photo";
+import StoryBody from "@/components/StoryBody";
+import type { Slide } from "@/lib/content";
 import AppHeader from "@/components/app/AppHeader";
 import { getFrench, getStory } from "@/lib/source";
 import { speaking } from "@/lib/words";
@@ -16,11 +18,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 /**
  * One story, in the app.
  *
- * The same story the website tells, set for a phone: the cover, the words in the
- * sections they were written in, and the photographs underneath. The website's
- * own page is a piece of design with the photographs woven through the text; this
- * is the reading version of it, and it links out to the other one for anybody who
- * wants to see it laid out properly.
+ * The same story the website tells, and told the same way: the words in the
+ * sections they were written in, with the photographs *between* them, each at the
+ * shape it was taken in.
+ *
+ * It used to be all of the words and then a three-across grid of squares. Two
+ * things were wrong with that. A square is a crop, and a crop of somebody's
+ * photograph is a decision made by a stylesheet — a panorama of a table of forty
+ * people became a square of the middle four. And a story read as an essay with a
+ * contact sheet stapled to the back, when a story is the pictures and the words
+ * saying what was happening in them.
+ *
+ * So it is the website's own weave, which already collapses to a single column of
+ * full-width pictures on a phone — the same component, the same order, the same
+ * lightbox, and the order somebody arranged in /admin is honoured here too rather
+ * than only on the website.
  */
 export default async function AppStoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const say = speaking(await readingIn(), await getFrench());
@@ -29,6 +41,13 @@ export default async function AppStoryPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const story = await getStory(slug, lang);
   if (!story) notFound();
+
+  const slides: Slide[] = story.photos.map((item) => ({
+    key: item.file,
+    photo: item.photo,
+    caption: [item.credit, item.year].filter(Boolean).join(", "),
+    layout: item.layout,
+  }));
 
   return (
     <>
@@ -43,36 +62,19 @@ export default async function AppStoryPage({ params }: { params: Promise<{ slug:
       <div className="app-book">
         {story.subtitle ? <p className="app-book-lead">{story.subtitle}</p> : null}
         {[story.where, story.when, story.with].filter(Boolean).length > 0 ? (
-          <p className="row-meta" style={{ paddingBottom: 8 }}>
+          <p className="row-meta">
             {[story.where, story.when, story.with].filter(Boolean).join(" · ")}
           </p>
         ) : null}
-
-        {story.sections.map((section, index) => (
-          <div key={index}>
-            {section.heading ? <h2>{section.heading}</h2> : null}
-            {section.texts.map((text, which) => (
-              <p key={which}>{text}</p>
-            ))}
-          </div>
-        ))}
       </div>
 
-      {story.photos.length > 0 ? (
-        <ul className="mine-grid">
-          {story.photos.map((photo) => (
-            <li key={photo.photo.src}>
-              <Photo
-                src={photo.photo.src}
-                alt=""
-                width={photo.photo.width}
-                height={photo.photo.height}
-                sizes="33vw"
-              />
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      {/* The words and the photographs, woven. Sized for a phone by the app's own
+          rules over .app-story; everything else about it — which photograph goes
+          where, what opens the lightbox, the order it was arranged in — is the
+          website's page, so the two cannot drift apart. */}
+      <div className="app-story">
+        <StoryBody slides={slides} sections={story.sections} built={story.blocks} />
+      </div>
 
       {story.credits.length > 0 ? (
         <p className="app-note" style={{ padding: "14px var(--gutter)" }}>

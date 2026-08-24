@@ -3649,8 +3649,10 @@ body:has(.app-shell) {
  * fifty pixels, and on a phone that leaves the title breaking after "long table
  * no." — so they take a line of their own, at the right, under what they are
  * about. */
-.row:has(.row-does) {
-  flex-wrap: wrap;
+/* Nothing in a row wraps any more: the two buttons that used to drop under the
+   words are gone, and the bookmark is a 32-point column that fits at any width. */
+.row {
+  flex-wrap: nowrap;
 }
 
 /* An evening with a programme in it says so, in the club's purple, right under its
@@ -3717,12 +3719,6 @@ body:has(.app-shell) {
 }
 
 /* Two buttons where there were one: change what you said, or take it back. */
-.row-two {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .row-said {
   display: block;
   padding-top: 8px;
@@ -3829,7 +3825,7 @@ body:has(.app-shell) {
    `.row a` also matches the sheet itself, and it outranks `.row-reach`: one class
    and one type beats one class, so the sheet was computing `position: relative`,
    collapsing an empty anchor to nothing, and the whole row opened nowhere. */
-.row-does,
+.row-mark,
 .row .mark,
 .row-title,
 .row a:not(.row-reach),
@@ -3841,40 +3837,18 @@ body:has(.app-shell) {
 /* The foot of an evening: the decision where its words start, the bookmark at the
    far end of the same line, both the same height. Enough air above it that it
    reads as a thing to do rather than as the last line of the paragraph. */
-.row-does {
-  display: flex;
-  align-items: center;
-  /* Both at the right end, the decision immediately before the bookmark, rather
-     than one at each end of the row. Pushed apart they read as two unrelated
-     things at opposite sides of a paragraph; together they are what you can do
-     about this evening. */
-  justify-content: flex-end;
-  gap: 10px;
-  width: 100%;
-  /* Eight, not fourteen. The buttons belong to the paragraph above them — they are
-     what you do about what it just said — and fourteen points read as a gap between
-     two things rather than as air under one. */
-  padding-top: 8px;
+/* The bookmark's column: the top right of a row, level with the evening's name.
+   
+   `flex-start` rather than centred, because a row is as tall as its paragraph and
+   the middle of a four-line paragraph is nowhere in particular. Level with the
+   name, every row alike, is a column the eye can run down. */
+.row-mark {
+  flex: none;
+  align-self: flex-start;
+  /* The bookmark's own drawing sits a point or two below the cap height of the
+     name beside it; this puts them on the same line. */
+  padding-top: 1px;
 }
-
-/* With room, beside the words: pushed to the right end of the row, level with the
-   middle of it. Four hundred and forty points is where a row has space for three
-   lines of type *and* two buttons without either being squeezed — below that they
-   are better underneath. */
-@media (min-width: 440px) {
-  .row-does {
-    width: auto;
-    flex: none;
-    margin-left: auto;
-    padding-top: 0;
-    align-self: center;
-  }
-}
-
-/* Under the words, with air above them — the narrow case, and the phone. The
-   buttons are a column of the row now rather than the last thing in the column of
-   words, so this is a real choice again and not something the layout was going to
-   ignore. */
 
 /* A bookmark: no promise, no number, nothing sent to anybody. */
 .mark {
@@ -5305,4 +5279,86 @@ body:has(.app-shell) {
 /* The line that opens it is a door, not a field. */
 .compose-shut .compose-top textarea {
   cursor: pointer;
+}
+
+/* ------------------------------------------------- a story, in the app
+
+   The website's own weave, sized for a phone.
+
+   Nothing here decides which photograph goes where — that is StoryBody and the
+   twelve columns in globals.css, and the order somebody arranged in /admin. This
+   is the part that has to be different: one column instead of twelve, the app's
+   gutter instead of the page's margin, and type at the size the rest of this app
+   reads at.
+
+   Written as its own rules rather than relying on the website's phone breakpoint,
+   because the app runs at tablet widths too — an iPad in portrait is 834 points
+   wide and would otherwise get the twelve-column offsets inside a 560-point
+   column, which is where a photograph ends up four columns wide and forty points
+   below the paragraph it belongs to. */
+.app-story {
+  padding: 0 var(--gutter) 8px;
+}
+
+.app-story .story {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: 0;
+}
+
+/* Every block takes the whole column, at the shape it was taken in. `!important`
+   because the variants it overrides are attribute selectors of the same weight
+   and the website's own phone rule does exactly this for exactly this reason. */
+.app-story .story-figure,
+.app-story .story-section {
+  grid-column: auto !important;
+  margin-top: 0;
+}
+
+.app-story .story-figure {
+  padding: 4px 0 14px;
+}
+
+/* No cap on how large a picture may be drawn. On the website that limit stops a
+   small original being stretched across seven columns; a column here is 350
+   points, which every photograph in the archive is wider than. Kept as a limit
+   rather than removed, so a genuinely tiny file still refuses to be a poster. */
+.app-story .story-button {
+  max-width: min(100%, var(--limit));
+  /* Nothing to zoom with a finger, and the lightbox is a tap away either way. */
+  cursor: default;
+}
+
+.app-story .story-figure figcaption {
+  max-width: none;
+  padding-top: 6px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.app-story .story-section {
+  margin: 8px 0 10px;
+  max-width: 34rem;
+}
+
+.app-story .story-text {
+  /* The size the rest of the app reads at, rather than the website's 1.05rem. */
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0 0 12px;
+}
+
+/* A section's own name, in the app's one heading voice. It is already Helvetica
+   capitals in purple on the website — only the size differs, and this matches the
+   labels above the programme and everything else in the app. */
+.app-story .story-label {
+  font-size: 0.6rem;
+  margin: 18px 0 8px;
+}
+
+/* A gap somebody asked for in /admin. On twelve columns it is a cell; in one
+   column it has to be a height, or it is nothing at all. */
+.app-story .story-space {
+  height: 18px;
 }
