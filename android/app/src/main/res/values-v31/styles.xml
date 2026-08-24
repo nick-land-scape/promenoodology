@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      The launch screen, Android 12 and later.
+
+      From API 31 the system draws this itself and ignores `android:background` on
+      the theme: it paints a colour and puts the app's icon in a circle in the
+      middle of it. Left alone, that meant the purple icon inside a purple disc —
+      a different picture from the one the app opens with, and a different picture
+      from the iPhone's.
+
+      These three lines put ours back: paper as the ground, the mark alone as the
+      icon (drawn on nothing, so no disc appears — the circle is only visible where
+      there is something to mask), and the ordinary theme to fall into once the
+      web view is up.
+
+      The pre-31 version in values/styles.xml stays as it was. Both draw the same
+      picture; only the mechanism differs.
+    -->
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/paper</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_mark</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+    </style>
+</resources>

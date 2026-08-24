@@ -162,6 +162,27 @@ for folder, width, height in (
 screen(480, 320).save(f"{ANDROID}/drawable/splash.png")
 made.append("android launch screens, ten shapes")
 
+# Android 12 and later do not use the picture above at all.
+#
+# From API 31 the system draws the launch screen itself: a colour, and the app's
+# icon masked into a circle in the middle of it — \`android:background\` on the
+# splash theme is ignored, which is why the first launch showed the purple icon in
+# a purple disc instead of the mark on paper. The way back to our own picture is to
+# hand it the two things it *does* take: the background colour, and an icon
+# drawable.
+#
+# So the icon it gets is the mark on nothing. No ground, because the ground is the
+# colour underneath; and no ground means no disc, since the circle only appears
+# where there is something to mask. The canvas is 288dp, of which the middle 192dp
+# is guaranteed to survive the mask, so the mark is drawn at 55% and lands inside
+# it with room to spare.
+for folder, side in (("mdpi", 288), ("hdpi", 432), ("xhdpi", 576), ("xxhdpi", 864), ("xxxhdpi", 1152)):
+    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    middle(canvas, fitted(ink(), side, 0.55), 0.0).save(
+        f"{ANDROID}/drawable-{folder}/splash_mark.png"
+    )
+made.append("android 12+ launch mark, five densities")
+
 # And the two the Play listing wants: the 512 icon, and the banner Google draws
 # across the top of a listing and inside its own promotions.
 on_purple(512).save("native/art/play-icon-512.png")
