@@ -53,17 +53,22 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
   /* The calendar picker, built here because working out the days needs the database
      and the reader's language. Handed to the header, which is where the three
      controls live now. */
-  const calendar =
-    event.slug && event.date ? (
+  const rows = calendarRows(event, {
+    whole: say("eve.theWhole"),
+    when: (iso, time) => {
+      const when = dateParts(iso, lang);
+      return [`${when.day} ${when.month}`, time].filter(Boolean).join(", ");
+    },
+  });
+
+  /* The same control in three places: the header, every line of the programme, and
+     the practical bits at the foot. Given a day it is about that day and skips the
+     first question, because on that line there is nothing to choose. */
+  const calendarFor = (onlyDay?: string) =>
+    rows.length === 0 ? null : (
       <CalendarPick
         className="pill pill-small"
-        rows={calendarRows(event, {
-          whole: say("eve.theWhole"),
-          when: (iso, time) => {
-            const when = dateParts(iso, lang);
-            return [`${when.day} ${when.month}`, time].filter(Boolean).join(", ");
-          },
-        })}
+        rows={onlyDay ? rows.filter((row) => row.key === onlyDay) : rows}
         words={{
           open: say("eve.addToCalendar"),
           which: say("eve.whichDay"),
@@ -74,7 +79,9 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
           said: say("eve.whichIsWhich"),
         }}
       />
-    ) : null;
+    );
+
+  const calendar = calendarFor();
 
   return (
     <>
@@ -139,6 +146,10 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
             <ol>
               {event.days.map((day) => (
                 <li key={`${day.date}-${day.title}`}>
+                  {/* Its own, for the day this line is about. */}
+                  {over ? null : (
+                    <span className="evening-day-calendar">{calendarFor(day.date)}</span>
+                  )}
                   <p className="evening-day-when">
                     {[pretty(day.date), [day.time, day.endTime].filter(Boolean).join("–")]
                       .filter(Boolean)
@@ -218,7 +229,13 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
         ) : null}
 
         <section className="evening-block">
-          <h2 className="evening-label">{say("eve.practicalBits")}</h2>
+          {/* The heading and the calendar on one line: this section is the day and
+              the place, and what anybody does with a day and a place is put it in
+              whatever keeps track of their Saturdays. */}
+          <div className="evening-label-row">
+            <h2 className="evening-label">{say("eve.practicalBits")}</h2>
+            {over ? null : calendar}
+          </div>
           <ul className="evening-list">
             {event.place ? <li>{event.place}</li> : null}
             {event.cost ? <li>{event.cost}</li> : null}

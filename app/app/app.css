@@ -275,6 +275,17 @@ body:has(.app-shell) {
 
 /* ------------------------------------------------------- buttons and pills */
 
+/*
+ * Square, like the website.
+ *
+ * A phone's own controls are rounded and these were, which is the platform's language
+ * rather than this club's: everything drawn with a line on the website — the field
+ * blocks, the archive's tiles, the back of the house, and now every button — has
+ * corners. One identity across two surfaces beats each surface being locally polite.
+ *
+ * What stays round is what is round by nature rather than by style: a face, a
+ * portrait, the little counters that are dots, and the map's pins.
+ */
 .pill {
   display: inline-flex;
   align-items: center;
@@ -283,7 +294,7 @@ body:has(.app-shell) {
   min-height: 38px;
   padding: 0 18px;
   border: 1px solid var(--ink);
-  border-radius: 999px;
+  border-radius: 0;
   background: none;
   color: var(--ink);
   font-family: var(--sans);
@@ -338,7 +349,7 @@ body:has(.app-shell) {
   min-height: 32px;
   padding: 0 14px;
   border: 1px solid var(--hair);
-  border-radius: 999px;
+  border-radius: 0;
   background: none;
   color: var(--ink);
   font-family: var(--sans);
@@ -392,7 +403,7 @@ body:has(.app-shell) {
   display: flex;
   margin: 12px var(--gutter) 0;
   border: 1px solid var(--ink);
-  border-radius: 999px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -592,7 +603,7 @@ body:has(.app-shell) {
   margin: 0 0 10px;
   padding: 14px 16px;
   border: 1px solid var(--hair);
-  border-radius: 999px;
+  border-radius: 0;
   background: none;
   font: inherit;
   font-style: normal;
@@ -1083,7 +1094,7 @@ body:has(.app-shell) {
   width: 30px;
   height: 30px;
   border: 1px solid var(--hair);
-  border-radius: 999px;
+  border-radius: 0;
   font-family: var(--sans);
   font-size: 1rem;
   line-height: 1;
@@ -1963,7 +1974,7 @@ body:has(.app-shell) {
   width: 22px;
   height: 22px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0;
   background: rgba(0, 0, 0, 0.62);
   color: #fff;
   font-size: 15px;
@@ -2000,7 +2011,7 @@ body:has(.app-shell) {
   width: 40px;
   height: 40px;
   border: 1px solid var(--hair);
-  border-radius: 999px;
+  border-radius: 0;
   background: none;
   color: inherit;
   cursor: pointer;
@@ -2086,7 +2097,7 @@ body:has(.app-shell) {
 .compose-post {
   flex: none;
   border: 1px solid var(--ink);
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--ink);
   padding: 11px 20px;
   font-family: var(--sans);
@@ -2422,7 +2433,7 @@ body:has(.app-shell) {
   text-transform: uppercase;
   text-decoration: none;
   border: 1px solid var(--pink);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 11px 18px;
 }
 
@@ -3536,7 +3547,7 @@ body:has(.app-shell) {
   width: 38px;
   height: 38px;
   border: 1px solid var(--hair);
-  border-radius: 999px;
+  border-radius: 0;
   background: none;
   font-size: 1.3rem;
   line-height: 1;
@@ -3852,7 +3863,7 @@ body:has(.app-shell) {
   height: var(--act);
   flex: none;
   border: 1px solid var(--hair);
-  border-radius: 999px;
+  border-radius: 0;
   background: none;
   color: var(--muted);
 }
@@ -4845,6 +4856,36 @@ body:has(.app-shell) {
   word-break: break-word;
 }
 
+/* A heading with one thing to press at the right end of it. */
+.evening-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.evening-label-row .evening-label {
+  margin-bottom: 0;
+}
+
+/* And on a programme's own line, in its top right corner. The line with an open
+   menu is lifted above the ones after it: two positioned siblings paint in document
+   order, so the panel hanging off the first afternoon went under the second. */
+.evening-days li {
+  position: relative;
+}
+
+.evening-day-calendar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+}
+
+.evening-days li:has([aria-expanded="true"]) {
+  z-index: 5;
+}
+
 /* The three things you can do about an evening, in the header of its own screen.
    Small, in a row, and the menu inside the last of them opens downwards from there —
    which is why the header has to let it out (see .app-header below). */
@@ -4894,8 +4935,12 @@ body:has(.app-shell) {
 
 .calendar-pick-list {
   position: absolute;
-  bottom: calc(100% + 8px);
-  left: 0;
+  /* Down from the button and anchored to its right edge, because the button is at
+     the right end of a header: opening upwards was for when this lived at the foot of
+     the page, and opening leftwards is the only direction with any room in it. */
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
   z-index: 40;
   min-width: 15rem;
   max-width: min(20rem, calc(100vw - 2 * var(--gutter)));
