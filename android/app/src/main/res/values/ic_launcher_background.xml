@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The ground the adaptive icon's foreground is moved against: the club's
+         purple, the same as the flat icon's. White was the template's. -->
+    <color name="ic_launcher_background">#8B3FFF</color>
+</resources>

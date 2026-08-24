@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      The three colours the theme names, and which the template referred to without
+      ever defining — a project that would not have compiled as it arrived.
+
+      They are the app's own: purple for anything the system tints on our behalf,
+      and paper as the ground, so the instant between the launch screen and the web
+      view is the same colour as both rather than the white it would otherwise be.
+    -->
+    <color name="colorPrimary">#8B3FFF</color>
+    <color name="colorPrimaryDark">#6A2ACC</color>
+    <color name="colorAccent">#8B3FFF</color>
+    <color name="paper">#FFFCF6</color>
+</resources>

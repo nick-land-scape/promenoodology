@@ -110,6 +110,12 @@ export async function statusBarFor(theme: "dark" | "light"): Promise<void> {
  * somebody knows what the app is for is a permission dialogue that gets refused
  * for ever. The token is handed to the server, which is the only thing that can
  * do anything with it.
+ *
+ * iPhone only for the moment. Android delivers push through Firebase, and until
+ * there is a Firebase project with the app registered in it, `register()` there
+ * throws "Default FirebaseApp is not initialized" — so nothing calls this yet on
+ * either phone, and when something does, Android needs google-services.json in the
+ * project first. See docs/the-app-in-the-stores.md.
  */
 export async function listenForNews(
   remember: (token: string, platform: string) => Promise<void>,

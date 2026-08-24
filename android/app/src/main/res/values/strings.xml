@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">promeNOOD</string>
+    <string name="title_activity_main">promeNOOD</string>
+    <string name="package_name">com.promenoodology.community</string>
+    <string name="custom_url_scheme">com.promenoodology.community</string>
+</resources>
