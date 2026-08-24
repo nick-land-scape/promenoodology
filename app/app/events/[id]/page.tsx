@@ -50,9 +50,60 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
   const booking = mine.find((one) => one.eventId === event.id);
   const over = (event.until || event.date) < new Date().toISOString().slice(0, 10);
 
+  /* The calendar picker, built here because working out the days needs the database
+     and the reader's language. Handed to the header, which is where the three
+     controls live now. */
+  const calendar =
+    event.slug && event.date ? (
+      <CalendarPick
+        className="pill pill-small"
+        rows={calendarRows(event, {
+          whole: say("eve.theWhole"),
+          when: (iso, time) => {
+            const when = dateParts(iso, lang);
+            return [`${when.day} ${when.month}`, time].filter(Boolean).join(", ");
+          },
+        })}
+        words={{
+          open: say("eve.addToCalendar"),
+          which: say("eve.whichDay"),
+          back: say("eve.back"),
+          file: say("eve.theFile"),
+          google: say("cal.google"),
+          outlook: say("cal.outlook"),
+          said: say("eve.whichIsWhich"),
+        }}
+      />
+    ) : null;
+
   return (
     <>
-      <AppHeader eyebrow={say("on.eyebrow")} title={event.title} back="/app/events" />
+      <AppHeader
+        eyebrow={say("on.eyebrow")}
+        title={event.title}
+        back="/app/events"
+        /* No hand up here: this screen's right-hand side is the three things you can
+           do about this evening, and a fourth thing to press among them is a thumb
+           landing on the wrong one. */
+        wave={false}
+        aside={
+          over ? null : (
+            <Evening
+              eventId={event.id}
+              spots={event.spots}
+              mine={
+                booking && booking.state !== "interested"
+                  ? { people: booking.people, bringing: booking.bringing, state: booking.state }
+                  : null
+              }
+              interested={booking?.state === "interested"}
+              tight
+            >
+              {calendar}
+            </Evening>
+          )
+        }
+      />
 
       <div className="evening">
         {event.photo ? (
@@ -77,20 +128,10 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
           </p>
         ) : null}
 
-        {over ? (
-          <p className="app-note">{say("eve.itHasBeen")}</p>
-        ) : (
-          <Evening
-            eventId={event.id}
-            spots={event.spots}
-            mine={
-              booking && booking.state !== "interested"
-                ? { people: booking.people, bringing: booking.bringing, state: booking.state }
-                : null
-            }
-            interested={booking?.state === "interested"}
-          />
-        )}
+        {/* The things you can do about this evening are in the header now, where they
+            are still on the screen at the foot of a long page. What stays here is
+            the one sentence for an evening that has already happened. */}
+        {over ? <p className="app-note">{say("eve.itHasBeen")}</p> : null}
 
         {event.days.length > 0 ? (
           <section className="evening-days">
@@ -205,34 +246,6 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
             ) : null}
           </ul>
         </section>
-
-        {/* Into the phone's own calendar, and it asks which day and which calendar
-            — the same rows the website offers, from the same place that works them
-            out. On a phone the file is the one that matters: iOS opens it in
-            Calendar with an Add button showing. */}
-        {event.slug && event.date ? (
-          <p className="evening-block">
-            <CalendarPick
-              className="pill pill-small"
-              rows={calendarRows(event, {
-                whole: say("eve.theWhole"),
-                when: (iso, time) => {
-                  const when = dateParts(iso, lang);
-                  return [`${when.day} ${when.month}`, time].filter(Boolean).join(", ");
-                },
-              })}
-              words={{
-                open: say("eve.addToCalendar"),
-                which: say("eve.whichDay"),
-                back: say("eve.back"),
-                file: say("eve.theFile"),
-                google: say("cal.google"),
-                outlook: say("cal.outlook"),
-                said: say("eve.whichIsWhich"),
-              }}
-            />
-          </p>
-        ) : null}
 
         {event.story ? (
           <p className="evening-block">

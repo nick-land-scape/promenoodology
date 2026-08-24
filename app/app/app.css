@@ -3161,6 +3161,29 @@ body:has(.app-shell) {
   user-select: none;
 }
 
+/*
+ * And no menu behind a long press.
+ *
+ * Holding a link in a web view brings up Safari's own actions — open it, add it to a
+ * reading list, copy it, share it. In a browser that is a service; in an app it is a
+ * browser's menu appearing in the middle of an app, offering a reading list that
+ * belongs to another program and tabs that do not exist here. A long press should do
+ * what the app says it does or nothing at all.
+ *
+ * Everything that is pressed, rather than everything: the words of a story and of the
+ * handbook stay selectable and therefore still callout-able, because quoting what
+ * this club has written is a thing somebody should be able to do.
+ */
+.app-shell a,
+.app-shell button,
+.app-shell .row,
+.app-shell .tab,
+.app-shell img,
+.app-shell .avatar,
+.app-shell .member-card {
+  -webkit-touch-callout: none;
+}
+
 /* Everything you can press answers in about a tenth of a second, by getting
    smaller. It is the one piece of feedback a phone gives for free and the web
    never does by itself. */
@@ -4817,6 +4840,19 @@ body:has(.app-shell) {
   line-height: 1.4;
   color: var(--ink);
   word-break: break-word;
+}
+
+/* The three things you can do about an evening, in the header of its own screen.
+   Small, in a row, and the menu inside the last of them opens downwards from there —
+   which is why the header has to let it out (see .app-header below). */
+.evening-does-tight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.evening-does-tight .pill-small {
+  white-space: nowrap;
 }
 
 /* Which day, which calendar — the website's own menu, on the app's paper.

@@ -19,12 +19,27 @@ export default function Evening({
   spots,
   mine,
   interested,
+  tight = false,
+  children,
 }: {
   eventId: string;
   spots: number;
   /** What you have already said, if anything. */
   mine: { people: number; bringing: string; state: string } | null;
   interested: boolean;
+  /* In the header, where the whole screen can see them.
+   *
+   * They were halfway down a long page: an evening's own screen is a photograph, a
+   * paragraph, a programme and a list of what is wanted, and the one thing somebody
+   * came to do was below all of it. Up there it is on the screen the whole way down.
+   *
+   * What `tight` leaves out is the running commentary — the confirmations, the
+   * problem lines, "everything on" — because a header is three controls wide and
+   * a sentence in it is a sentence nobody has room to read. The confirmation is the
+   * button changing to "not coming", which is the only one anybody needs. */
+  tight?: boolean;
+  /** The calendar picker, which the page builds because it reads the database. */
+  children?: React.ReactNode;
 }) {
   const say = useSay();
   const [open, setOpen] = useState(false);
@@ -59,6 +74,74 @@ export default function Evening({
         setMarked(!on);
       }
     });
+  }
+
+  if (tight) {
+    return (
+      <span className="evening-does evening-does-tight">
+        {mark_()}
+        {joinButton()}
+        {children}
+        <JoinSheet
+          open={open && !coming}
+          eventId={eventId}
+          title={say("row.countMeIn")}
+          spots={spots}
+          mine={mine}
+          onClose={() => setOpen(false)}
+          onDone={(words) => {
+            setComing(true);
+            setSaid(words);
+          }}
+        />
+      </span>
+    );
+  }
+
+  /* Written once, drawn in two places: the header and the page. Two copies of a
+     button that books a place is two ways of booking a place. */
+  function mark_() {
+    return (
+      <button
+        type="button"
+        className={marked ? "mark mark-on" : "mark"}
+        onClick={() => mark(!marked)}
+        disabled={pending}
+        aria-pressed={marked}
+        aria-label={say(marked ? "row.takeOffList" : "row.keepOnList")}
+        title={say(marked ? "row.onYourList" : "row.keepOnList")}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M6.5 3.5h11v17l-5.5-4-5.5 4z"
+            fill={marked ? "currentColor" : "none"}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    );
+  }
+
+  function joinButton() {
+    return coming ? (
+      <button type="button" className="pill pill-small" onClick={cancel} disabled={pending}>
+        {say("row.notComing")}
+      </button>
+    ) : (
+      <button
+        type="button"
+        className="pill pill-small pill-solid"
+        onClick={() => {
+          setOpen(!open);
+          setSaid(null);
+        }}
+        disabled={pending}
+      >
+        {say("row.countMeIn")}
+      </button>
+    );
   }
 
   return (

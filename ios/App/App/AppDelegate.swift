@@ -71,7 +71,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // is idempotent and runs whenever the app comes forward.
         if let web = Self.webView(in: stage) {
             web.allowsBackForwardNavigationGestures = true
-            web.allowsLinkPreview = true
+            /* No link preview, and no menu behind a long press.
+             *
+             * `allowsLinkPreview` is Safari's: hold a link and it offers to open it,
+             * to add it to a reading list, to copy it, to share it. In a browser that
+             * is a service. In an app it is a browser's menu appearing in the middle
+             * of an app — the reading list belongs to Safari, "open in new tab" has
+             * nowhere to go here, and every one of those actions leads out of the
+             * thing somebody is holding. A long press in an app should do what the
+             * app says it does or nothing at all.
+             *
+             * The web side of the same thing is `-webkit-touch-callout: none`, which
+             * is in app.css and takes effect without a build; this is the half that
+             * stops the *preview* card as well as the menu. */
+            web.allowsLinkPreview = false
 
             /* No rubber band, and this is the last piece of "the header moves and
              * the bar grows".

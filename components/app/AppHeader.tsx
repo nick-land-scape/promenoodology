@@ -19,6 +19,13 @@ type Props = {
    * something at the bottom of the page.
    */
   back?: string;
+  /* Whether the wave belongs on this screen.
+   *
+   * It does on the screens that are about the club — who waved at you is news. On
+   * one evening's own screen the right-hand side is where the three things you can
+   * do about that evening go, and a hand among them is a fourth thing competing
+   * for a thumb. */
+  wave?: boolean;
 };
 
 /* A server component on purpose, though it says one word of its own.
@@ -26,7 +33,13 @@ type Props = {
    The badge on the right reads who has waved, from the database, so this header
    cannot cross into the browser without taking that with it — and `useSay` would
    have made it a client component. Its own language, then, read here. */
-export default async function AppHeader({ eyebrow, title, aside, back }: Props) {
+export default async function AppHeader({
+  eyebrow,
+  title,
+  aside,
+  back,
+  wave = true,
+}: Props) {
   const say = speaking(await readingIn(), await getFrench());
 
   return (
@@ -57,7 +70,7 @@ export default async function AppHeader({ eyebrow, title, aside, back }: Props) 
           this screen offers, then who has waved. */}
       <div className="app-header-aside">
         {aside}
-        <WaveBadge />
+        {wave ? <WaveBadge /> : null}
       </div>
     </header>
   );
