@@ -162,9 +162,20 @@ for folder, width, height in (
 screen(480, 320).save(f"{ANDROID}/drawable/splash.png")
 made.append("android launch screens, ten shapes")
 
-# And the one the Play listing wants: 512 square, the same icon.
+# And the two the Play listing wants: the 512 icon, and the banner Google draws
+# across the top of a listing and inside its own promotions.
 on_purple(512).save("native/art/play-icon-512.png")
 made.append("native/art/play-icon-512.png (the Play listing's icon)")
+
+# The feature graphic: 1024x500, and the one rule about it that matters is that
+# Google crops and overlays it without asking — a play button lands in the middle
+# of it where there is a video, and the edges go under rounded corners. So: the
+# mark alone, small, centred, on paper. Nothing in the corners, no words. Words
+# here would be a second name for the app underneath the app's name.
+banner = Image.new("RGB", (1024, 500), PAPER)
+banner = middle(banner, fitted(ink(), 500, 0.42), 0.0)
+banner.save("native/art/play-feature-1024x500.png")
+made.append("native/art/play-feature-1024x500.png (the listing's banner)")
 
 if "--variants" in sys.argv:
     on_paper(1024).save("native/art/icon-paper.png")

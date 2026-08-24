@@ -181,6 +181,22 @@ export async function appleSheet(): Promise<
   | { ok: false; why: "no sheet" | "cancelled" | string }
 > {
   const found = bridge();
+  /*
+   * iPhone only, and asked before anything else.
+   *
+   * The plugin is registered on iOS and nowhere else — but Capacitor still hands
+   * the web view a JavaScript proxy for it on Android, because the bridge builds
+   * those from the plugin's declaration rather than from what the platform can
+   * actually do. So `SignInWithApple` exists there, `authorize` on it is not a
+   * function, and calling it threw "r.authorize is not a function" onto the
+   * sign-in screen in pink: a dead button and a stack-trace fragment where a
+   * sentence should be.
+   *
+   * The web flow below handles Android perfectly well — the same one every browser
+   * gets — so all this needed was to stop pretending there was a sheet.
+   */
+  if (found?.getPlatform?.() !== "ios") return { ok: false, why: "no sheet" };
+
   const apple = (found?.Plugins as unknown as { SignInWithApple?: ApplePlugin } | undefined)
     ?.SignInWithApple;
   if (!apple) return { ok: false, why: "no sheet" };
@@ -219,6 +235,13 @@ export async function appleSheet(): Promise<
     const said = error instanceof Error ? error.message : String(error);
     // The person pressed cancel. Not a failure, and not worth a red message.
     if (/cancel|1001|abort/i.test(said)) return { ok: false, why: "cancelled" };
+    /* And a platform that has the plugin's name but not its code. The check above
+       catches today's version of this; this catches the next one, because "the
+       native thing is not really there" should always mean "use the web flow"
+       rather than showing somebody a sentence about a function. */
+    if (/not a function|not implemented|unimplemented|does not have an implementation/i.test(said)) {
+      return { ok: false, why: "no sheet" };
+    }
     return { ok: false, why: said };
   }
 }

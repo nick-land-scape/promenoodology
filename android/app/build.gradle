@@ -1,5 +1,48 @@
 apply plugin: 'com.android.application'
 
+/*
+ * The build number, and why it is a clock.
+ *
+ * Google will not take a bundle whose versionCode it has seen before, and it must
+ * be an integer under 2,100,000,000 — so the iPhone's trick of using the minute
+ * (202608241457) does not fit, by a factor of a hundred. Minutes since the first
+ * of January 2020 does: about 3.5 million today, climbing by 1,440 a day, and it
+ * does not reach the ceiling for four thousand years. Nothing to remember and
+ * nothing to increment by hand.
+ *
+ * versionName is the version people see, and that one is a decision rather than a
+ * clock — it matches MARKETING_VERSION in the Xcode project on purpose.
+ */
+def minutesSince2020 = (int) ((System.currentTimeMillis() - 1577836800000L) / 60000L)
+
+/*
+ * Signing, and what is deliberately not in this repository.
+ *
+ * Play App Signing means Google holds the key that signs what people install; the
+ * key here only signs what we hand to Google, and it can be replaced by asking
+ * them. That is the whole reason to prefer it: a lost laptop is not a lost app.
+ *
+ * Where the key and its passwords live: `android/keystore.properties`, which is
+ * git-ignored and never committed, or the same four values as environment
+ * variables for a machine that builds without a home directory. Absent either
+ * way, the release build is simply unsigned — which is what `bundleRelease`
+ * should do on a machine that has no business signing anything, rather than
+ * failing with a stack trace.
+ */
+def keyed = false
+def keyFile = rootProject.file("keystore.properties")
+def keys = new Properties()
+if (keyFile.exists()) {
+    keyFile.withInputStream { keys.load(it) }
+    keyed = true
+} else if (System.getenv("PROMENOOD_KEYSTORE")) {
+    keys.setProperty("storeFile", System.getenv("PROMENOOD_KEYSTORE"))
+    keys.setProperty("storePassword", System.getenv("PROMENOOD_KEYSTORE_PASSWORD") ?: "")
+    keys.setProperty("keyAlias", System.getenv("PROMENOOD_KEY_ALIAS") ?: "upload")
+    keys.setProperty("keyPassword", System.getenv("PROMENOOD_KEY_PASSWORD") ?: "")
+    keyed = true
+}
+
 android {
     namespace = "com.promenoodology.community"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,7 +50,7 @@ android {
         applicationId "com.promenoodology.community"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode minutesSince2020
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -16,10 +59,39 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    if (keyed) {
+        signingConfigs {
+            release {
+                storeFile file(keys.getProperty("storeFile"))
+                storePassword keys.getProperty("storePassword")
+                keyAlias keys.getProperty("keyAlias")
+                keyPassword keys.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (keyed) {
+                signingConfig signingConfigs.release
+            }
+            /* Left off, and it is a decision rather than an omission: the code
+               R8 would shrink is the Capacitor bridge and the plugins, all of it
+               reached from Java by name from the WebView. Minifying that is how an
+               app ships that works everywhere except in release. There is no
+               application code of our own here to shrink — the app is a website. */
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    /* Both, because Google wants a bundle and a phone on a desk wants an apk. */
+    bundle {
+        language {
+            /* Every language in one bundle. Play would otherwise ship only the
+               phone's own, and this app is two languages that somebody switches
+               between in their account — not one chosen by the operating system. */
+            enableSplit = false
         }
     }
 }
