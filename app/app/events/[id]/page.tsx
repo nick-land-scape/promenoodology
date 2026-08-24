@@ -204,6 +204,22 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
           </ul>
         </section>
 
+        {/* Into the phone's own calendar. The one thing a member does with a date
+            that this app cannot do for them — and it is the same file the website
+            serves, so a programme arrives as its five afternoons rather than as one
+            block a month long. */}
+        {event.slug && event.date ? (
+          <p className="evening-block">
+            <a
+              className="pill pill-small"
+              href={`/events/${event.slug}/calendar.ics`}
+              download
+            >
+              {say("eve.addToCalendar")}
+            </a>
+          </p>
+        ) : null}
+
         {event.story ? (
           <p className="evening-block">
             <Link className="pill" href={`/app/read/${event.story.slug}`}>

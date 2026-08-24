@@ -3390,8 +3390,47 @@ body:has(.hero) .edit-this {
 }
 
 .event-days li {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
   padding-top: 14px;
   border-top: 1px solid var(--hairline);
+}
+
+/* The day as a stamp: the number big, the month under it, both left of the words —
+   the same shape the app's rows use, because it is the same job. A list of five
+   afternoons is scanned by date, and a date set as a line of small capitals above
+   the name is read *after* the name rather than before it. */
+.event-day-date {
+  flex: none;
+  display: grid;
+  justify-items: center;
+  width: 52px;
+  padding-top: 2px;
+  font-family: var(--sans);
+  line-height: 1;
+}
+
+.event-day-date b {
+  font-size: 1.9rem;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: -0.02em;
+}
+
+.event-day-date i {
+  padding-top: 3px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+.event-day-said {
+  display: block;
+  min-width: 0;
 }
 
 .event-day-when {
@@ -4308,6 +4347,38 @@ body:has(.hero) .edit-this {
 .taking-part .pill[disabled] {
   opacity: 0.38;
   cursor: not-allowed;
+}
+
+/* The welcome, directly under the two controls. Quiet but not grey-on-grey: it is
+   the sentence that stops a disabled button reading as a closed door. */
+/* Two quiet links, under the heading that says how to come. */
+.add-to-calendar {
+  margin: 6px 0 14px;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+.add-to-calendar a {
+  font-style: normal;
+  color: var(--purple);
+  text-decoration: none;
+}
+
+.add-to-calendar a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.taking-part-open {
+  margin: 8px 0 0;
+  max-width: 34rem;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--ink);
 }
 
 .taking-part-why {

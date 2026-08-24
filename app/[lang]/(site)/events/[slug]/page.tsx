@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FlyerBook from "@/components/FlyerBook";
+import AddToCalendar from "@/components/AddToCalendar";
 import JoinToTakePart from "@/components/JoinToTakePart";
 import JsonLd from "@/components/JsonLd";
 import Linked from "@/components/Linked";
@@ -9,6 +10,7 @@ import Photo from "@/components/Photo";
 import QuoteThis from "@/components/QuoteThis";
 import StoryBody from "@/components/StoryBody";
 import type { EventPage as Evening, Slide } from "@/lib/content";
+import { dateParts } from "@/lib/app-data";
 import { pretty } from "@/lib/admin/when";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { siteUrl } from "@/lib/site";
@@ -277,21 +279,35 @@ export default async function EventPage({ params }: Params) {
         <section className="event-days">
           <h2 className="story-label">{say("event.programme")}</h2>
           <ol>
-            {event.days.map((day) => (
-              <li key={`${day.date}-${day.title}`}>
-                <p className="event-day-when">
-                  {[pretty(day.date), [day.time, day.endTime].filter(Boolean).join("–")]
-                    .filter(Boolean)
-                    .join(", ")}
-                </p>
-                {day.title ? <h3 className="event-day-name">{day.title}</h3> : null}
-                {day.what ? (
-                  <p className="story-text">
-                    <Linked>{day.what}</Linked>
-                  </p>
-                ) : null}
-              </li>
-            ))}
+            {event.days.map((day) => {
+              const when = dateParts(day.date, lang);
+              return (
+                <li key={`${day.date}-${day.title}`}>
+                  {/* The day as a stamp on the left, the way the app's rows say it:
+                      a list of five afternoons is scanned by date, and a date set as
+                      a line of small capitals above the name is read after it rather
+                      than before. */}
+                  <span className="event-day-date" aria-hidden="true">
+                    <b>{when.day}</b>
+                    <i>{when.month}</i>
+                  </span>
+
+                  <span className="event-day-said">
+                    <p className="event-day-when">
+                      {[pretty(day.date), [day.time, day.endTime].filter(Boolean).join("–")]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
+                    {day.title ? <h3 className="event-day-name">{day.title}</h3> : null}
+                    {day.what ? (
+                      <p className="story-text">
+                        <Linked>{day.what}</Linked>
+                      </p>
+                    ) : null}
+                  </span>
+                </li>
+              );
+            })}
           </ol>
         </section>
       ) : null}
@@ -304,6 +320,10 @@ export default async function EventPage({ params }: Params) {
 
       <section className="event-practical">
         <h2 className="story-label">{say("event.coming")}</h2>
+        {/* Straight under the heading that answers "how do I come to this": the day
+            and the place are here, and the thing anybody does with a day and a
+            place is put it in whatever keeps track of their Saturdays. */}
+        <AddToCalendar event={event} say={say} />
         <dl>
           <div>
             <dt>{say("event.when")}</dt>

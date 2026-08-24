@@ -84,6 +84,27 @@ export const PHRASES: Phrase[] = [
   /* ------------------------------------------------ taking part, on the website */
   { key: "part.countMeIn", en: "count me in", fr: "je viens", where: "front" },
   { key: "part.save", en: "save this evening", fr: "garder cette soirée", where: "front" },
+  /* Said in this order on purpose: the welcome first, because "for members" next
+     to a button is read as "this evening is for members", and it is not. Anybody
+     can turn up. What needs an account is *telling us* you are coming, and the
+     reason for that is a kitchen counting plates rather than a door policy. */
+  { key: "eve.addToCalendar", en: "put it in my calendar", fr: "l’ajouter à mon agenda", where: "app", note: "On an evening's own screen. Hands the phone an .ics file." },
+  { key: "cal.addToCalendar", en: "add to my calendar", fr: "ajouter à mon agenda", where: "front", note: "Downloads an .ics file — every calendar takes one." },
+  { key: "cal.google", en: "Google Calendar", fr: "Google Agenda", where: "front", note: "Only for an evening that is one occasion; a programme goes as the file." },
+  {
+    key: "part.openToAll",
+    en: "Everybody is welcome at this — you do not have to be a member to come.",
+    fr: "Tout le monde est bienvenu — pas besoin d’être membre pour venir.",
+    where: "front",
+    note: "Under the count-me-in button, first line.",
+  },
+  {
+    key: "part.needsAccount",
+    en: "Saying so in advance needs an account, so the kitchen knows how many —",
+    fr: "Le dire à l’avance demande un compte, pour que la cuisine sache combien —",
+    where: "front",
+    note: "Under the count-me-in button, second line, followed by the link to join.",
+  },
   {
     key: "part.why",
     en: "Asking to come and keeping an evening on your list are for members —",

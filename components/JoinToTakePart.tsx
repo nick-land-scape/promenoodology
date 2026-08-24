@@ -66,9 +66,18 @@ export default function JoinToTakePart({
       </span>
       )}
 
+      {/* One line under the buttons, wherever the buttons are — including beside the
+          title, where there used to be nothing at all. Two grey controls with no
+          explanation next to them are a page saying no without saying why, and the
+          first half of the answer is the half people worry about: the evening is
+          open to anybody. */}
+      {wordsOnly ? null : (
+        <p className="taking-part-open">{say("part.openToAll")}</p>
+      )}
+
       {tight ? null : (
       <p className="taking-part-why">
-        {say("part.why")}{" "}
+        {say("part.needsAccount")}{" "}
         <Link href="/app/enter">{say("part.join")}</Link> {say("part.bothWork")}
         {signUpEmail ? (
           <>
