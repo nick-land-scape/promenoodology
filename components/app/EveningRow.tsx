@@ -234,8 +234,15 @@ export default function EveningRow({
           <span className="row-maybe">{say("row.onYourList")}</span>
         ) : null}
 
-        {/* The one decision on the left, the bookmark at the right end of the
-            same line, both the same height. */}
+        {said ? <span className="row-said">{said}</span> : null}
+      </span>
+
+      {/* Beside the words where there is room for them, under the words where
+          there is not — which is why they are a column of the row rather than the
+          last thing in the column of words. Inside the words they had no choice:
+          the last item of a block is a line of its own at every width, so on a wide
+          screen two buttons sat alone with a thousand points of paper to their
+          right. */}
         {does ? (
           <span className="row-does">
             {coming ? (
@@ -289,8 +296,6 @@ export default function EveningRow({
             </button>
           </span>
         ) : null}
-        {said ? <span className="row-said">{said}</span> : null}
-      </span>
 
       {does ? (
         <JoinSheet

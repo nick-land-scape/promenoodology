@@ -4323,9 +4323,22 @@ body:has(.hero) .edit-this {
   gap: 10px;
 }
 
+/* The same pill wherever it stands in this bar. It was written for the pair inside
+   .taking-part, and the calendar button is a third thing beside them rather than
+   inside them — so it was taking the site's smaller default and standing 22 points
+   tall next to two of 31. Three controls on one line have to be one height. */
+.event-top-does .pill,
 .taking-part .pill {
   display: inline-flex;
   align-items: center;
+  /* One height, said outright, because two of these are buttons and one is a link
+     and no amount of matching padding gets them to agree: a button and an anchor
+     measure their own insides differently, and the same rule left the link four
+     points taller than the two beside it. Three controls on one line have to be
+     one height, so the height is the rule. */
+  box-sizing: border-box;
+  height: 33px;
+  line-height: 1;
   gap: 7px;
   border: 1px solid var(--ink);
   background: none;
@@ -4351,6 +4364,76 @@ body:has(.hero) .edit-this {
 
 /* The welcome, directly under the two controls. Quiet but not grey-on-grey: it is
    the sentence that stops a disabled button reading as a closed door. */
+/* The flyer's button, in the top right corner of the photograph it is the flyer
+   for. Paper under it so it can be read over anything at all. Top rather than
+   bottom: a photograph is read from the top down, and a control sitting at the
+   bottom of one is found after the picture has already been looked past. */
+.event-cover {
+  position: relative;
+}
+
+.event-cover-flyer {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
+.event-cover-flyer .pill,
+.event-cover-flyer button {
+  background: var(--paper);
+  border-color: var(--ink);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+/*
+ * A control that is a drawing until you point at it.
+ *
+ * The bookmark and the calendar both are: their icons need no explaining, and
+ * three controls in one bar all shouting their words is a bar nobody reads. The
+ * name is still in the markup for a keyboard and for anything reading the page
+ * out; it is the *drawing* that carries it the rest of the time.
+ *
+ * The padding is the fiddly part. A pill is padded for words, so collapsing the
+ * words left a pill with an icon at one end and fifteen points of nothing at the
+ * other — which is what "it looks off" was. Collapsed, it is square around its own
+ * icon; opened, it takes the padding back with the same easing as the words, so the
+ * whole thing grows as one object.
+ */
+.pill-quiet {
+  gap: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+  transition:
+    padding 0.2s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.pill-quiet span {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    max-width 0.2s ease,
+    padding-left 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pill-quiet:hover,
+  .pill-quiet:focus-visible {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .pill-quiet:hover span,
+  .pill-quiet:focus-visible span {
+    max-width: 14rem;
+    padding-left: 7px;
+  }
+}
+
 /* Two quiet links, under the heading that says how to come. */
 .add-to-calendar {
   margin: 6px 0 14px;
@@ -4368,15 +4451,34 @@ body:has(.hero) .edit-this {
   text-decoration: none;
 }
 
+/* The line that says which of the three is which — because "add to my calendar",
+   "Google Calendar" and "Outlook" next to each other look like three of the same
+   thing, and one of them is a file that every calendar takes. */
+.add-to-calendar-said {
+  display: block;
+  padding-top: 4px;
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  font-style: italic;
+  color: var(--quiet);
+}
+
 .add-to-calendar a:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-.taking-part-open {
-  margin: 8px 0 0;
+/* The welcome, as part of the page's own opening: under the day and the place,
+   above the paragraph. Set like a subheading rather than like a note — bigger than
+   the meta line it follows, in the reading colour, because it is a sentence
+   somebody is meant to read rather than a caption to a greyed-out control. */
+.event-welcome {
+  margin: 10px 0 0;
   max-width: 34rem;
-  font-size: 0.92rem;
+  font-size: 1.05rem;
   line-height: 1.4;
   color: var(--ink);
 }

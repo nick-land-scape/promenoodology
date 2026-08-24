@@ -51,7 +51,18 @@ export default function JoinToTakePart({
         <button type="button" className="pill pill-solid" disabled aria-disabled="true">
           {say("part.countMeIn")}
         </button>
-        <button type="button" className="pill" disabled aria-disabled="true">
+        {/* The bookmark is a shape everybody knows, so it says its own name only
+            when there is a pointer on it — which is what buys the room for the
+            calendar link beside it. The name is still there for a keyboard and for
+            anything reading the page out; it is the *drawing* that carries it. */}
+        <button
+          type="button"
+          className="pill pill-quiet"
+          disabled
+          aria-disabled="true"
+          aria-label={say("part.save")}
+          title={say("part.save")}
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15">
             <path
               d="M6.5 3.5h11v17l-5.5-4-5.5 4z"
@@ -61,18 +72,9 @@ export default function JoinToTakePart({
               strokeLinejoin="round"
             />
           </svg>
-          {say("part.save")}
+          <span aria-hidden="true">{say("part.save")}</span>
         </button>
       </span>
-      )}
-
-      {/* One line under the buttons, wherever the buttons are — including beside the
-          title, where there used to be nothing at all. Two grey controls with no
-          explanation next to them are a page saying no without saying why, and the
-          first half of the answer is the half people worry about: the evening is
-          open to anybody. */}
-      {wordsOnly ? null : (
-        <p className="taking-part-open">{say("part.openToAll")}</p>
       )}
 
       {tight ? null : (

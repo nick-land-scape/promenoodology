@@ -436,6 +436,9 @@ body:has(.app-shell) {
   position: relative;
   display: flex;
   align-items: center;
+  /* And it wraps, so the two buttons can drop under the words on a narrow screen
+     and sit beside them on a wide one. */
+  flex-wrap: wrap;
   gap: 12px;
   width: 100%;
   padding: 12px 0;
@@ -3792,11 +3795,24 @@ body:has(.app-shell) {
   padding-top: 14px;
 }
 
-/* This used to take the padding off again above 430 points, on the grounds that
-   with room the buttons go back beside the words. They do not: the words are a
-   column and the buttons are the last thing in it, at every width. So on the
-   widest phones — the ones with the most room for air — the button sat directly
-   against the last line of the paragraph above it. */
+/* With room, beside the words: pushed to the right end of the row, level with the
+   middle of it. Four hundred and forty points is where a row has space for three
+   lines of type *and* two buttons without either being squeezed — below that they
+   are better underneath. */
+@media (min-width: 440px) {
+  .row-does {
+    width: auto;
+    flex: none;
+    margin-left: auto;
+    padding-top: 0;
+    align-self: center;
+  }
+}
+
+/* Under the words, with air above them — the narrow case, and the phone. The
+   buttons are a column of the row now rather than the last thing in the column of
+   words, so this is a real choice again and not something the layout was going to
+   ignore. */
 
 /* A bookmark: no promise, no number, nothing sent to anybody. */
 .mark {

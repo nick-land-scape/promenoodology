@@ -214,7 +214,10 @@ export default async function EventPage({ params }: Params) {
           </p>
 
           <span className="event-top-does">
-            {event.flyer ? (
+            {/* The flyer's own button is on the photograph now, in its corner —
+                where a flyer is. It stays up here only when there is no
+                photograph for it to sit on. */}
+            {event.flyer && !event.photo ? (
               <FlyerBook
                 src={event.flyer}
                 title={event.title}
@@ -227,6 +230,10 @@ export default async function EventPage({ params }: Params) {
               />
             ) : null}
             {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} tight /> : null}
+            {/* After the bookmark: the two that are about *you and this evening*
+                come first, and putting a date in your own calendar is the thing you
+                do once you have decided. */}
+            {!over ? <AddToCalendar event={event} say={say} tight /> : null}
           </span>
         </div>
       </header>
@@ -249,6 +256,11 @@ export default async function EventPage({ params }: Params) {
           {[when(event), event.place, event.address].filter(Boolean).join(" · ")}
           {over ? ` · ${say("event.itHasBeen")}` : null}
         </p>
+        {/* Said where the page says what it is, rather than as a note under a
+            greyed-out button. It is not an explanation of the controls, it is the
+            first thing anybody wants to know about an evening they have just read
+            about: whether they are allowed to come. They are. */}
+        {over ? null : <p className="event-welcome">{say("part.openToAll")}</p>}
       </div>
 
       {event.lead ? (
@@ -270,6 +282,25 @@ export default async function EventPage({ params }: Params) {
             sizes="(max-width: 767px) 92vw, 60vw"
             priority
           />
+
+          {/* In the corner of the picture, because that is what it is a picture
+              of: the flyer for this evening. It was in the bar at the top beside
+              two other things to press, which made three controls competing for a
+              line and none of them the obvious one. */}
+          {event.flyer ? (
+            <span className="event-cover-flyer">
+              <FlyerBook
+                src={event.flyer}
+                title={event.title}
+                words={{
+                  open: say("event.lookThrough"),
+                  take: say("event.takeAsPdf"),
+                  before: say("book.pageBefore"),
+                  after: say("book.nextPage"),
+                }}
+              />
+            </span>
+          ) : null}
         </figure>
       ) : null}
 

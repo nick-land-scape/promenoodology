@@ -90,6 +90,14 @@ export const PHRASES: Phrase[] = [
      reason for that is a kitchen counting plates rather than a door policy. */
   { key: "eve.addToCalendar", en: "put it in my calendar", fr: "l’ajouter à mon agenda", where: "app", note: "On an evening's own screen. Hands the phone an .ics file." },
   { key: "cal.addToCalendar", en: "add to my calendar", fr: "ajouter à mon agenda", where: "front", note: "Downloads an .ics file — every calendar takes one." },
+  { key: "cal.outlook", en: "Outlook", fr: "Outlook", where: "front" },
+  {
+    key: "cal.whichIsWhich",
+    en: "The file is the one for iPhone, Mac and Outlook on a desktop — it opens your calendar with the evening ready to add.",
+    fr: "Le fichier est celui pour iPhone, Mac et Outlook sur ordinateur — il ouvre votre agenda avec la soirée prête à ajouter.",
+    where: "front",
+    note: "Under the three calendar links. Apple has no address that opens its calendar with an event in it; the file is that.",
+  },
   { key: "cal.google", en: "Google Calendar", fr: "Google Agenda", where: "front", note: "Only for an evening that is one occasion; a programme goes as the file." },
   {
     key: "part.openToAll",
