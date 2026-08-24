@@ -5295,44 +5295,96 @@ body:has(.app-shell) {
 
    The website's own weave, sized for a phone.
 
-   Nothing here decides which photograph goes where — that is StoryBody and the
-   twelve columns in globals.css, and the order somebody arranged in /admin. This
-   is the part that has to be different: one column instead of twelve, the app's
-   gutter instead of the page's margin, and type at the size the rest of this app
-   reads at.
+   Nothing here decides which photograph goes where — that is StoryBody, and the
+   order somebody arranged in /admin. This is the part that has to be different:
+   twelve columns across three hundred and fifty points instead of across a
+   desktop, the app's gutter instead of the page's margin, and type at the size the
+   rest of this app reads at.
 
-   Written as its own rules rather than relying on the website's phone breakpoint,
-   because the app runs at tablet widths too — an iPad in portrait is 834 points
-   wide and would otherwise get the twelve-column offsets inside a 560-point
-   column, which is where a photograph ends up four columns wide and forty points
-   below the paragraph it belongs to. */
+   Written as its own rules rather than borrowing the website's phone breakpoint,
+   which flattens everything to one column: the app runs at tablet widths too, and
+   the desktop offsets inside a five-hundred-point column put a photograph four
+   columns wide forty points below the paragraph it belongs to. Neither of those is
+   this. */
 .app-story {
   padding: 0 var(--gutter) 8px;
 }
 
 .app-story .story {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: 8px;
+  row-gap: 0;
+  align-items: start;
   padding-bottom: 0;
 }
 
-/* Every block takes the whole column, at the shape it was taken in. `!important`
-   because the variants it overrides are attribute selectors of the same weight
-   and the website's own phone rule does exactly this for exactly this reason. */
-.app-story .story-figure,
+/* The words take the whole width, always.
+   
+   The photographs are what the chaos is for. A paragraph set in six of twelve
+   columns on a phone is a paragraph twenty-six characters wide, which is a column
+   of a newspaper read through a letterbox. */
 .app-story .story-section {
-  grid-column: auto !important;
+  grid-column: 1 / -1 !important;
+  margin: 8px 0 10px;
+  max-width: 34rem;
+}
+
+/*
+ * Eight ways a photograph sits, cycled through in order — the website's idea at a
+ * phone's size.
+ *
+ * Every one lands on the same twelve columns at a different width, a different
+ * starting column and a different drop, so nothing lines up and nothing breaks.
+ * Where two half-width ones follow each other they share a row, which is what
+ * makes the pairs: the left one always comes first, because a grid fills forward
+ * and cannot go back up a row to fill a gap it has passed.
+ *
+ * The drops are small — ten to twenty-six points, against the desktop's ninety.
+ * A phone is a column somebody is scrolling, and a forty-point offset there does
+ * not read as composition, it reads as a picture that failed to load on time.
+ *
+ * The full-width ones are deliberate and they are the majority: a photograph of
+ * forty people at a table is not a hundred and seventy points wide. The halves are
+ * for the details — a hand, a bottle, a sign — and the cycle alternates so that a
+ * story is mostly its pictures with a pair of asides in between.
+ */
+.app-story .story-figure {
+  padding: 4px 0 14px;
   margin-top: 0;
 }
 
-.app-story .story-figure {
-  padding: 4px 0 14px;
+.app-story .story-figure[data-v="0"] {
+  grid-column: 1 / span 12 !important;
+}
+.app-story .story-figure[data-v="1"] {
+  grid-column: 1 / span 6 !important;
+}
+.app-story .story-figure[data-v="2"] {
+  grid-column: 7 / span 6 !important;
+  margin-top: 26px;
+}
+.app-story .story-figure[data-v="3"] {
+  grid-column: 2 / span 11 !important;
+}
+.app-story .story-figure[data-v="4"] {
+  grid-column: 1 / span 7 !important;
+}
+.app-story .story-figure[data-v="5"] {
+  grid-column: 8 / span 5 !important;
+  margin-top: 18px;
+}
+.app-story .story-figure[data-v="6"] {
+  grid-column: 1 / span 12 !important;
+}
+.app-story .story-figure[data-v="7"] {
+  grid-column: 1 / span 10 !important;
+  margin-top: 10px;
 }
 
 /* No cap on how large a picture may be drawn. On the website that limit stops a
-   small original being stretched across seven columns; a column here is 350
-   points, which every photograph in the archive is wider than. Kept as a limit
+   small original being stretched across seven columns; the widest column here is
+   350 points, which every photograph in the archive is wider than. Kept as a limit
    rather than removed, so a genuinely tiny file still refuses to be a poster. */
 .app-story .story-button {
   max-width: min(100%, var(--limit));
@@ -5345,11 +5397,6 @@ body:has(.app-shell) {
   padding-top: 6px;
   font-size: 0.72rem;
   color: var(--muted);
-}
-
-.app-story .story-section {
-  margin: 8px 0 10px;
-  max-width: 34rem;
 }
 
 .app-story .story-text {
@@ -5367,8 +5414,8 @@ body:has(.app-shell) {
   margin: 18px 0 8px;
 }
 
-/* A gap somebody asked for in /admin. On twelve columns it is a cell; in one
-   column it has to be a height, or it is nothing at all. */
+/* A gap somebody asked for in /admin. */
 .app-story .story-space {
+  grid-column: 1 / -1;
   height: 18px;
 }
