@@ -14,23 +14,22 @@ import { initials, useSession } from "@/lib/session";
  */
 
 /**
- * The newsletter, or your own face if you happen to be signed in. On a phone
- * this sits in the strip at the top, on the right; on a wide screen it is the
- * last line of the menu.
+ * Your own face, once you are signed in. On a phone this sits in the strip at the
+ * top, on the right; on a wide screen it is the last line of the menu.
  *
- * There is deliberately no sign-in link: the way in is three knocks on the mark
- * (see Nav).
+ * It used to say "newsletter" to anybody signed out, which made one slot do two
+ * unrelated jobs: a member signed in lost the link to the newsletter entirely,
+ * as though signing in were a way of unsubscribing. The newsletter is a menu item
+ * of its own now, at every width, and this row is only ever about who you are.
+ *
+ * Nothing at all when nobody is signed in — for now. The way in is three knocks
+ * on the mark (see Nav), and a sign-in link belongs here rather than a link to
+ * something else; it goes in when there is one to point at.
  */
 export function SessionButton() {
   const session = useSession();
 
-  if (!session || !session.signedIn) {
-    return (
-      <Link href="/newsletter" className="session-in">
-        newsletter
-      </Link>
-    );
-  }
+  if (!session || !session.signedIn) return null;
 
   return (
     <Link href="/account" className="session-you" aria-label={`${session.name} — your profile`}>

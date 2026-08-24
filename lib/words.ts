@@ -472,6 +472,20 @@ export const PHRASES: Phrase[] = [
   { key: "report.neverMind", en: "never mind", fr: "annuler", where: "app" },
   { key: "report.blocked", en: "{name} is blocked. Undo it in your account.", fr: "{name} est bloqué. Annulez dans votre compte.", where: "app", note: "Keep {name} exactly as it is." },
 
+  /* What has been reported, on a phone, for whoever holds the keys. */
+  { key: "flag.eyebrow", en: "for admins", fr: "pour les admins", where: "app" },
+  { key: "flag.reported", en: "what has been reported", fr: "ce qui a été signalé", where: "app" },
+  { key: "flag.notSetUp", en: "Not set up yet — the reports table is not in the database.", fr: "Pas encore en place — la table des signalements n'est pas dans la base.", where: "app", note: "Until migration 0041 has been run." },
+  { key: "flag.nothingWaiting", en: "Nothing waiting. Which is the usual state of it.", fr: "Rien en attente. Ce qui est l'état habituel.", where: "app" },
+  { key: "flag.onTheWayIn", en: "flagged on the way in", fr: "signalé à la publication", where: "app", note: "Nobody reported it — it was the screening." },
+  { key: "flag.reportedBy", en: "reported by", fr: "signalé par", where: "app" },
+  { key: "flag.writtenBy", en: "written by", fr: "écrit par", where: "app" },
+  { key: "flag.gone", en: "Gone already — either its author took it down or it was removed.", fr: "Déjà supprimé — soit par son auteur, soit ici.", where: "app" },
+  { key: "flag.itIsFine", en: "it is fine", fr: "c'est bon", where: "app" },
+  { key: "flag.takeItDown", en: "take it down", fr: "supprimer", where: "app" },
+  { key: "flag.reallyTakeItDown", en: "yes, take it down", fr: "oui, supprimer", where: "app" },
+  { key: "flag.somebody", en: "somebody", fr: "quelqu'un", where: "app", note: "Where a name cannot be looked up." },
+
   /* And the list of them, in the account. A block you cannot find again is a
      block somebody has to leave the club to undo. */
   { key: "block.whoYouBlocked", en: "people you have blocked", fr: "personnes que vous avez bloquées", where: "app" },

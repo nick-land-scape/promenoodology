@@ -5419,3 +5419,73 @@ body:has(.app-shell) {
   grid-column: 1 / -1;
   height: 18px;
 }
+
+/* ------------------------------------------------ what has been reported
+
+   The admin's list, on a phone. One card per thing waiting, with the picture at
+   the width of the screen — the whole reason this is on a phone at all is that a
+   report about a photograph cannot be judged from a line of text saying what
+   somebody thought of it. */
+.flagged,
+.blocked {
+  margin: 0;
+  padding: 0 var(--gutter);
+  list-style: none;
+}
+
+.flagged-one {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--hair);
+}
+
+.flagged-one:last-child {
+  border-bottom: 0;
+}
+
+/* Why it was reported: the first thing to read, and the one word that sorts a
+   list into what matters. Purple, like every label in this app. */
+.flagged-why {
+  margin: 0 0 2px;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.flagged-said {
+  margin: 8px 0 0;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* The words that were written, set apart from the words written about them. */
+.flagged-words {
+  margin: 10px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--hair);
+  white-space: pre-wrap;
+}
+
+.flagged-photos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flagged-photos img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.flagged-does {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+}

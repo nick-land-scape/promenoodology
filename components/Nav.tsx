@@ -72,14 +72,17 @@ export default function Nav({
           </Link>
         ))}
 
-        {/* The newsletter, next to the handbook, on a phone.
-            It was in the strip along the top, where it was the widest thing in a
-            fifty-two point strip: a hundred points of ringed capitals beside a
-            face, a language and contact. It is a thing to read, so it belongs
-            with the other thing to read — and the bottom bar is where a thumb
-            already is. On a wide screen it is not this link at all but the last
-            line of the menu, in the session row, where there is room for a
-            button. */}
+        {/* The newsletter, under the handbook, at every width and whoever is
+            reading.
+            
+            It used to be drawn twice and never both at once: this link on a
+            phone, and on a wide screen the session row instead — which showed
+            *either* the newsletter or your own face. That made the two the same
+            slot, and they are not the same thing. Somebody signed in still wants
+            the newsletter; signing in is not a way of unsubscribing from it.
+            
+            So it is a menu item like the handbook, and the session row below is
+            only ever about who you are. */}
         <Link href={at(lang, "/newsletter")} className="nav-post">
           {POST[lang]}
         </Link>

@@ -161,6 +161,24 @@ export default async function AccountPage() {
             <span aria-hidden="true">›</span>
           </Link>
         ) : null}
+
+        {/* And what has been reported, for the same two or three people. Here
+            rather than at a desk because that is where it usually has to be dealt
+            with: a photograph gets reported on a Saturday evening while everybody
+            who could do anything about it is standing in a field. */}
+        {me.admin ? (
+          <Link className="wide-row" href="/app/account/reported">
+            <span>{say("flag.reported")}</span>
+            <span aria-hidden="true">›</span>
+          </Link>
+        ) : null}
+
+        {/* Everybody's, not only an admin's: a block you cannot find again is a
+            block somebody has to leave the club to undo. */}
+        <Link className="wide-row" href="/app/account/blocked">
+          <span>{say("block.whoYouBlocked")}</span>
+          <span aria-hidden="true">›</span>
+        </Link>
       </section>
 
       {/* And the things we have to say in writing, which are not settings. */}

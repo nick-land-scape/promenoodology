@@ -218,10 +218,13 @@ img {
   width: fit-content;
 }
 
-/* Only on a phone. On a wide screen the newsletter is the button at the foot of
-   the menu, in the session row — see Nav. Two of them would be two. */
+/* At every width now. It was hidden on a wide screen because the session row
+   showed a newsletter button there instead — and that row showed it only to
+   people who were signed out, so a member had no way to the newsletter at all.
+   One link, always, under the handbook. */
 .nav-post {
-  display: none;
+  text-decoration: none;
+  width: fit-content;
 }
 
 .nav-more a[aria-current="page"],
