@@ -8,17 +8,23 @@
  *
  * Nothing here says "loading". It says "a header, then rows with a date and a
  * thumbnail" — and then that is what arrives.
+ *
+ * Which is also why every bone has square corners: this app's buttons, chips,
+ * covers and thumbnails do. A bone used to be drawn as a pill because the things
+ * it stood for were pills, and when they were squared it kept its old shape and
+ * gave the loading screen away as a separate drawing. The one exception is a face.
  */
 
 export function Bone({
   w,
   h,
-  round,
+  face,
   gap,
 }: {
   w: number | string;
   h: number;
-  round?: boolean;
+  /** A portrait, which is the one thing in this app that is still a circle. */
+  face?: boolean;
   gap?: number;
 }) {
   return (
@@ -27,7 +33,7 @@ export function Bone({
       style={{
         width: typeof w === "number" ? `${w}px` : w,
         height: h,
-        borderRadius: round ? 999 : 3,
+        borderRadius: face ? 999 : 0,
         marginTop: gap,
       }}
     />
@@ -82,19 +88,19 @@ export function BoneRow({
         {lines > 1 ? <Bone w="52%" h={10} gap={8} /> : null}
         {lines > 2 ? <Bone w="38%" h={10} gap={6} /> : null}
       </span>
-      {button ? <Bone w={78} h={30} round /> : null}
+      {button ? <Bone w={78} h={30} /> : null}
       {thumb ? <Bone w={58} h={58} /> : null}
     </div>
   );
 }
 
-/** The strip of round buttons a screen with two or three views has. */
+/** The strip of buttons a screen with two or three views has. */
 export function BoneSwitcher() {
   return (
     <div className="waiting-switcher">
-      <Bone w="33%" h={40} round />
-      <Bone w="33%" h={40} round />
-      <Bone w="33%" h={40} round />
+      <Bone w="33%" h={40} />
+      <Bone w="33%" h={40} />
+      <Bone w="33%" h={40} />
     </div>
   );
 }

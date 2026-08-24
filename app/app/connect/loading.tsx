@@ -12,16 +12,16 @@ export default async function Loading() {
       <AppHeader eyebrow={say("con.eyebrow")} title={say("con.whatEveryone")} />
 
       <div className="waiting-switcher">
-        <Bone w="50%" h={40} round />
-        <Bone w="50%" h={40} round />
+        <Bone w="50%" h={40} />
+        <Bone w="50%" h={40} />
       </div>
 
       <div className="waiting-row">
-        <Bone w={40} h={40} round />
+        <Bone w={40} h={40} face />
         <span style={{ flex: 1 }}>
           <Bone w="70%" h={14} />
         </span>
-        <Bone w={30} h={30} round />
+        <Bone w={30} h={30} />
       </div>
 
       {[0, 1].map((post) => (
@@ -30,7 +30,7 @@ export default async function Loading() {
             className="waiting-row"
             style={{ borderBottom: 0, paddingBottom: 0 }}
           >
-            <Bone w={40} h={40} round />
+            <Bone w={40} h={40} face />
             <span style={{ flex: 1 }}>
               <Bone w={128} h={14} />
               <Bone w={92} h={9} gap={7} />

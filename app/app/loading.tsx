@@ -17,9 +17,9 @@ export default async function Loading() {
       <div className="waiting-part">
         <BoneHeading wide={168} />
         <div className="waiting-chips">
-          <Bone w={104} h={34} round />
-          <Bone w={128} h={34} round />
-          <Bone w={96} h={34} round />
+          <Bone w={104} h={34} />
+          <Bone w={128} h={34} />
+          <Bone w={96} h={34} />
         </div>
       </div>
       {[0, 1, 2].map((row) => (

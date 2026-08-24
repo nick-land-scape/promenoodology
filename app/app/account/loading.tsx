@@ -31,7 +31,7 @@ export default async function Loading() {
 
       <div className="waiting-rows">
         {[0, 1, 2].map((row) => (
-          <Bone key={row} w="100%" h={48} round />
+          <Bone key={row} w="100%" h={48} />
         ))}
       </div>
 

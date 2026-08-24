@@ -12,15 +12,15 @@ export default async function Loading() {
       <AppHeader eyebrow={say("on.eyebrow")} title={say("on.whatToJoin")} />
 
       <div className="waiting-switcher">
-        <Bone w="50%" h={40} round />
-        <Bone w="50%" h={40} round />
+        <Bone w="50%" h={40} />
+        <Bone w="50%" h={40} />
       </div>
 
       <div className="waiting-part">
         <BoneHeading wide={132} />
         <div className="waiting-chips">
-          <Bone w={104} h={34} round />
-          <Bone w={128} h={34} round />
+          <Bone w={104} h={34} />
+          <Bone w={128} h={34} />
         </div>
       </div>
 
