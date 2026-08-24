@@ -398,27 +398,58 @@ export async function myWaves(): Promise<{ waves: Wave[]; unseen: number }> {
  */
 export type Bringing = { who: string; what: string; people: number };
 
-export async function whoIsBringingWhat(eventId: string): Promise<Bringing[]> {
+/**
+ * For a whole list of evenings, in two queries rather than two per evening.
+ *
+ * What's on used to ask this once per evening, and each ask fetched every booking
+ * for that evening *and the entire list of names* — so four evenings on the screen
+ * meant four downloads of all sixty-six people to put a first name next to a
+ * salad. The names are the same names every time; ask once.
+ */
+export async function whoIsBringingWhatForAll(
+  eventIds: string[],
+): Promise<Map<string, Bringing[]>> {
+  const found = new Map<string, Bringing[]>();
+  if (eventIds.length === 0) return found;
+
   const supabase = await supabaseServer();
   const [{ data: rows }, { data: people }] = await Promise.all([
     supabase
       .from("bookings")
-      .select("profile_id, people, bringing, state")
-      .eq("event_id", eventId)
+      .select("event_id, profile_id, people, bringing, state")
+      .in("event_id", eventIds)
       .neq("state", "interested")
-      .returns<{ profile_id: string; people: number; bringing: string; state: string }[]>(),
+      .returns<
+        {
+          event_id: string;
+          profile_id: string;
+          people: number;
+          bringing: string;
+          state: string;
+        }[]
+      >(),
     supabase.from("profiles").select("id, name").returns<{ id: string; name: string }[]>(),
   ]);
 
   const named = new Map((people ?? []).map((one) => [one.id, one.name || "somebody"]));
 
-  return (rows ?? [])
-    .filter((row) => (row.bringing ?? "").trim())
-    .map((row) => ({
+  for (const row of rows ?? []) {
+    if (!(row.bringing ?? "").trim()) continue;
+    const list = found.get(row.event_id) ?? [];
+    list.push({
       who: named.get(row.profile_id) ?? "somebody",
       what: row.bringing.trim(),
       people: row.people ?? 1,
-    }));
+    });
+    found.set(row.event_id, list);
+  }
+
+  return found;
+}
+
+/** One evening's worth, for the screen that is about one evening. */
+export async function whoIsBringingWhat(eventId: string): Promise<Bringing[]> {
+  return (await whoIsBringingWhatForAll([eventId])).get(eventId) ?? [];
 }
 
 /** A stored birthday, as the form and the profile say it. */
