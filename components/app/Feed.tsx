@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Photo from "../Photo";
 import Sheet from "./Sheet";
+import Trouble from "./Trouble";
 import type { Member, Post } from "@/lib/content";
 import {
   replyTo,
@@ -103,6 +104,7 @@ export default function Feed({
                   key={post.id}
                   post={post}
                   mine={post.authorId === meId}
+                  meId={meId}
                 />
               ))}
             </ul>
@@ -473,12 +475,26 @@ function Composer({ meName }: { meName: string }) {
 }
 
 /** One post: the words, the pictures, who answered, and passing it on. */
-function PostCard({ post, mine }: { post: Post; mine: boolean }) {
+function PostCard({
+  post,
+  mine,
+  /** So a reply of your own is not offered a way to report itself. */
+  meId,
+}: {
+  post: Post;
+  mine: boolean;
+  meId: string;
+}) {
   const say = useSay();
   const [open, setOpen] = useState(false);
   const [words, setWords] = useState("");
   const [trouble, setTrouble] = useState("");
   const [pending, start] = useTransition();
+  /* What is being complained about, or null. A post or one of its replies —
+     the same sheet either way, because it is the same decision. */
+  const [wrong, setWrong] = useState<
+    null | { about: { post: string } | { reply: string }; who: string; whoId: string }
+  >(null);
 
   async function pass() {
     const url = `${window.location.origin}/app/connect`;
@@ -578,6 +594,23 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
         >
           {say("post.passItOn")}
         </button>
+
+        {/* On somebody else's post only: your own needs no reporting, and the
+            control that takes it down is already in its header. Quiet and last,
+            because it is the rarest thing anybody does here and putting it beside
+            "reply" at the same weight would make the feed look like a place where
+            people are usually in trouble. */}
+        {mine ? null : (
+          <button
+            type="button"
+            className="post-action post-action-quiet"
+            onClick={() =>
+              setWrong({ about: { post: post.id }, who: post.author, whoId: post.authorId })
+            }
+          >
+            {say("report.report")}
+          </button>
+        )}
       </div>
 
       {post.replies.length > 0 ? (
@@ -586,6 +619,25 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
             <li key={reply.id}>
               <span className="reply-who">{reply.author}</span> {reply.text}
               <span className="reply-when">{reply.when}</span>
+              {/* A reply is a line of type, so this is a word at the end of it
+                  rather than a button under it. It appears on hover on a laptop
+                  and is always there on a phone, where there is no hover and a
+                  thing you cannot see is a thing you do not have. */}
+              {reply.authorId === meId ? null : (
+                <button
+                  type="button"
+                  className="reply-report"
+                  onClick={() =>
+                    setWrong({
+                      about: { reply: reply.id },
+                      who: reply.author,
+                      whoId: reply.authorId,
+                    })
+                  }
+                >
+                  {say("report.report")}
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -619,6 +671,17 @@ function PostCard({ post, mine }: { post: Post; mine: boolean }) {
             {pending ? "…" : say("post.send")}
           </button>
         </form>
+      ) : null}
+
+      {wrong ? (
+        <Trouble
+          open
+          onClose={() => setWrong(null)}
+          about={wrong.about}
+          who={wrong.who}
+          whoId={wrong.whoId}
+          onDone={(words) => setTrouble(words)}
+        />
       ) : null}
 
       {trouble ? <p className="app-error">{trouble}</p> : null}

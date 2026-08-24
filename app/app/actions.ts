@@ -282,16 +282,58 @@ export async function say(
   }
 
   const supabase = await supabaseServer();
-  const { error } = await supabase.from("posts").insert({
-    author_id: me.id,
-    text: text.slice(0, LONGEST),
-    place: place.trim().slice(0, 120),
-    photo_paths: pictures,
-    // The old single column stays in step, so anything still reading it sees
-    // the first picture rather than nothing.
-    photo_path: pictures[0] ?? null,
-  });
+
+  /* Read once before anybody else reads it.
+   *
+   * There is no moderator in this club and there is not going to be one, so the
+   * reading is done by a model at the moment somebody presses post. Three
+   * answers: nearly everything is fine and goes straight up; a very few things
+   * are refused and the person is told why in one sentence; and anything with an
+   * argument on both sides goes up *and* is put in front of the club's own
+   * admins. See lib/app/screening.ts for what each of those means and why the
+   * middle one is kept so narrow.
+   *
+   * The pictures are screened by their public address, which is why this happens
+   * after they are uploaded and before the post exists. */
+  const { readItFirst } = await import("@/lib/app/screening");
+  const { mediaUrl } = await import("@/lib/supabase/config");
+  const read = await readItFirst(text, pictures.map((path) => mediaUrl(path)));
+
+  if (read.verdict === "no") {
+    /* The pictures go with it. Nobody has seen them, the post does not exist,
+       and leaving them in the bucket leaves the thing that was refused sitting
+       at a public address. */
+    if (pictures.length > 0) await supabase.storage.from("media").remove(pictures);
+    return { ok: false, error: read.said || "That one cannot go up." };
+  }
+
+  const { data: made, error } = await supabase
+    .from("posts")
+    .insert({
+      author_id: me.id,
+      text: text.slice(0, LONGEST),
+      place: place.trim().slice(0, 120),
+      photo_paths: pictures,
+      // The old single column stays in step, so anything still reading it sees
+      // the first picture rather than nothing.
+      photo_path: pictures[0] ?? null,
+    })
+    .select("id")
+    .single<{ id: string }>();
   if (error) return { ok: false, error: error.message };
+
+  /* Up, and in front of an admin. Not told to the person who wrote it: they have
+     not done anything wrong as far as anybody knows yet, and "your post is being
+     looked at" is a sentence that makes somebody feel accused for what is usually
+     a photograph with a stranger in the background. */
+  if (read.verdict === "flag" && made) {
+    await supabase.rpc("flag_it", {
+      post: made.id,
+      reply: null,
+      because: read.because,
+      said: read.said,
+    });
+  }
 
   revalidatePath("/app/connect");
   return { ok: true };
@@ -582,5 +624,105 @@ export async function notJustYet(): Promise<{ ok: boolean }> {
   const supabase = await supabaseServer();
   await supabase.from("profiles").update({ settled_in: true }).eq("id", me.id);
   revalidatePath("/app", "layout");
+  return { ok: true };
+}
+
+/* ---------------------------------------------- reporting, and blocking
+
+   The two things a member can do about somebody else, and the pair of them is
+   what turns a feed into a place with rules. Both stores require them of any app
+   where people write to each other — Apple's guideline 1.2, Google's
+   user-generated content policy — but the reason to have them is older than
+   either: until now, the only thing anybody could do about another member was
+   leave the club. */
+
+export type Because = "abuse" | "not true" | "not theirs" | "nothing to do with us" | "something else";
+
+/**
+ * Telling the club that something is wrong.
+ *
+ * Written down and handed over; nothing disappears on the strength of one report,
+ * because a post that vanishes the moment somebody objects to it is a feed run by
+ * whoever objects most. What it does do is arrive somewhere a person will read it
+ * — /admin/reports, with the club's own name on it — and that is the promise being
+ * made when somebody presses the button.
+ *
+ * Reporting the same thing twice is not an error and not a second report: it is
+ * somebody who pressed it and was not sure it worked. Their words are kept, the
+ * count is not doubled.
+ */
+export async function reportThis(what: {
+  post?: string;
+  reply?: string;
+  person?: string;
+  because: Because;
+  said?: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const named = [what.post, what.reply, what.person].filter(Boolean);
+  if (named.length !== 1) return { ok: false, error: "Nothing to report." };
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase.from("reports").insert({
+    about_post: what.post ?? null,
+    about_reply: what.reply ?? null,
+    about_person: what.person ?? null,
+    by_person: me.id,
+    because: what.because,
+    said: (what.said ?? "").trim().slice(0, 2000),
+  });
+  if (error) return { ok: false, error: error.message };
+
+  return { ok: true };
+}
+
+/**
+ * Being done with somebody.
+ *
+ * Both ways: they leave your feed and you leave theirs, which is the useful
+ * reading of the word — somebody blocks a person because that person is a
+ * problem, and leaving the problem able to read and reply to everything they
+ * write leaves the problem in the room. The rule itself lives in the database
+ * (see between_us_blocked in migration 0041) so that a screen written next year
+ * cannot forget it.
+ *
+ * Nobody is told. There is no notification, no "you have been blocked", and no
+ * way for either of them to ask the database about the other — the policy on the
+ * table only ever returns your own rows, because "has this person blocked me" is
+ * exactly the question a block exists to stop being asked.
+ */
+export async function blockThem(personId: string): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+  if (personId === me.id) return { ok: false, error: "That is you." };
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("blocks")
+    .upsert({ who: me.id, them: personId }, { onConflict: "who,them" });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app/connect");
+  revalidatePath("/app/account");
+  return { ok: true };
+}
+
+/** And changing your mind, which has to be as easy as the block was. */
+export async function unblockThem(personId: string): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("blocks")
+    .delete()
+    .eq("who", me.id)
+    .eq("them", personId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app/connect");
+  revalidatePath("/app/account");
   return { ok: true };
 }

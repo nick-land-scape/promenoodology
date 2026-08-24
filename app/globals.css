@@ -5334,3 +5334,231 @@ body:has(.hero) .edit-this {
     cursor: pointer;
   }
 }
+
+/* ------------------------------------------------------ a list of dated things
+
+   One construction, two uses: the news page, and the two lists on somebody's
+   profile — what they are coming to, and what they have kept on their list.
+   All three are the same shape of thing, which is a date and some words about
+   it, and three drawings of that would be three drawings to keep in step.
+
+   The date is the big number over the month, which is how a date is drawn
+   everywhere else in this club: on an evening's card, in the app's rows, on the
+   stamp in the corner of a flyer. */
+.dated-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dated-item {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.dated-item:last-child {
+  border-bottom: 0;
+}
+
+/* Forty-two points, which is what "30" needs at this size and what every one of
+   these needs to be for the words beside them to line up down the page. */
+.dated-when {
+  flex: none;
+  width: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+  font-style: normal;
+}
+
+.dated-when b {
+  font-size: 1.7rem;
+  font-weight: normal;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.95;
+}
+
+.dated-when i,
+.dated-when em {
+  font-family: var(--sans);
+  font-size: 0.54rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+.dated-when i {
+  padding-top: 4px;
+}
+
+.dated-words {
+  flex: 1;
+  min-width: 0;
+}
+
+.dated-name {
+  margin: 0 0 2px;
+  font: inherit;
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.dated-name a {
+  text-decoration: none;
+}
+
+.dated-name a:hover {
+  color: var(--purple);
+}
+
+.dated-words p {
+  margin: 0 0 8px;
+  line-height: 1.45;
+  max-width: 42em;
+}
+
+.dated-words p:last-child {
+  margin-bottom: 0;
+}
+
+/* What somebody said they would bring, and who with. A line of small print under
+   the evening, not a paragraph about it. */
+.dated-note {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  color: var(--quiet);
+}
+
+@media screen and (max-width: 767px) {
+  .dated-item {
+    gap: 14px;
+    padding: 14px 0;
+  }
+
+  .dated-name {
+    font-size: 1.1rem;
+  }
+}
+
+/* The two lists of somebody's own evenings, under the form on their profile. */
+.auth-mine {
+  margin-top: 34px;
+}
+
+.auth-mine .story-label {
+  margin-bottom: 10px;
+}
+
+.auth-mine .empty {
+  margin: 0;
+}
+
+/* ------------------------------------- the two controls, working, on the site
+
+   The greyed pair above these in the stylesheet is what somebody signed out
+   sees. This is the same row of controls when the site knows who is reading —
+   see TakePart — with the form the app asks in a sheet simply opened underneath
+   instead. A page has the room; a phone did not. */
+.taking-part-live .taking-part-does {
+  margin-bottom: 0;
+}
+
+.taking-part-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 30rem;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--hairline);
+}
+
+.taking-part-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.taking-part-field > span,
+.taking-part-days legend {
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--quiet);
+}
+
+.taking-part-field input {
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  color: inherit;
+}
+
+.taking-part-field input:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 1px;
+}
+
+/* The days of a programme. A checkbox each, because somebody can come to the
+   fifth and the nineteenth and not to the twelfth — which is the whole reason a
+   programme is booked a day at a time. */
+.taking-part-days {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.taking-part-days legend {
+  padding: 0 0 6px;
+}
+
+.taking-part-days label {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.taking-part-days label b {
+  font-weight: normal;
+}
+
+.taking-part-days label i {
+  display: block;
+  font-size: 0.85em;
+  color: var(--quiet);
+}
+
+.taking-part-feet {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.taking-part-said {
+  margin: 10px 0 0;
+  font-style: italic;
+  color: var(--quiet);
+}
+
+/* The bookmark, once it has been pressed. */
+.icon-switch.is-on {
+  border-color: var(--purple);
+  color: var(--purple);
+}

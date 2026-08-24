@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import FlyerBook from "@/components/FlyerBook";
 import AddToCalendar from "@/components/AddToCalendar";
 import JoinToTakePart from "@/components/JoinToTakePart";
+import TakePart from "@/components/TakePart";
 import JsonLd from "@/components/JsonLd";
 import Linked from "@/components/Linked";
 import Photo from "@/components/Photo";
@@ -15,6 +16,7 @@ import { pretty } from "@/lib/admin/when";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { siteUrl } from "@/lib/site";
 import { addresses, breadcrumbs, graph, moment, picture, trim, US } from "@/lib/seo";
+import { myBookings, whoIsThis } from "@/lib/app/me";
 import { getEvent, getEvents, getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 
@@ -169,6 +171,58 @@ export default async function EventPage({ params }: Params) {
   // read in. See lib/words.
   const say = speaking(lang, french);
 
+  /* Whether anybody is reading this as themselves.
+   *
+   * The two controls in the header have been drawn greyed-out for everybody since
+   * they were written, which was right while the website could not tell who you
+   * were. It can — a member signs in here for their profile — so a member gets
+   * the working pair and everybody else gets the grey one with the reason under
+   * it. See TakePart, and JoinToTakePart for the other half. */
+  const me = await whoIsThis();
+  const mine = me
+    ? (await myBookings()).find((booking) => booking.eventId === event.id) ?? null
+    : null;
+
+  const takePart = me ? (
+    <TakePart
+      eventId={event.id}
+      days={event.days.map((day) => ({
+        date: day.date,
+        title: day.title,
+        label: [pretty(day.date), day.time].filter(Boolean).join(", "),
+      }))}
+      mine={
+        mine
+          ? {
+              state: mine.state,
+              people: mine.people,
+              bringing: mine.bringing,
+              onDay: mine.onDay ?? null,
+            }
+          : null
+      }
+      words={{
+        countMeIn: say("part.countMeIn"),
+        pickYourDays: say("row.pickYourDays"),
+        save: say("part.save"),
+        saved: say("part.saved"),
+        howMany: say("part.howMany"),
+        bringing: say("part.bringing"),
+        bringingHint: say("part.bringingHint"),
+        whichDays: say("part.whichDays"),
+        send: say("part.send"),
+        sending: say("part.sending"),
+        youAreComing: say("part.youAreComing"),
+        changeIt: say("row.changeIt"),
+        notComing: say("row.notComing"),
+        neverMind: say("report.neverMind"),
+        didNotWork: say("row.didNotWork"),
+        place: say("row.place"),
+        places: say("row.places"),
+      }}
+    />
+  ) : null;
+
   const slides: Slide[] = event.blocks
     .filter((block) => block.kind === "photo")
     .map((block) => {
@@ -229,7 +283,9 @@ export default async function EventPage({ params }: Params) {
                 }}
               />
             ) : null}
-            {!over ? <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} tight /> : null}
+            {over ? null : (takePart ?? (
+              <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} tight />
+            ))}
             {/* After the bookmark: the two that are about *you and this evening*
                 come first, and putting a date in your own calendar is the thing you
                 do once you have decided. */}
@@ -421,7 +477,7 @@ export default async function EventPage({ params }: Params) {
             who has read this far will look for it. The buttons themselves stay
             in the header — a second pair of the same two here would read as a
             page assembled twice. */}
-        {!over ? (
+        {!over && !me ? (
           <JoinToTakePart
             signUpEmail={event.signUpEmail || undefined}
             lang={lang}

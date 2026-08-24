@@ -12,6 +12,7 @@
     "import:community": "node scripts/import-community.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0",
     "@capacitor-community/apple-sign-in": "^7.1.0",
     "@capacitor/android": "^8.5.0",
     "@capacitor/app": "^8.1.1",
@@ -37,7 +38,8 @@
     "pdfjs-dist": "^6.2.108",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-parallax-tilt": "^1.7.338"
+    "react-parallax-tilt": "^1.7.338",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.0",

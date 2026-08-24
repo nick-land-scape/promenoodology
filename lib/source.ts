@@ -772,30 +772,62 @@ export async function getPosts(): Promise<Post[]> {
   const { supabaseServer } = await import("./supabase/server");
   const supabase = await supabaseServer();
 
-  const [{ data: posts }, { data: replies }, names] = await Promise.all([
-    supabase
+  /* Read through the two views rather than the tables, so that anybody either
+     side of a block is simply not in the answer. The rule is one line of SQL in
+     migration 0041 and it is there rather than here for a reason: this is not the
+     only screen that reads the feed, and a rule written in three places is a rule
+     that will shortly be written in two.
+     
+     With a fall back to the tables for a database that has not had 0041 run yet.
+     Not defensive habit — the alternative is that deploying this file before
+     running that migration empties the feed for everybody, and the two do not
+     happen in the same minute. Before the migration there are no blocks to apply,
+     so the tables and the views are the same answer. */
+  const feed = async () => {
+    const view = await supabase
+      .from("posts_for_me")
+      .select("id, author_id, place, text, photo_path, photo_paths, created_at")
+      .order("created_at", { ascending: false })
+      .limit(80);
+    if (!view.error) return view;
+    return supabase
       .from("posts")
       .select("id, author_id, place, text, photo_path, photo_paths, created_at")
       .order("created_at", { ascending: false })
-      .limit(80)
-      .returns<
-        {
-          id: string;
-          author_id: string;
-          place: string | null;
-          text: string;
-          photo_path: string | null;
-          photo_paths: string[] | null;
-          created_at: string;
-        }[]
-      >(),
-    supabase
+      .limit(80);
+  };
+
+  const answers = async () => {
+    const view = await supabase
+      .from("post_replies_for_me")
+      .select("id, post_id, author_id, text, created_at")
+      .order("created_at");
+    if (!view.error) return view;
+    return supabase
       .from("post_replies")
       .select("id, post_id, author_id, text, created_at")
-      .order("created_at")
-      .returns<
-        { id: string; post_id: string; author_id: string; text: string; created_at: string }[]
-      >(),
+      .order("created_at");
+  };
+
+  const [{ data: posts }, { data: replies }, names] = await Promise.all([
+    feed() as Promise<{
+      data:
+        | {
+            id: string;
+            author_id: string;
+            place: string | null;
+            text: string;
+            photo_path: string | null;
+            photo_paths: string[] | null;
+            created_at: string;
+          }[]
+        | null;
+    }>,
+    answers() as Promise<{
+      data:
+        | { id: string; post_id: string; author_id: string; text: string; created_at: string }[]
+        | null;
+    }>,
     peopleNames(),
   ]);
 

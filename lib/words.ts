@@ -45,6 +45,30 @@ export const PHRASES: Phrase[] = [
   { key: "on.thisWeek", en: "this week", fr: "cette semaine", where: "front", note: "A heading over the next seven days." },
   { key: "on.later", en: "later on", fr: "plus tard", where: "front", note: "A heading over everything after that." },
   { key: "on.partOf", en: "part of", fr: "fait partie de", where: "front", note: "Followed by the name of the project a single day belongs to." },
+  /* And the working pair, for a member reading an evening on the website. The
+     grey ones next to these are what everybody else sees. */
+  { key: "part.saved", en: "Saved. It is on your profile.", fr: "Enregistré. C'est sur votre profil.", where: "front" },
+  { key: "part.howMany", en: "How many of you", fr: "Combien serez-vous", where: "front" },
+  { key: "part.bringing", en: "Bringing anything?", fr: "Vous apportez quelque chose ?", where: "front" },
+  { key: "part.bringingHint", en: "A pot, a lift, a bottle — or nothing at all", fr: "Une casserole, une place en voiture, une bouteille — ou rien du tout", where: "front" },
+  { key: "part.whichDays", en: "Which days can you make?", fr: "Quels jours pouvez-vous venir ?", where: "front", note: "Only for an evening with a programme of days." },
+  { key: "part.send", en: "count me in", fr: "je viens", where: "front", note: "The button that sends the form." },
+  { key: "part.sending", en: "sending…", fr: "envoi…", where: "front" },
+  { key: "part.youAreComing", en: "You are coming to this one.", fr: "Vous venez à celle-ci.", where: "front" },
+
+  /* The two lists on the website's own profile page: what you are coming to, and
+     what you have kept an eye on. The app has had both for months. */
+  { key: "mine.yourEvenings", en: "your evenings", fr: "vos soirées", where: "front" },
+  { key: "mine.nothingBooked", en: "You have not said yes to anything yet, and nothing is on your list.", fr: "Vous n'avez encore dit oui à rien, et rien n'est sur votre liste.", where: "front" },
+  { key: "mine.seeWhatsOn", en: "See what is on", fr: "Voir ce qui se passe", where: "front" },
+  { key: "mine.youAreComingTo", en: "you are coming to", fr: "vous venez à", where: "front" },
+  { key: "mine.onYourList", en: "kept on your list", fr: "gardé sur votre liste", where: "front" },
+
+  /* The news page on the website, which is hidden until somebody turns it on. */
+  { key: "news.orByEmail", en: "or have them by email", fr: "ou les recevoir par courriel", where: "front", note: "Links to the newsletter." },
+  { key: "news.nothingYet", en: "Nothing written yet.", fr: "Rien d'écrit pour l'instant.", where: "front" },
+  { key: "news.heldAtTheTop", en: "held at the top", fr: "en tête", where: "front", note: "The one item pinned above the rest." },
+  { key: "news.theRest", en: "everything else", fr: "tout le reste", where: "front" },
   { key: "on.been", en: "and what has been", fr: "et ce qui a eu lieu", where: "front", note: "A heading over the evenings that have happened." },
   { key: "on.nothing", en: "Nothing is on just now. There will be.", fr: "Rien pour le moment. Cela viendra.", where: "front" },
   { key: "on.asMonth", en: "see it as a month", fr: "voir le mois", where: "front", note: "Shows the month instead of the list." },
@@ -424,6 +448,36 @@ export const PHRASES: Phrase[] = [
   { key: "post.answerName", en: "answer {name}…", fr: "répondre à {name}…", where: "app", note: "The grey text in the reply field. Keep {name} exactly as it is." },
   { key: "post.yourReply", en: "Your reply", fr: "Votre réponse", where: "app", note: "Read out by a screen reader; not shown." },
   { key: "post.send", en: "send", fr: "envoyer", where: "app" },
+
+  /* Reporting something, and blocking somebody — the two things a member can do
+     about another member. Written plainly and without heat: whoever is reading
+     these words is already annoyed, and a screen that shares the feeling is a
+     screen that makes it worse. */
+  { key: "report.report", en: "report", fr: "signaler", where: "app", note: "On somebody else's post, and at the end of a reply." },
+  { key: "report.whatIsWrong", en: "What is wrong?", fr: "Qu'est-ce qui ne va pas ?", where: "app", note: "The heading of the sheet." },
+  { key: "report.somebodyWillLook", en: "It goes to the people who run the club. Nothing disappears on one report.", fr: "Cela va aux personnes qui gèrent le club. Rien ne disparaît sur un seul signalement.", where: "app" },
+  { key: "report.why", en: "Because", fr: "Parce que", where: "app" },
+  { key: "report.abuse", en: "It is abusive, or aimed at somebody", fr: "C'est abusif, ou visant quelqu'un", where: "app" },
+  { key: "report.notTrue", en: "It is not true", fr: "Ce n'est pas vrai", where: "app" },
+  { key: "report.notTheirs", en: "It is not theirs to post", fr: "Ce n'est pas à eux de le publier", where: "app", note: "Somebody else's photograph or words." },
+  { key: "report.notOurs", en: "It has nothing to do with the club", fr: "Cela n'a rien à voir avec le club", where: "app" },
+  { key: "report.somethingElse", en: "Something else", fr: "Autre chose", where: "app" },
+  { key: "report.anythingElse", en: "Anything you want to add", fr: "Ce que vous voulez ajouter", where: "app" },
+  { key: "report.inYourWords", en: "In your own words. It helps.", fr: "Dans vos propres mots. Cela aide.", where: "app" },
+  { key: "report.sendIt", en: "send it", fr: "envoyer", where: "app" },
+  { key: "report.thankYou", en: "Thank you — somebody will look at it.", fr: "Merci — quelqu'un va regarder.", where: "app" },
+  { key: "report.orBlock", en: "Or settle it yourself: block {name} and you will not see each other on the feed. They are not told, and you can undo it in your account.", fr: "Ou réglez-le vous-même : bloquez {name} et vous ne vous verrez plus sur le fil. La personne n'en est pas informée, et vous pouvez annuler depuis votre compte.", where: "app", note: "Keep {name} exactly as it is." },
+  { key: "report.beDoneWith", en: "block {name}", fr: "bloquer {name}", where: "app", note: "Keep {name} exactly as it is." },
+  { key: "report.blockThem", en: "yes, block {name}", fr: "oui, bloquer {name}", where: "app", note: "Keep {name} exactly as it is." },
+  { key: "report.neverMind", en: "never mind", fr: "annuler", where: "app" },
+  { key: "report.blocked", en: "{name} is blocked. Undo it in your account.", fr: "{name} est bloqué. Annulez dans votre compte.", where: "app", note: "Keep {name} exactly as it is." },
+
+  /* And the list of them, in the account. A block you cannot find again is a
+     block somebody has to leave the club to undo. */
+  { key: "block.whoYouBlocked", en: "people you have blocked", fr: "personnes que vous avez bloquées", where: "app" },
+  { key: "block.nobody", en: "Nobody. Which is the usual answer.", fr: "Personne. Ce qui est la réponse habituelle.", where: "app" },
+  { key: "block.undo", en: "unblock", fr: "débloquer", where: "app" },
+  { key: "block.what", en: "Neither of you sees the other on the feed. They were not told.", fr: "Aucun de vous deux ne voit l'autre sur le fil. La personne n'en a pas été informée.", where: "app" },
   { key: "post.copied", en: "Copied, since this browser has nothing to share with.", fr: "Copié, faute de partage dans ce navigateur.", where: "app" },
   { key: "post.neitherShare", en: "This browser will neither share nor copy. Long-press the text instead.", fr: "Ce navigateur ne sait ni partager ni copier. Appuyez longuement sur le texte.", where: "app" },
 
