@@ -1710,11 +1710,14 @@ body:has(.app-shell) {
   text-align: center;
 }
 
+/* The ring around a shortcut's drawing. Square with the rest: it is the pressable
+   part of a shortcut, not a portrait, and a circle among squares is the one thing on
+   the screen that came from somewhere else. */
 .shortcut-ring {
   width: 46px;
   height: 46px;
   border: 1px solid var(--ink);
-  border-radius: 999px;
+  border-radius: 0;
   display: grid;
   place-items: center;
 }
@@ -2639,22 +2642,40 @@ body:has(.app-shell) {
   line-height: 1.5;
 }
 
-.app-book h2 {
+/*
+ * Every heading inside something written, in the one voice this app uses for a
+ * heading: Helvetica capitals in purple, the same as "the programme" and "in
+ * practice" and every label on the website.
+ *
+ * A story's own sections — "opportunity", "strategy" — were set in Times at 1.15rem,
+ * which is what a *title* looks like here, so each of them read as the start of
+ * another story rather than as a part of this one. Two treatments for one job across
+ * one app is two things for a reader to learn.
+ */
+.app-book h2,
+.evening-page h2 {
   display: flex;
   gap: 10px;
   align-items: baseline;
   margin: 26px 0 8px;
-  font: inherit;
-  font-size: 1.15rem;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--purple);
 }
 
+/* The handbook's numbers. They were purple against a black heading; the heading is
+   purple now, so what tells them apart is the ink rather than the colour. */
 .app-book h2 em {
   font-family: var(--sans);
   font-size: 0.6rem;
   font-weight: 700;
   font-style: normal;
   letter-spacing: 0.1em;
-  color: var(--purple);
+  color: var(--muted);
 }
 
 .app-book p {
@@ -3640,7 +3661,7 @@ body:has(.app-shell) {
   align-self: flex-start;
   margin: 3px 0 1px;
   border: 1px solid var(--purple);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 2px 9px;
   font-family: var(--sans);
   font-size: 0.55rem;
@@ -3992,11 +4013,25 @@ body:has(.app-shell) {
 
 /* The pins. A dot in the club's purple, and a hollow one for something still to
    come — the difference between a record and an invitation. */
+/* Square, like everything else pressable — and with more room to be pressed than it
+   has to be looked at.
+   
+   A pin is a twenty-point mark on a map somebody is dragging with a thumb, and a
+   thumb is not twenty points wide. The `::after` is an invisible ten-point apron
+   around it: the target it deserves without the mark growing to match, which would
+   have covered the street it is standing in. */
+.everywhere .pin::after {
+  content: "";
+  position: absolute;
+  inset: -11px;
+}
+
 .everywhere .pin {
+  position: relative;
   width: 16px;
   height: 16px;
   border: 2px solid var(--paper);
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--purple);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   cursor: pointer;
@@ -4070,7 +4105,7 @@ body:has(.app-shell) {
   width: 42px;
   height: 4px;
   margin: 0 auto 8px;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--hair);
 }
 
@@ -4288,7 +4323,7 @@ body:has(.app-shell) {
   border: 0;
   /* On the photograph as often as on paper, so it carries its own ground. */
   background: var(--paper);
-  border-radius: 999px;
+  border-radius: 0;
   font-size: 1.4rem;
   line-height: 1;
   color: var(--muted);
@@ -4383,7 +4418,7 @@ body:has(.app-shell) {
   display: inline-block;
   margin: 2px 6px 0 0;
   border: 1px solid var(--purple);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 2px 9px;
   font-size: 0.9rem;
   color: var(--purple);
@@ -4856,6 +4891,35 @@ body:has(.app-shell) {
   word-break: break-word;
 }
 
+/* The calendar's own label is never drawn in the app.
+   In the header there is no room beside two other controls; on a programme's line it
+   would cover the words it belongs to; and beside a heading it doubles the heading.
+   The drawing is a calendar, the button says its name to a screen reader, and that is
+   enough — the same decision the two switches on the website make. */
+.evening-does-tight .pill span,
+.evening-day-calendar .pill span,
+.evening-label-row .pill span {
+  display: none;
+}
+
+.evening-day-calendar .pill,
+.evening-label-row .pill {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--hair);
+  background: none;
+  color: var(--muted);
+}
+
+.evening-day-calendar .pill svg,
+.evening-label-row .pill svg {
+  width: 15px;
+  height: 15px;
+}
+
 /* A heading with one thing to press at the right end of it. */
 .evening-label-row {
   display: flex;
@@ -4904,11 +4968,13 @@ body:has(.app-shell) {
   width: var(--act, 38px);
   height: var(--act, 38px);
   padding: 0;
-  /* The same hairline ring and the same quiet ink as the two marks beside it. As a
+  /* The same hairline edge and the same quiet ink as the two marks beside it. As a
      pill it kept the pill's full-strength border, which made the calendar look like
-     the important one of the three — and of the three it is the least. */
+     the important one of the three — and of the three it is the least. Square, like
+     everything else drawn with a line: this rule is *why* the calendar button was
+     still round after the rest of the app had corners. */
   border: 1px solid var(--hair);
-  border-radius: 999px;
+  border-radius: 0;
   background: none;
   color: var(--muted);
   white-space: nowrap;
