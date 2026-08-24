@@ -4000,8 +4000,18 @@ body:has(.app-shell) {
   inset: -11px;
 }
 
+/* No `position` here, and that is the point.
+ *
+ * The map library owns where a pin is: it puts `position: absolute` on the element
+ * with a class of its own and moves it with a transform on every frame of a zoom.
+ * A `position: relative` written here beat that rule on specificity, so each pin
+ * was transformed from wherever it happened to land in the document instead of from
+ * the map's own corner — every place was in the wrong country, and the error grew
+ * and shrank as the map was zoomed. Spain in the middle of the Atlantic.
+ *
+ * The apron below needs a positioned ancestor and already has one: the library's
+ * own absolute. */
 .everywhere .pin {
-  position: relative;
   width: 16px;
   height: 16px;
   border: 2px solid var(--paper);
