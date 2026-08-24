@@ -2652,8 +2652,7 @@ body:has(.app-shell) {
  * another story rather than as a part of this one. Two treatments for one job across
  * one app is two things for a reader to learn.
  */
-.app-book h2,
-.evening-page h2 {
+.app-book h2 {
   display: flex;
   gap: 10px;
   align-items: baseline;
