@@ -17,6 +17,12 @@ type Plugins = {
   Haptics?: { impact: (options: { style: string }) => Promise<void> };
   StatusBar?: { setStyle: (options: { style: string }) => Promise<void> };
   SplashScreen?: { hide: (options?: { fadeOutDuration?: number }) => Promise<void> };
+  Keyboard?: {
+    addListener: (
+      event: string,
+      fn: (info: { keyboardHeight?: number }) => void,
+    ) => Promise<{ remove: () => void }>;
+  };
   PushNotifications?: {
     checkPermissions: () => Promise<{ receive: string }>;
     requestPermissions: () => Promise<{ receive: string }>;
@@ -259,5 +265,43 @@ export function reloadWhenStale(minutes = 30): () => void {
 
   return () => {
     void watching.then((handle) => handle.remove()).catch(() => {});
+  };
+}
+
+/**
+ * How tall the keyboard is, said by the phone.
+ *
+ * This is the one measurement in the app that the web genuinely cannot take. A
+ * browser has `visualViewport`, which shrinks when a keyboard covers part of the
+ * window — and in this web view it does not: `contentInset: "never"` gives the page
+ * the whole screen and leaves the insets to CSS, so a keyboard arriving changes no
+ * number the page can read. Which is why a pop-up had to guess, and why guessing
+ * meant leaping to the top of the screen instead of riding up with the keyboard the
+ * way a native sheet does.
+ *
+ * The phone knows exactly. It says so twice — as the keyboard starts coming up, and
+ * again when it is up — and the first of those is what makes the movement match the
+ * animation rather than follow it.
+ *
+ * Returns a way to stop listening, and does nothing at all in a browser, where
+ * `visualViewport` is the right answer and is already being used.
+ */
+export function whenTheKeyboard(
+  said: (height: number) => void,
+): () => void {
+  const keyboard = bridge()?.Plugins?.Keyboard;
+  if (!keyboard) return () => {};
+
+  const listening = [
+    keyboard.addListener("keyboardWillShow", (info) => said(info.keyboardHeight ?? 0)),
+    keyboard.addListener("keyboardDidShow", (info) => said(info.keyboardHeight ?? 0)),
+    keyboard.addListener("keyboardWillHide", () => said(0)),
+    keyboard.addListener("keyboardDidHide", () => said(0)),
+  ];
+
+  return () => {
+    for (const one of listening) {
+      void one.then((handle) => handle.remove()).catch(() => {});
+    }
   };
 }

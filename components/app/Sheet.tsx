@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { inTheApp, whenTheKeyboard } from "@/lib/native";
 import { useSay } from "./Words";
 
 /**
@@ -102,10 +103,28 @@ export default function Sheet({
    * keyboard; if it does not, the sheet is at the top of the screen and its own
    * scroller reaches the rest, which is the difference between cramped and gone. */
   const [covered, setCovered] = useState(0);
+
+  /* The phone's own number, where there is a phone to ask.
+   *
+   * This is the measurement `visualViewport` cannot give inside the app: the web
+   * view has the whole screen and a keyboard arriving changes nothing the page can
+   * read. The plugin says how tall it is, twice — as it starts coming up and again
+   * when it is up — and the first of those is what lets the sheet move *with* the
+   * keyboard instead of after it. */
+  useEffect(() => {
+    if (!open) return;
+    return whenTheKeyboard((height) => setCovered(Math.round(height)));
+  }, [open]);
+
+  /* And the browser's own, where that is the right answer — but only there.
+   *
+   * One of the two, never both: inside the app the visual viewport reads nothing
+   * however tall the keyboard is, and letting it write that nothing would undo
+   * what the phone had just said on the next pixel of movement. */
   useEffect(() => {
     const seen = window.visualViewport;
-    if (!open || !seen) {
-      setCovered(0);
+    if (!open || !seen || inTheApp()) {
+      if (!open) setCovered(0);
       return;
     }
 

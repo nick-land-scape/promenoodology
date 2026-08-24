@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Photo from "@/components/Photo";
 import Crossings from "@/components/app/Crossings";
 import Feels from "@/components/app/Feels";
+import Keeps from "@/components/app/Keeps";
 import Splash from "@/components/app/Splash";
 import TabBar from "@/components/app/TabBar";
 import Broke from "@/components/app/Broke";
@@ -52,6 +53,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {/* The buzz under every press, and the four screens fetched before
             anybody asks for them. Nothing to look at. */}
         <Feels />
+        {/* Where you were on each tab, so coming back to one is coming back. */}
+        <Keeps />
         {/* One screen becomes the next instead of replacing it. */}
         <Crossings />
         <div className="app-column">{children}</div>

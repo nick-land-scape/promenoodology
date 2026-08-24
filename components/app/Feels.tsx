@@ -91,16 +91,18 @@ export default function Feels() {
     /* And the header collapses once the screen has moved. Twelve points of
        hysteresis between the two states, so a list that ends four points below
        the fold cannot flicker the title on and off. */
-    let shrunk = false;
+    /* Whether it is shrunk is read off the shell rather than remembered in here,
+       and that is the fix for a header that stayed collapsed after a tab change.
+       This effect runs again on every screen, so the variable started as `false`
+       while the class was still on the shell from the screen before — and the
+       branch that takes it off asks the variable, not the DOM. So the class stayed
+       and the title never came back. The truth about a class lives on the element
+       wearing it. */
     const look = () => {
       const y = window.scrollY;
-      if (!shrunk && y > 16) {
-        shrunk = true;
-        shell.classList.add("is-scrolled");
-      } else if (shrunk && y < 4) {
-        shrunk = false;
-        shell.classList.remove("is-scrolled");
-      }
+      const shrunk = shell.classList.contains("is-scrolled");
+      if (!shrunk && y > 16) shell.classList.add("is-scrolled");
+      else if (shrunk && y < 4) shell.classList.remove("is-scrolled");
     };
     look();
     window.addEventListener("scroll", look, { passive: true });
