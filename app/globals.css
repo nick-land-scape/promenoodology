@@ -2449,11 +2449,17 @@ html.has-top-bar {
     font-size: 0.72em;
   }
 
+  /* Stacked, not side by side: the newsletter goes under the handbook.
+  
+     They were a row because two short words fit on one line, and that is the
+     wrong reason — a row makes them look like two halves of one thing, and they
+     are two separate things to read. Under it, each is a line of its own, and the
+     column reads down from the menu above it instead of starting a new direction
+     at the bottom of it. */
   .nav-more {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 2px 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
     font-size: 0.78em;
   }
 
