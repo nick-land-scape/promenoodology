@@ -26,6 +26,29 @@ export default async function PagesPage() {
     hasWords: words.has(page.slug),
   }));
 
+  /* And the pages the site has that the database has never heard of.
+   *
+   * A page arrives as a file, and until somebody writes a row for it there is
+   * nothing on this screen to turn it on with — which is how the news page came
+   * to exist on the site and be invisible from the back of the house at the same
+   * time. So anything the code knows about and the database does not is listed
+   * here too, off, ready to be turned on. Saving writes the row.
+   *
+   * Off, because a page nobody has decided about should not be published by the
+   * act of being noticed. */
+  const known = new Set(site.map((page) => page.slug));
+  for (const spec of PAGES) {
+    if (known.has(spec.slug)) continue;
+    lines.push({
+      slug: spec.slug,
+      visible: false,
+      navLabel: "",
+      group: "none",
+      position: 99,
+      hasWords: words.has(spec.slug),
+    });
+  }
+
   return (
     <Head title="pages">
       <p className="admin-intro">

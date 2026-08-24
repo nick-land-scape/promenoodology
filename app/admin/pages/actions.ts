@@ -102,16 +102,21 @@ export async function savePageList(
 
   for (const row of rows) {
     const label = row.navLabel.trim();
-    const { error } = await supabase
-      .from("pages")
-      .update({
+    /* Written rather than updated, so a page the database has never heard of
+       gets its row here instead of needing one written by hand in SQL. That was
+       the gap: a page could exist as a file, be listed on this screen, and have
+       nothing to save into — so turning it on did nothing at all, silently. */
+    const { error } = await supabase.from("pages").upsert(
+      {
+        slug: row.slug,
         visible: row.visible,
         // No label means it is simply not in the menu, whatever group it is in.
         nav_label: label || null,
         nav_group: groups.has(row.group) && label ? row.group : "none",
         nav_position: Number.isFinite(row.position) ? row.position : 99,
-      })
-      .eq("slug", row.slug);
+      },
+      { onConflict: "slug" },
+    );
     if (error) return failed(error);
   }
 

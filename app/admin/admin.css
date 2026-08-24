@@ -4466,3 +4466,142 @@ html.admin-dragging * {
 .admin-person-alone .admin-field-face {
   grid-column: 1 / -1;
 }
+
+/* ------------------------------------------------------------- what was reported
+
+   A report, with the thing it is about under it. The pictures are shown at a
+   size somebody can judge — which is the whole reason the screen exists, since a
+   line of text saying "sexual" about a photograph tells an admin nothing about
+   whether it is true. */
+.report-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+}
+
+.report-row.is-settled {
+  opacity: 0.55;
+}
+
+.report-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+}
+
+/* Why it was reported, in the club's purple: it is the first thing to read and
+   the one word that sorts a morning's list into what matters. */
+.report-why {
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.report-who,
+.report-when {
+  font-size: 0.82rem;
+  opacity: 0.7;
+}
+
+.report-said {
+  margin: 0;
+  font-style: italic;
+  max-width: 46em;
+}
+
+/* The post itself, set apart from the report about it — otherwise the words
+   somebody wrote and the words somebody wrote *about* them run together. */
+.report-what {
+  border-left: 2px solid rgba(242, 236, 225, 0.2);
+  padding-left: 14px;
+}
+
+.report-words {
+  margin: 0 0 6px;
+  max-width: 46em;
+  white-space: pre-wrap;
+}
+
+.report-where,
+.report-gone,
+.report-settled {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.report-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+/* Large enough to judge, small enough that four of them do not fill a screen. */
+.report-photos img {
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  border: 1px solid rgba(242, 236, 225, 0.18);
+}
+
+.report-does {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.report-note {
+  flex: 1;
+  min-width: 180px;
+  max-width: 320px;
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid rgba(242, 236, 225, 0.22);
+  background: transparent;
+  color: inherit;
+}
+
+/* The two things to do about a report. Built here rather than borrowed from
+   .admin-add, which is a dashed "add another" and reads as an invitation — this
+   is a decision about somebody else's writing. */
+.admin-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--admin-faint);
+  background: none;
+  padding: 7px 13px;
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: inherit;
+  cursor: pointer;
+}
+
+.admin-button:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.admin-button[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Deleting somebody's writing, and drawn like it: the one loud thing on the
+   page, and only after it has been asked for once. */
+.admin-button-loud,
+.admin-button-loud:hover {
+  border-color: #e82687;
+  color: #ff9ec6;
+}

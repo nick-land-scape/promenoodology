@@ -98,6 +98,18 @@ export const PAGES: PageSpec[] = [
     madeOf: "The evenings themselves are under Events.",
   },
   {
+    slug: "news",
+    name: "news",
+    blurb:
+      "The club's own news on the website: the heading, and the line under it. The items themselves are under News.",
+    view: "/news",
+    usesTitle: true,
+    usesLead: true,
+    kinds: [],
+    addLabel: "",
+    madeOf: "The news items themselves are under News.",
+  },
+  {
     slug: "handbook",
     name: "the handbook",
     blurb:
