@@ -69,3 +69,30 @@ export function byDay(events: ClubEvent[]): Occasion[] {
 /** A key for one person's answer about one occasion. */
 export const placeKey = (eventId: string, onDay: string | null) =>
   `${eventId}|${onDay ?? ""}`;
+
+/**
+ * The days an occasion is really on.
+ *
+ * One day for an afternoon, one day for a day of a programme, and every day
+ * between the two ends of a stretch that is all one thing. What it is not is
+ * every day of a month a programme runs over: a calendar that marks the
+ * twenty-six days between five Saturdays says "something is on" and is wrong
+ * twenty-six times.
+ */
+export function daysOf(event: Occasion | ClubEvent): string[] {
+  if ("onDay" in event && event.onDay) return [event.onDay];
+  if (event.days.length > 0) return event.days.map((day) => day.date).filter(Boolean);
+  if (!event.date) return [];
+  if (!event.until || event.until === event.date) return [event.date];
+
+  const out: string[] = [];
+  const at = new Date(`${event.date}T00:00:00Z`);
+  const end = new Date(`${event.until}T00:00:00Z`);
+  if (Number.isNaN(at.getTime()) || Number.isNaN(end.getTime())) return [event.date];
+  // Forty days at most, so a mistyped pair of dates cannot spin for ever.
+  for (let guard = 0; at <= end && guard < 40; guard += 1) {
+    out.push(at.toISOString().slice(0, 10));
+    at.setUTCDate(at.getUTCDate() + 1);
+  }
+  return out;
+}

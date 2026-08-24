@@ -1,43 +1,52 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import type { ClubEvent } from "@/lib/content";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { pretty } from "@/lib/admin/when";
 
 /**
- * A month, and what is on the day you press.
+ * A month, and the evening that opens when you press a day.
  *
- * The list underneath answers "what is coming up"; this answers the other
- * question people actually have, which is "is anything on the weekend I am
- * free". Those are different enough to be worth two shapes of the same handful
- * of evenings.
+ * The list answers "what is coming up"; this answers the other question people
+ * actually have, which is "is anything on the weekend I am free". Two shapes of
+ * the same handful of evenings, and pressing the button beside the page's name
+ * swaps one for the other — see WhatsOn, which owns that switch. It used to
+ * unfold underneath the list, which meant the answer to the second question
+ * pushed the answer to the first one off the screen.
+ *
+ * What a day opens is the card, not a line of small print. It was a list of blue
+ * links under the grid: a different thing to read, in a different shape, for the
+ * evening whose card was already three inches further down the page. Now it is
+ * that card — the photograph, the date on it, what it is part of, where and when,
+ * the paragraph it opens with — in a pop-up over the month, so the month stays
+ * where it was and nothing has to be scrolled back to.
  *
  * A day is marked only where something really happens on it. An evening with a
- * programme runs for a month and takes up five afternoons of it — filling in the
- * twenty-six days between them would be a calendar that says "something is on"
- * every day of September and is wrong on twenty-six of them.
+ * programme runs for a month and takes up five afternoons of it; filling in the
+ * twenty-six days between them would be a calendar that is wrong twenty-six
+ * times.
  *
  * Monday first, because that is the week here. Only marked days are pressable: a
  * calendar where every square invites a tap and thirty of them answer "nothing"
  * is a calendar that wastes thirty taps.
  */
 export default function EventsCalendar({
-  events,
+  days,
   lang,
   words,
 }: {
-  events: ClubEvent[];
+  /* The days anything is on, each with the cards for it — rendered on the server
+     and handed over whole, so the month draws the same card the page does and
+     this file knows nothing about what is in one. */
+  days: { date: string; cards: ReactNode[] }[];
   lang: "en" | "fr";
   /* Handed in rather than held here: the words the site says are looked up on
      the server, where the language is known. */
   words: {
-    open: string;
-    shut: string;
     pressOne: string;
-    nothing: string;
     before: string;
     after: string;
+    close: string;
   };
 }) {
   const today = new Date().toISOString().slice(0, 10);
@@ -45,33 +54,20 @@ export default function EventsCalendar({
   /* Which month is on screen. It opens on the one the next evening is in rather
      than on this one, so a quiet fortnight does not open on an empty grid. */
   const [shown, setShown] = useState(() => {
-    const next = [...events]
-      .map((event) => firstDay(event))
-      .filter((day) => day >= today)
+    const next = days
+      .map((day) => day.date)
+      .filter((date) => date >= today)
       .sort()[0];
     return (next ?? today).slice(0, 7);
   });
 
   const [chosen, setChosen] = useState<string | null>(null);
 
-  /* Folded away until asked for. The list under it is the answer to the first
-     question anybody has of this page; a month is the second, and a month open
-     by default pushes the first answer below the fold to do it. */
-  const [open, setOpen] = useState(false);
-
-  const onDays = useMemo(() => {
-    const map = new Map<string, ClubEvent[]>();
-    for (const event of events) {
-      for (const day of daysOf(event)) {
-        map.set(day, [...(map.get(day) ?? []), event]);
-      }
-    }
-    return map;
-  }, [events]);
+  const onDays = new Map(days.map((day) => [day.date, day.cards]));
 
   const [year, month] = shown.split("-").map(Number);
   const first = new Date(Date.UTC(year, month - 1, 1));
-  const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const count = new Date(Date.UTC(year, month, 0)).getUTCDate();
   // Sunday is 0 in JavaScript and last in a week here.
   const blanks = (first.getUTCDay() + 6) % 7;
 
@@ -81,25 +77,24 @@ export default function EventsCalendar({
     setChosen(null);
   };
 
-  const showing = chosen ? (onDays.get(chosen) ?? []) : [];
+  /* Escape shuts the pop-up, and while it is open the page underneath does not
+     scroll — it is a thing on top of the month, and a backdrop you can scroll
+     behind is a backdrop that reads as part of the page. */
+  useEffect(() => {
+    if (!chosen) return;
+    const key = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setChosen(null);
+    };
+    window.addEventListener("keydown", key);
+    const held = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", key);
+      document.body.style.overflow = held;
+    };
+  }, [chosen]);
 
-  if (!open) {
-    return (
-      <button type="button" className="cal-open" onClick={() => setOpen(true)}>
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            d="M4 6h16v15H4zM4 10h16M8 3v4M16 3v4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        {words.open}
-      </button>
-    );
-  }
+  const showing = chosen ? (onDays.get(chosen) ?? []) : [];
 
   return (
     <div className="cal">
@@ -131,7 +126,7 @@ export default function EventsCalendar({
         {Array.from({ length: blanks }, (_, blank) => (
           <span key={`blank-${blank}`} />
         ))}
-        {Array.from({ length: days }, (_, index) => {
+        {Array.from({ length: count }, (_, index) => {
           const date = `${shown}-${String(index + 1).padStart(2, "0")}`;
           const on = onDays.get(date);
           return (
@@ -157,65 +152,41 @@ export default function EventsCalendar({
         })}
       </div>
 
-      {chosen ? (
-        <div className="cal-said" aria-live="polite">
-          <p className="cal-said-day">{pretty(chosen)}</p>
-          {showing.length === 0 ? (
-            <p>{words.nothing}</p>
-          ) : (
-            <ul>
-              {showing.map((event) => (
-                <li key={event.id}>
-                  <Link href={lang === "fr" ? `/fr/events/${event.slug}` : `/events/${event.slug}`}>
-                    {event.title}
-                  </Link>
-                  {/* Which part of it, where it is one of several. */}
-                  {dayName(event, chosen) ? <span> — {dayName(event, chosen)}</span> : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ) : (
-        <p className="cal-hint">{words.pressOne}</p>
-      )}
+      <p className="cal-hint">{words.pressOne}</p>
 
-      <button type="button" className="cal-shut" onClick={() => setOpen(false)}>
-        {words.shut}
-      </button>
+      {/* Into the body, not into the page.
+
+          The site's own furniture — the menu, the strip along the top — is drawn
+          in `body`, and this used to live inside the page wrapper: anything with
+          a stacking context of its own paints over a pop-up that is a
+          descendant of it, however high its z-index. The lightbox learned this
+          the hard way. */}
+      {chosen && showing.length > 0
+        ? createPortal(
+            <div
+              className="cal-pop"
+              role="dialog"
+              aria-modal="true"
+              aria-label={pretty(chosen)}
+              onClick={(event) => {
+                // The backdrop shuts it; a press on the card itself does not.
+                if (event.target === event.currentTarget) setChosen(null);
+              }}
+            >
+              <div className="cal-pop-box">
+                <p className="cal-pop-day">
+                  {pretty(chosen)}
+                  <button type="button" onClick={() => setChosen(null)} aria-label={words.close}>
+                    ×
+                  </button>
+                </p>
+                {/* The same list the page is made of, so it is the same card. */}
+                <ul className="story-list cal-pop-list">{showing}</ul>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
-}
-
-/** The first day anything actually happens. */
-function firstDay(event: ClubEvent): string {
-  return event.days.length > 0 ? event.days[0].date : event.date;
-}
-
-/**
- * The days this evening is really on.
- *
- * Its programme, where it has one; otherwise every day between its beginning and
- * its end, which for anything without a programme is one day or a short run.
- */
-function daysOf(event: ClubEvent): string[] {
-  if (event.days.length > 0) return event.days.map((day) => day.date).filter(Boolean);
-  if (!event.date) return [];
-  if (!event.until || event.until === event.date) return [event.date];
-
-  const out: string[] = [];
-  const at = new Date(`${event.date}T00:00:00Z`);
-  const end = new Date(`${event.until}T00:00:00Z`);
-  if (Number.isNaN(at.getTime()) || Number.isNaN(end.getTime())) return [event.date];
-  // A month of it at most, so a bad pair of dates cannot spin for ever.
-  for (let guard = 0; at <= end && guard < 40; guard += 1) {
-    out.push(at.toISOString().slice(0, 10));
-    at.setUTCDate(at.getUTCDate() + 1);
-  }
-  return out;
-}
-
-/** What that day of it is called, for an evening with a programme. */
-function dayName(event: ClubEvent, day: string): string {
-  return event.days.find((one) => one.date === day)?.title ?? "";
 }

@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import EventsCalendar from "@/components/EventsCalendar";
+import EventCard from "@/components/EventCard";
 import JsonLd from "@/components/JsonLd";
-import Photo from "@/components/Photo";
-import type { ClubEvent } from "@/lib/content";
-import { pretty } from "@/lib/admin/when";
+import WhatsOn from "@/components/WhatsOn";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { breadcrumbs, graph, itemList, pageMetadata, say as pick, type Bilingual } from "@/lib/seo";
 import { pageIsVisible } from "@/lib/site-pages";
-import { byDay, type Occasion } from "@/lib/occasions";
+import { byDay, daysOf, placeKey, type Occasion } from "@/lib/occasions";
 import { getEvents, getFrench, getPageHead } from "@/lib/source";
 import { speaking, type Said } from "@/lib/words";
 
@@ -125,12 +123,27 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
     .map((event) => ({ ...event, onDay: null, dayOf: null }) as Occasion)
     .reverse();
 
-  // How many days have anything on them at all.
-  const marked = new Set(
-    listed.flatMap((event) =>
-      event.days.length > 0 ? event.days.map((day) => day.date) : [event.date],
-    ),
-  ).size;
+  /* The month, built here rather than in the calendar: one entry per day anything
+     is on, carrying the cards for it. Rendered on the server, where the words and
+     the language are, and handed over whole — so the month opens the same card the
+     list is made of instead of a second drawing of the same evening. */
+  const perDay = new Map<string, React.ReactNode[]>();
+  for (const occasion of upcoming) {
+    for (const day of daysOf(occasion)) {
+      perDay.set(day, [
+        ...(perDay.get(day) ?? []),
+        <EventCard
+          key={placeKey(occasion.id, occasion.onDay)}
+          event={occasion}
+          lang={lang}
+          say={say}
+        />,
+      ]);
+    }
+  }
+  const month = [...perDay.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([date, cards]) => ({ date, cards }));
 
   return (
     <main className="page">
@@ -152,142 +165,77 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
           ]),
         )}
       />
-      <h1 className="page-title">{head.title || "what's on"}</h1>
+      {/* The name of the page, the way of looking at it beside the name, and then
+          one or the other: the list of what is coming up, or the month. */}
+      <WhatsOn
+        title={head.title || "what's on"}
+        lang={lang}
+        days={month}
+        words={{
+          asMonth: say("on.asMonth"),
+          asList: say("on.backToList"),
+          pressOne: say("cal.pressOne"),
+          before: say("cal.monthBefore"),
+          after: say("cal.monthAfter"),
+          close: say("cal.shutTheDay"),
+        }}
+        intro={
+          head.saved ? (
+            head.lead ? (
+              <p className="page-intro">{head.lead}</p>
+            ) : null
+          ) : (
+            <p className="page-intro">
+              What we are putting on next. Everything here is open — come and eat, bring a pot, or
+              simply turn up. If you would rather do your own version, the{" "}
+              <Link href={at(lang, "/handbook")}>handbook</Link> tells you how.
+            </p>
+          )
+        }
+      >
+        {groups.length === 0 && been.length === 0 ? (
+          <p className="empty">{say("on.nothing")}</p>
+        ) : null}
 
-      {head.saved ? (
-        head.lead ? (
-          <p className="page-intro">{head.lead}</p>
-        ) : null
-      ) : (
-        <p className="page-intro">
-          What we are putting on next. Everything here is open — come and eat, bring a pot, or
-          simply turn up. If you would rather do your own version, the{" "}
-          <Link href={at(lang, "/handbook")}>handbook</Link> tells you how.
-        </p>
-      )}
+        {groups.map((group) => (
+          <section key={group.label} className="events-group">
+            <h2 className="story-label">{group.label}</h2>
+            <Evenings events={group.events} lang={lang} say={say} />
+          </section>
+        ))}
 
-      {/* The list answers "what is coming up"; the month answers "is anything on
-          the weekend I am free". Folded away, because it is the second question
-          and the list is the first — see the button inside it. */}
-      {marked > 1 ? (
-        <EventsCalendar
-          events={listed}
-          lang={lang}
-          words={{
-            open: say("on.asMonth"),
-            shut: say("on.backToList"),
-            pressOne: say("cal.pressOne"),
-            nothing: say("cal.nothingThatDay"),
-            before: say("cal.monthBefore"),
-            after: say("cal.monthAfter"),
-          }}
-        />
-      ) : null}
-
-      {groups.length === 0 && been.length === 0 ? (
-        <p className="empty">{say("on.nothing")}</p>
-      ) : null}
-
-      {groups.map((group) => (
-        <section key={group.label} className="events-group">
-          <h2 className="story-label">{group.label}</h2>
-          <Evenings events={group.events} nextOn={nextOn} lang={lang} say={say} />
-        </section>
-      ))}
-
-      {been.length > 0 ? (
-        <section className="events-group events-been">
-          <h2 className="story-label">{say("on.been")}</h2>
-          <Evenings events={been} nextOn={nextOn} lang={lang} say={say} past />
-        </section>
-      ) : null}
+        {been.length > 0 ? (
+          <section className="events-group events-been">
+            <h2 className="story-label">{say("on.been")}</h2>
+            <Evenings events={been} lang={lang} say={say} past />
+          </section>
+        ) : null}
+      </WhatsOn>
     </main>
   );
 }
 
 function Evenings({
   events,
-  nextOn,
   lang,
   say,
   past,
 }: {
   events: Occasion[];
-  nextOn: (event: Occasion) => string | null;
   lang: "en" | "fr";
   say: Said;
   past?: boolean;
 }) {
   return (
     <ul className={past ? "story-list story-list-past" : "story-list"}>
-      {events.map((event) => {
-        const next = nextOn(event);
-        return (
-          <li key={`${event.id}|${event.onDay ?? ""}`} className="story-card">
-            <Link href={at(lang, `/events/${event.slug}`)}>
-              <span className="story-cover event-cover-card">
-                {event.photo ? (
-                  <Photo src={event.photo.src} alt="" fill sizes="(max-width: 767px) 45vw, 320px" />
-                ) : null}
-                {/* The date, on the picture, where a flyer puts it. A card in a
-                    row of cards is read as a picture and a name; the day is the
-                    thing you are actually scanning for. */}
-                <span className="event-stamp">{stamp(event)}</span>
-              </span>
-              <span className="story-name">{event.title}</span>
-              {/* Which project this afternoon is part of, where it has a name of
-                  its own. Without it, five cards with five different names look
-                  like five unrelated things rather than one thing five times. */}
-              {event.dayOf ? (
-                <span className="story-hook">
-                  {say("on.partOf")} {event.dayOf}
-                </span>
-              ) : event.subtitle ? (
-                <span className="story-hook">{event.subtitle}</span>
-              ) : null}
-              <span className="story-meta">
-                {[
-                  when(event),
-                  event.place,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </span>
-              <span className="story-lead">
-                {event.lead ||
-                  (event.days.length > 1
-                    ? `${event.days.length} ${say("on.days")} ${pretty(event.days[0].date)}`
-                    : event.note)}
-              </span>
-            </Link>
-          </li>
-        );
-      })}
+      {events.map((event) => (
+        <EventCard
+          key={placeKey(event.id, event.onDay)}
+          event={event}
+          lang={lang}
+          say={say}
+        />
+      ))}
     </ul>
   );
-}
-
-/** The day, short, for the corner of the picture: "SAT 22 AUG", "22 AUG – 20 SEP". */
-function stamp(event: ClubEvent): string {
-  if (!event.date) return "";
-  const short = (day: string) =>
-    new Date(`${day}T00:00:00Z`)
-      .toLocaleDateString("en-GB", { day: "numeric", month: "short" })
-      .toUpperCase();
-
-  if (event.until && event.until !== event.date) {
-    return `${short(event.date)} – ${short(event.until)}`;
-  }
-  const weekday = new Date(`${event.date}T00:00:00Z`)
-    .toLocaleDateString("en-GB", { weekday: "short" })
-    .toUpperCase();
-  return `${weekday} ${short(event.date)}`;
-}
-
-/** When it is, in one line: a day, or a stretch of them. */
-function when(event: { date: string; until: string; time: string; endTime: string }) {
-  if (!event.date) return "";
-  if (event.until) return `${pretty(event.date)} – ${pretty(event.until)}`;
-  const hours = [event.time, event.endTime].filter(Boolean).join("–");
-  return [pretty(event.date), hours].filter(Boolean).join(", ");
 }

@@ -383,6 +383,21 @@ img {
   margin: 0 0 6px;
 }
 
+/* A page's name, with the one control that changes what the page is showing at the
+   right end of the same line.
+ *
+ * `baseline` rather than centred: the button is a line of capitals and the name is
+ * two inches of Times, and centring them puts the small one halfway up the big one
+ * instead of on the line it reads on. It wraps, because "Ce qui se passe" and
+ * "revenir à la liste" do not both fit across a phone. */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 18px;
+}
+
 .crumb {
   margin: 0 0 14px;
   font-size: 0.9em;
@@ -3897,8 +3912,12 @@ body:has(.hero) .edit-this {
    question and a different shape. Drawn in the site's own hairlines rather than
    as a widget: it is a table of numbers on paper. */
 
+/* The month, across the page.
+ *
+ * It was capped at twenty-two rems, which made it a small object in the corner of
+ * a wide screen — and this is the page now rather than a panel that unfolds inside
+ * it, so it takes the width the page's name takes. */
 .cal {
-  max-width: 22rem;
   margin: 0 0 40px;
   border: 1px solid var(--ink);
   padding: 12px 14px 14px;
@@ -3954,7 +3973,12 @@ body:has(.hero) .edit-this {
 
 .cal-day {
   position: relative;
-  aspect-ratio: 1;
+  /* A height rather than a square. Near enough square on a phone, and a wide cell
+     on a wide screen — a full-width calendar of true squares is seven inches of
+     paper tall and puts the last week of the month below the fold. Stated as a
+     height so each day fills its whole column: a square centred in a wider column
+     is a target with dead ground either side of it. */
+  height: clamp(34px, 11vw, 66px);
   border: 0;
   background: none;
   color: inherit;
@@ -4008,16 +4032,58 @@ body:has(.hero) .edit-this {
   background: var(--paper);
 }
 
-.cal-said {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--hairline);
-  font-size: 0.95rem;
-  line-height: 1.4;
+/* The day's own card, over the month.
+ *
+ * It was a list of links under the grid: a different thing to read, in a
+ * different shape, about an evening whose card was already on the page three
+ * inches further down. This is that card — and because it is the same markup
+ * inside .story-list, it is the same card, not a copy of one.
+ *
+ * Fixed to the window rather than to the calendar, so it lands in front of
+ * somebody's eyes wherever they had scrolled to. */
+.cal-pop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  /* Dark enough to put the page behind it out of the running, not so dark that
+     the month underneath disappears — it is still where you are. */
+  background: rgba(0, 0, 0, 0.55);
+  animation: cal-pop-in 0.14s ease-out;
 }
 
-.cal-said-day {
-  margin: 0 0 4px;
+@keyframes cal-pop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cal-pop {
+    animation: none;
+  }
+}
+
+.cal-pop-box {
+  width: min(420px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+}
+
+/* The day, and the cross. The day is the heading of the pop-up: without it a card
+   for the twelfth and a card for the nineteenth look identical, which is the one
+   thing a month is being asked about. */
+.cal-pop-day {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
   font-family: var(--sans);
   font-size: 0.56rem;
   font-weight: 700;
@@ -4026,17 +4092,29 @@ body:has(.hero) .edit-this {
   color: var(--quiet);
 }
 
-.cal-said ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 4px;
+.cal-pop-day button {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--hairline);
+  background: none;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
-.cal-said span {
-  font-style: italic;
-  color: var(--quiet);
+.cal-pop-day button:hover {
+  background: var(--wash);
+  color: var(--ink);
+}
+
+/* One card, or two where a day has two things on it. Always one column: this is a
+   pop-up on a phone as often as not, and two cards abreast in 420 points is two
+   thumbnails. */
+.cal-pop-list {
+  grid-template-columns: 1fr !important;
+  gap: 22px !important;
 }
 
 .cal-hint {
@@ -4308,7 +4386,6 @@ body:has(.hero) .edit-this {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 8px 13px;
-  margin-bottom: 6px;
   cursor: pointer;
 }
 
@@ -4319,27 +4396,6 @@ body:has(.hero) .edit-this {
 .cal-open svg {
   width: 14px;
   height: 14px;
-}
-
-.cal-shut {
-  display: block;
-  width: 100%;
-  margin-top: 12px;
-  border: 0;
-  border-top: 1px solid var(--hairline);
-  background: none;
-  color: var(--quiet);
-  font-family: var(--sans);
-  font-size: 0.54rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 9px 0 0;
-  cursor: pointer;
-}
-
-.cal-shut:hover {
-  color: var(--ink);
 }
 
 /* A frame on the picture.

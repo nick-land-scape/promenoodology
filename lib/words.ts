@@ -47,14 +47,20 @@ export const PHRASES: Phrase[] = [
   { key: "on.partOf", en: "part of", fr: "fait partie de", where: "front", note: "Followed by the name of the project a single day belongs to." },
   { key: "on.been", en: "and what has been", fr: "et ce qui a eu lieu", where: "front", note: "A heading over the evenings that have happened." },
   { key: "on.nothing", en: "Nothing is on just now. There will be.", fr: "Rien pour le moment. Cela viendra.", where: "front" },
-  { key: "on.asMonth", en: "see it as a month", fr: "voir le mois", where: "front", note: "Opens the calendar." },
-  { key: "on.backToList", en: "back to the list", fr: "revenir à la liste", where: "front", note: "Closes the calendar." },
+  { key: "on.asMonth", en: "see it as a month", fr: "voir le mois", where: "front", note: "Shows the month instead of the list." },
+  { key: "on.backToList", en: "back to the list", fr: "revenir à la liste", where: "front", note: "Shows the list again." },
   { key: "on.nextOn", en: "next on", fr: "prochainement le", where: "front", note: "Followed by a date: “next on 22 August”." },
   { key: "on.days", en: "days, from", fr: "jours, à partir du", where: "front", note: "As in “5 days, from 22 August”." },
 
   /* ------------------------------------------------------------- the calendar */
-  { key: "cal.pressOne", en: "The marked days have something on. Press one.", fr: "Les jours marqués ont quelque chose. Appuyez sur l’un d’eux.", where: "front" },
-  { key: "cal.nothingThatDay", en: "Nothing on that day.", fr: "Rien ce jour-là.", where: "front" },
+  { key: "cal.pressOne", en: "The marked days have something on. Press one.", fr: "Les jours marqués ont quelque chose. Appuyez sur l’un d’eux.", where: "front", note: "Under the month. Pressing a day opens its card." },
+  {
+    key: "cal.shutTheDay",
+    en: "Close",
+    fr: "Fermer",
+    where: "front",
+    note: "Read out for the cross that shuts the day's card in the month; not shown.",
+  },
   { key: "cal.monthBefore", en: "The month before", fr: "Le mois précédent", where: "front", note: "Read out by a screen reader; not shown." },
   { key: "cal.monthAfter", en: "The month after", fr: "Le mois suivant", where: "front", note: "Read out by a screen reader; not shown." },
 
