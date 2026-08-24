@@ -38,6 +38,8 @@ export default function AddToCalendar({
       rows={rows}
       words={{
         open: say("cal.addToCalendar"),
+        which: say("cal.whichDay"),
+        back: say("cal.back"),
         file: say("cal.theFile"),
         google: say("cal.google"),
         outlook: say("cal.outlook"),

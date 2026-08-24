@@ -98,6 +98,10 @@ export const PHRASES: Phrase[] = [
   },
   { key: "eve.addToCalendar", en: "put it in my calendar", fr: "l’ajouter à mon agenda", where: "app", note: "On an evening's own screen. Hands the phone an .ics file." },
   { key: "cal.addToCalendar", en: "add to my calendar", fr: "ajouter à mon agenda", where: "front", note: "Downloads an .ics file — every calendar takes one." },
+  { key: "cal.whichDay", en: "which day?", fr: "quel jour ?", where: "front", note: "The first step of the calendar menu." },
+  { key: "cal.back", en: "another day", fr: "un autre jour", where: "front", note: "Back to the first step." },
+  { key: "eve.whichDay", en: "which day?", fr: "quel jour ?", where: "app" },
+  { key: "eve.back", en: "another day", fr: "un autre jour", where: "app" },
   {
     key: "cal.theWhole",
     en: "the whole programme",

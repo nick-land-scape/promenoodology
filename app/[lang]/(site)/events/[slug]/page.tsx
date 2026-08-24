@@ -363,11 +363,13 @@ export default async function EventPage({ params }: Params) {
       ) : null}
 
       <section className="event-practical">
-        <h2 className="story-label">{say("event.coming")}</h2>
-        {/* Straight under the heading that answers "how do I come to this": the day
-            and the place are here, and the thing anybody does with a day and a
-            place is put it in whatever keeps track of their Saturdays. */}
-        <AddToCalendar event={event} say={say} lang={lang} />
+        {/* The heading, and the calendar control at the right end of the same line:
+            this section is the day and the place, and the thing anybody does with a
+            day and a place is put it in whatever keeps track of their Saturdays. */}
+        <div className="event-practical-head">
+          <h2 className="story-label">{say("event.coming")}</h2>
+          <AddToCalendar event={event} say={say} lang={lang} />
+        </div>
         <dl>
           <div>
             <dt>{say("event.when")}</dt>

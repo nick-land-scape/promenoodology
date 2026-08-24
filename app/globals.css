@@ -4559,45 +4559,126 @@ body:has(.hero) .edit-this {
   text-align: left;
 }
 
-/* One row per thing that can be added: what it is, and underneath it the calendars
-   that can take it. The day is set in Times because it is a date somebody reads; the
-   routes are in Helvetica capitals because they are things to press. */
-.calendar-pick-row {
-  padding: 7px 10px 9px;
-  border-top: 1px solid var(--hairline);
+/* "Coming" and its calendar button on one line, the button at the right end of it.
+   Underneath the heading it read as the first item of the list below; level with it,
+   it reads as belonging to the heading — which it does. */
+.event-practical-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.calendar-pick-row:first-child {
-  border-top: 0;
+.event-practical-head .story-label {
+  margin-bottom: 0;
 }
 
-.calendar-pick-row > p {
-  margin: 0 0 3px;
+/* The head of either step: the question, or the day that was chosen with the way
+   back to the list of days. */
+.calendar-pick-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  padding: 9px 12px 8px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.calendar-pick-head b {
+  font-weight: 400;
   font-size: 0.9rem;
   line-height: 1.25;
 }
 
-.calendar-pick-row > span {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
+.calendar-pick-head button {
+  flex: none;
+  order: 2;
+  margin-left: auto;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.calendar-pick-list a {
+.calendar-pick-head button:hover {
+  color: var(--ink);
+}
+
+/* The first step: one day per line, each opening the second. */
+.calendar-pick-day {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  background: none;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendar-pick-day:first-of-type {
+  border-top: 0;
+}
+
+.calendar-pick-day:hover,
+.calendar-pick-day:focus-visible {
+  background: var(--wash);
+}
+
+.calendar-pick-day span {
+  color: var(--quiet);
+}
+
+/* The second step: one route per line, each with its mark. */
+.calendar-pick-way {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-top: 1px solid var(--hairline);
   font-family: var(--sans);
-  font-size: 0.56rem;
+  font-size: 0.58rem;
   font-weight: 700;
   font-style: normal;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--purple);
+  color: var(--ink);
   text-decoration: none;
 }
 
-.calendar-pick-list a:hover,
-.calendar-pick-list a:focus-visible {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.calendar-pick-way:first-of-type {
+  border-top: 0;
+}
+
+.calendar-pick-way:hover,
+.calendar-pick-way:focus-visible {
+  background: var(--wash);
+}
+
+/* A letter in a box, in this site's own type — not somebody else's logo. */
+.calendar-pick-way b {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--hairline);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 /* The line that says what the file is. In Times and lower case, because it is a
@@ -4613,9 +4694,18 @@ body:has(.hero) .edit-this {
   color: var(--quiet);
 }
 
-/* And the one on a programme's own row, in its top right corner. */
+/* And the one on a programme's own row, in its top right corner.
+
+   The row with an open menu is lifted above the rows after it. Position alone does
+   not do that: two positioned siblings paint in document order, so the panel hanging
+   out of the first afternoon went underneath the second. `:has` asks which row is
+   the one being used. */
 .event-days li {
   position: relative;
+}
+
+.event-days li:has([aria-expanded="true"]) {
+  z-index: 5;
 }
 
 .event-day-calendar {

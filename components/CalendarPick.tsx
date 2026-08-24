@@ -6,10 +6,16 @@ import type { CalendarRow } from "@/lib/calendar";
 /**
  * Which day, and which calendar — asked at the moment somebody presses the button.
  *
- * Two questions, and they were both being answered on somebody's behalf: the button
- * downloaded the whole programme as a file and gave no hint that Google and Outlook
- * existed or that a single Saturday could be added on its own. So it asks. One row
- * per thing that can be added, and on each row the routes that can take it.
+ * Two questions, so two steps: which occasion, then which calendar. Both were being
+ * answered on somebody's behalf — the button downloaded the whole programme as a file
+ * and gave no hint that Google and Outlook existed or that a single Saturday could be
+ * added on its own.
+ *
+ * Asked in that order because that is the order they are decided in: whether you can
+ * come on the fifth is a question about your life, and which calendar you keep is a
+ * fact about your phone. And where there is only one occasion there is no first
+ * question, so it is not asked — an evening on one afternoon opens straight into the
+ * three routes.
  *
  * A menu of links rather than a `<select>`: one of these is a download and two are
  * journeys to somebody else's site, and dressing a link as a form control means it
@@ -27,12 +33,28 @@ export default function CalendarPick({
   className = "icon-switch",
 }: {
   rows: CalendarRow[];
-  words: { open: string; file: string; google: string; outlook: string; said: string };
+  words: {
+    open: string;
+    /** The heading of the first step. */
+    which: string;
+    /** The way back to it. */
+    back: string;
+    file: string;
+    google: string;
+    outlook: string;
+    said: string;
+  };
   /** How the button looks: the site's icon switch, or the app's own pill. */
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  /* Which occasion is being added. Null means the question has not been asked yet —
+     and with one occasion to choose from there is no question, so it answers itself. */
+  const [chose, setChose] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
+
+  const only = rows.length === 1 ? rows[0] : null;
+  const picked = only ?? rows.find((row) => row.key === chose) ?? null;
 
   useEffect(() => {
     if (!open) return;
@@ -40,7 +62,12 @@ export default function CalendarPick({
       if (!box.current?.contains(event.target as Node)) setOpen(false);
     };
     const key = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        /* Escape goes back a step before it closes the menu, which is the order
+           somebody presses it in. */
+        if (chose && !only) setChose(null);
+        else setOpen(false);
+      }
     };
     document.addEventListener("pointerdown", away);
     window.addEventListener("keydown", key);
@@ -48,7 +75,14 @@ export default function CalendarPick({
       document.removeEventListener("pointerdown", away);
       window.removeEventListener("keydown", key);
     };
-  }, [open]);
+  }, [open, chose, only]);
+
+  /* Shutting it forgets which day was chosen: opening it again is a new question,
+     not the middle of the last one. */
+  function shut() {
+    setOpen(false);
+    setChose(null);
+  }
 
   if (rows.length === 0) return null;
 
@@ -61,7 +95,7 @@ export default function CalendarPick({
         aria-expanded={open}
         aria-label={words.open}
         title={words.open}
-        onClick={() => setOpen((was) => !was)}
+        onClick={() => (open ? shut() : setOpen(true))}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15">
           <path
@@ -77,41 +111,89 @@ export default function CalendarPick({
 
       {open ? (
         <div className="calendar-pick-list" role="menu">
-          {rows.map((row) => (
-            <div className="calendar-pick-row" key={row.key}>
-              <p>{row.label}</p>
-              <span>
-                {/* The file first: it is the only route Apple has, and the one every
-                    other calendar takes as well. */}
-                <a role="menuitem" href={row.file} download onClick={() => setOpen(false)}>
-                  {words.file}
+          {picked ? (
+            /* The second step: this day, and the calendars that can take it. */
+            <>
+              <p className="calendar-pick-head">
+                {only ? null : (
+                  <button type="button" onClick={() => setChose(null)}>
+                    ← {words.back}
+                  </button>
+                )}
+                <b>{picked.label}</b>
+              </p>
+
+              {/* One route per line, each with its own mark.
+              
+                  The marks are letters in a box, in this site's own type, and that
+                  is deliberate: Apple's guidelines forbid using the apple in an
+                  interface without permission, Google's and Microsoft's brands have
+                  rules about colour and clear space, and a hand-drawn approximation
+                  of somebody's logo reads as a counterfeit. A letter is honest and
+                  tells them apart at a glance, which is all a mark has to do here. */}
+              <a className="calendar-pick-way" role="menuitem" href={picked.file} download onClick={shut}>
+                <b aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="13" height="13">
+                    <path
+                      d="M4.5 6.5h15v13h-15zM8 3.5v4M16 3.5v4M4.5 11h15"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </b>
+                {words.file}
+              </a>
+              {picked.google ? (
+                <a
+                  className="calendar-pick-way"
+                  role="menuitem"
+                  href={picked.google}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  onClick={shut}
+                >
+                  <b aria-hidden="true">G</b>
+                  {words.google}
                 </a>
-                {row.google ? (
-                  <a
-                    role="menuitem"
-                    href={row.google}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    onClick={() => setOpen(false)}
-                  >
-                    {words.google}
-                  </a>
-                ) : null}
-                {row.outlook ? (
-                  <a
-                    role="menuitem"
-                    href={row.outlook}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    onClick={() => setOpen(false)}
-                  >
-                    {words.outlook}
-                  </a>
-                ) : null}
-              </span>
-            </div>
-          ))}
-          <p className="calendar-pick-said">{words.said}</p>
+              ) : null}
+              {picked.outlook ? (
+                <a
+                  className="calendar-pick-way"
+                  role="menuitem"
+                  href={picked.outlook}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  onClick={shut}
+                >
+                  <b aria-hidden="true">O</b>
+                  {words.outlook}
+                </a>
+              ) : null}
+
+              <p className="calendar-pick-said">{words.said}</p>
+            </>
+          ) : (
+            /* The first step: which of them. */
+            <>
+              <p className="calendar-pick-head">
+                <b>{words.which}</b>
+              </p>
+              {rows.map((row) => (
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="calendar-pick-day"
+                  key={row.key}
+                  onClick={() => setChose(row.key)}
+                >
+                  {row.label}
+                  <span aria-hidden="true">›</span>
+                </button>
+              ))}
+            </>
+          )}
         </div>
       ) : null}
     </div>

@@ -223,6 +223,8 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
               })}
               words={{
                 open: say("eve.addToCalendar"),
+                which: say("eve.whichDay"),
+                back: say("eve.back"),
                 file: say("eve.theFile"),
                 google: say("cal.google"),
                 outlook: say("cal.outlook"),

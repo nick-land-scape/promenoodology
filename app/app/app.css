@@ -4840,36 +4840,86 @@ body:has(.app-shell) {
   text-align: left;
 }
 
-.calendar-pick-row {
-  padding: 8px 12px 10px;
-  border-top: 1px solid var(--hair);
+.calendar-pick-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 14px 9px;
+  border-bottom: 1px solid var(--hair);
 }
 
-.calendar-pick-row:first-child {
-  border-top: 0;
-}
-
-.calendar-pick-row > p {
-  margin: 0 0 4px;
+.calendar-pick-head b {
+  font-weight: 400;
   font-size: 0.95rem;
   line-height: 1.25;
 }
 
-.calendar-pick-row > span {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
+.calendar-pick-head button {
+  flex: none;
+  margin-left: auto;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
-.calendar-pick-list a {
+.calendar-pick-day,
+.calendar-pick-way {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--hair);
+  background: none;
+  padding: 11px 14px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+}
+
+.calendar-pick-day:first-of-type,
+.calendar-pick-way:first-of-type {
+  border-top: 0;
+}
+
+.calendar-pick-day {
+  justify-content: space-between;
+  font-size: 0.95rem;
+}
+
+.calendar-pick-day span {
+  color: var(--muted);
+}
+
+.calendar-pick-way {
   font-family: var(--sans);
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   font-weight: 700;
   font-style: normal;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--purple);
-  text-decoration: none;
+}
+
+/* A letter in a box, in the app's own type — not somebody else's logo. */
+.calendar-pick-way b {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
 }
 
 .calendar-pick-said {
