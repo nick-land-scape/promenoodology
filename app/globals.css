@@ -2215,6 +2215,18 @@ body:has(.hero) .contact {
   border-color: var(--ink);
 }
 
+/* And the name arrives a beat after the box has started to open, so it is read as
+   the box making room for it rather than as two things moving at once. */
+.icon-switch:hover span,
+.icon-switch:focus-visible span,
+.lang-switch:hover span,
+.lang-switch:focus-visible span,
+.dark-switch:hover span,
+.dark-switch:focus-visible span {
+  opacity: 1;
+  transition-delay: 0.06s;
+}
+
 /* In the evening's own bar these stand beside a filled button, so they are drawn
    in ink rather than in the quiet grey the corner switches use — and 33 tall, which
    is what the button beside them measures. */
@@ -2243,9 +2255,17 @@ body:has(.hero) .contact {
   height: 16px;
 }
 
+/* The words are hidden by being *transparent*, not only by being clipped.
+   Clipping alone is arithmetic — the box is 34, the border and padding take 9, the
+   drawing takes 15, and the label lands one point inside the edge — so a sliver of
+   the first letter showed on any of these whose icon was a point narrower than the
+   others. Fading them means the sum no longer has to come out exactly, and it reads
+   better anyway: the name arrives as the box opens rather than sliding out of it. */
 .icon-switch span,
 .lang-switch span,
 .dark-switch span {
+  opacity: 0;
+  transition: opacity 0.16s ease;
   padding-left: 8px;
   font-family: var(--sans);
   font-size: 0.55rem;
