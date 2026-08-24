@@ -3173,6 +3173,27 @@ html.has-top-bar {
   z-index: 1;
 }
 
+/*
+ * Except the section somebody has just opened a menu in.
+ *
+ * Every section of a page is `position: relative; z-index: 1` so the words sit above
+ * the picture behind them — which also means every section is a stacking context, and
+ * a panel inside one cannot rise above the *next* one however high its own z-index
+ * is: 40 inside 1 is still 1 against a sibling. So the dropdown at "coming" was
+ * being drawn under the sections after it — which looks exactly like a panel with no
+ * background, because what shows through is the page.
+ *
+ * `:has` asks which section is the one being used, and lifts that one.
+ */
+/* Written with the same three exclusions as the rule above it, and that is not
+   copy-and-paste: that rule is four classes deep, this one was two, and the one that
+   wins a tie on specificity was the one saying `z-index: 1`. So the lift did nothing
+   at all until it was spelled out to the same depth. */
+.page
+  > *:not(.page-bg):not(.quote-mark):not(.event-top):has([aria-expanded="true"]) {
+  z-index: 6;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Nothing here moves, but a rotated photograph behind text is a lot to ask of
      some eyes — so it is set straight. */
@@ -4588,6 +4609,21 @@ body:has(.hero) .edit-this {
   font-weight: 400;
   font-size: 0.9rem;
   line-height: 1.25;
+}
+
+/* The question, as a heading: Helvetica capitals, the way every other label on this
+   site announces what a list is. Set as a sentence it read as one of the choices. */
+.calendar-pick-head.is-asking {
+  padding-bottom: 7px;
+}
+
+.calendar-pick-head.is-asking b {
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--quiet);
 }
 
 .calendar-pick-head button {

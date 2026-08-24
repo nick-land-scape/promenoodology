@@ -177,7 +177,7 @@ export default function CalendarPick({
           ) : (
             /* The first step: which of them. */
             <>
-              <p className="calendar-pick-head">
+              <p className="calendar-pick-head is-asking">
                 <b>{words.which}</b>
               </p>
               {rows.map((row) => (
