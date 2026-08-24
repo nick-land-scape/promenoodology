@@ -4400,37 +4400,39 @@ body:has(.hero) .edit-this {
  * icon; opened, it takes the padding back with the same easing as the words, so the
  * whole thing grows as one object.
  */
+/*
+ * Collapsed, it is a square with a drawing in it. Opened, it says its name.
+ *
+ * Done the way the paper switch in the corner does it, because that one is right
+ * and this one was not: the *whole button* is capped at its own height with its
+ * overflow hidden, so what is inside cannot make it wider. Padding was the wrong
+ * lever — a pill is padded for words, and matching the two sides only made the
+ * emptiness symmetrical. It was still emptiness.
+ */
 .pill-quiet {
   gap: 0;
-  padding-left: 10px;
-  padding-right: 10px;
+  justify-content: center;
+  max-width: 33px;
+  padding-left: 0;
+  padding-right: 0;
+  overflow: hidden;
   transition:
-    padding 0.2s ease,
+    max-width 0.22s ease,
     border-color 0.15s ease,
     color 0.15s ease;
 }
 
 .pill-quiet span {
-  display: inline-block;
-  max-width: 0;
-  overflow: hidden;
+  padding-left: 7px;
   white-space: nowrap;
-  transition:
-    max-width 0.2s ease,
-    padding-left 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .pill-quiet:hover,
   .pill-quiet:focus-visible {
-    padding-left: 15px;
+    max-width: 16rem;
+    padding-left: 12px;
     padding-right: 15px;
-  }
-
-  .pill-quiet:hover span,
-  .pill-quiet:focus-visible span {
-    max-width: 14rem;
-    padding-left: 7px;
   }
 }
 
@@ -4768,7 +4770,11 @@ body:has(.hero) .edit-this {
 
 .event-top {
   position: sticky;
-  top: 0;
+  /* Under the admin strip rather than behind it. `--bar-top` is 36 points while
+     somebody is signed in to the back of the house and zero for everybody else, so
+     this costs a reader nothing and stops the bar being covered for whoever is
+     editing the page. */
+  top: var(--bar-top);
   z-index: 30;
   /* The paper behind it, or the words underneath show through as it passes. */
   background: var(--paper);
@@ -4787,6 +4793,18 @@ body:has(.hero) .edit-this {
 
 .event-said .page-title {
   margin-bottom: 0;
+}
+
+/* The one sentence that stays on the screen with the controls: anybody can come.
+   It is in the bar rather than in the page because it is the answer to the question
+   the two greyed-out buttons raise, and the buttons are up here for the whole of a
+   long page. One line of small print, not a paragraph. */
+.event-top-open {
+  margin: 6px 0 0;
+  max-width: 46rem;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: var(--quiet);
 }
 
 .event-top-row {

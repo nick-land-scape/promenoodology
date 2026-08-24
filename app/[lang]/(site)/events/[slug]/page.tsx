@@ -236,6 +236,10 @@ export default async function EventPage({ params }: Params) {
             {!over ? <AddToCalendar event={event} say={say} tight /> : null}
           </span>
         </div>
+
+        {/* Said in the bar, so it is still there five screens down: the two greyed
+            controls above raise a question, and this is its answer. */}
+        {over ? null : <p className="event-top-open">{say("part.openToAll")}</p>}
       </header>
 
       {/*
@@ -256,11 +260,6 @@ export default async function EventPage({ params }: Params) {
           {[when(event), event.place, event.address].filter(Boolean).join(" · ")}
           {over ? ` · ${say("event.itHasBeen")}` : null}
         </p>
-        {/* Said where the page says what it is, rather than as a note under a
-            greyed-out button. It is not an explanation of the controls, it is the
-            first thing anybody wants to know about an evening they have just read
-            about: whether they are allowed to come. They are. */}
-        {over ? null : <p className="event-welcome">{say("part.openToAll")}</p>}
       </div>
 
       {event.lead ? (
