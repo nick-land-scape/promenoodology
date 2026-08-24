@@ -48,24 +48,32 @@ export default function JoinToTakePart({
     <section className={tight ? "taking-part taking-part-tight" : "taking-part"}>
       {wordsOnly ? null : (
       <span className="taking-part-does">
-        <button type="button" className="pill pill-solid" disabled aria-disabled="true">
-          {say("part.countMeIn")}
-        </button>
-        {/* The bookmark is a shape everybody knows, so it says its own name only
-            when there is a pointer on it — which is what buys the room for the
-            calendar link beside it. The name is still there for a keyboard and for
-            anything reading the page out; it is the *drawing* that carries it. */}
+        {/* Each of the two carries its own reason for being grey.
+
+            On a wrapper rather than on the button, because a disabled button does
+            not reliably receive a pointer — and `title`, the one explanation a
+            browser gives by itself, is not shown on a disabled control in any
+            browser at all. The sentence in the bar says anybody can come; this
+            answers the different question, asked with the pointer already on it:
+            why can I not press this. */}
+        <span className="why">
+          <button type="button" className="pill pill-solid" disabled aria-disabled="true">
+            {say("part.countMeIn")}
+          </button>
+          <span className="why-said" role="tooltip">{say("part.whyOff")}</span>
+        </span>
+
         {/* The bookmark is built the way the language and paper switches are — see
             .icon-switch — because it is the same kind of control: a drawing that
             says its own name when you point at it. Three attempts at making a pill
             do this came to nothing; the switches had it right all along. */}
+        <span className="why">
         <button
           type="button"
           className="icon-switch"
           disabled
           aria-disabled="true"
           aria-label={say("part.save")}
-          title={say("part.save")}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15">
             <path
@@ -78,6 +86,8 @@ export default function JoinToTakePart({
           </svg>
           <span aria-hidden="true">{say("part.save")}</span>
         </button>
+          <span className="why-said" role="tooltip">{say("part.whyOff")}</span>
+        </span>
       </span>
       )}
 

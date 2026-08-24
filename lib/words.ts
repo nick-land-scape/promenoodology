@@ -88,8 +88,30 @@ export const PHRASES: Phrase[] = [
      to a button is read as "this evening is for members", and it is not. Anybody
      can turn up. What needs an account is *telling us* you are coming, and the
      reason for that is a kitchen counting plates rather than a door policy. */
+  { key: "eve.theWhole", en: "the whole programme", fr: "tout le programme", where: "app" },
+  { key: "eve.theFile", en: "Apple, or any other", fr: "Apple, ou un autre", where: "app", note: "The .ics. On a phone this is the one that matters." },
+  {
+    key: "eve.whichIsWhich",
+    en: "The file opens your own calendar with the evening ready to add.",
+    fr: "Le fichier ouvre votre agenda avec la soirée prête à ajouter.",
+    where: "app",
+  },
   { key: "eve.addToCalendar", en: "put it in my calendar", fr: "l’ajouter à mon agenda", where: "app", note: "On an evening's own screen. Hands the phone an .ics file." },
   { key: "cal.addToCalendar", en: "add to my calendar", fr: "ajouter à mon agenda", where: "front", note: "Downloads an .ics file — every calendar takes one." },
+  {
+    key: "cal.theWhole",
+    en: "the whole programme",
+    fr: "tout le programme",
+    where: "front",
+    note: "The first row of the calendar menu: every day of it, in one file.",
+  },
+  {
+    key: "cal.theFile",
+    en: "Apple, or any other",
+    fr: "Apple, ou un autre",
+    where: "front",
+    note: "The .ics, first in the menu: the only route for Apple, and it works everywhere.",
+  },
   { key: "cal.outlook", en: "Outlook", fr: "Outlook", where: "front" },
   {
     key: "cal.whichIsWhich",
@@ -99,6 +121,13 @@ export const PHRASES: Phrase[] = [
     note: "Under the three calendar links. Apple has no address that opens its calendar with an event in it; the file is that.",
   },
   { key: "cal.google", en: "Google Calendar", fr: "Google Agenda", where: "front", note: "Only for an evening that is one occasion; a programme goes as the file." },
+  {
+    key: "part.whyOff",
+    en: "Switched off because you are not signed in. Anybody can come — saying so in advance needs an account.",
+    fr: "Désactivé parce que vous n’êtes pas connecté. Tout le monde peut venir — le dire à l’avance demande un compte.",
+    where: "front",
+    note: "The panel that appears when somebody points at either greyed-out control.",
+  },
   {
     key: "part.openToAll",
     en: "Everybody is welcome at this — you do not have to be a member to come.",

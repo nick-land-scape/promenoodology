@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import CalendarPick from "@/components/CalendarPick";
 import AppHeader from "@/components/app/AppHeader";
 import Evening from "@/components/app/Evening";
 import Linked from "@/components/Linked";
 import Photo from "@/components/Photo";
-import { whenItIs } from "@/lib/app-data";
+import { dateParts, whenItIs } from "@/lib/app-data";
+import { calendarRows } from "@/lib/calendar";
 import { myBookings, readingIn, requireMember, whoIsBringingWhat } from "@/lib/app/me";
 import { pretty } from "@/lib/admin/when";
 import { getEvent, getEvents, getFrench } from "@/lib/source";
@@ -204,19 +206,29 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
           </ul>
         </section>
 
-        {/* Into the phone's own calendar. The one thing a member does with a date
-            that this app cannot do for them — and it is the same file the website
-            serves, so a programme arrives as its five afternoons rather than as one
-            block a month long. */}
+        {/* Into the phone's own calendar, and it asks which day and which calendar
+            — the same rows the website offers, from the same place that works them
+            out. On a phone the file is the one that matters: iOS opens it in
+            Calendar with an Add button showing. */}
         {event.slug && event.date ? (
           <p className="evening-block">
-            <a
+            <CalendarPick
               className="pill pill-small"
-              href={`/events/${event.slug}/calendar.ics`}
-              download
-            >
-              {say("eve.addToCalendar")}
-            </a>
+              rows={calendarRows(event, {
+                whole: say("eve.theWhole"),
+                when: (iso, time) => {
+                  const when = dateParts(iso, lang);
+                  return [`${when.day} ${when.month}`, time].filter(Boolean).join(", ");
+                },
+              })}
+              words={{
+                open: say("eve.addToCalendar"),
+                file: say("eve.theFile"),
+                google: say("cal.google"),
+                outlook: say("cal.outlook"),
+                said: say("eve.whichIsWhich"),
+              }}
+            />
           </p>
         ) : null}
 

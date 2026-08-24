@@ -3789,7 +3789,11 @@ body:has(.app-shell) {
 .row-does {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* Both at the right end, the decision immediately before the bookmark, rather
+     than one at each end of the row. Pushed apart they read as two unrelated
+     things at opposite sides of a paragraph; together they are what you can do
+     about this evening. */
+  justify-content: flex-end;
   gap: 10px;
   width: 100%;
   padding-top: 14px;
@@ -4813,6 +4817,69 @@ body:has(.app-shell) {
   line-height: 1.4;
   color: var(--ink);
   word-break: break-word;
+}
+
+/* Which day, which calendar — the website's own menu, on the app's paper.
+   The component is shared; only the colours and the box are said again here,
+   because app.css and globals.css do not read each other's tokens. */
+.calendar-pick {
+  position: relative;
+  display: inline-flex;
+}
+
+.calendar-pick-list {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  min-width: 15rem;
+  max-width: min(20rem, calc(100vw - 2 * var(--gutter)));
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: 0 -14px 34px rgba(0, 0, 0, 0.2);
+  text-align: left;
+}
+
+.calendar-pick-row {
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--hair);
+}
+
+.calendar-pick-row:first-child {
+  border-top: 0;
+}
+
+.calendar-pick-row > p {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+.calendar-pick-row > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.calendar-pick-list a {
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--purple);
+  text-decoration: none;
+}
+
+.calendar-pick-said {
+  margin: 0;
+  padding: 9px 12px;
+  border-top: 1px solid var(--hair);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  font-style: italic;
+  color: var(--muted);
 }
 
 /* ----------------------------------------------------------------- the sheet

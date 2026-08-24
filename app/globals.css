@@ -2236,6 +2236,16 @@ body:has(.hero) .contact {
   color: var(--ink);
 }
 
+/* And in that bar they do not open.
+   The two switches in the corner have nothing beside them, so growing to say their
+   own name costs nothing. These have two neighbours: a button that widens under the
+   pointer shoves them sideways, and the thing somebody was aiming at moves. What
+   they have instead is the panel above — which says more than a label could. */
+.event-top-does .icon-switch:hover,
+.event-top-does .icon-switch:focus-visible {
+  max-width: 34px;
+}
+
 .icon-switch svg {
   flex: none;
   width: 15px;
@@ -3107,6 +3117,27 @@ html.has-top-bar {
   rotate: var(--bg-rotate, 0deg);
   /* Turning a picture leaves the window's corners empty; the size dial is how
      that gets solved, so it is not solved here behind anybody's back. */
+}
+
+/*
+ * On dark paper: turned inside out, and screened rather than multiplied.
+ *
+ * Multiply is what makes a drawing sit *in* white paper — it keeps the dark and
+ * throws away the white. On black there is nothing for it to do: the token becomes
+ * `normal`, so a light photograph was laid over the dark as a grey haze, which is
+ * the thing that made the words on this page hard to read.
+ *
+ * The mirror of multiply on a dark ground is screen, and screen wants a light
+ * drawing — so the picture is inverted first. A photograph of a wasteland becomes
+ * its own negative and glows faintly out of the black instead of sitting on top of
+ * it, which is what the page's own mark does in the corner and for the same reason.
+ *
+ * Not multiply-after-inverting, which is the pairing that sounds right and is not:
+ * an inverted light picture is dark, and multiplying dark into black leaves black.
+ */
+:root[data-theme="dark"] .page-bg img {
+  filter: invert(1);
+  mix-blend-mode: screen;
 }
 
 .page-bg[data-fit="cover"] img {
@@ -4448,6 +4479,150 @@ body:has(.hero) .edit-this {
   background: var(--paper);
   border-color: var(--ink);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+/*
+ * Why a control is grey, said where somebody asks it: with the pointer already on
+ * it.
+ *
+ * On the wrapper rather than on the button, because a disabled button does not
+ * reliably receive a pointer at all — and `title`, the one explanation a browser
+ * offers by itself, is not shown on a disabled control in any browser. So this is
+ * ours: a small panel, on hover and on keyboard focus alike.
+ */
+.why {
+  position: relative;
+  display: inline-flex;
+}
+
+.why-said {
+  position: absolute;
+  top: calc(100% + 8px);
+  /* Anchored to its right edge, because everything this is attached to lives at the
+     right end of a bar: growing leftwards keeps it on the page, growing rightwards
+     put it off the side of the window. */
+  right: 0;
+  left: auto;
+  z-index: 40;
+  width: max-content;
+  max-width: 17rem;
+  padding: 8px 10px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--serif);
+  font-size: 0.82rem;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.35;
+  /* Not there until it is asked for, and it fades rather than appearing: a panel
+     that blinks into place under a pointer reads as something having gone wrong. */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.14s ease;
+}
+
+.why:hover .why-said,
+.why:focus-within .why-said {
+  opacity: 1;
+}
+
+/* On a phone there is no pointer to rest, so the panel would only ever flash on the
+   press that goes nowhere. The sentence in the bar above says the same thing there,
+   in full, for everybody. */
+@media (hover: none) {
+  .why-said {
+    display: none;
+  }
+}
+
+/* Which calendar, asked where the button is. Anchored to the button rather than to
+   the page, so it opens under it wherever the bar happens to be — and above
+   everything else in that bar, because a menu under the thing it belongs to is a
+   menu nobody can use. */
+.calendar-pick {
+  position: relative;
+}
+
+.calendar-pick-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 15rem;
+  display: grid;
+  padding: 6px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  text-align: left;
+}
+
+/* One row per thing that can be added: what it is, and underneath it the calendars
+   that can take it. The day is set in Times because it is a date somebody reads; the
+   routes are in Helvetica capitals because they are things to press. */
+.calendar-pick-row {
+  padding: 7px 10px 9px;
+  border-top: 1px solid var(--hairline);
+}
+
+.calendar-pick-row:first-child {
+  border-top: 0;
+}
+
+.calendar-pick-row > p {
+  margin: 0 0 3px;
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.calendar-pick-row > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.calendar-pick-list a {
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--purple);
+  text-decoration: none;
+}
+
+.calendar-pick-list a:hover,
+.calendar-pick-list a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The line that says what the file is. In Times and lower case, because it is a
+   sentence rather than another thing to press. */
+.calendar-pick-said {
+  margin: 0;
+  padding: 8px 10px 4px;
+  max-width: 20rem;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  font-style: italic;
+  color: var(--quiet);
+}
+
+/* And the one on a programme's own row, in its top right corner. */
+.event-days li {
+  position: relative;
+}
+
+.event-day-calendar {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  z-index: 2;
 }
 
 /* Two quiet links, under the heading that says how to come. */

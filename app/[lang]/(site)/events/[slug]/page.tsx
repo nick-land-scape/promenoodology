@@ -233,7 +233,7 @@ export default async function EventPage({ params }: Params) {
             {/* After the bookmark: the two that are about *you and this evening*
                 come first, and putting a date in your own calendar is the thing you
                 do once you have decided. */}
-            {!over ? <AddToCalendar event={event} say={say} tight /> : null}
+            {!over ? <AddToCalendar event={event} say={say} lang={lang} /> : null}
           </span>
         </div>
 
@@ -313,6 +313,20 @@ export default async function EventPage({ params }: Params) {
               const when = dateParts(day.date, lang);
               return (
                 <li key={`${day.date}-${day.title}`}>
+                  {/* Its own button, for the day it is. Somebody who can come to the
+                      Saturday and not to the month should be able to put the Saturday
+                      in their calendar from the line that describes it. */}
+                  {over ? null : (
+                    <span className="event-day-calendar">
+                      <AddToCalendar
+                        event={event}
+                        say={say}
+                        lang={lang}
+                        onlyDay={day.date}
+                      />
+                    </span>
+                  )}
+
                   {/* The day as a stamp on the left, the way the app's rows say it:
                       a list of five afternoons is scanned by date, and a date set as
                       a line of small capitals above the name is read after it rather
@@ -353,7 +367,7 @@ export default async function EventPage({ params }: Params) {
         {/* Straight under the heading that answers "how do I come to this": the day
             and the place are here, and the thing anybody does with a day and a
             place is put it in whatever keeps track of their Saturdays. */}
-        <AddToCalendar event={event} say={say} />
+        <AddToCalendar event={event} say={say} lang={lang} />
         <dl>
           <div>
             <dt>{say("event.when")}</dt>

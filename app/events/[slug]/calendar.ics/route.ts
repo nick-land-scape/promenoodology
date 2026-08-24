@@ -1,4 +1,4 @@
-import { getEvent, getEvents } from "@/lib/source";
+import { getEvent } from "@/lib/source";
 import { SITE_URL } from "@/lib/site";
 
 /**
@@ -20,21 +20,22 @@ import { SITE_URL } from "@/lib/site";
  * that fills a month view and tells nobody anything.
  */
 
-export const dynamic = "force-static";
+/* Not static any more: the file can be asked for one day at a time, and a query is
+   not a path. Cached at the edge for an hour, which is what it was before. */
 export const revalidate = 3600;
 
-export async function generateStaticParams() {
-  const events = await getEvents();
-  return events.filter((one) => one.slug).map((one) => ({ slug: one.slug }));
-}
-
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
   const event = await getEvent(slug);
   if (!event) return new Response("Not found", { status: 404 });
+
+  /* One day of a programme, where one was asked for: `?day=2026-09-05`. Somebody
+     who can come to the Saturday and not to the month should be able to put the
+     Saturday in their calendar and nothing else. */
+  const asked = new URL(request.url).searchParams.get("day");
 
   const where = [event.place, event.address].filter(Boolean).join(", ");
   const url = `${SITE_URL}/events/${event.slug}`;
@@ -45,9 +46,13 @@ export async function GET(
 
   /* One entry per day where there is a programme, one for the whole thing where
      there is not. */
+  const programme = asked
+    ? event.days.filter((day) => day.date === asked)
+    : event.days;
+
   const days =
-    event.days.length > 0
-      ? event.days.map((day) => ({
+    programme.length > 0
+      ? programme.map((day) => ({
           date: day.date,
           until: day.date,
           time: day.time,
@@ -83,7 +88,7 @@ export async function GET(
       /* The type is what makes a phone hand this to a calendar rather than show it
          as text, and the filename is what the calendar calls it while it asks. */
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${event.slug}.ics"`,
+      "Content-Disposition": `attachment; filename="${event.slug}${asked ? `-${asked}` : ""}.ics"`,
       "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
     },
   });
