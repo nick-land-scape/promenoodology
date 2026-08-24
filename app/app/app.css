@@ -3819,7 +3819,10 @@ body:has(.app-shell) {
   justify-content: flex-end;
   gap: 10px;
   width: 100%;
-  padding-top: 14px;
+  /* Eight, not fourteen. The buttons belong to the paragraph above them — they are
+     what you do about what it just said — and fourteen points read as a gap between
+     two things rather than as air under one. */
+  padding-top: 8px;
 }
 
 /* With room, beside the words: pushed to the right end of the row, level with the
@@ -4851,8 +4854,34 @@ body:has(.app-shell) {
   gap: 8px;
 }
 
+/* The calendar's own button in that row is the same square as the two marks beside
+   it: three controls of one size, none of them wider than its drawing. */
+.evening-does-tight .pill,
 .evening-does-tight .pill-small {
+  display: inline-grid;
+  place-items: center;
+  width: var(--act, 38px);
+  height: var(--act, 38px);
+  padding: 0;
+  /* The same hairline ring and the same quiet ink as the two marks beside it. As a
+     pill it kept the pill's full-strength border, which made the calendar look like
+     the important one of the three — and of the three it is the least. */
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
   white-space: nowrap;
+}
+
+.evening-does-tight .pill svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* And its label is not drawn at all up here: there is no room for it beside two
+   other controls, and the drawing is a calendar. */
+.evening-does-tight .pill span {
+  display: none;
 }
 
 /* Which day, which calendar — the website's own menu, on the app's paper.

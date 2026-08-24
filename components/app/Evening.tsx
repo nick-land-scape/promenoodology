@@ -79,8 +79,8 @@ export default function Evening({
   if (tight) {
     return (
       <span className="evening-does evening-does-tight">
+        {joinButton(true)}
         {mark_()}
-        {joinButton()}
         {children}
         <JoinSheet
           open={open && !coming}
@@ -124,15 +124,71 @@ export default function Evening({
     );
   }
 
-  function joinButton() {
+  function joinButton(asIcon = false) {
+    /* As a drawing in the header, where three words do not fit beside two other
+       controls, and as words in the page, where they do.
+       
+       A tick, outline or filled, and that is not an arbitrary glyph: the bookmark
+       beside it already means "outline is not yet, filled is yes", so the same pair
+       of states reads the same way twice rather than teaching two conventions on one
+       screen. Pressing a filled one gives the place back, which is what pressing a
+       filled bookmark does too. */
+    if (asIcon) {
+      return (
+        <button
+          type="button"
+          className={coming ? "mark mark-on" : "mark"}
+          onClick={() => {
+            if (coming) cancel();
+            else {
+              setOpen(!open);
+              setSaid(null);
+            }
+          }}
+          disabled={pending}
+          aria-pressed={coming}
+          aria-label={say(coming ? "row.notComing" : "row.countMeIn")}
+          title={say(coming ? "row.notComing" : "row.countMeIn")}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            {coming ? (
+              <>
+                <circle cx="12" cy="12" r="9" fill="currentColor" />
+                <path
+                  d="M7.5 12.5 10.5 15.5 16.5 9"
+                  fill="none"
+                  stroke="var(--paper)"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </>
+            ) : (
+              <>
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                <path
+                  d="M7.5 12.5 10.5 15.5 16.5 9"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </>
+            )}
+          </svg>
+        </button>
+      );
+    }
+
     return coming ? (
-      <button type="button" className="pill pill-small" onClick={cancel} disabled={pending}>
+      <button type="button" className="pill" onClick={cancel} disabled={pending}>
         {say("row.notComing")}
       </button>
     ) : (
       <button
         type="button"
-        className="pill pill-small pill-solid"
+        className="pill pill-solid"
         onClick={() => {
           setOpen(!open);
           setSaid(null);
