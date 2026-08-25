@@ -6,19 +6,35 @@ import {
   BoneRow,
   BoneTally,
 } from "@/components/app/Bones";
-import { readingIn } from "@/lib/app/me";
+import { readingIn, whoIsThis } from "@/lib/app/me";
 import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 
 /** Home: what is coming up, the news, two stories, the handbook, the figures. */
 export default async function Loading() {
-  const say = speaking(await readingIn(), await getFrench());
+  const [lang, french, me] = await Promise.all([readingIn(), getFrench(), whoIsThis()]);
+  const say = speaking(lang, french);
+
   return (
     <div className="waiting" aria-busy="true">
-      {/* The one header in the app whose words are not known before the answer
-          arrives: it says hello by name. Everything else about it is known, so
-          only the name is a bone. */}
-      <AppHeader eyebrow={say("home.welcome")} title={say("home.hello")} />
+      {/* By name, from the first frame.
+       *
+       * This said "hello" and the screen that replaced it said "hello Marvin", so
+       * every arrival on this tab was watched to see whether it knew who you were.
+       * It always did — who you are is in the session this file is already
+       * reading to know which language to say hello in — it simply was not asked.
+       *
+       * Everything under here is a bone because it comes from the database and
+       * takes as long as it takes. A name does not: it is the same read the layout
+       * around this has already done, and asking again is free. */}
+      <AppHeader
+        eyebrow={say("home.welcome")}
+        title={
+          me?.name
+            ? say("home.helloName").replace("{name}", me.name.split(" ")[0])
+            : say("home.hello")
+        }
+      />
 
       <div className="waiting-part">
         <BoneHeading wide={168} />

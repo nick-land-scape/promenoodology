@@ -15,7 +15,7 @@
  *    the mask starts cutting corners off the letters,
  *  - the ground is painted, never left transparent,
  *  - and the launch screen is the same picture with the mark small, so the
- *    handover to the film curtain inside the app is a change of picture rather
+ *    handover to the app's first screen is a change of picture rather
  *    than a change of subject.
  *
  * Written with Python's imaging library through the shell rather than a new npm
@@ -90,7 +90,7 @@ for size in (192, 512):
     on_purple(size).save(f"public/app-icon-{size}.png")
     made.append(f"public/app-icon-{size}.png")
 
-# The launch screen: the same ground, the mark small, so the film curtain that
+# The launch screen: the same ground, the mark small, so what
 # takes over from it is a change of picture rather than of subject.
 splash = Image.new("RGB", (2732, 2732), PAPER)
 splash = middle(splash, fitted(ink(), 2732, 0.30), 0.0)

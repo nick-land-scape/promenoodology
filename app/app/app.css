@@ -2789,132 +2789,6 @@ body:has(.app-shell) {
   font-style: italic;
 }
 
-/* ------------------------------------------------------------------- opening */
-
-/* The curtain the app opens with: the mark on paper, which is the same picture
-   the launch screen is already showing — so the join between the two is not a
-   transition anybody can see. Then the ink deepens and a light crosses it. */
-
-.curtain {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  display: grid;
-  place-items: center;
-  background: var(--paper);
-  transition:
-    opacity 0.6s ease,
-    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Leaving: it lifts and fades rather than blinking out, so the app appears to be
-   underneath it rather than to replace it. */
-.curtain-going {
-  opacity: 0;
-  transform: scale(1.06);
-  pointer-events: none;
-}
-
-/* The ink and the light are one object, so the light can be masked to the ink. */
-.curtain-ink {
-  position: relative;
-  display: block;
-  /* 74 per cent of the short side, and nothing else — no cap.
-     The launch screen is a square picture fitted inside the screen with the mark
-     at 74 per cent of it, which on any shape of screen is 74 per cent of the short
-     side. A `max-width` here held the curtain's mark at 460 points while the still
-     underneath it went on growing, so the two pictures came apart on exactly the
-     screens with the most room to notice it. */
-  width: 74vmin;
-  isolation: isolate;
-  animation: curtain-breath 2.6s cubic-bezier(0.4, 0, 0.35, 1) both;
-}
-
-.curtain-mark {
-  display: block;
-  width: 100%;
-  height: auto;
-  /* Ink on paper rather than a picture of ink on paper: the white of the scan
-     disappears and the purple stays, which is how the mark is drawn everywhere
-     else in this project. */
-  mix-blend-mode: multiply;
-}
-
-/*
- * The light, masked to the mark itself.
- *
- * A band travelling across the whole screen is a lens flare, and this club does
- * not own one. Masked to the ink, the same band reads as a wet brushstroke
- * catching the light — which is what the mark is a photograph of.
- */
-.curtain-sheen {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    100deg,
-    transparent 34%,
-    rgba(255, 255, 255, 0.9) 48%,
-    transparent 62%
-  );
-  mask-image: url("/logo.png");
-  mask-size: 100% 100%;
-  mask-repeat: no-repeat;
-  -webkit-mask-image: url("/logo.png");
-  -webkit-mask-size: 100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mix-blend-mode: screen;
-  animation: curtain-cross 1.9s cubic-bezier(0.5, 0, 0.4, 1) 0.45s both;
-}
-
-/* It arrives at its own size rather than growing into it: a mark that scales up
-   from nothing is an animation, and this is a mark that is already there when the
-   screen turns on. So the movement is a breath, a per cent and a half. */
-@keyframes curtain-breath {
-  0% {
-    transform: scale(1);
-    opacity: 0.94;
-  }
-  55% {
-    transform: scale(1.015);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes curtain-cross {
-  from {
-    transform: translateX(-120%);
-  }
-  to {
-    transform: translateX(120%);
-  }
-}
-
-/* Anybody who has asked for less movement gets the mark, the paper, and nothing
-   that moves. */
-.curtain-still .curtain-ink,
-.curtain-still .curtain-sheen {
-  animation: none;
-}
-
-.curtain-still .curtain-sheen {
-  display: none;
-}
-
-.curtain-still .curtain-mark {
-  animation: none;
-  -webkit-mask-image: none;
-  mask-image: none;
-}
-
-.curtain-still {
-  transition: none;
-}
-
 /* ------------------------------------------------------------------ the door */
 
 /* A screen, not a page. The mark, one thing to press, and an address — all of it
@@ -4902,10 +4776,10 @@ body:has(.app-shell) {
 }
 
 /* What went wrong, on the paper.
-   Over everything, including the curtain, because the most likely time for this
-   to be the only thing on the screen is before the curtain has lifted. Set in the
-   sans and left ragged: it is a machine's words, not ours, and dressing them up as
-   ours would be pretending we meant them. */
+   Over everything, because the most likely time for this to be the only thing on
+   the screen is while the phone's launch screen is still up. Set in the sans and
+   left ragged: it is a machine's words, not ours, and dressing them up as ours
+   would be pretending we meant them. */
 .broke {
   position: fixed;
   inset: auto 0 0;
@@ -5168,9 +5042,9 @@ body:has(.app-shell) {
 /* ----------------------------------------------------------------- the sheet
 
    The one pop-up: it comes up over everything, says what it is about, and takes
-   the width. Above the bar, below a photograph in the lightbox and below the
-   opening curtain — an order that matters, because all three can be on screen at
-   once and the wrong one on top is the one you cannot close. */
+   the width. Above the bar and below a photograph in the lightbox — an order that
+   matters, because both can be on screen at once and the wrong one on top is the
+   one you cannot close. */
 .sheet {
   position: fixed;
   inset: 0;

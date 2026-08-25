@@ -3,7 +3,7 @@ import Photo from "@/components/Photo";
 import Crossings from "@/components/app/Crossings";
 import Feels from "@/components/app/Feels";
 import Keeps from "@/components/app/Keeps";
-import Splash from "@/components/app/Splash";
+import Opening from "@/components/app/Opening";
 import TabBar from "@/components/app/TabBar";
 import Broke from "@/components/app/Broke";
 import { Words } from "@/components/app/Words";
@@ -49,7 +49,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {/* The floor under a white screen: anything uncaught says so on the paper
             instead of leaving nothing at all. */}
         <Broke />
-        <Splash />
+        {/* No curtain: the phone's own launch screen is the whole opening. This
+            is what is left of the one that used to be drawn here — taking that
+            launch screen away once there is something behind it, and coming back
+            to a fresh copy after a long time in a pocket. */}
+        <Opening />
         {/* The buzz under every press, and the four screens fetched before
             anybody asks for them. Nothing to look at. */}
         <Feels />

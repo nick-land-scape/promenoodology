@@ -15,8 +15,9 @@
  *   iPhone 6.9"  1320 × 2868  (440 × 956 points at 3×)
  *   iPad 13"     2064 × 2752  (1032 × 1376 points at 2×)
  *
- * Chrome is given a virtual time budget so the opening curtain has finished
- * playing before the shutter — otherwise every screenshot is the same logo.
+ * Chrome is given a virtual time budget so the screens have arrived and their
+ * photographs have landed before the shutter — otherwise every screenshot is a
+ * page of grey blocks.
  */
 
 import { execFileSync } from "node:child_process";
@@ -138,7 +139,7 @@ for (const size of SIZES) {
     chrome([
       `--window-size=${size.w},${size.h}`,
       `--force-device-scale-factor=${size.scale}`,
-      // Long enough for the opening curtain to finish and the pictures to land.
+      // Long enough for the screens to arrive and the pictures to land.
       "--virtual-time-budget=9000",
       `--screenshot=${file}`,
       `${SITE}${screen.at}`,

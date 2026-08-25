@@ -1,25 +1,22 @@
 """
-The launch screen: the mark on paper, which is the first frame of the opening.
+The launch screen: the mark on paper, which is the whole opening.
 
     python3 scripts/launch-screen.py
 
 iOS renders the launch screen before a single line of the app runs, so it can only
-ever be a still, and it can only change with a build. The trick is therefore not
-to make the still interesting but to make it *identical* to the first frame of
-what follows: the mark, this size, in this position, on this paper. The web
-curtain then takes over and moves — and because the two pictures are the same
-picture, nothing is seen happening at the join.
-
-Which is also the argument for keeping the animation in the web layer rather than
-writing a native one: one implementation, changeable any minute, the same in a
-browser as in the app. A native copy would be a second version of the same
-drawing, and two versions of one drawing drift.
+ever be a still, and it can only change with a build. For a while it was the first
+frame of a second opening drawn in the web view — same mark, same paper, same
+size, so that nothing was seen happening at the join. That web curtain is gone:
+two openings in a row is one too many, and the one that can be drawn before the
+app is running is the one worth keeping. This still is now the only picture the
+app opens with, and it is taken away as soon as there is a screen behind it (see
+components/app/Opening.tsx).
 
 Writes the three sizes Xcode's Splash.imageset wants. Run it again whenever the
 mark changes — and remember the storyboard shows this **aspect fit**, not fill:
 the picture is square and the screen is not, and a square scaled to *cover* a tall
-screen is scaled by its height, which made the mark twice the size it is in the
-curtain and cut the ends off it.
+screen is scaled by its height, which makes the mark twice the size and cuts the
+ends off it.
 """
 
 from PIL import Image, ImageChops
@@ -40,7 +37,7 @@ def flat() -> Image.Image:
     underneath it, and the film is gone. On paper the stamp was the wrong answer
     twice over — a mid-purple stroke is only about forty per cent opaque by that
     rule, so what should be ink came out as a wash, visibly paler than the same
-    mark in the curtain a second later.
+    mark drawn anywhere else in the app.
 
     Multiply is what the rest of this project uses, and multiply is exact: paper is
     all but white, so the scan multiplied onto it *is* the scan. Flattening it here
@@ -57,9 +54,9 @@ def main() -> None:
     canvas = Image.new("RGB", (SIDE, SIDE), PAPER)
 
     # 74 per cent of the square, which is 74 per cent of the short side of any
-    # screen once the storyboard fits the square inside it — the same 74vmin the
-    # curtain gives the same mark in CSS. The two pictures are one picture, and
-    # this number is the whole reason.
+    # screen once the storyboard fits the square inside it. It was chosen to match
+    # a copy of this mark that the web view drew a second later; that copy is gone,
+    # and the proportion is kept because it is the right one on every screen.
     mark = flat()
     wide = round(SIDE * 0.74)
     mark = mark.resize((wide, round(mark.height * wide / mark.width)), Image.LANCZOS)
