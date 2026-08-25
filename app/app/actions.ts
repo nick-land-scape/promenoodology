@@ -280,6 +280,29 @@ export async function cancelMyPlace(
 /* ------------------------------------------------------------------ the feed */
 
 /**
+ * The screening, and what happens when the screening itself is the problem.
+ *
+ * Posting is the app; reading a post first is a precaution. A precaution that can
+ * take down the thing it is protecting is not a precaution, and that is exactly
+ * what happened: an error anywhere in this path — the module failing to load on
+ * the server, the SDK missing at runtime, anything — came back as a 500 and the
+ * app showed "this page couldn't load" to somebody who had just typed a sentence.
+ *
+ * So it is wrapped, and the wrap says the same thing the screening says when
+ * there is no key: fine, go up. The club is sixty people who know each other; the
+ * failure worth avoiding is the one where nobody can say anything.
+ */
+async function screened(words: string, pictures: string[] = []) {
+  const fine = { verdict: "fine" as const, because: "something else" as const, said: "" };
+  try {
+    const { readItFirst } = await import("@/lib/app/screening");
+    return await readItFirst(words, pictures);
+  } catch {
+    return fine;
+  }
+}
+
+/**
  * Saying something to everybody, and replying to somebody.
  *
  * The pictures are already in the bucket by the time this runs — the browser
@@ -323,9 +346,8 @@ export async function say(
    *
    * The pictures are screened by their public address, which is why this happens
    * after they are uploaded and before the post exists. */
-  const { readItFirst } = await import("@/lib/app/screening");
   const { mediaUrl } = await import("@/lib/supabase/config");
-  const read = await readItFirst(text, pictures.map((path) => mediaUrl(path)));
+  const read = await screened(text, pictures.map((path) => mediaUrl(path)));
 
   if (read.verdict === "no") {
     /* The pictures go with it. Nobody has seen them, the post does not exist,
@@ -792,8 +814,7 @@ export async function suggestThis(words: string): Promise<{ ok: boolean; error?:
   /* Read first, like a post — an idea is written by a member and read by all of
      them, so it goes through the same screening. Refused outright is refused;
      anything doubtful goes up and lands in front of an admin. */
-  const { readItFirst } = await import("@/lib/app/screening");
-  const read = await readItFirst(said);
+  const read = await screened(said);
   if (read.verdict === "no") {
     return { ok: false, error: read.said || "That one cannot go up." };
   }
@@ -909,8 +930,7 @@ export async function editMyPost(
   /* Read again on the way out, for the same reason it is read on the way in: an
      edit is another way of publishing something, and a rule that only applies to
      the first draft is not a rule. */
-  const { readItFirst } = await import("@/lib/app/screening");
-  const read = await readItFirst(text);
+  const read = await screened(text);
   if (read.verdict === "no") return { ok: false, error: read.said || "That cannot go up." };
 
   const supabase = await supabaseServer();
@@ -933,8 +953,7 @@ export async function editMyReply(id: string, words: string): Promise<{ ok: bool
   const text = words.trim();
   if (!text) return { ok: false, error: "An empty reply is a delete." };
 
-  const { readItFirst } = await import("@/lib/app/screening");
-  const read = await readItFirst(text);
+  const read = await screened(text);
   if (read.verdict === "no") return { ok: false, error: read.said || "That cannot go up." };
 
   const supabase = await supabaseServer();
@@ -963,8 +982,7 @@ export async function editMyIdea(id: string, words: string): Promise<{ ok: boole
   const said = words.trim();
   if (said.length < 3) return { ok: false, error: "A sentence, at least." };
 
-  const { readItFirst } = await import("@/lib/app/screening");
-  const read = await readItFirst(said);
+  const read = await screened(said);
   if (read.verdict === "no") return { ok: false, error: read.said || "That cannot go up." };
 
   const supabase = await supabaseServer();
