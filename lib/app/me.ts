@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PLAIN, isLang, type Lang } from "@/lib/lang";
 import { supabaseServer } from "@/lib/supabase/server";
+import { whoever } from "@/lib/supabase/whoever";
 
 /**
  * Who is holding the phone, and what they have said yes to.
@@ -78,9 +79,8 @@ export type MyBooking = {
  */
 export const whoIsThis = cache(async (): Promise<Me | null> => {
   const supabase = await supabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  /* From the token rather than from the auth server: see lib/supabase/whoever. */
+  const user = await whoever(supabase);
   if (!user) return null;
 
   const { data } = await supabase
@@ -120,7 +120,7 @@ export const whoIsThis = cache(async (): Promise<Me | null> => {
     country: data.country ?? "",
     // The login's address, not the column's: the column follows it, and until a
     // changed address is confirmed the login is the one that is true.
-    email: user.email ?? data.email ?? "",
+    email: user.email || data.email || "",
     photoPath: data.photo_path,
     memberNo: data.member_no,
     since: data.joined_on,

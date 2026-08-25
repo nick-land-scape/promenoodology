@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
 import type { Loose } from "./public";
+import { whoever } from "./whoever";
 
 /**
  * A Supabase client for server components, server actions and route handlers.
@@ -35,9 +36,8 @@ export async function supabaseServer() {
 /** The signed-in person's profile, or null. */
 export async function currentProfile() {
   const supabase = await supabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  /* From the token rather than from the auth server: see ./whoever. */
+  const user = await whoever(supabase);
   if (!user) return null;
 
   const { data } = await supabase
@@ -47,7 +47,7 @@ export async function currentProfile() {
     .eq("user_id", user.id)
     .single();
 
-  return data ? { ...data, email: user.email ?? "" } : null;
+  return data ? { ...data, email: user.email } : null;
 }
 
 export async function isAdmin() {

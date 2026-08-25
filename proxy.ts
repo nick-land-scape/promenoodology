@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { beforeLaunch } from "./lib/launch";
 import { LANGS, PLAIN, isLang, type Lang } from "./lib/lang";
+import { whoever } from "./lib/supabase/whoever";
 
 /** The page the site answers with until it opens. */
 const HOLDING = "/holding";
@@ -301,11 +302,10 @@ async function refreshSession(request: NextRequest, response: NextResponse) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return Boolean(user);
+  /* From the token rather than from the auth server — the same check without the
+     round trip, and it still refreshes an expiring session on the way past. See
+     lib/supabase/whoever. */
+  return Boolean(await whoever(supabase));
 }
 
 /** Carries a refreshed session over to a response decided on afterwards. */

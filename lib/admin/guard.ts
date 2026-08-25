@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { hasSupabase } from "@/lib/supabase/config";
 import { supabaseServer } from "@/lib/supabase/server";
+import { whoever } from "@/lib/supabase/whoever";
 
 /**
  * The door to the back of the house.
@@ -26,9 +27,8 @@ export const currentAdmin = cache(async (): Promise<Admin | null> => {
 
   try {
     const supabase = await supabaseServer();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    /* From the token rather than from the auth server: see lib/supabase/whoever. */
+    const user = await whoever(supabase);
     if (!user) return null;
 
     const { data } = await supabase
@@ -41,7 +41,7 @@ export const currentAdmin = cache(async (): Promise<Admin | null> => {
       .single<{ id: string; name: string; role: "member" | "admin" }>();
 
     if (data?.role !== "admin") return null;
-    return { id: data.id, name: data.name, email: user.email ?? "", role: data.role };
+    return { id: data.id, name: data.name, email: user.email, role: data.role };
   } catch {
     return null;
   }
@@ -63,9 +63,7 @@ export async function requireAdmin(): Promise<Admin> {
   if (!hasSupabase()) redirect("/");
 
   const supabase = await supabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await whoever(supabase);
   redirect(user ? "/account" : "/account/sign-in");
 }
 
