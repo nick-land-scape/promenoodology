@@ -534,24 +534,6 @@ function PostCard({
     null | { about: { post: string } | { reply: string }; who: string; whoId: string }
   >(null);
 
-  async function pass() {
-    const url = `${window.location.origin}/app/connect`;
-    const said = `${post.author}: ${post.text}`.slice(0, 200);
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "promeNOODology", text: said, url });
-      } catch {
-        // Dismissed. Nothing to say about it.
-      }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(`${said}\n${url}`);
-      setTrouble(say("post.copied"));
-    } catch {
-      setTrouble(say("post.neitherShare"));
-    }
-  }
 
   return (
     <li className="post">
@@ -672,13 +654,7 @@ function PostCard({
                 post.replies.length === 1 ? "post.oneReply" : "post.manyReplies",
               )}`}
         </button>
-        <button
-          type="button"
-          className="post-action"
-          onClick={() => void pass()}
-        >
-          {say("post.passItOn")}
-        </button>
+
 
         {/* On somebody else's post only: your own needs no reporting, and the
             control that takes it down is already in its header. Quiet and last,
@@ -702,8 +678,15 @@ function PostCard({
         <ul className="replies">
           {post.replies.map((reply) => (
             <li key={reply.id}>
-              <span className="reply-who">{reply.author}</span> {reply.text}
-              <span className="reply-when">{reply.when}</span>
+              {/* A face on a reply as well as on a post. Without one a thread read
+                  as a paragraph with names in bold in it, and the one thing a
+                  reply has to say at a glance is who said it. */}
+              <span className="reply-face">
+                <Face photo={reply.authorPhoto} name={reply.author} />
+              </span>
+              <span className="reply-said">
+                <span className="reply-who">{reply.author}</span> {reply.text}
+                <span className="reply-when">{reply.when}</span>
               {/* A reply is a line of type, so this is a word at the end of it
                   rather than a button under it. It appears on hover on a laptop
                   and is always there on a phone, where there is no hover and a
@@ -723,6 +706,25 @@ function PostCard({
                   {say("report.report")}
                 </button>
               )}
+
+              {/* And yours to take down, the same two marks a post has. */}
+              {reply.authorId === meId ? (
+                <Mine
+                  what={say("mine.thisReply")}
+                  pending={pending}
+                  onDelete={() =>
+                    start(async () => {
+                      const answer = await takeDownMyReply(reply.id);
+                      if (!answer.ok) {
+                        setTrouble(answer.error ?? say("join.didNotWork"));
+                        return;
+                      }
+                      router.refresh();
+                    })
+                  }
+                />
+              ) : null}
+              </span>
             </li>
           ))}
         </ul>
@@ -741,6 +743,10 @@ function PostCard({
                 return;
               }
               setReply("");
+              /* Folded away again. It opened because somebody wanted to answer;
+                 they have, and leaving an empty field under a thread is an
+                 invitation to say something else that nobody asked for. */
+              setOpen(false);
               router.refresh();
             });
           }}

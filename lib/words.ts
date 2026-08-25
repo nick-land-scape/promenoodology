@@ -444,7 +444,6 @@ export const PHRASES: Phrase[] = [
   { key: "post.reply", en: "reply", fr: "répondre", where: "app", note: "When there are none yet." },
   { key: "post.oneReply", en: "reply", fr: "réponse", where: "app", note: "After the number 1." },
   { key: "post.manyReplies", en: "replies", fr: "réponses", where: "app", note: "After a number greater than one." },
-  { key: "post.passItOn", en: "pass it on", fr: "faire suivre", where: "app" },
   { key: "post.answerName", en: "answer {name}…", fr: "répondre à {name}…", where: "app", note: "The grey text in the reply field. Keep {name} exactly as it is." },
   { key: "post.yourReply", en: "Your reply", fr: "Votre réponse", where: "app", note: "Read out by a screen reader; not shown." },
   { key: "post.send", en: "send", fr: "envoyer", where: "app" },
@@ -479,6 +478,7 @@ export const PHRASES: Phrase[] = [
   { key: "mine.reallyTakeDown", en: "Press again to take {what} down", fr: "Appuyez encore pour retirer {what}", where: "app", note: "The second press. Keep {what} exactly as it is." },
   { key: "mine.thisPost", en: "this post", fr: "ce message", where: "app" },
   { key: "mine.thisIdea", en: "this suggestion", fr: "cette suggestion", where: "app" },
+  { key: "mine.thisReply", en: "this reply", fr: "cette réponse", where: "app" },
 
   /* What the club should do next, according to the club. The middle tab of
      Connect: a sentence anybody can write, and a number anybody can add to. */
@@ -528,8 +528,6 @@ export const PHRASES: Phrase[] = [
   { key: "block.nobody", en: "Nobody. Which is the usual answer.", fr: "Personne. Ce qui est la réponse habituelle.", where: "app" },
   { key: "block.undo", en: "unblock", fr: "débloquer", where: "app" },
   { key: "block.what", en: "Neither of you sees the other on the feed. They were not told.", fr: "Aucun de vous deux ne voit l'autre sur le fil. La personne n'en a pas été informée.", where: "app" },
-  { key: "post.copied", en: "Copied, since this browser has nothing to share with.", fr: "Copié, faute de partage dans ce navigateur.", where: "app" },
-  { key: "post.neitherShare", en: "This browser will neither share nor copy. Long-press the text instead.", fr: "Ce navigateur ne sait ni partager ni copier. Appuyez longuement sur le texte.", where: "app" },
 
   /* --------------------------------------------------- the app: the door */
   { key: "door.joinUs", en: "join us", fr: "nous rejoindre", where: "app" },

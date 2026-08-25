@@ -5782,3 +5782,35 @@ body:has(.app-shell) {
 .idea-words {
   padding-right: 68px;
 }
+
+/* A reply, with a face on it. It was a paragraph with names in bold in it, and
+   the one thing a reply has to say at a glance is who said it. */
+.replies > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.reply-face .avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 0.56rem;
+}
+
+.reply-said {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The marks on your own reply are smaller than a post's: a reply is a line, and
+   two thirty-point buttons beside one line is a row of furniture. */
+.reply-said .mine-marks {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.reply-said .mine-mark {
+  width: 24px;
+  height: 24px;
+}
