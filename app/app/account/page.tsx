@@ -31,6 +31,10 @@ const LEGAL = [
   { key: "acc.help", href: "/app/legal/support" },
   { key: "acc.privacy", href: "/app/legal/privacy" },
   { key: "acc.terms", href: "/app/legal/terms" },
+  /* Published because Google Play asks every social app to publish it, and kept
+     here as well because a standard nobody in the club can find is a standard
+     written for a form rather than for the club. */
+  { key: "acc.childSafety", href: "/app/legal/child-safety" },
   { key: "acc.imprint", href: "/app/legal/imprint" },
 ];
 

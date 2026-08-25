@@ -21,7 +21,7 @@
 export type LegalPart = { heading: string; text?: never } | { heading?: never; text: string };
 
 export type LegalSpec = {
-  slug: "privacy" | "imprint" | "terms" | "support";
+  slug: "privacy" | "imprint" | "terms" | "support" | "child-safety";
   title: string;
   lead: string;
   /** The day it last changed, as a date rather than as English. */
@@ -291,6 +291,64 @@ export const LEGAL: LegalSpec[] = [
       { heading: "11. Getting in touch" },
       {
         text: "info@promeNOODology.com, or the get in touch screen in the app, which reaches the same people faster.",
+      },
+    ],
+  },
+  {
+    slug: "child-safety",
+    title: "keeping children safe",
+    lead: "What this club does about child sexual abuse and exploitation, and who to write to about it.",
+    changed: "2026-08-25",
+    parts: [
+      {
+        text: "Google Play asks every app in the social category to publish this, and it is worth publishing whether or not anybody asks. It is short because the answer is short.",
+      },
+
+      { heading: "1. Who this app is for" },
+      {
+        text: "promeNOODology is a club of adults who cook, walk and build things together, and its app is for the people who are members of it. It is rated for adults, nobody under eighteen is a member, and there is nothing in it for children \u2014 no way to browse people, no way to be found by a stranger, no way for anybody outside the club to send anything to anybody inside it.",
+      },
+
+      { heading: "2. What is not tolerated" },
+      {
+        text: "Child sexual abuse material and any attempt at the sexual exploitation of a child, in any form, in any part of this app. There is no warning system for it and no second chance: it is removed, the account is closed, and it is reported to the police. This is not a policy we would relax for a member we know.",
+      },
+      {
+        text: "The same is true of anything that grooms, solicits or sexualises a child \u2014 in a post, in a reply, in a photograph, in a suggestion, or in the words somebody puts on their own profile.",
+      },
+
+      { heading: "3. How anybody can report it" },
+      {
+        text: "From inside the app: every post and every reply written by somebody else carries a report control. Choose \u201cit is abusive, or aimed at somebody\u201d and say what is wrong in your own words. A report is read by a person \u2014 normally the same day, at the outside within twenty-four hours.",
+      },
+      {
+        text: "From outside the app, or if you would rather not use it: write to info@promeNOODology.com. That address reaches a person, it is read by the people who run the club, and a message about a child is answered before anything else in the inbox.",
+      },
+      {
+        text: "You do not need an account to report something to us, and you do not need to be a member.",
+      },
+
+      { heading: "4. What happens before anybody sees it" },
+      {
+        text: "Every post and every suggestion is read automatically before it appears. The plainest cases \u2014 sexual content among them \u2014 are refused outright and never go up; anything doubtful is published and put in front of the club\u2019s own admins at the same moment. That is a first pass and not a substitute for a person: what it catches, it catches immediately, and what it misses is what the report control is for.",
+      },
+
+      { heading: "5. What we do when something is found" },
+      {
+        text: "The material is removed from the app and from the storage behind it, so it is gone rather than unlisted. The account is closed. The material and what we know about the account are preserved for the authorities rather than deleted, because deleting evidence helps nobody.",
+      },
+      {
+        text: "It is then reported to the police. promeNOODology is based in Switzerland, where this is a criminal offence under article 197 of the Swiss Criminal Code, and reports go to the federal cybercrime reporting point at cybercrime.admin.ch. Where the person involved is somewhere else and that country\u2019s law asks for a report there as well, we make one.",
+      },
+
+      { heading: "6. Who to write to" },
+      {
+        text: "info@promeNOODology.com, for anything on this page: a report, a question about how any of it works, or a request from an authority. Somebody who can actually answer reads it.",
+      },
+
+      { heading: "7. Keeping this true" },
+      {
+        text: "This page describes what the app does today, not what it intends to do. Where the app changes \u2014 a new way for members to write to each other, a new kind of thing they can put up \u2014 this page changes with it, and the date at its foot changes too.",
       },
     ],
   },

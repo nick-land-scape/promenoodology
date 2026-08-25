@@ -411,6 +411,7 @@ export const PHRASES: Phrase[] = [
   { key: "acc.help", en: "help", fr: "aide", where: "app" },
   { key: "acc.privacy", en: "what we do with your data", fr: "ce que nous faisons de vos données", where: "app" },
   { key: "acc.terms", en: "terms and conditions", fr: "conditions générales", where: "app" },
+  { key: "acc.childSafety", en: "keeping children safe", fr: "protéger les enfants", where: "app", note: "The standards Google Play asks every social app to publish." },
   { key: "acc.imprint", en: "imprint", fr: "mentions légales", where: "app" },
   { key: "acc.signOut", en: "sign out", fr: "se déconnecter", where: "app" },
 
