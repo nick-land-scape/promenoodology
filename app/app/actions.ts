@@ -280,6 +280,30 @@ export async function cancelMyPlace(
 /* ------------------------------------------------------------------ the feed */
 
 /**
+ * A server action that cannot take the page down with it.
+ *
+ * An action that throws returns a 500, and the app's answer to a 500 in the
+ * middle of a navigation is the WebView's own "this page couldn't load" — over a
+ * sentence somebody has just typed, with no way back to it. That is the worst
+ * possible shape for a failure in a write: the work is lost and the reason is
+ * nowhere.
+ *
+ * So every writer runs inside this. Anything unexpected comes back as a sentence
+ * in the app, next to what was typed, which is both kinder and the only way to
+ * find out what actually went wrong on somebody else's phone.
+ */
+async function carefully<T extends { ok: boolean; error?: string }>(
+  what: () => Promise<T>,
+): Promise<T | { ok: false; error: string }> {
+  try {
+    return await what();
+  } catch (thrown) {
+    const said = thrown instanceof Error ? thrown.message : String(thrown);
+    return { ok: false, error: said || "Something went wrong on our side." };
+  }
+}
+
+/**
  * The screening, and what happens when the screening itself is the problem.
  *
  * Posting is the app; reading a post first is a precaution. A precaution that can
@@ -323,6 +347,7 @@ export async function say(
   place: string,
   paths: string[],
 ): Promise<{ ok: boolean; error?: string }> {
+  return carefully(async () => {
   const me = await whoIsThis();
   if (!me) return { ok: false, error: "You are not signed in any more." };
 
@@ -387,6 +412,7 @@ export async function say(
 
   revalidatePath("/app/connect");
   return { ok: true };
+  });
 }
 
 export async function takeDownMyPost(id: string): Promise<{ ok: boolean; error?: string }> {
