@@ -104,7 +104,7 @@ export default function Everybody({ people }: { people: Person[] }) {
           {say("who.nobody")}
         </p>
       ) : (
-        <ul className="row-list">
+        <ul className="row-list row-list-inset">
           {shown.map((one) => (
             <li key={one.id}>
               <button

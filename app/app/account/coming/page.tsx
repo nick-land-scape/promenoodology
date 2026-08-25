@@ -28,7 +28,7 @@ export default async function ComingPage() {
         title={say("pg.everythingJoined")}
         back="/app/account"
       />
-      <ul className="row-list">
+      <ul className="row-list row-list-inset">
         {yes.map(({ booking, event }) => (
           <li key={booking.id}>
             <div className="row">

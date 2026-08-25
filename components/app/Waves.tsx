@@ -25,7 +25,7 @@ export default function Waves({ waves }: { waves: Wave[] }) {
   }, []);
 
   return (
-    <ul className="row-list">
+    <ul className="row-list row-list-inset">
       {waves.map((one) => {
         const back = waved[one.whoId] ?? one.waved;
         return (

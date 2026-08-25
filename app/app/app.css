@@ -4141,6 +4141,16 @@ body:has(.app-shell) {
  * and on the list of sheets, where nothing does — so that list came out flush
  * against the left edge of the screen while every other list on the phone starts
  * a gutter in. */
+/* A list of rows that is a screen rather than part of one.
+ *
+ * `.row-list` carries no gutter of its own, because most of them sit inside an
+ * `.app-section`, which has one — and a list with its own gutter inside a section
+ * with a gutter is two gutters. The ones that *are* the screen have nothing
+ * around them, and without this their portraits are cut in half by the left edge
+ * of the phone: everybody in the club, what you have said yes to, and who waved.
+ *
+ * The hairlines between rows move in with them, which is right — every other list
+ * in the app rules between the gutters rather than across the glass. */
 .row-list-inset {
   padding-left: var(--gutter);
   padding-right: var(--gutter);
