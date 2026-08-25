@@ -499,6 +499,7 @@ export const PHRASES: Phrase[] = [
   { key: "idea.changeAnswer", en: "change the answer", fr: "modifier la réponse", where: "app" },
   { key: "idea.answerHint", en: "What the club has decided, and why", fr: "Ce que le club a décidé, et pourquoi", where: "app" },
   { key: "idea.saveAnswer", en: "save", fr: "enregistrer", where: "app" },
+  { key: "idea.removeAnswer", en: "take the answer back", fr: "retirer la réponse", where: "app", note: "Clears the words and puts the suggestion back to open." },
   { key: "idea.takeItDown", en: "take it down", fr: "retirer", where: "app" },
   { key: "idea.reallyTakeDown", en: "yes, take it down", fr: "oui, retirer", where: "app", note: "The second press. The first one only asks." },
   { key: "idea.suggestSomething", en: "Suggest something", fr: "Proposer quelque chose", where: "app", note: "The heading of the sheet it opens." },

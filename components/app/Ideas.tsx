@@ -370,6 +370,36 @@ function One({ idea, mine, admin }: { idea: Idea; mine: boolean; admin: boolean 
                 >
                   {say("report.neverMind")}
                 </button>
+
+                {/* Taking the answer back.
+                
+                    An answer written in haste, or one that has stopped being
+                    true — "we are doing it" six months later — had no way out
+                    except writing over it, and an empty box saved as an answer is
+                    still an answer as far as the app is concerned. This clears
+                    both halves: the words and the state go back to where an idea
+                    starts, which is open and unanswered. */}
+                {answer ? (
+                  <button
+                    type="button"
+                    className="post-action post-action-quiet"
+                    disabled={pending}
+                    onClick={() =>
+                      start(async () => {
+                        const said = await answerIdea(idea.id, "open", "");
+                        if (!said.ok) {
+                          setTrouble(said.error ?? say("idea.didNotWork"));
+                          return;
+                        }
+                        setAnswer("");
+                        setState("open");
+                        setAnswering(false);
+                      })
+                    }
+                  >
+                    {say("idea.removeAnswer")}
+                  </button>
+                ) : null}
               </div>
             </form>
           ) : (

@@ -23,10 +23,17 @@ const nextConfig: NextConfig = {
      * still has the screen and shows it with no round trip and no skeleton at
      * all. Thirty seconds meant a member who read the news, looked at what's on
      * and came back was served three fetches for two screens that had not
-     * changed. Anything anybody actually does — signing up, waving, posting —
-     * revalidates the paths it touches, which clears this too, so the risk is not
-     * staleness but a five-minute-old list of evenings that were published a
-     * moment ago. */
+     * changed. Signing up for an evening and waving still revalidate the paths
+     * they touch, which clears this too.
+     *
+     * Posting does not, and that is deliberate: invalidating the path somebody is
+     * standing on, from inside the action they just ran, is what made writing a
+     * post end at the WebView's own error page. The feed asks for itself again
+     * instead — router.refresh() once the post is saved — so the screen somebody
+     * is looking at is current, and another tab may be up to five minutes behind
+     * on somebody else's post. That is the trade, and it is the right way round:
+     * a stale list is a small cost, and a dead page over a sentence somebody has
+     * just typed is not. */
     staleTimes: { dynamic: 300, static: 600 },
   },
   // The whole site is static — nothing here needs a server at request time.
