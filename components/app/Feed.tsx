@@ -707,7 +707,14 @@ function PostCard({
                 </button>
               )}
 
-              {/* And yours to take down, the same two marks a post has. */}
+              </span>
+
+              {/* Out at the right, in the same column as the marks on a post
+                  above it. Inline after the words it moved with the length of the
+                  reply, so the bin on a two-word answer and the bin on a long one
+                  were at two different places in the same thread — and a control
+                  you have to look for twice is a control that reads as part of the
+                  sentence. */}
               {reply.authorId === meId ? (
                 <Mine
                   what={say("mine.thisReply")}
@@ -724,7 +731,6 @@ function PostCard({
                   }
                 />
               ) : null}
-              </span>
             </li>
           ))}
         </ul>

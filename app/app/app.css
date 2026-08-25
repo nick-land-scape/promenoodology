@@ -2151,10 +2151,17 @@ body:has(.app-shell) {
 }
 
 /* What people said back. Set close together: a conversation, not a list. */
+/* Indented on the left, flush on the right.
+ *
+ * The indent is what makes a thread read as answers rather than as more posts.
+ * The right gutter was a second one inside the post's own, which pushed the bin
+ * on a reply a gutter further in than the marks on the post above it — two
+ * columns of the same control, one under the other. Flush, they line up with the
+ * date line at the top of the post, which is where the eye already goes for them. */
 .replies {
   list-style: none;
   margin: 0;
-  padding: 4px var(--gutter) 0;
+  padding: 4px 0 0 var(--gutter);
   border-top: 1px solid var(--hairline);
 }
 
@@ -5802,15 +5809,15 @@ body:has(.app-shell) {
   min-width: 0;
 }
 
-/* The marks on your own reply are smaller than a post's: a reply is a line, and
-   two thirty-point buttons beside one line is a row of furniture. */
-.reply-said .mine-marks {
-  display: inline-flex;
-  vertical-align: middle;
-  margin-left: 4px;
+/* The marks on your own reply: at the right, in the same column as the ones on
+   the post above, and smaller — a reply is a line, and a thirty-point button
+   beside one line is a piece of furniture. */
+.replies > li > .mine-marks {
+  margin-left: auto;
+  align-self: flex-start;
 }
 
-.reply-said .mine-mark {
+.replies > li > .mine-marks .mine-mark {
   width: 24px;
   height: 24px;
 }
