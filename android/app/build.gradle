@@ -62,7 +62,14 @@ android {
     if (keyed) {
         signingConfigs {
             release {
-                storeFile file(keys.getProperty("storeFile"))
+                /* Resolved against android/, not android/app/.
+                
+                   `file()` inside this block is relative to the *module*, so a
+                   plain filename went looking in android/app/ and the build died
+                   with "keystore file not found" pointing at a path nobody had
+                   ever put a key in. keystore.properties sits in android/, and
+                   the sensible reading of a bare filename in it is "next to me". */
+                storeFile rootProject.file(keys.getProperty("storeFile"))
                 storePassword keys.getProperty("storePassword")
                 keyAlias keys.getProperty("keyAlias")
                 keyPassword keys.getProperty("keyPassword")
