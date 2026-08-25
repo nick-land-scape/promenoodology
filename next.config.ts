@@ -17,6 +17,23 @@ const nextConfig: NextConfig = {
    * revalidates the paths it touched and that clears this too.
    */
   experimental: {
+    /*
+     * Everything is rendered per request unless it says it may be cached.
+     *
+     * The old model was the other way round and answered by route: a page said
+     * `force-dynamic` or `revalidate = 60` at the top, and every read inside it
+     * inherited that. Which is the wrong unit — a screen is rarely all one thing.
+     * What's on is a list of evenings that changes twice a week and a bookmark
+     * that is different for every member, and the only way to say that under the
+     * old rule was to make the whole page dynamic and re-read the evenings for
+     * everybody, every time.
+     *
+     * Under cacheComponents the answer is given where the reading is done: a
+     * function that fetches the evenings says `"use cache"` and how long it keeps,
+     * and anything touching cookies or the session simply does not. The page needs
+     * no declaration at all, which is why forty-five of them just lost one.
+     */
+    cacheComponents: true,
     /* Five minutes, up from thirty seconds.
      *
      * What this buys is the second and every later visit to a tab: the router

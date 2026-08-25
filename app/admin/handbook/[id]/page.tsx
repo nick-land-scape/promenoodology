@@ -4,6 +4,12 @@ import { requireAdmin } from "@/lib/admin/guard";
 import { supabaseServer } from "@/lib/supabase/server";
 import LeafEditor from "./LeafEditor";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 type Block = { kind: string; text: string };
 
 export default async function EditLeafPage({ params }: { params: Promise<{ id: string }> }) {

@@ -28,8 +28,6 @@ const SIGNED_BY = "F6:30:91:8E:A5:5D:83:6B:F4:9F:45:BB:AD:25:DA:55:05:49:27:DB:D
 
 const PACKAGE = "com.promenoodology.community";
 
-export const dynamic = "force-static";
-
 export function GET() {
   /*
    * Nothing at all until the fingerprint is here, and that is deliberate.

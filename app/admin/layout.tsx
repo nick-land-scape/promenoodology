@@ -5,6 +5,12 @@ import { requireAdmin } from "@/lib/admin/guard";
 import { hasSupabase } from "@/lib/supabase/config";
 import "./admin.css";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Looking after the site",
   // Never in a search result, whatever happens.
@@ -22,8 +28,6 @@ export const metadata: Metadata = {
  * Nothing back here is ever cached: an editor who is shown a copy from a minute
  * ago will type the same change twice.
  */
-export const dynamic = "force-dynamic";
-
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Without keys there is no database, so there is nothing to look after and
   // nobody to be an admin — the site is running off the files in /data.

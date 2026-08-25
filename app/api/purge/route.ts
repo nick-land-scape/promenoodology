@@ -2,6 +2,12 @@ import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { BINNABLE, DAYS_IN_THE_BIN } from "@/lib/admin/bin";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 /**
  * Emptying the bin, nightly.
  *
@@ -21,8 +27,6 @@ import { BINNABLE, DAYS_IN_THE_BIN } from "@/lib/admin/bin";
  * Vercel sends its own Authorization header for a cron; a person testing it can
  * send the same secret by hand.
  */
-
-export const dynamic = "force-dynamic";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";

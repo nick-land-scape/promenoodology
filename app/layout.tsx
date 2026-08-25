@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Permanent_Marker } from "next/font/google";
 import { SITE_URL } from "@/lib/site";
-import { getTheme, themeAsCss } from "@/lib/theme";
+import { sharedTheme } from "@/lib/shared";
+import { themeAsCss } from "@/lib/theme";
 import "./globals.css";
 
 /**
@@ -114,7 +115,7 @@ try {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Two typefaces and five colours, or nothing at all if nobody has changed any
   // of them — which is the ordinary case and costs one empty string.
-  const look = themeAsCss(await getTheme());
+  const look = themeAsCss(await sharedTheme());
 
   return (
     // The script below sets data-theme before React arrives, so the attribute it

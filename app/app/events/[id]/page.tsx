@@ -12,10 +12,14 @@ import { pretty } from "@/lib/admin/when";
 import { getEvent, getEvents, getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 /* What you have asked for is on it, so it is worked out per request rather than
    cached for a minute. */
-export const dynamic = "force-dynamic";
-
 /**
  * One evening, in the app, in full.
  *

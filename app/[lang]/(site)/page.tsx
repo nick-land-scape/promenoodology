@@ -5,10 +5,6 @@ import { isLang, PLAIN, type Lang } from "@/lib/lang";
 import { graph, organisation, pageMetadata, say, webSite, type Bilingual } from "@/lib/seo";
 import { getHeroVideos } from "@/lib/source";
 
-/* The films are looked up here and the page is still built once and cached; it
-   is the browser that picks which of them plays. */
-export const revalidate = 60;
-
 /**
  * What the front page is, in one line and then in three.
  *

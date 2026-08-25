@@ -6,6 +6,7 @@ import JsonLd from "@/components/JsonLd";
 import WhatsOn from "@/components/WhatsOn";
 import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { breadcrumbs, graph, itemList, pageMetadata, say as pick, type Bilingual } from "@/lib/seo";
+import { theDay } from "@/lib/shared";
 import { pageIsVisible } from "@/lib/site-pages";
 import { byDay, daysOf, placeKey, type Occasion } from "@/lib/occasions";
 import { getEvents, getFrench, getPageHead } from "@/lib/source";
@@ -35,8 +36,6 @@ export async function generateMetadata({
 }
 
 // A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
-
 /**
  * What is on, on the website.
  *
@@ -63,7 +62,7 @@ export default async function EventsPage({ params }: { params: Promise<{ lang: s
   ]);
   const say = speaking(lang, french);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = await theDay();
   const listed = events.filter((event) => event.slug);
 
   /*

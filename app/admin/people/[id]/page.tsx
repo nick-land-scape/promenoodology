@@ -5,6 +5,12 @@ import { mediaUrl } from "@/lib/supabase/config";
 import { supabaseServer } from "@/lib/supabase/server";
 import PeopleList, { type Person } from "../PeopleList";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 /**
  * One person, on their own page.
  *

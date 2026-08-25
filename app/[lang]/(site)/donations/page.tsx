@@ -20,8 +20,6 @@ export const metadata: Metadata = {
    turned up, not how much was raised. */
 
 // A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
-
 export default async function DonationsPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang: asked } = await params;
   const lang = isLang(asked) ? asked : PLAIN;

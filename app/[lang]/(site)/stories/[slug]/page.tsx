@@ -17,8 +17,6 @@ import { speaking } from "@/lib/words";
 type Params = { params: Promise<{ slug: string; lang: string }> };
 
 // A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
-
 export async function generateStaticParams() {
   return (await getStories()).map((story) => ({ slug: story.slug }));
 }

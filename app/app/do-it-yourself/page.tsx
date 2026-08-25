@@ -6,11 +6,13 @@ import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 import { readingIn, requireMember } from "@/lib/app/me";
 
-export const metadata = { title: "Do it yourself" };
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
 
-/* The same minute of cache the rest of the reading gets: these are the same words
-   for everybody. */
-export const revalidate = 60;
+export const metadata = { title: "Do it yourself" };
 
 /**
  * The sheets, in the app.

@@ -11,8 +11,6 @@ import { SITE_URL, siteUrl } from "@/lib/site";
 import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 
-export const revalidate = 60;
-
 export async function generateStaticParams() {
   const sheets = await getSheets();
   return sheets.map((sheet) => ({ slug: sheet.slug }));

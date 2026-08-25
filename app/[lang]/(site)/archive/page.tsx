@@ -29,9 +29,28 @@ export async function generateMetadata({
   });
 }
 
-// A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
+/**
+ * One number, from everything on the wall.
+ *
+ * The wall is shuffled, and a shuffle needs a number to start from. It used to
+ * be Math.random(), which meant a different wall every minute and — since Next
+ * started working pages out before anybody asks for them — a page that could not
+ * be worked out at all: a random number is the one thing a prepared page may not
+ * contain, because the copy handed to the browser and the copy hydrating it
+ * would disagree.
+ *
+ * So the number comes from the contents. Same photographs, same order; a new
+ * photograph or a new line, and the whole wall deals itself again.
+ */
+function theOrderOf(photographs: string[], lines: string[]): number {
+  let n = 7;
+  for (const key of [...photographs, ...lines]) {
+    for (let i = 0; i < key.length; i++) n = (n * 31 + key.charCodeAt(i)) & 0x7fffffff;
+  }
+  return 1 + (n % 100000);
+}
 
+// A page may serve a cached copy for a minute before asking the database again.
 export default async function ResourcesPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang: asked } = await params;
   const lang = isLang(asked) ? asked : PLAIN;
@@ -89,10 +108,12 @@ export default async function ResourcesPage({ params }: { params: Promise<{ lang
           quotes={quotes}
           stories={storyLinks}
           years={years}
-          // Worked out here so the server and the browser shuffle the same way
-          // on the first paint. The page keeps its copy for a minute, so the
-          // order changes about that often.
-          seed={1 + Math.floor(Math.random() * 100000)}
+          // Worked out from what is on the wall rather than from chance, so the
+          // server and the browser shuffle the same way on the first paint —
+          // and so this page can be worked out ahead of anybody asking for it,
+          // which a random number would prevent. The order is settled until a
+          // photograph or a line is added, and changes when one is.
+          seed={theOrderOf(slides.map((one) => one.key), quotes.map((one) => one.id))}
         />
       </div>
     </main>

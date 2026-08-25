@@ -13,11 +13,15 @@ import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 import { sharedEvents } from "@/lib/shared";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 export const metadata = { title: "Account" };
 
 /* Yours, and nobody else's, so there is nothing here worth caching. */
-export const dynamic = "force-dynamic";
-
 /* Things this club has to say in writing, kept apart from the settings above
    them: they are not things you change, they are things you are entitled to
    read. */

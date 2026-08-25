@@ -5,7 +5,11 @@ import { pretty } from "@/lib/admin/when";
 import { supabaseServer } from "@/lib/supabase/server";
 import Notes from "./Notes";
 
-export const dynamic = "force-dynamic";
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
 
 /**
  * What people said from inside the app.

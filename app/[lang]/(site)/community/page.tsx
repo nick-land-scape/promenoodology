@@ -33,8 +33,6 @@ export async function generateMetadata({
 }
 
 // A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
-
 /**
  * A logo where there is one, the name where there is not.
  *

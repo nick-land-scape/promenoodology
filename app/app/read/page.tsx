@@ -10,11 +10,13 @@ import {
   sharedStories,
 } from "@/lib/shared";
 
-export const metadata = { title: "Read" };
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
 
-/* The same minute of cache the website gives these: they are the same words for
-   everybody, and there are a lot of photographs. */
-export const revalidate = 60;
+export const metadata = { title: "Read" };
 
 /**
  * Stories, the archive and the handbook, in the app.

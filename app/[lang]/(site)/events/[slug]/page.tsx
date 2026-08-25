@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FlyerBook from "@/components/FlyerBook";
@@ -17,14 +18,13 @@ import { at, isLang, PLAIN, type Lang } from "@/lib/lang";
 import { siteUrl } from "@/lib/site";
 import { addresses, breadcrumbs, graph, moment, picture, trim, US } from "@/lib/seo";
 import { myBookings, whoIsThis } from "@/lib/app/me";
+import { theDay } from "@/lib/shared";
 import { getEvent, getEvents, getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 
 type Params = { params: Promise<{ slug: string; lang: string }> };
 
 // A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
-
 export async function generateStaticParams() {
   return (await getEvents()).filter((event) => event.slug).map((event) => ({ slug: event.slug }));
 }
@@ -64,9 +64,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
  * gets no offer, because a free evening and an evening whose price has not been
  * decided are not the same thing and guessing turns one into the other.
  */
-function asEvent(event: Evening, lang: Lang) {
+function asEvent(event: Evening, lang: Lang, today: string) {
   const url = siteUrl(at(lang, `/events/${event.slug}`));
-  const over = (event.until || event.date) < new Date().toISOString().slice(0, 10);
+  const over = (event.until || event.date) < today;
 
   /* Where it is. A name and a street where both are known; the name alone is
      still a place, and "la friche de Renens" is more use to a reader than an
@@ -150,40 +150,36 @@ function asEvent(event: Evening, lang: Lang) {
 }
 
 /**
- * One evening, at an address anybody can open.
+ * You and this evening: the pair of controls that only mean something if the
+ * website knows who you are.
  *
- * The members' app has always had these, behind a sign-in, as a row you tap to
- * sign up. That is the right place to *come* to something and the wrong place to
- * hear about it: a flyer goes on a wall, and the thing a wall wants is a link
- * that opens for anybody.
+ * Its own component, and awaited on its own, because everything else on this
+ * page is the same for everybody. The evening, the photographs and the
+ * directions can be worked out once, before anybody asks, and handed to the next
+ * person who does — but only if nothing in the page reads a cookie on the way.
+ * This reads one, so it happens behind a <Suspense>: the page arrives whole, and
+ * this arrives a moment later in the space kept for it.
  *
- * So this is the flyer. Everything on it — the days, the place, what it costs,
- * who it is with — and underneath, where somebody has written one, the page. The
- * asking to come stays in the app, where the names are.
+ * The space kept for it is the signed-out pair, which is also the right answer
+ * for most of the people who will see this page.
  */
-export default async function EventPage({ params }: Params) {
-  const { slug, lang: asked } = await params;
-  const lang: Lang = isLang(asked) ? asked : PLAIN;
-  const [event, french] = await Promise.all([getEvent(slug, lang), getFrench()]);
-  if (!event) notFound();
-
-  // What the page says on its own behalf, in whichever language it is being
-  // read in. See lib/words.
-  const say = speaking(lang, french);
-
-  /* Whether anybody is reading this as themselves.
-   *
-   * The two controls in the header have been drawn greyed-out for everybody since
-   * they were written, which was right while the website could not tell who you
-   * were. It can — a member signs in here for their profile — so a member gets
-   * the working pair and everybody else gets the grey one with the reason under
-   * it. See TakePart, and JoinToTakePart for the other half. */
+async function YouAndThisEvening({
+  event,
+  say,
+  lang,
+}: {
+  event: Evening;
+  say: (key: string) => string;
+  lang: Lang;
+}) {
   const me = await whoIsThis();
-  const mine = me
-    ? (await myBookings()).find((booking) => booking.eventId === event.id) ?? null
-    : null;
+  if (!me) {
+    return <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} tight />;
+  }
 
-  const takePart = me ? (
+  const mine = (await myBookings()).find((booking) => booking.eventId === event.id) ?? null;
+
+  return (
     <TakePart
       eventId={event.id}
       days={event.days.map((day) => ({
@@ -221,7 +217,51 @@ export default async function EventPage({ params }: Params) {
         places: say("row.places"),
       }}
     />
-  ) : null;
+  );
+}
+
+/**
+ * Why those two are grey, said once, further down the page — and only to
+ * somebody who is not signed in. Same cookie, same reason for being its own
+ * component.
+ */
+async function WhyItIsGrey({
+  event,
+  say,
+  lang,
+}: {
+  event: Evening;
+  say: (key: string) => string;
+  lang: Lang;
+}) {
+  if (await whoIsThis()) return null;
+  return (
+    <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} wordsOnly />
+  );
+}
+
+
+/**
+ * One evening, at an address anybody can open.
+ *
+ * The members' app has always had these, behind a sign-in, as a row you tap to
+ * sign up. That is the right place to *come* to something and the wrong place to
+ * hear about it: a flyer goes on a wall, and the thing a wall wants is a link
+ * that opens for anybody.
+ *
+ * So this is the flyer. Everything on it — the days, the place, what it costs,
+ * who it is with — and underneath, where somebody has written one, the page. The
+ * asking to come stays in the app, where the names are.
+ */
+export default async function EventPage({ params }: Params) {
+  const { slug, lang: asked } = await params;
+  const lang: Lang = isLang(asked) ? asked : PLAIN;
+  const [event, french] = await Promise.all([getEvent(slug, lang), getFrench()]);
+  if (!event) notFound();
+
+  // What the page says on its own behalf, in whichever language it is being
+  // read in. See lib/words.
+  const say = speaking(lang, french);
 
   const slides: Slide[] = event.blocks
     .filter((block) => block.kind === "photo")
@@ -235,13 +275,14 @@ export default async function EventPage({ params }: Params) {
       };
     });
 
-  const over = (event.until || event.date) < new Date().toISOString().slice(0, 10);
+  const today = await theDay();
+  const over = (event.until || event.date) < today;
 
   return (
     <main className="page">
       <JsonLd
         data={graph(
-          asEvent(event, lang),
+          asEvent(event, lang, today),
           breadcrumbs(lang, [
             { name: "promeNOODology", path: "/" },
             { name: say("event.allEvents"), path: "/events" },
@@ -283,9 +324,20 @@ export default async function EventPage({ params }: Params) {
                 }}
               />
             ) : null}
-            {over ? null : (takePart ?? (
-              <JoinToTakePart signUpEmail={event.signUpEmail || undefined} lang={lang} say={say} tight />
-            ))}
+            {over ? null : (
+              <Suspense
+                fallback={
+                  <JoinToTakePart
+                    signUpEmail={event.signUpEmail || undefined}
+                    lang={lang}
+                    say={say}
+                    tight
+                  />
+                }
+              >
+                <YouAndThisEvening event={event} say={say} lang={lang} />
+              </Suspense>
+            )}
             {/* After the bookmark: the two that are about *you and this evening*
                 come first, and putting a date in your own calendar is the thing you
                 do once you have decided. */}
@@ -477,13 +529,10 @@ export default async function EventPage({ params }: Params) {
             who has read this far will look for it. The buttons themselves stay
             in the header — a second pair of the same two here would read as a
             page assembled twice. */}
-        {!over && !me ? (
-          <JoinToTakePart
-            signUpEmail={event.signUpEmail || undefined}
-            lang={lang}
-            say={say}
-            wordsOnly
-          />
+        {!over ? (
+          <Suspense fallback={null}>
+            <WhyItIsGrey event={event} say={say} lang={lang} />
+          </Suspense>
         ) : null}
 
         {/* What is still wanted, and it recruits itself: somebody reading this

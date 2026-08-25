@@ -7,6 +7,12 @@ import { getTheme } from "@/lib/theme";
 import Housekeeping from "./Housekeeping";
 import ThemeEditor from "./ThemeEditor";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 export default async function SettingsPage() {
   await requireAdmin();
   const supabase = await supabaseServer();

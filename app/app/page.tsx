@@ -15,12 +15,16 @@ import {
   sharedStories,
 } from "@/lib/shared";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 export const metadata = { title: "Home" };
 
 /* What you have said yes to is on this screen, so it is yours rather than
    everybody's — no cached minute. */
-export const dynamic = "force-dynamic";
-
 /** How many of each thing a front screen can hold without becoming a list. */
 const FEW = { stories: 2, news: 3 };
 

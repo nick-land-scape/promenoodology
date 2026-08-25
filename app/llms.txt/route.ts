@@ -28,8 +28,6 @@ import { getEvents, getSheets, getStories } from "@/lib/source";
 
 // Rebuilt at most once an hour. It is a listing of things that change daily at
 // the very most, and it should not cost a database round trip per crawler.
-export const revalidate = 3600;
-
 /** One line, with the newlines taken out so it cannot break the list. */
 function line(words: string, most = 200) {
   const one = (words ?? "").replace(/\s+/g, " ").trim();

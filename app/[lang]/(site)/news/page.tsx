@@ -32,8 +32,6 @@ export async function generateMetadata({
   });
 }
 
-export const revalidate = 60;
-
 /**
  * The news, on the website.
  *

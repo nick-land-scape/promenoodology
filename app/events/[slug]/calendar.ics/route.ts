@@ -20,10 +20,6 @@ import { SITE_URL } from "@/lib/site";
  * that fills a month view and tells nobody anything.
  */
 
-/* Not static any more: the file can be asked for one day at a time, and a query is
-   not a path. Cached at the edge for an hour, which is what it was before. */
-export const revalidate = 3600;
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },

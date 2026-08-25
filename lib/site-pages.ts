@@ -1,3 +1,4 @@
+import { cacheLife, cacheTag } from "next/cache";
 import { cache } from "react";
 import { PLAIN, say, type Lang } from "./lang";
 import { hasSupabase } from "./supabase/config";
@@ -60,6 +61,13 @@ type Row = {
 /* Asked once per request however many things want to know — a page asks whether
    it is shown, and the menu in the layout asks for the whole list. */
 export const getSitePages = cache(async (): Promise<SitePage[]> => {
+  /* Cached where it is read rather than where it is used.
+     This asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return SHIPPED;
 
   try {

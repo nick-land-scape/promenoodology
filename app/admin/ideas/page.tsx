@@ -3,7 +3,11 @@ import IdeaRows, { type IdeaLine } from "@/components/admin/IdeaRows";
 import { requireAdmin } from "@/lib/admin/guard";
 import { supabaseServer } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic";
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
 
 /**
  * What the club has been asked to do, and the club's answer.

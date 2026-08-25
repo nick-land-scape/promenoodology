@@ -1,13 +1,15 @@
 import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 
 /**
- * Every page on the site keeps a copy for a minute (`export const revalidate =
- * 60`). That is right for visitors and wrong for whoever just changed
- * something: they should see it immediately, or they will change it again.
+ * Everything the site reads is kept for a minute (see lib/shared.ts and the
+ * readers in lib/source.ts). That is right for visitors and wrong for whoever
+ * just changed something: they should see it immediately, or they will change it
+ * again.
  *
  * So every write in the back of the house ends here. One story can appear on
  * four pages — the story itself, the list, the archive's filters, the sitemap —
- * so there is little point being clever about which: the whole tree goes.
+ * so there is little point being clever about which: the whole tree goes, and
+ * with it the one tag every cached read is filed under.
  */
 export function refreshSite() {
   revalidatePath("/", "layout");
@@ -15,7 +17,8 @@ export function refreshSite() {
    *
    * Every screen in the members' app is dynamic — it reads a cookie — so the
    * paths above mean nothing to it; what it keeps for a minute is the *data*,
-   * under the "content" tag (see lib/shared.ts). Without this an evening turned
+   * under the "content" tag (see lib/shared.ts), which is now also what the
+   * website's own pages are built out of. Without this an evening turned
    * on here reaches the members' phones somewhere in the next sixty seconds,
    * which is exactly long enough for somebody to turn it on twice.
    *

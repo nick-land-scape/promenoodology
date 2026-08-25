@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { cacheLife, cacheTag } from "next/cache";
 import type {
   ClubEvent,
   Donation,
@@ -48,6 +49,13 @@ import type {
 /* --------------------------------------------------------------- stories */
 
 export async function getStories(lang: Lang = PLAIN): Promise<Story[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return fileStories.getStories();
 
   const supabase = supabasePublic();
@@ -214,6 +222,13 @@ export async function getNeighbours(slug: string, lang: Lang = PLAIN) {
 
 
 export async function getResources(): Promise<Resource[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return files.getResources();
 
   const supabase = supabasePublic();
@@ -242,6 +257,13 @@ export async function getResources(): Promise<Resource[]> {
 }
 
 export async function getQuotes(): Promise<Quote[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return files.getQuotes();
 
   const supabase = supabasePublic();
@@ -266,6 +288,13 @@ export async function getQuotes(): Promise<Quote[]> {
 }
 
 export async function getDonations(): Promise<Donation[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return files.getDonations();
 
   const supabase = supabasePublic();
@@ -352,6 +381,13 @@ export async function getPageHead(slug: string, lang: Lang = PLAIN): Promise<{
    */
   saved: boolean;
 }> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   const empty = { title: "", lead: "", settings: settingsFor(slug, {}), saved: false };
   if (!hasSupabase()) return empty;
 
@@ -383,6 +419,13 @@ export async function getPage(
   lead: string;
   blocks: PageBlock[];
 } | null> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (hasSupabase()) {
     const supabase = supabasePublic();
     const { data } = await supabase
@@ -419,6 +462,13 @@ export async function getPage(
  * on the site.
  */
 export const getFrench = cache(async (): Promise<Record<string, string>> => {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return {};
 
   try {
@@ -448,6 +498,13 @@ export type Leaf = { id: string; title: string; blocks: PageBlock[] };
  * anyway.
  */
 export async function getHandbookPages(lang: Lang = PLAIN): Promise<Leaf[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (hasSupabase()) {
     const supabase = supabasePublic();
     const { data } = await supabase
@@ -516,6 +573,13 @@ export function intoLeaves(blocks: PageBlock[]): Leaf[] {
  * screens say "places asked for" rather than pretending to a total.
  */
 export async function getEvents(lang: Lang = PLAIN): Promise<ClubEvent[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return appFiles.getEvents();
 
   const supabase = supabasePublic();
@@ -662,6 +726,13 @@ export async function getEvents(lang: Lang = PLAIN): Promise<ClubEvent[]> {
  * only thing asked for separately is the page, which nothing else needs.
  */
 export async function getEvent(slug: string, lang: Lang = PLAIN): Promise<EventPage | undefined> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   const event = (await getEvents(lang)).find((one) => one.slug === slug);
   if (!event) return undefined;
   if (!hasSupabase()) return { ...event, blocks: [] };
@@ -725,6 +796,13 @@ export async function getEvent(slug: string, lang: Lang = PLAIN): Promise<EventP
 }
 
 export async function getNews(lang: Lang = PLAIN): Promise<NewsItem[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return appFiles.getNews();
 
   const supabase = supabasePublic();
@@ -919,6 +997,13 @@ function howLongAgo(iso: string): string {
  * then data/community.csv is the list, so nobody disappears in the meantime.
  */
 export async function getMembers(): Promise<Member[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return files.getMembers();
 
   const supabase = supabasePublic();
@@ -954,6 +1039,13 @@ export async function getMembers(): Promise<Member[]> {
 export type Partner = { id: string; name: string; url: string | null; logo: Photo | null };
 
 export async function getPartners(): Promise<Partner[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return [];
 
   try {
@@ -999,6 +1091,13 @@ export type Film = { id: string; src: string; poster: string | null };
  * was built with. Without it an empty list is a sheet of paper with a logo on it.
  */
 export async function getHeroVideos(): Promise<Film[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   const builtIn: Film = { id: "built-in", src: "/hero.mp4", poster: "/hero-poster.jpg" };
   if (!hasSupabase()) return [builtIn];
 
@@ -1056,6 +1155,13 @@ export type Placed = {
  * and guessing one from a place name would put a kitchen in the wrong country.
  */
 export async function getEverywhere(): Promise<Placed[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return [];
 
   const supabase = supabasePublic();
@@ -1169,6 +1275,13 @@ export type Sheet = {
  * page, which is why the error is swallowed here.
  */
 export async function getSheets(lang: Lang = PLAIN): Promise<Sheet[]> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return [];
 
   const { data, error } = await supabasePublic()
@@ -1231,6 +1344,13 @@ export async function getTheCount(): Promise<{
   interventions: number;
   years: number;
 }> {
+  /* Cached where it is read rather than where it is used.
+     Every one of these asks the database with the public key and gets the same
+     answer for everybody, so it is the same answer for a minute. Nothing personal
+     can slip in: a cached function that touches a cookie is a build error. */
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+  cacheTag("content");
   if (!hasSupabase()) return { fed: 0, places: 0, countries: 0, interventions: 0, years: 0 };
 
   const supabase = supabasePublic();

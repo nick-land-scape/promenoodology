@@ -48,8 +48,6 @@ export async function generateMetadata({
 }
 
 // A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
-
 export default async function AboutPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang: asked } = await params;
   const lang: Lang = isLang(asked) ? asked : PLAIN;

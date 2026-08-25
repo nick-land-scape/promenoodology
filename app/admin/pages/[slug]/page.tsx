@@ -11,6 +11,12 @@ import { createLeaf } from "@/app/admin/handbook/actions";
 import LeafList, { type LeafRow } from "@/app/admin/handbook/LeafList";
 import PageWords from "./PageWords";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 /** Whatever French has been written for this page, and {} where none has. */
 async function frenchOf(slug: string): Promise<Record<string, string>> {
   const supabase = await supabaseServer();

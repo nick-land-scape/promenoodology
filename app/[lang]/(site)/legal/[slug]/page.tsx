@@ -4,8 +4,6 @@ import Link from "next/link";
 import { LEGAL, legalSpec } from "@/lib/legal";
 import { pretty } from "@/lib/admin/when";
 
-export const dynamic = "force-static";
-
 export async function generateStaticParams() {
   return LEGAL.map((page) => ({ slug: page.slug }));
 }

@@ -7,12 +7,16 @@ import { sharedEvents } from "@/lib/shared";
 import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 
+/* Blocking, because this page is about whoever is asking: it reads the session
+   before it can draw anything, and there is no version of it to prerender for
+   everybody. `instant = false` is what `force-dynamic` was called before
+   cacheComponents. */
+export const instant = false;
+
 export const metadata = { title: "What's on" };
 
 /* Nothing here is the same for two people — what you have asked for is on it —
    so it is worked out per request rather than cached for a minute. */
-export const dynamic = "force-dynamic";
-
 export default async function EventsPage() {
   await requireMember("/app/events");
   const lang = await readingIn();

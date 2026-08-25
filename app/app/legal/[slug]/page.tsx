@@ -6,12 +6,16 @@ import { speaking } from "@/lib/words";
 import { readingIn, requireMember } from "@/lib/app/me";
 import { pretty } from "@/lib/admin/when";
 
-export const revalidate = 3600;
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   return { title: legalSpec(slug)?.title ?? "In writing" };
 }
+
+/* Blocking, because this page is about whoever is asking: it reads the session
+   and the reading language before it can draw anything. `instant = false` is what
+   `force-dynamic` was called before cacheComponents. The four addresses are still
+   listed below so the app knows which four exist. */
+export const instant = false;
 
 export async function generateStaticParams() {
   return LEGAL.map((page) => ({ slug: page.slug }));

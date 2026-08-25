@@ -29,8 +29,6 @@ export async function generateMetadata({
   });
 }
 
-export const revalidate = 60;
-
 /**
  * The invitation, made passable.
  *

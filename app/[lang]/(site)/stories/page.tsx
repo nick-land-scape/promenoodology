@@ -32,8 +32,6 @@ export async function generateMetadata({
 }
 
 // A page may serve a cached copy for a minute before asking the database again.
-export const revalidate = 60;
-
 export default async function StoriesPage({ params }: { params: Promise<{ lang: string }> }) {
   // Turned off in /admin means gone from here too, not just out of the menu.
   if (!(await pageIsVisible("stories"))) notFound();
