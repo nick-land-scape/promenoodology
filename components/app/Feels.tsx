@@ -163,6 +163,19 @@ export default function Feels() {
    * phone that has said it is saving data, not fetched at all.
    */
   useEffect(() => {
+    /* On the reading screen only, which is where the map is.
+     *
+     * It is a megabyte of JavaScript — by some distance the largest thing this app
+     * can download — and it was fetched on every screen, including the four that
+     * have no map on them and never will. Somebody who opens the app to see what
+     * is on this Saturday paid for a mapping library on their own data.
+     *
+     * Here it is still fetched before it is wanted: the map is one press from this
+     * screen, under "on the map", and the seconds between arriving on Read and
+     * pressing that are enough. Anywhere else in the app it is at least two
+     * presses away, which is time to fetch it when the first one lands. */
+    if (!pathname.startsWith("/app/read")) return;
+
     const link = (navigator as { connection?: { saveData?: boolean; effectiveType?: string } })
       .connection;
     if (link?.saveData) return;
@@ -174,7 +187,7 @@ export default function Feels() {
       void fetch("https://tiles.openfreemap.org/planet", { mode: "cors" }).catch(() => {});
     }, 2500);
     return () => cancelIdle(idle);
-  }, []);
+  }, [pathname]);
 
   return null;
 }
