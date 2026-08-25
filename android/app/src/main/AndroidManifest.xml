@@ -31,6 +31,31 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Links to the app's own screens open the app.
+
+                 A sign-in link from an email opened Chrome, which has its own
+                 cookies: somebody tapping the link in their inbox was signed in
+                 *there* and still signed out in the app, with nothing on either
+                 screen explaining why.
+
+                 `autoVerify` makes Android fetch
+                 https://www.promenoodology.com/.well-known/assetlinks.json when
+                 the app is installed and check that this package is named in it.
+                 Until that file exists the links simply keep opening the browser.
+
+                 Scoped to /app on purpose. The website is a website — a link to a
+                 story or to what's on belongs in a browser, where somebody who
+                 has never heard of this club can read it. Only the members' app
+                 is claimed. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https"
+                      android:host="www.promenoodology.com"
+                      android:pathPrefix="/app" />
+            </intent-filter>
+
         </activity>
 
         <provider
