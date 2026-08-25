@@ -114,6 +114,14 @@ export const SECTIONS: Section[] = [
     group: "post",
   },
   {
+    href: "/admin/ideas",
+    label: "ideas",
+    blurb:
+      "What members think the club should do, most agreed-with first — and the answer, which is yours to write.",
+    icon: "inbox",
+    group: "post",
+  },
+  {
     href: "/admin/reports",
     label: "reported",
     blurb:

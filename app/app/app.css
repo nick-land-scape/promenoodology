@@ -5499,3 +5499,150 @@ body:has(.app-shell) {
   gap: 8px;
   padding-top: 12px;
 }
+
+/* --------------------------------------- what the club should do next
+
+   A field, a list, and one number per line. The number is the button — a separate
+   arrow beside a count is two things to aim at where there is one decision — and
+   there is nothing anywhere to press for disagreement, which is the whole design
+   rather than a missing feature. */
+.idea-write {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px var(--gutter);
+  border-bottom: 1px solid var(--hair);
+}
+
+.idea-write textarea {
+  width: 100%;
+  font: inherit;
+  padding: 11px 12px;
+  border: 1px solid var(--hair);
+  background: none;
+  color: inherit;
+  resize: none;
+}
+
+.idea-write button {
+  align-self: flex-start;
+}
+
+.idea-thanks {
+  padding: 12px var(--gutter) 0;
+  color: var(--purple);
+}
+
+.ideas {
+  margin: 0;
+  padding: 0 var(--gutter);
+  list-style: none;
+}
+
+.idea {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--hair);
+}
+
+.idea:last-child {
+  border-bottom: 0;
+}
+
+/* The count, and the whole interaction. Wide enough for three digits, because a
+   button that changes width when the number does is a button that moves under a
+   thumb the moment it is pressed. */
+.idea-agree {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 46px;
+  padding: 7px 0;
+  border: 1px solid var(--hair);
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.idea-agree b {
+  font-size: 0.95rem;
+  font-weight: normal;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.idea-agree.is-on {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.idea-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.idea-words {
+  margin: 0 0 4px;
+  line-height: 1.45;
+}
+
+/* What the club said about it, where it has said anything. */
+.idea-state {
+  margin-left: 8px;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.idea-state-done {
+  color: var(--muted);
+}
+
+.idea-answer {
+  margin: 8px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--purple);
+  line-height: 1.45;
+}
+
+.idea-answer em {
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+
+.idea-answering {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.idea-answering textarea {
+  width: 100%;
+  font: inherit;
+  padding: 9px 10px;
+  border: 1px solid var(--hair);
+  background: none;
+  color: inherit;
+  resize: none;
+}
+
+.idea-states,
+.idea-feet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

@@ -472,6 +472,29 @@ export const PHRASES: Phrase[] = [
   { key: "report.neverMind", en: "never mind", fr: "annuler", where: "app" },
   { key: "report.blocked", en: "{name} is blocked. Undo it in your account.", fr: "{name} est bloqué. Annulez dans votre compte.", where: "app", note: "Keep {name} exactly as it is." },
 
+  /* What the club should do next, according to the club. The middle tab of
+     Connect: a sentence anybody can write, and a number anybody can add to. */
+  { key: "con.ideas", en: "ideas", fr: "idées", where: "app", note: "The middle tab of Connect." },
+  { key: "idea.yours", en: "Your suggestion", fr: "Votre suggestion", where: "app", note: "Read out by a screen reader; not shown." },
+  { key: "idea.placeholder", en: "Something the club should do…", fr: "Quelque chose que le club devrait faire…", where: "app" },
+  { key: "idea.suggestIt", en: "suggest it", fr: "proposer", where: "app" },
+  { key: "idea.thankYou", en: "Up it goes. The club answers the ones people agree with.", fr: "C'est en ligne. Le club répond à celles que les gens soutiennent.", where: "app" },
+  { key: "idea.nothingYet", en: "Nothing suggested yet. Be the one.", fr: "Aucune suggestion pour l'instant. Lancez-vous.", where: "app" },
+  { key: "idea.agree", en: "I would like this too", fr: "Moi aussi j'aimerais ça", where: "app", note: "Read out for the count, which is the button." },
+  { key: "idea.youAgree", en: "You are one of them — press to take it back", fr: "Vous en faites partie — appuyez pour retirer", where: "app" },
+  { key: "idea.theClubSays", en: "The club:", fr: "Le club :", where: "app", note: "Before the one answer an idea gets." },
+  { key: "idea.open", en: "open", fr: "ouverte", where: "app" },
+  { key: "idea.doing", en: "we are doing it", fr: "on s'en occupe", where: "app" },
+  { key: "idea.done", en: "done", fr: "faite", where: "app" },
+  { key: "idea.notNow", en: "not now", fr: "pas pour l'instant", where: "app", note: "A real answer, and it has to be sayable." },
+  { key: "idea.answerIt", en: "answer this", fr: "répondre", where: "app", note: "Admins only." },
+  { key: "idea.changeAnswer", en: "change the answer", fr: "modifier la réponse", where: "app" },
+  { key: "idea.answerHint", en: "What the club has decided, and why", fr: "Ce que le club a décidé, et pourquoi", where: "app" },
+  { key: "idea.saveAnswer", en: "save", fr: "enregistrer", where: "app" },
+  { key: "idea.takeItDown", en: "take it down", fr: "retirer", where: "app" },
+  { key: "idea.reallyTakeDown", en: "Take this suggestion down?", fr: "Retirer cette suggestion ?", where: "app" },
+  { key: "idea.didNotWork", en: "That did not go through.", fr: "Cela n'a pas fonctionné.", where: "app" },
+
   /* What has been reported, on a phone, for whoever holds the keys. */
   { key: "flag.eyebrow", en: "for admins", fr: "pour les admins", where: "app" },
   { key: "flag.reported", en: "what has been reported", fr: "ce qui a été signalé", where: "app" },

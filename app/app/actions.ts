@@ -754,3 +754,126 @@ export async function unblockThem(personId: string): Promise<{ ok: boolean; erro
   revalidatePath("/app/account");
   return { ok: true };
 }
+
+/* --------------------------------------------- what the club should do next
+
+   Somebody has an idea at an evening and it lasts as long as the conversation.
+   These four are where it goes instead. See migration 0042 for why there is no
+   way to vote one down and no way for a member to reply to one. */
+
+export type Idea = {
+  id: string;
+  words: string;
+  by: string;
+  byId: string;
+  when: string;
+  votes: number;
+  /** Whether you are one of them. */
+  agreed: boolean;
+  state: "open" | "doing" | "done" | "not now";
+  answer: string;
+  answeredBy: string;
+};
+
+/** A sentence anybody can write. */
+export async function suggestThis(words: string): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const said = words.trim();
+  if (said.length < 3) return { ok: false, error: "A sentence, at least." };
+
+  const supabase = await supabaseServer();
+
+  /* Read first, like a post — an idea is written by a member and read by all of
+     them, so it goes through the same screening. Refused outright is refused;
+     anything doubtful goes up and lands in front of an admin. */
+  const { readItFirst } = await import("@/lib/app/screening");
+  const read = await readItFirst(said);
+  if (read.verdict === "no") {
+    return { ok: false, error: read.said || "That one cannot go up." };
+  }
+
+  const { error } = await supabase
+    .from("ideas")
+    .insert({ by_person: me.id, words: said.slice(0, 1000) });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app/connect");
+  return { ok: true };
+}
+
+/**
+ * Agreeing, and changing your mind.
+ *
+ * One row or none — there is no number here to increment and nothing that could
+ * hold a minus one. Pressing it twice is the second half of the same decision,
+ * which is why the same action does both.
+ */
+export async function agreeWith(ideaId: string, yes: boolean): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const supabase = await supabaseServer();
+  const { error } = yes
+    ? await supabase.from("idea_votes").upsert({ idea: ideaId, who: me.id }, { onConflict: "idea,who" })
+    : await supabase.from("idea_votes").delete().eq("idea", ideaId).eq("who", me.id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app/connect");
+  return { ok: true };
+}
+
+/**
+ * The club's answer, which is the whole point of the thing.
+ *
+ * One per idea, written by an admin, and a state with it — open, doing, done, or
+ * not now. "Not now" has to be sayable: a suggestion box where nothing is ever
+ * refused is a suggestion box nobody believes.
+ *
+ * The database enforces this as well as the app does: a member can update their
+ * own row, and a trigger stops them touching these columns. See migration 0042.
+ */
+export async function answerIdea(
+  ideaId: string,
+  state: Idea["state"],
+  answer: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me?.admin) return { ok: false, error: "Only an admin can answer an idea." };
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("ideas")
+    .update({
+      state,
+      answer: answer.trim().slice(0, 2000),
+      answered_by: me.id,
+      answered_at: new Date().toISOString(),
+    })
+    .eq("id", ideaId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app/connect");
+  revalidatePath("/admin/ideas");
+  return { ok: true };
+}
+
+/** Taking one down: your own, or anybody's if you hold the keys. */
+export async function takeDownIdea(ideaId: string): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const supabase = await supabaseServer();
+  /* Marked rather than deleted, so the votes on it do not vanish from under
+     whoever was reading the list. */
+  let taking = supabase.from("ideas").update({ deleted_at: new Date().toISOString() }).eq("id", ideaId);
+  if (!me.admin) taking = taking.eq("by_person", me.id);
+
+  const { error } = await taking;
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app/connect");
+  revalidatePath("/admin/ideas");
+  return { ok: true };
+}

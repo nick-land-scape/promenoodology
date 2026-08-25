@@ -4,7 +4,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import Photo from "../Photo";
 import Sheet from "./Sheet";
 import Trouble from "./Trouble";
+import Ideas from "./Ideas";
 import type { Member, Post } from "@/lib/content";
+import type { Idea } from "@/app/app/actions";
 import {
   replyTo,
   /* Renamed here only: the action that posts and the hook that reads the app's
@@ -31,6 +33,10 @@ type Props = {
   wavable: { id: string; name: string }[];
   /** Who you have already waved at. */
   waved: string[];
+  /** What the club has been asked to do, most agreed with first. */
+  ideas: Idea[];
+  /** Whether the person reading can answer one. */
+  admin: boolean;
 };
 
 const MOST = 8;
@@ -63,9 +69,15 @@ export default function Feed({
   meName,
   wavable,
   waved,
+  ideas,
+  admin,
 }: Props) {
   const say = useSay();
-  const [view, setView] = useState<"feed" | "people">("feed");
+  /* Three ways of looking at the same club: what people said, what the club is
+     being asked to do, and who is in it. Ideas in the middle deliberately — it is
+     the one of the three nobody arrives looking for, and a tab at the end of a row
+     is a tab that gets found in a month. */
+  const [view, setView] = useState<"feed" | "ideas" | "people">("feed");
   const [hello, setHello] = useState<Record<string, boolean>>(
     Object.fromEntries(waved.map((id) => [id, true])),
   );
@@ -78,7 +90,7 @@ export default function Feed({
   return (
     <>
       <div className="segmented" role="tablist" aria-label={say("con.switch")}>
-        {(["feed", "people"] as const).map((option) => (
+        {(["feed", "ideas", "people"] as const).map((option) => (
           <button
             key={option}
             type="button"
@@ -90,6 +102,8 @@ export default function Feed({
           </button>
         ))}
       </div>
+
+      {view === "ideas" ? <Ideas ideas={ideas} meId={meId} admin={admin} /> : null}
 
       {view === "feed" ? (
         <>

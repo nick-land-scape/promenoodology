@@ -1,5 +1,6 @@
 import AppHeader from "@/components/app/AppHeader";
 import Feed from "@/components/app/Feed";
+import { whatWeShouldDo } from "@/lib/app/ideas";
 import { readingIn, requireMember } from "@/lib/app/me";
 import { getFrench, getPosts } from "@/lib/source";
 import { speaking } from "@/lib/words";
@@ -15,7 +16,11 @@ export const dynamic = "force-dynamic";
 export default async function ConnectPage() {
   const me = await requireMember("/app/connect");
   const say = speaking(await readingIn(), await getFrench());
-  const [posts, everybody] = await Promise.all([getPosts(), sharedMembers()]);
+  const [posts, everybody, ideas] = await Promise.all([
+    getPosts(),
+    sharedMembers(),
+    whatWeShouldDo(),
+  ]);
   const people = everybody.sort((a, b) => a.last.localeCompare(b.last));
 
   /* Who can actually be waved at, and who you have waved at already. The
@@ -43,6 +48,8 @@ export default async function ConnectPage() {
         meName={me.name}
         wavable={rows ?? []}
         waved={(sent ?? []).filter((one) => one.from_profile === me.id).map((one) => one.to_profile)}
+        ideas={ideas}
+        admin={Boolean(me.admin)}
       />
     </>
   );

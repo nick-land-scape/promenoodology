@@ -4605,3 +4605,67 @@ html.admin-dragging * {
   border-color: #e82687;
   color: #ff9ec6;
 }
+
+/* ------------------------------------------------------------------- ideas
+
+   A suggestion, its count, and the box the answer goes in. The count is read
+   only here: agreeing is a member's act, and an admin pressing it from the back
+   of the house would be the club voting for itself. */
+.idea-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 0;
+}
+
+.idea-row-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.idea-row-count {
+  flex: none;
+  min-width: 42px;
+  padding: 6px 0;
+  border: 1px solid var(--admin-faint);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.idea-row-words {
+  margin: 0 0 3px;
+  max-width: 46em;
+}
+
+.idea-row-who {
+  margin: 0;
+  font-size: 0.82rem;
+  opacity: 0.7;
+}
+
+.idea-row-states,
+.idea-row-feet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Which one it is now. The others stay pressable, because changing an answer is
+   the ordinary case — an idea moves from open to doing to done. */
+.admin-button-on {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.idea-row-answer {
+  width: 100%;
+  max-width: 46em;
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid var(--admin-faint);
+  background: transparent;
+  color: inherit;
+  resize: vertical;
+}
