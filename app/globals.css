@@ -8,6 +8,12 @@
   /* Paper rather than screen-white: warmer, and kinder to the photographs. */
   --paper: #fffcf6;
   --hairline: rgba(0, 0, 0, 0.12);
+  /* The halo the menu wears over the film on the front page. Paper-coloured, so
+     that dark type is separated from whatever frame is behind it — and the other
+     way round on dark paper, where the type is light and a light halo would only
+     make it foggier. See the rule at "just enough glow". */
+  --halo: rgba(255, 255, 255, 0.7);
+  --halo-close: rgba(255, 255, 255, 0.8);
   /* A heavier rule, for the line between two of a thing.
      A hairline does for the cells inside one row — but when a row is itself full
      of hairlines, the line that separates one person from the next reads as one
@@ -1283,12 +1289,19 @@ img {
 }
 
 /* Just enough glow to keep the menu and the contact details legible over a
-   moving picture — no panel, no box. */
+   moving picture — no panel, no box.
+ *
+ * The colour comes from the paper rather than being white outright, which is
+ * what it was. On light paper that is the same white it always drew; on dark
+ * paper it was a white cloud around letters that are themselves near-white, so
+ * the menu on the front page looked smeared rather than lit, and the haze ran
+ * further out from the words than the words did. Light type wants a dark halo.
+ * Same trick, other direction. */
 body:has(.hero) .nav,
 body:has(.hero) .contact {
   text-shadow:
-    0 0 12px rgba(255, 255, 255, 0.7),
-    0 0 3px rgba(255, 255, 255, 0.8);
+    0 0 12px var(--halo),
+    0 0 3px var(--halo-close);
 }
 
 /* ------------------------------------------------------------------ projects */
@@ -1973,6 +1986,11 @@ body:has(.hero) .contact {
   --ink: #f2ece1;
   --paper: #14120f;
   --hairline: rgba(242, 236, 225, 0.16);
+  /* Dark, because the ink is light here. A white glow around white letters is
+     not a halo, it is a smudge — the menu on the front page was reading as
+     fogged rather than lit. */
+  --halo: rgba(0, 0, 0, 0.78);
+  --halo-close: rgba(0, 0, 0, 0.9);
   --rule: rgba(242, 236, 225, 0.42);
   --quiet: #a9a196;
   --quiet-strong: #cfc7ba;
