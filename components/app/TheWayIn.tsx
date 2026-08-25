@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { appleSheet, buzz } from "@/lib/native";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { useSay } from "./Words";
@@ -35,6 +35,9 @@ const CODE_LENGTH = 8;
  * behind a line of small text rather than hidden, because a door you cannot see is
  * a door somebody will eventually find and wonder about.
  */
+/** How long before another code may be asked for. */
+const AGAIN_AFTER = 60_000;
+
 export default function TheWayIn({ back }: { back: string }) {
   const say = useSay();
   const router = useRouter();
@@ -47,7 +50,30 @@ export default function TheWayIn({ back }: { back: string }) {
   const [busy, setBusy] = useState<"" | "apple" | "code" | "in">("");
   const [trouble, setTrouble] = useState("");
   const [said, setSaid] = useState("");
+  /* When the last code went out, and how long until another may be asked for.
+   *
+   * Not politeness: a resend button anybody can lean on is a way of sending
+   * somebody thirty emails, and Supabase's own limiter answers that with an error
+   * an hour long. Sixty seconds is longer than the wait for a code that is
+   * actually coming and short enough that somebody whose code never arrived is
+   * not stuck looking at a dead button. */
+  const [sentAt, setSentAt] = useState(0);
+  const [waitLeft, setWaitLeft] = useState(0);
   const codeField = useRef<HTMLInputElement>(null);
+
+  /* The countdown, ticking only while there is one. A second's interval that runs
+     for the life of the screen would be a second's work every second on a door
+     nobody is standing at. */
+  useEffect(() => {
+    if (!sentAt) return;
+    const tick = () => {
+      const left = Math.ceil((sentAt + AGAIN_AFTER - Date.now()) / 1000);
+      setWaitLeft(left > 0 ? left : 0);
+    };
+    tick();
+    const clock = window.setInterval(tick, 1000);
+    return () => window.clearInterval(clock);
+  }, [sentAt]);
 
   /** In. Everything below ends here. */
   function arrived() {
@@ -137,6 +163,28 @@ export default function TheWayIn({ back }: { back: string }) {
     setBusy("");
 
     if (error) {
+      /* An address nobody has an account for.
+       *
+       * The honest-looking answer — "there is no account with that address" —
+       * hands anybody with a list of email addresses a way to find out which of
+       * them belong to members of this club. That is worth something to somebody
+       * and costs the person at the other end nothing to be told, so it is not
+       * told: the code step opens exactly as it would have, saying a code is on
+       * its way *if* that address is one of ours. Somebody who mistyped their own
+       * address finds out by the code not arriving, which is the same way they
+       * would find out anyway.
+       *
+       * Only when joining is the truth said out loud, because "that address is
+       * already a member" is an answer about the address you are holding rather
+       * than about somebody else's. */
+      if (!joining && /signups not allowed|not found/i.test(error.message)) {
+        setSaid(say("door.codeOnItsWay").replace("{email}", address));
+        setStep("code");
+        setSentAt(Date.now());
+        window.setTimeout(() => codeField.current?.focus(), 120);
+        return;
+      }
+
       /* Too many codes in an hour, and Supabase's own sender is stingy about it.
        *
        * Going no further would be wrong twice over: anybody who already has a code
@@ -146,6 +194,7 @@ export default function TheWayIn({ back }: { back: string }) {
       if (/rate limit|too many|security purposes|after \d+ seconds/i.test(error.message)) {
         setSaid(say("door.noNewCode"));
         setStep("code");
+        setSentAt(Date.now());
         window.setTimeout(() => codeField.current?.focus(), 120);
         return;
       }
@@ -154,6 +203,7 @@ export default function TheWayIn({ back }: { back: string }) {
     }
     setSaid(say("door.codeOnItsWay").replace("{email}", address));
     setStep("code");
+    setSentAt(Date.now());
     window.setTimeout(() => codeField.current?.focus(), 120);
   }
 
@@ -304,8 +354,14 @@ export default function TheWayIn({ back }: { back: string }) {
           {trouble ? <p className="doorway-trouble">{trouble}</p> : null}
 
           <div className="doorway-feet">
-            <button type="button" onClick={() => void askForACode()} disabled={busy !== ""}>
-              {say("door.sendAnother")}
+            <button
+              type="button"
+              onClick={() => void askForACode()}
+              disabled={busy !== "" || waitLeft > 0}
+            >
+              {waitLeft > 0
+                ? say("door.sendAnotherIn").replace("{n}", String(waitLeft))
+                : say("door.sendAnother")}
             </button>
             <button
               type="button"

@@ -5646,3 +5646,49 @@ body:has(.app-shell) {
   flex-wrap: wrap;
   gap: 6px;
 }
+
+/* Who suggested it and when, under the words rather than over them: the sentence
+   is what somebody is reading, and a byline above it is a line to get past. */
+.idea-who {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 6px 0 0;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* Smaller than the feed's, because this is a byline rather than a face at the top
+   of something somebody wrote. */
+.avatar-small {
+  width: 26px;
+  height: 26px;
+  font-size: 0.6rem;
+}
+
+.idea-editing {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+
+.idea-editing textarea {
+  width: 100%;
+  font: inherit;
+  padding: 9px 10px;
+  border: 1px solid var(--hair);
+  background: none;
+  color: inherit;
+  resize: none;
+}
+
+/* Yours to change and yours to take down, in a row under it. */
+.idea-mine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-top: 8px;
+}

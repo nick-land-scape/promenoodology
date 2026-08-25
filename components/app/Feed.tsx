@@ -103,7 +103,9 @@ export default function Feed({
         ))}
       </div>
 
-      {view === "ideas" ? <Ideas ideas={ideas} meId={meId} admin={admin} /> : null}
+      {view === "ideas" ? (
+        <Ideas ideas={ideas} meId={meId} meName={meName} admin={admin} />
+      ) : null}
 
       {view === "feed" ? (
         <>

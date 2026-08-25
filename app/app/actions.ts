@@ -766,7 +766,11 @@ export type Idea = {
   words: string;
   by: string;
   byId: string;
+  /** Their portrait, where the club has one. */
+  photo: string | null;
   when: string;
+  /** When it was last changed, or empty. Shown, because an edit is a fact. */
+  edited: string;
   votes: number;
   /** Whether you are one of them. */
   agreed: boolean;
@@ -871,6 +875,104 @@ export async function takeDownIdea(ideaId: string): Promise<{ ok: boolean; error
   if (!me.admin) taking = taking.eq("by_person", me.id);
 
   const { error } = await taking;
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app/connect");
+  revalidatePath("/admin/ideas");
+  return { ok: true };
+}
+
+/* ------------------------------------------------ changing your mind in writing
+
+   Taking a thing down has been possible since the first migration; changing it
+   has not, which made a typo permanent or cost you every reply underneath it.
+
+   All three of these say when they were edited, and the app shows it. A post that
+   changes under the people who replied to it is a small deception — somebody
+   answers "yes, bring it on Saturday" and the question above them quietly becomes
+   something else. Not what it said before: this is a club feed, not a wiki. */
+
+const EDITED = () => new Date().toISOString();
+
+/** Your own post: the words, and where you were. */
+export async function editMyPost(
+  id: string,
+  words: string,
+  place: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const text = words.trim();
+  if (!text) return { ok: false, error: "A post with no words left in it is a delete." };
+
+  /* Read again on the way out, for the same reason it is read on the way in: an
+     edit is another way of publishing something, and a rule that only applies to
+     the first draft is not a rule. */
+  const { readItFirst } = await import("@/lib/app/screening");
+  const read = await readItFirst(text);
+  if (read.verdict === "no") return { ok: false, error: read.said || "That cannot go up." };
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("posts")
+    .update({ text: text.slice(0, LONGEST), place: place.trim().slice(0, 120), edited_at: EDITED() })
+    .eq("id", id)
+    .eq("author_id", me.id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app/connect");
+  return { ok: true };
+}
+
+/** Your own reply. */
+export async function editMyReply(id: string, words: string): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const text = words.trim();
+  if (!text) return { ok: false, error: "An empty reply is a delete." };
+
+  const { readItFirst } = await import("@/lib/app/screening");
+  const read = await readItFirst(text);
+  if (read.verdict === "no") return { ok: false, error: read.said || "That cannot go up." };
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("post_replies")
+    .update({ text: text.slice(0, 1000), edited_at: EDITED() })
+    .eq("id", id)
+    .eq("author_id", me.id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/app/connect");
+  return { ok: true };
+}
+
+/**
+ * Your own suggestion.
+ *
+ * The words only. The state and the club's answer belong to the club, and the
+ * database says so as well as this does — see the trigger in migration 0043,
+ * which lets the author change their wording and nothing else.
+ */
+export async function editMyIdea(id: string, words: string): Promise<{ ok: boolean; error?: string }> {
+  const me = await whoIsThis();
+  if (!me) return { ok: false, error: "You are not signed in any more." };
+
+  const said = words.trim();
+  if (said.length < 3) return { ok: false, error: "A sentence, at least." };
+
+  const { readItFirst } = await import("@/lib/app/screening");
+  const read = await readItFirst(said);
+  if (read.verdict === "no") return { ok: false, error: read.said || "That cannot go up." };
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("ideas")
+    .update({ words: said.slice(0, 1000), edited_at: EDITED() })
+    .eq("id", id)
+    .eq("by_person", me.id);
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/app/connect");

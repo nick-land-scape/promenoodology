@@ -19,7 +19,7 @@ export async function whatWeShouldDo(): Promise<Idea[]> {
 
   const { data, error } = await supabase
     .from("ideas_counted")
-    .select("id, by_person, words, made_at, state, answer, answered_by, votes, agreed")
+    .select("id, by_person, words, made_at, edited_at, state, answer, answered_by, votes, agreed")
     .order("votes", { ascending: false })
     .order("made_at", { ascending: false })
     .limit(120)
@@ -29,6 +29,7 @@ export async function whatWeShouldDo(): Promise<Idea[]> {
         by_person: string;
         words: string;
         made_at: string;
+        edited_at: string | null;
         state: Idea["state"];
         answer: string;
         answered_by: string | null;
@@ -52,23 +53,28 @@ export async function whatWeShouldDo(): Promise<Idea[]> {
   const { data: people } = who.length
     ? await supabase
         .from("profiles")
-        .select("id, name")
+        .select("id, name, photo_path")
         .in("id", who)
-        .returns<{ id: string; name: string }[]>()
-    : { data: [] as { id: string; name: string }[] };
+        .returns<{ id: string; name: string; photo_path: string | null }[]>()
+    : { data: [] as { id: string; name: string; photo_path: string | null }[] };
 
-  const named = new Map((people ?? []).map((row) => [row.id, row.name || "somebody"]));
+  const named = new Map((people ?? []).map((row) => [row.id, row]));
+  const { mediaUrl } = await import("@/lib/supabase/config");
 
   return rows.map((row) => ({
     id: row.id,
     words: row.words,
-    by: named.get(row.by_person) ?? "somebody",
+    by: named.get(row.by_person)?.name || "somebody",
     byId: row.by_person,
+    photo: named.get(row.by_person)?.photo_path
+      ? mediaUrl(named.get(row.by_person)!.photo_path as string)
+      : null,
     when: row.made_at,
+    edited: row.edited_at ?? "",
     votes: Number(row.votes ?? 0),
     agreed: Boolean(row.agreed),
     state: row.state,
     answer: row.answer,
-    answeredBy: row.answered_by ? (named.get(row.answered_by) ?? "") : "",
+    answeredBy: row.answered_by ? (named.get(row.answered_by)?.name ?? "") : "",
   }));
 }
