@@ -188,6 +188,24 @@ export async function markInterested(eventId: string, on: boolean): Promise<Aske
       .eq("state", "interested");
     if (error) return { ok: false, error: error.message };
   } else {
+    /* Are you already coming to the whole thing?
+     *
+     * A bookmark is a weaker statement than a place, and this must never quietly
+     * turn one into the other: the row is the same row, and an upsert that did not
+     * ask would overwrite "three of us, bringing a pot" with "thinking about it".
+     * Nothing to do in that case — you are already further along than a bookmark. */
+    const { data: already } = await supabase
+      .from("bookings")
+      .select("state")
+      .eq("event_id", eventId)
+      .eq("profile_id", me.id)
+      .is("on_day", null)
+      .maybeSingle<{ state: Asked["state"] }>();
+
+    if (already && already.state !== "interested") {
+      return { ok: true, state: already.state };
+    }
+
     const { error } = await supabase.from("bookings").upsert(
       {
         event_id: eventId,
@@ -196,8 +214,18 @@ export async function markInterested(eventId: string, on: boolean): Promise<Aske
         people: 1,
         bringing: "",
         state: "interested",
+        /* The whole evening rather than one day of it: a bookmark is about the
+           thing, not about a Saturday. Said out loud because it is half of the
+           key below. */
+        on_day: null,
       },
-      { onConflict: "event_id,profile_id" },
+      /* All three columns, because that is the unique index this table has had
+         since migration 0038 — `(event_id, profile_id, on_day) nulls not
+         distinct`. The old two-column constraint was dropped there and this call
+         was not changed with it, so every bookmark since has failed with "there is
+         no unique or exclusion constraint matching the ON CONFLICT
+         specification". Taking a place was updated; this was missed. */
+      { onConflict: "event_id,profile_id,on_day" },
     );
     if (error) return { ok: false, error: error.message };
   }
