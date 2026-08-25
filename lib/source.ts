@@ -836,7 +836,8 @@ export async function getPosts(): Promise<Post[]> {
     const list = said.get(reply.post_id) ?? [];
     list.push({
       id: reply.id,
-      author: names.get(reply.author_id) ?? "somebody",
+      author: names.get(reply.author_id)?.name ?? "somebody",
+      authorPhoto: names.get(reply.author_id)?.photo ?? null,
       authorId: reply.author_id,
       when: howLongAgo(reply.created_at),
       text: reply.text,
@@ -854,7 +855,8 @@ export async function getPosts(): Promise<Post[]> {
         : [];
     return {
       id: row.id,
-      author: names.get(row.author_id) ?? "somebody",
+      author: names.get(row.author_id)?.name ?? "somebody",
+      authorPhoto: names.get(row.author_id)?.photo ?? null,
       authorId: row.author_id,
       place: row.place ?? "",
       when: howLongAgo(row.created_at),
@@ -867,13 +869,34 @@ export async function getPosts(): Promise<Post[]> {
   });
 }
 
-/** id → name, for everybody who might have written something. */
-async function peopleNames(): Promise<Map<string, string>> {
-  const { data } = await supabasePublic()
-    .from("profiles")
-    .select("id, name")
-    .returns<{ id: string; name: string }[]>();
-  return new Map((data ?? []).map((row) => [row.id, row.name || "somebody"]));
+/**
+ * id → name and portrait, for everybody who might have written something.
+ *
+ * Read as the member who is asking, from `club_names` rather than from
+ * `profiles`. Both halves of that matter and both were wrong.
+ *
+ * The public key was being used, and the policy on profiles only lets the public
+ * see somebody who is on the community page — so every post by anybody who had
+ * taken themselves off it was signed "somebody", including their own, on a feed
+ * only members can read. And `club_names` rather than the table because the fix
+ * cannot be "let members read profiles": `authenticated` has column privileges on
+ * all of it, so that would hand every member everybody's email address and
+ * telephone number in order to fix a byline. See migration 0045.
+ */
+async function peopleNames(): Promise<Map<string, { name: string; photo: string | null }>> {
+  const { supabaseServer } = await import("./supabase/server");
+  const supabase = await supabaseServer();
+  const { data } = await supabase
+    .from("club_names")
+    .select("id, name, photo_path")
+    .returns<{ id: string; name: string; photo_path: string | null }[]>();
+
+  return new Map(
+    (data ?? []).map((row) => [
+      row.id,
+      { name: row.name || "somebody", photo: row.photo_path ? mediaUrl(row.photo_path) : null },
+    ]),
+  );
 }
 
 /** "just now", "20 minutes ago", "yesterday", "3 August". */

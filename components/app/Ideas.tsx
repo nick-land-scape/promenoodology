@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import Photo from "../Photo";
 import Sheet from "./Sheet";
+import { Face } from "./Feed";
 import {
   agreeWith,
   answerIdea,
@@ -31,11 +31,14 @@ export default function Ideas({
   ideas,
   meId,
   meName,
+  mePhoto,
   admin,
 }: {
   ideas: Idea[];
   meId: string;
   meName: string;
+  /** Your own portrait, for the bar at the foot. */
+  mePhoto: string | null;
   /** An admin sees the answer box under each one. Nobody else does. */
   admin: boolean;
 }) {
@@ -58,7 +61,7 @@ export default function Ideas({
       {/* At the foot, like the feed's own composer and for the same reason: you
           arrive at a list to read it, and a field above the answers is a question
           asked before anybody has heard the ones already there. See .compose-shut. */}
-      <Propose meName={meName} />
+      <Propose meName={meName} mePhoto={mePhoto} />
     </>
   );
 }
@@ -71,7 +74,7 @@ export default function Ideas({
  * press: on iOS a field focused any later than the tap that asked for it gets a
  * caret and no keyboard.
  */
-function Propose({ meName }: { meName: string }) {
+function Propose({ meName, mePhoto }: { meName: string; mePhoto: string | null }) {
   const say = useSay();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -104,9 +107,7 @@ function Propose({ meName }: { meName: string }) {
 
       <div className="compose compose-shut">
         <div className="compose-top">
-          <span className="avatar" aria-hidden="true">
-            {initials(meName) || say("con.you")}
-          </span>
+          <Face photo={mePhoto} name={meName} />
           <textarea
             rows={1}
             value={words}
@@ -142,9 +143,7 @@ function Propose({ meName }: { meName: string }) {
           }}
         >
           <div className="compose-top">
-            <span className="avatar" aria-hidden="true">
-              {initials(meName) || say("con.you")}
-            </span>
+            <Face photo={mePhoto} name={meName} />
             <textarea
               ref={inside}
               rows={3}
@@ -276,12 +275,8 @@ function One({ idea, mine, admin }: { idea: Idea; mine: boolean; admin: boolean 
 
         {/* Who, when, and whether it has been changed since. */}
         <p className="idea-who">
-          <span className={idea.photo ? "avatar avatar-photo avatar-small" : "avatar avatar-small"}>
-            {idea.photo ? (
-              <Photo src={idea.photo} alt="" fill sizes="26px" />
-            ) : (
-              <span aria-hidden="true">{initials(idea.by)}</span>
-            )}
+          <span className="idea-face">
+            <Face photo={idea.photo} name={idea.by} />
           </span>
           <span>
             {idea.by} · {howLongAgo(idea.when)}

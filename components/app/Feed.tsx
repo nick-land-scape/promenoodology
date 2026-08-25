@@ -28,6 +28,8 @@ type Props = {
   /** Which profile is reading, so it knows what is yours to take down. */
   meId: string;
   meName: string;
+  /** Your own portrait, for the composer. Null draws your initials. */
+  mePhoto: string | null;
   /** Everybody on the community page who has an account, so a wave has an
       address to go to — a name on that page is not always somebody who can be
       waved at. */
@@ -68,6 +70,7 @@ export default function Feed({
   people,
   meId,
   meName,
+  mePhoto,
   wavable,
   waved,
   ideas,
@@ -105,7 +108,7 @@ export default function Feed({
       </div>
 
       {view === "ideas" ? (
-        <Ideas ideas={ideas} meId={meId} meName={meName} admin={admin} />
+        <Ideas ideas={ideas} meId={meId} meName={meName} mePhoto={mePhoto} admin={admin} />
       ) : null}
 
       {view === "feed" ? (
@@ -133,7 +136,7 @@ export default function Feed({
               field nobody had asked for. At the foot it is where a thumb already
               is, and it stays there while the feed goes past underneath — see the
               note on .compose-shut. */}
-          <Composer meName={meName} />
+          <Composer meName={meName} mePhoto={mePhoto} />
         </>
       ) : null}
 
@@ -214,7 +217,7 @@ export default function Feed({
 }
 
 /** Saying something, with as many pictures as it takes and where you were. */
-function Composer({ meName }: { meName: string }) {
+function Composer({ meName, mePhoto }: { meName: string; mePhoto: string | null }) {
   const say = useSay();
   const router = useRouter();
   const file = useRef<HTMLInputElement>(null);
@@ -347,9 +350,7 @@ function Composer({ meName }: { meName: string }) {
           had been typed. */}
       <div className="compose compose-shut">
         <div className="compose-top">
-          <span className="avatar" aria-hidden="true">
-            {initials(meName) || say("con.you")}
-          </span>
+          <Face photo={mePhoto} name={meName} />
           <textarea
             ref={words_}
             rows={1}
@@ -384,9 +385,7 @@ function Composer({ meName }: { meName: string }) {
       >
         <div className="compose compose-in-sheet">
           <div className="compose-top">
-            <span className="avatar" aria-hidden="true">
-              {initials(meName) || say("con.you")}
-            </span>
+            <Face photo={mePhoto} name={meName} />
             <textarea
               ref={inside}
               rows={4}
@@ -550,9 +549,7 @@ function PostCard({
   return (
     <li className="post">
       <div className="post-head">
-        <span className="avatar" aria-hidden="true">
-          {initials(post.author)}
-        </span>
+        <Face photo={post.authorPhoto} name={post.author} />
         <span className="row-body">
           <span className="post-who">{post.author}</span>
           <span className="row-meta">
@@ -740,6 +737,29 @@ async function supabaseUserFolder(): Promise<string> {
     data: { user },
   } = await supabaseBrowser().auth.getUser();
   return user?.id ?? "nobody";
+}
+
+/**
+ * Somebody's portrait, or their initials where the club has no picture of them.
+ *
+ * One drawing rather than four: the composer's bar, the composer's sheet, the top
+ * of a post and the ideas tab all had their own, and three of them could not show
+ * a photograph at all — which is why the person writing saw their own initials
+ * over a feed full of faces.
+ */
+export function Face({ photo, name }: { photo: string | null; name: string }) {
+  if (!photo) {
+    return (
+      <span className="avatar" aria-hidden="true">
+        {initials(name)}
+      </span>
+    );
+  }
+  return (
+    <span className="avatar avatar-photo" aria-hidden="true">
+      <Photo src={photo} alt="" fill sizes="44px" />
+    </span>
+  );
 }
 
 function initials(name: string) {

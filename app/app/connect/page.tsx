@@ -5,6 +5,7 @@ import { readingIn, requireMember } from "@/lib/app/me";
 import { getFrench, getPosts } from "@/lib/source";
 import { speaking } from "@/lib/words";
 import { sharedMembers } from "@/lib/shared";
+import { mediaUrl } from "@/lib/supabase/config";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export const metadata = { title: "Connect" };
@@ -46,6 +47,7 @@ export default async function ConnectPage() {
         people={people}
         meId={me.id}
         meName={me.name}
+        mePhoto={me.photoPath ? mediaUrl(me.photoPath) : null}
         wavable={rows ?? []}
         waved={(sent ?? []).filter((one) => one.from_profile === me.id).map((one) => one.to_profile)}
         ideas={ideas}

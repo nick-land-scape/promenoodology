@@ -5692,3 +5692,12 @@ body:has(.app-shell) {
   gap: 14px;
   padding-top: 8px;
 }
+
+/* The small face on an idea's byline. The shared drawing is a 44-point avatar;
+   here it is a mark beside a line of small print, so it is scaled rather than
+   drawn a second time at a second size. */
+.idea-face .avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 0.6rem;
+}

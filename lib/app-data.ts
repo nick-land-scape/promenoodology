@@ -116,6 +116,8 @@ export function getPosts(): Post[] {
     return {
       id: `${author}-${when}`,
       author: author ?? "",
+      // A copy of the site without a database has no portraits either.
+      authorPhoto: null,
       authorId: "",
       place: place ?? "",
       when: when ?? "",

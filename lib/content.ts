@@ -127,6 +127,7 @@ export type NewsItem = {
 export type Reply = {
   id: string;
   author: string;
+  authorPhoto: string | null;
   authorId: string;
   when: string;
   text: string;
@@ -135,6 +136,8 @@ export type Reply = {
 export type Post = {
   id: string;
   author: string;
+  /** Their portrait, where the club has one. Null draws initials instead. */
+  authorPhoto: string | null;
   /** Which profile wrote it, so the app knows whether it is yours to delete. */
   authorId: string;
   place: string;
