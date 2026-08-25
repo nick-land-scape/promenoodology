@@ -132,7 +132,16 @@ export default function Feed({
               note on .compose-shut. */}
           <Composer meName={meName} />
         </>
-      ) : (
+      ) : null}
+
+      {/* Named rather than left as the `else` of the feed.
+      
+          This was written as one ternary when there were two views — feed, or
+          otherwise the people — which is exactly right for two and quietly wrong
+          for three: the ideas tab walked into the `else` and drew who is around
+          underneath itself. A branch that means "not the feed" is a branch that
+          breaks the day a third tab arrives. */}
+      {view === "people" ? (
         <div className="app-section">
           <div className="app-section-head">
             <h2 className="app-h2">{say("con.whoIsAround")}</h2>
@@ -196,7 +205,7 @@ export default function Feed({
             ))}
           </ul>
         </div>
-      )}
+      ) : null}
     </>
   );
 }
