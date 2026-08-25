@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { plainly } from "@/lib/lang";
 import { useEffect } from "react";
 import { useSession } from "@/lib/session";
 
@@ -42,7 +43,10 @@ function whereToEdit(pathname: string): { href: string; what: string } | null {
 
 export default function TopBar() {
   const session = useSession();
-  const pathname = usePathname();
+  /* Stripped of its language: a prepared page knows itself as /en/stories even
+     where the reader's address bar says /stories, and this bar's one job is to
+     recognise the page it is sitting on. See plainly(). */
+  const pathname = plainly(usePathname());
   const signedIn = Boolean(session?.signedIn);
   const admin = Boolean(session?.admin);
 

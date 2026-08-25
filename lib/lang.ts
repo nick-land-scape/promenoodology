@@ -52,10 +52,23 @@ export function otherwise(lang: Lang): Lang {
   return lang === "en" ? "fr" : "en";
 }
 
-/** The path with any language prefix taken off. */
+/**
+ * The path with any language prefix taken off — including English's.
+ *
+ * English has no prefix in the address bar, so for a long time this only looked
+ * for French. But the reader's address and the address the page was *rendered*
+ * at are not the same thing: the proxy rewrites /events to /en/events, and a page
+ * that is worked out ahead of time is worked out under that rewritten name. So
+ * the language switch, which asks the browser where it is, was handed /en/events
+ * and offered "/fr" + that — /fr/en/events, which is nowhere.
+ *
+ * It showed on the front page from the day the front page was prerendered, and on
+ * every page once they all were. Taking /en off as well is the whole fix, and it
+ * costs nothing: /en is never an address anybody is at, only one a page is built
+ * under.
+ */
 export function plainly(pathname: string): string {
   for (const lang of LANGS) {
-    if (lang === PLAIN) continue;
     if (pathname === `/${lang}`) return "/";
     if (pathname.startsWith(`/${lang}/`)) return pathname.slice(lang.length + 1);
   }

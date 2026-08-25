@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 import { useKnock } from "@/lib/knock";
-import { at, type Lang } from "@/lib/lang";
+import { at, plainly, type Lang } from "@/lib/lang";
 import ContactPop from "./ContactPop";
 import LanguageSwitch from "./LanguageSwitch";
 import DarkSwitch from "./DarkSwitch";
@@ -40,8 +40,22 @@ export default function Nav({
    */
   const knock = useKnock(at(lang, "/account/sign-in"), at(lang, "/"));
 
-  // /stories/dinner-for-500 keeps STORIES marked as the section you are in.
-  const current = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  /* Which section you are in, marked in purple.
+   *
+   * Both sides are stripped of their language before they are compared, because
+   * the two are not written in the same alphabet: the links are made with at(),
+   * which gives English no prefix, while the address a prepared page was built
+   * under is /en/events even when the reader's own address bar says /events. Left
+   * as they were, the mark simply never appeared on an English page.
+   *
+   * /stories/dinner-for-500 keeps STORIES marked as the section you are in — but
+   * the front page marks only itself, or it would be lit on every page there is. */
+  const here = plainly(pathname);
+  const current = (href: string) => {
+    const to = plainly(href);
+    if (to === "/") return here === "/";
+    return here === to || here.startsWith(`${to}/`);
+  };
 
   return (
     <nav className="nav">
