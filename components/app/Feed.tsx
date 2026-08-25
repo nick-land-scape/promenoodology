@@ -643,16 +643,19 @@ function PostCard({
       ) : null}
 
       <div className="post-actions">
+        {/* Always "reply", never "3 replies".
+         *
+         * It used to count them, which read as a label for the thread rather than
+         * as the way into it — so on any post that had been answered, the one
+         * control that lets you answer it had stopped saying what it does. And the
+         * count was telling nobody anything: every reply is already underneath,
+         * with a face and a name on it. You can see that there are three. */}
         <button
           type="button"
           className="post-action"
           onClick={() => setOpen(!open)}
         >
-          {post.replies.length === 0
-            ? say("post.reply")
-            : `${post.replies.length} ${say(
-                post.replies.length === 1 ? "post.oneReply" : "post.manyReplies",
-              )}`}
+          {say("post.reply")}
         </button>
 
 
