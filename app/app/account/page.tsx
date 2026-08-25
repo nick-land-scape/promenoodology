@@ -89,7 +89,7 @@ export default async function AccountPage() {
         <div className="app-section-head">
           <h2 className="app-h2">{say("acc.youSaidYesTo")}</h2>
           {yes.length > SHOWING ? (
-            <Link className="app-more" href="/app/account/coming">
+            <Link prefetch={false} className="app-more" href="/app/account/coming">
               {say("home.allOfThem").replace("{n}", String(yes.length))}
             </Link>
           ) : (
@@ -145,17 +145,25 @@ export default async function AccountPage() {
       <PhotoPreview photos={photos} />
       <PostPreview posts={posts} />
 
-      {/* The two screens that are about you. */}
+      {/* The two screens that are about you.
+       *
+       * None of the rows below are prefetched. There are thirteen of them in view
+       * at once here — three settings, three for an admin, the block list, five
+       * written pages — and each is a screen of its own that reads the session
+       * before it can draw anything. Left to prefetch, opening this account was
+       * twenty-one background fetches, measured; every one of them a render of a
+       * screen nobody had asked for. They open in a third of a second when they
+       * are pressed. */}
       <section className="app-section">
-        <Link className="wide-row" href="/app/account/details">
+        <Link prefetch={false} className="wide-row" href="/app/account/details">
           <span>{say("acc.personalInformation")}</span>
           <span aria-hidden="true">›</span>
         </Link>
-        <Link className="wide-row" href="/app/account/signing-in">
+        <Link prefetch={false} className="wide-row" href="/app/account/signing-in">
           <span>{say("acc.waysToSignIn")}</span>
           <span aria-hidden="true">›</span>
         </Link>
-        <Link className="wide-row" href="/app/contact">
+        <Link prefetch={false} className="wide-row" href="/app/contact">
           <span>{say("acc.getInTouch")}</span>
           <span aria-hidden="true">›</span>
         </Link>
@@ -164,7 +172,7 @@ export default async function AccountPage() {
             than as a sixth tab: it is not part of being a member, it is a thing
             two or three people can also do. */}
         {me.admin ? (
-          <Link className="wide-row" href="/app/account/everybody">
+          <Link prefetch={false} className="wide-row" href="/app/account/everybody">
             <span>{say("who.everybody")}</span>
             <span aria-hidden="true">›</span>
           </Link>
@@ -175,7 +183,7 @@ export default async function AccountPage() {
             with: a photograph gets reported on a Saturday evening while everybody
             who could do anything about it is standing in a field. */}
         {me.admin ? (
-          <Link className="wide-row" href="/app/account/reported">
+          <Link prefetch={false} className="wide-row" href="/app/account/reported">
             <span>{say("flag.reported")}</span>
             <span aria-hidden="true">›</span>
           </Link>
@@ -183,7 +191,7 @@ export default async function AccountPage() {
 
         {/* Everybody's, not only an admin's: a block you cannot find again is a
             block somebody has to leave the club to undo. */}
-        <Link className="wide-row" href="/app/account/blocked">
+        <Link prefetch={false} className="wide-row" href="/app/account/blocked">
           <span>{say("block.whoYouBlocked")}</span>
           <span aria-hidden="true">›</span>
         </Link>
@@ -193,7 +201,7 @@ export default async function AccountPage() {
       <section className="app-section app-section-legal">
         <p className="app-label app-label-alone">{say("acc.inWriting")}</p>
         {LEGAL.map((row) => (
-          <Link key={row.key} className="wide-row" href={row.href}>
+          <Link key={row.key} prefetch={false} className="wide-row" href={row.href}>
             <span>{say(row.key)}</span>
             <span aria-hidden="true">›</span>
           </Link>

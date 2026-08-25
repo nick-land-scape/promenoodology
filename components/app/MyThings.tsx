@@ -29,7 +29,7 @@ export function PhotoPreview({
       <div className="app-section-head">
         <h2 className="app-h2">{say("mine.photographs")}</h2>
         {photos.length > most ? (
-          <Link className="app-more" href="/app/account/photographs">
+          <Link prefetch={false} className="app-more" href="/app/account/photographs">
             {say("home.allOfThem").replace("{n}", String(photos.length))}
           </Link>
         ) : (
@@ -73,7 +73,7 @@ export function PostPreview({
       <div className="app-section-head">
         <h2 className="app-h2">{say("mine.whatYouSaid")}</h2>
         {posts.length > most ? (
-          <Link className="app-more" href="/app/account/posts">
+          <Link prefetch={false} className="app-more" href="/app/account/posts">
             {say("home.allOfThem").replace("{n}", String(posts.length))}
           </Link>
         ) : (
