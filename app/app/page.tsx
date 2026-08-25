@@ -168,7 +168,7 @@ export default async function AppHome() {
           <ul className="peek-stories">
             {stories.slice(0, FEW.stories).map((story) => (
               <li key={story.slug}>
-                <Link href={`/app/read/${story.slug}`}>
+                <Link href={`/app/read/${story.slug}`} prefetch={false}>
                   {story.cover ? (
                     <span className="peek-cover">
                       <Photo src={story.cover.src} alt="" fill sizes="46vw" />

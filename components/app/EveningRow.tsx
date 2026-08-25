@@ -134,6 +134,11 @@ export default function EveningRow({
       <Link
         href={`/app/events/${event.id}`}
         className="row-reach"
+        /* Fetched when it is pressed. A list of four evenings in view is four
+           screens the server works out for one that gets opened, and the wait
+           it saves is now a third of a second with the bones of the screen
+           already drawn over it. */
+        prefetch={false}
         aria-label={event.title}
         tabIndex={-1}
       />
@@ -151,7 +156,7 @@ export default function EveningRow({
       </span>
 
       <span className="row-body">
-        <Link href={`/app/events/${event.id}`} className="row-title">
+        <Link href={`/app/events/${event.id}`} className="row-title" prefetch={false}>
           {event.title}
         </Link>
 

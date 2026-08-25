@@ -34,6 +34,13 @@ export default function TabBar({ face }: { face?: string | null }) {
             key={href}
             href={href}
             className="tab"
+            /* Not prefetched here. Feels asks for all five on the first idle
+               moment of every screen, and a Link that also prefetches asks for
+               the same screen a second time under a different key — every screen
+               in this app is worked out per person, so that is a second full
+               render, session and database and all. Counted on a live screen: one
+               tab press was fetching thirteen screens. */
+            prefetch={false}
             aria-current={active ? "page" : undefined}
             /* Pressing the tab you are already on goes to the top of it, which is
                what every other app on the phone does and the one gesture people

@@ -167,7 +167,9 @@ export default function Reading({
         <ul className="told">
           {stories.map((story) => (
             <li key={story.slug}>
-              <Link href={`/app/read/${story.slug}`} className="told-card">
+              {/* Fetched when it is pressed: seven stories in a list is seven
+                  whole screens worked out for the one that gets read. */}
+              <Link href={`/app/read/${story.slug}`} className="told-card" prefetch={false}>
                 {story.cover ? (
                   <span className="told-cover">
                     <Photo

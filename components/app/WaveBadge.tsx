@@ -18,6 +18,10 @@ export default async function WaveBadge() {
     <Link
       href="/app/waves"
       className="wave-badge"
+      /* Fetched when it is pressed. It is in the corner of every screen in the
+         app, so prefetching it means working out who has waved on every screen
+         whether or not anybody looks. */
+      prefetch={false}
       aria-label={
         unseen > 0
           ? say("wave.howMany").replace("{n}", String(unseen))
