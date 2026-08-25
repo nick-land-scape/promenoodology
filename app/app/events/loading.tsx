@@ -1,10 +1,10 @@
 import AppHeader from "@/components/app/AppHeader";
-import { Bone, BoneHeading, BoneRow } from "@/components/app/Bones";
+import { Bone, BoneEvening, BoneHeading } from "@/components/app/Bones";
 import { readingIn } from "@/lib/app/me";
 import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 
-/** What's on: the switcher, the places, then evenings with two buttons each. */
+/** What's on: two ways of looking, the places, then the evenings. */
 export default async function Loading() {
   const say = speaking(await readingIn(), await getFrench());
   return (
@@ -25,7 +25,7 @@ export default async function Loading() {
       </div>
 
       {[0, 1, 2, 3].map((row) => (
-        <BoneRow key={row} thumb lines={2} button />
+        <BoneEvening key={row} />
       ))}
 
       <span className="visually-hidden">{say("wait.coming")}</span>

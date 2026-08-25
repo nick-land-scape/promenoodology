@@ -114,3 +114,66 @@ export function BoneSmallSwitcher() {
     </div>
   );
 }
+
+/**
+ * An evening, which is not shaped like a row of words.
+ *
+ * A square with the date stamped on it down the left, the words beside it, and
+ * the bookmark at the top right. It was drawn for a while as words, a wide button
+ * and a thumbnail on the right — which was the row as it stood in July: the
+ * button was "count me in", and it went from the list the day the list stopped
+ * asking for a decision it could not honour. A bone left standing for a control
+ * that no longer exists is the worst kind, because the eye believes it.
+ */
+export function BoneEvening({ lines = 2 }: { lines?: number }) {
+  return (
+    <div className="waiting-row">
+      <span className="waiting-tile">
+        <Bone w={72} h={72} />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <Bone w="74%" h={15} />
+        <Bone w="46%" h={10} gap={8} />
+        {lines > 2 ? <Bone w="62%" h={10} gap={6} /> : null}
+      </span>
+      {/* The bookmark: top right, level with the name, the one control a row has. */}
+      <span className="waiting-mark">
+        <Bone w={22} h={26} />
+      </span>
+    </div>
+  );
+}
+
+/**
+ * The line you press to write something, at the foot of the screen.
+ *
+ * Shut, which is how it always arrives: a face and one line of nothing. It is at
+ * the bottom because the feed's composer is — it was over the feed until somebody
+ * pointed out that this puts a question before the answers — and the skeleton has
+ * to stand where the thing stands or the whole screen appears to jump when it
+ * lands.
+ */
+export function BoneCompose() {
+  return (
+    <div className="waiting-compose">
+      <Bone w={40} h={40} face />
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <Bone w="100%" h={38} />
+      </span>
+    </div>
+  );
+}
+
+/** The figures at the foot of the front screen: a number and its name, three times. */
+export function BoneTally() {
+  return (
+    <div className="waiting-tally">
+      {[0, 1, 2].map((one) => (
+        <span key={one}>
+          <Bone w={56} h={30} />
+          <Bone w={72} h={9} gap={7} />
+        </span>
+      ))}
+    </div>
+  );
+}

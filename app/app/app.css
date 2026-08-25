@@ -3551,6 +3551,44 @@ body:has(.app-shell) {
   padding: 22px var(--gutter) 0;
 }
 
+/* The picture and the bookmark in a waiting row both sit at the top of it, as
+   they do in the row itself: a square halfway down beside three lines of words
+   reads as decoration rather than as the day they are about. */
+.waiting-tile,
+.waiting-mark {
+  flex: none;
+  align-self: flex-start;
+}
+
+/* The composer's band, where the composer is: at the foot of the screen. Same
+   hairline, same air above and below it as .compose-shut, and the same trick for
+   getting it down there when there is not enough above it to push it — the screen
+   is as tall as the window, and this takes what is left. */
+.waiting:has(> .waiting-compose) {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(
+    100dvh - var(--bar-room, calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)))
+  );
+}
+
+.waiting-compose {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: auto;
+  padding: 16px var(--gutter) 18px;
+  border-top: 1px solid var(--hair);
+}
+
+/* The figures: numbers in a row that wraps, like the tally they stand for. */
+.waiting-tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 26px;
+  padding: 16px var(--gutter) 2px;
+}
+
 /* ------------------------------------------------------------------ a month */
 
 /* A month, for the question a list cannot answer: am I free on the fourteenth. */
@@ -4544,12 +4582,21 @@ body:has(.app-shell) {
   }
 
   /* The skeleton follows the screen it is standing in for: two covers abreast,
-     with the same paper down the sides. */
+     in the same gutter and with the same gap between them as .told above — it had
+     a wider gap and twice the paper down the sides, so the covers landed a little
+     narrower than the ones that replaced them and the whole column shifted. */
   .waiting-stories {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0 calc(var(--gutter) * 1.4);
-    padding: 0 calc(var(--gutter) * 2);
+    gap: 0 var(--gutter);
+    padding: 0 var(--gutter);
+  }
+
+  /* And the words under them line up with the corner of the cover, as they do
+     there, rather than being indented from it by a gutter of their own. */
+  .waiting-story-words {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   /* And so do people: sixty-four names down the left of a thirteen-inch screen

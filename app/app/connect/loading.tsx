@@ -1,27 +1,23 @@
 import AppHeader from "@/components/app/AppHeader";
-import { Bone } from "@/components/app/Bones";
+import { Bone, BoneCompose } from "@/components/app/Bones";
 import { readingIn } from "@/lib/app/me";
 import { getFrench } from "@/lib/source";
 import { speaking } from "@/lib/words";
 
-/** Connect: two views, the one-line composer, then posts with pictures. */
+/** Connect: three views, the posts, and the line you write in at the foot. */
 export default async function Loading() {
   const say = speaking(await readingIn(), await getFrench());
   return (
     <div className="waiting" aria-busy="true">
       <AppHeader eyebrow={say("con.eyebrow")} title={say("con.whatEveryone")} />
 
+      {/* Three, not two: what people said, what the club is being asked to do,
+          and who is in it. The third arrived with the ideas tab and this stayed
+          at two, so the switcher grew a column the moment the screen landed. */}
       <div className="waiting-switcher">
-        <Bone w="50%" h={40} />
-        <Bone w="50%" h={40} />
-      </div>
-
-      <div className="waiting-row">
-        <Bone w={40} h={40} face />
-        <span style={{ flex: 1 }}>
-          <Bone w="70%" h={14} />
-        </span>
-        <Bone w={30} h={30} />
+        <Bone w="33%" h={40} />
+        <Bone w="33%" h={40} />
+        <Bone w="33%" h={40} />
       </div>
 
       {[0, 1].map((post) => (
@@ -43,6 +39,8 @@ export default async function Loading() {
           <Bone w="100%" h={210} gap={12} />
         </div>
       ))}
+
+      <BoneCompose />
 
       <span className="visually-hidden">{say("wait.coming")}</span>
     </div>
