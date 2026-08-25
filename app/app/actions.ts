@@ -292,6 +292,21 @@ export async function cancelMyPlace(
  * in the app, next to what was typed, which is both kinder and the only way to
  * find out what actually went wrong on somebody else's phone.
  */
+/*
+ * Why these writers do not call revalidatePath.
+ *
+ * They did, and it is what broke posting: the post itself was written every time
+ * — both test posts are in the feed — and then the page died with the WebView's
+ * own "this page couldn't load". Invalidating the path somebody is currently
+ * standing on makes React go and fetch the route again from inside the action's
+ * own transition, and when that fetch does not come back cleanly the recovery is
+ * a navigation, and a failed navigation in a WebView is a dead end with the
+ * typing lost behind it.
+ *
+ * The client asks instead, once the action has said yes: router.refresh() in the
+ * component. A refresh that fails leaves the screen as it was, which is the right
+ * failure — the post is already saved by then.
+ */
 async function carefully<T extends { ok: boolean; error?: string }>(
   what: () => Promise<T>,
 ): Promise<T | { ok: false; error: string }> {
@@ -410,7 +425,6 @@ export async function say(
     });
   }
 
-  revalidatePath("/app/connect");
   return { ok: true };
   });
 }
@@ -436,7 +450,6 @@ export async function takeDownMyPost(id: string): Promise<{ ok: boolean; error?:
   const paths = [...(post?.photo_paths ?? []), post?.photo_path ?? ""].filter(Boolean);
   if (paths.length > 0) await supabase.storage.from("media").remove(paths);
 
-  revalidatePath("/app/connect");
   return { ok: true };
 }
 
@@ -456,7 +469,6 @@ export async function replyTo(
     .insert({ post_id: postId, author_id: me.id, text: text.slice(0, LONGEST) });
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   return { ok: true };
 }
 
@@ -472,7 +484,6 @@ export async function takeDownMyReply(id: string): Promise<{ ok: boolean; error?
     .eq("author_id", me.id);
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   return { ok: true };
 }
 
@@ -520,7 +531,6 @@ export async function wave(atProfile: string): Promise<{ ok: boolean; error?: st
   );
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   revalidatePath("/app/waves");
   return { ok: true };
 }
@@ -780,7 +790,6 @@ export async function blockThem(personId: string): Promise<{ ok: boolean; error?
     .upsert({ who: me.id, them: personId }, { onConflict: "who,them" });
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   revalidatePath("/app/account");
   return { ok: true };
 }
@@ -798,7 +807,6 @@ export async function unblockThem(personId: string): Promise<{ ok: boolean; erro
     .eq("them", personId);
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   revalidatePath("/app/account");
   return { ok: true };
 }
@@ -850,7 +858,6 @@ export async function suggestThis(words: string): Promise<{ ok: boolean; error?:
     .insert({ by_person: me.id, words: said.slice(0, 1000) });
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   return { ok: true };
 }
 
@@ -871,7 +878,6 @@ export async function agreeWith(ideaId: string, yes: boolean): Promise<{ ok: boo
     : await supabase.from("idea_votes").delete().eq("idea", ideaId).eq("who", me.id);
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   return { ok: true };
 }
 
@@ -905,7 +911,6 @@ export async function answerIdea(
     .eq("id", ideaId);
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   revalidatePath("/admin/ideas");
   return { ok: true };
 }
@@ -924,7 +929,6 @@ export async function takeDownIdea(ideaId: string): Promise<{ ok: boolean; error
   const { error } = await taking;
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   revalidatePath("/admin/ideas");
   return { ok: true };
 }
@@ -967,7 +971,6 @@ export async function editMyPost(
     .eq("author_id", me.id);
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   return { ok: true };
 }
 
@@ -990,7 +993,6 @@ export async function editMyReply(id: string, words: string): Promise<{ ok: bool
     .eq("author_id", me.id);
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   return { ok: true };
 }
 
@@ -1019,7 +1021,6 @@ export async function editMyIdea(id: string, words: string): Promise<{ ok: boole
     .eq("by_person", me.id);
   if (error) return { ok: false, error: error.message };
 
-  revalidatePath("/app/connect");
   revalidatePath("/admin/ideas");
   return { ok: true };
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import Photo from "../Photo";
 import Sheet from "./Sheet";
@@ -72,6 +73,7 @@ export default function Ideas({
  */
 function Propose({ meName }: { meName: string }) {
   const say = useSay();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [words, setWords] = useState("");
   const [trouble, setTrouble] = useState("");
@@ -92,6 +94,7 @@ function Propose({ meName }: { meName: string }) {
       setOpen(false);
       setSaid(say("idea.thankYou"));
       void buzz("light");
+      router.refresh();
     });
   }
 

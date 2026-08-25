@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import Photo from "../Photo";
 import Sheet from "./Sheet";
@@ -215,6 +216,7 @@ export default function Feed({
 /** Saying something, with as many pictures as it takes and where you were. */
 function Composer({ meName }: { meName: string }) {
   const say = useSay();
+  const router = useRouter();
   const file = useRef<HTMLInputElement>(null);
   const words_ = useRef<HTMLTextAreaElement>(null);
   /* Shut until it is wanted.
@@ -317,6 +319,10 @@ function Composer({ meName }: { meName: string }) {
       setPlace("");
       setPaths([]);
       setOpen(false);
+      /* Asked for from here rather than invalidated from inside the action — see
+         the note above `carefully` in app/app/actions.ts. A refresh that fails
+         leaves the screen as it was, and the post is already saved by then. */
+      router.refresh();
     });
   }
 
@@ -511,6 +517,7 @@ function PostCard({
   meId: string;
 }) {
   const say = useSay();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [words, setWords] = useState("");
   const [trouble, setTrouble] = useState("");
@@ -560,8 +567,11 @@ function PostCard({
               if (!confirm(say("post.reallyTakeDown"))) return;
               start(async () => {
                 const answer = await takeDownMyPost(post.id);
-                if (!answer.ok)
+                if (!answer.ok) {
                   setTrouble(answer.error ?? say("join.didNotWork"));
+                  return;
+                }
+                router.refresh();
               });
             }}
             disabled={pending}
@@ -676,9 +686,12 @@ function PostCard({
             setTrouble("");
             start(async () => {
               const answer = await replyTo(post.id, words);
-              if (!answer.ok)
+              if (!answer.ok) {
                 setTrouble(answer.error ?? say("join.didNotGoThrough"));
-              else setWords("");
+                return;
+              }
+              setWords("");
+              router.refresh();
             });
           }}
         >
