@@ -75,7 +75,7 @@ export const LEGAL: LegalSpec[] = [
     slug: "privacy",
     title: "what we do with your data",
     lead: "Who holds what about you, why, for how long, and how to make us stop.",
-    changed: "2026-08-21",
+    changed: "2026-08-25",
     parts: [
       {
         text: "This notice describes how promeNOODology handles personal data on promenoodology.com and in the promeNOODology members\u2019 app. It is written to be read rather than to be survived, and it is accurate: everything named below is something the site actually does.",
@@ -131,7 +131,10 @@ export const LEGAL: LegalSpec[] = [
         text: "Only the processors this site is built on, each of them under a data processing agreement and none of them permitted to use anything for their own purposes:",
       },
       {
-        text: "Vercel Inc., which hosts the site and runs its server code. Supabase, which holds the database, the files and the accounts; this project\u2019s data is stored in the European Union. Infomaniak Network SA in Switzerland, which sends the email. Apple Inc., only where you choose Sign in with Apple.",
+        text: "Vercel Inc., which hosts the site and runs its server code. Supabase, which holds the database, the files and the accounts; this project\u2019s data is stored in the European Union. Infomaniak Network SA in Switzerland, which sends the email. Apple Inc., only where you choose Sign in with Apple. Anthropic PBC, which reads a post once at the moment it is written \u2014 see the next paragraph.",
+      },
+      {
+        text: "About the last of those, plainly: when you write something on the feed, the words and any photographs are sent once to Anthropic\u2019s model to be read against the rules in the terms, and an answer comes back saying fine, no, or show this to the club\u2019s admins. Your name does not go with it and neither does anything else about you. Nothing is kept there to train anything, and nothing is sent at all when you are only reading. It is done that way because a club this size has no moderator awake at midnight, and the alternative was nobody reading the feed before you did.",
       },
       {
         text: "Where a processor is in the United States, transfers rely on the European Commission\u2019s standard contractual clauses together with that provider\u2019s own certification under the EU\u2013US Data Privacy Framework. Nobody outside this list receives personal data from us. We do not sell it, rent it, or hand it to advertisers, and we would resist any request to do so.",
@@ -185,7 +188,7 @@ export const LEGAL: LegalSpec[] = [
     slug: "terms",
     title: "terms and conditions",
     lead: "What you can expect of us, what we ask of you, and who is answerable for what.",
-    changed: "2026-08-21",
+    changed: "2026-08-25",
     parts: [
       { heading: "1. Who these terms are between" },
       {
@@ -236,10 +239,16 @@ export const LEGAL: LegalSpec[] = [
         text: "Only put up what is yours to put up. Do not put up anything that infringes somebody else\u2019s rights, breaks a law, shows a person who would not want to be shown, or would make somebody unwelcome at this table \u2014 which includes anything hateful about who a person is, anything threatening, and anything a reasonable adult would call harassment.",
       },
       {
-        text: "We may take down anything that breaks this section, and we will tell whoever put it up why. We do not review everything in advance and we do not claim to: what is written here is written by members, and the responsibility for it is theirs.",
+        text: "There is no tolerance for any of that here \u2014 not a warning system, not a strike count. Sexual content, an attack on a person, anything unlawful, and anybody who sets out to make this place unpleasant: those come down, and the account behind them can be closed the same day. Nobody in this club should have to put up with it in order to stay in it.",
       },
       {
-        text: "If something of yours has been put up by somebody else, write to info@promeNOODology.com and it will come down while we look into it.",
+        text: "Three things make that more than a sentence. Every post is read by an automatic screening before it appears, which refuses the plainest cases outright and puts the doubtful ones in front of us. Every post and every reply written by somebody else carries a way to report it, and a report is read by a person \u2014 normally the same day, at the outside within twenty-four hours. And you can block any member from inside the app: neither of you sees the other on the feed from that moment, nobody is told, and it is yours to undo in your account.",
+      },
+      {
+        text: "We may take down anything that breaks this section, and we will tell whoever put it up why. Beyond the screening just described we do not review everything in advance and we do not claim to: what is written here is written by members, and the responsibility for it is theirs.",
+      },
+      {
+        text: "If something of yours has been put up by somebody else, write to info@promeNOODology.com and it will come down while we look into it. That address reaches a person, and it is the address for anything else in this section too \u2014 there is no ticket system here and nothing that answers by itself.",
       },
 
       { heading: "6. Cooking is cooking" },
