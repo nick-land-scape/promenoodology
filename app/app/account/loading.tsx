@@ -1,15 +1,16 @@
-import AppHeader from "@/components/app/AppHeader";
+"use client";
+
+import WaitingHead from "@/components/app/WaitingHead";
 import { Bone, BoneHeading, BoneRow } from "@/components/app/Bones";
-import { readingIn } from "@/lib/app/me";
-import { getFrench } from "@/lib/source";
-import { speaking } from "@/lib/words";
+import { useSay } from "@/components/app/Words";
 
 /** Account: the card, what is yours in three previews, then the rows. */
-export default async function Loading() {
-  const say = speaking(await readingIn(), await getFrench());
+export default function Loading() {
+  const say = useSay();
+
   return (
     <div className="waiting" aria-busy="true">
-      <AppHeader eyebrow={say("acc.eyebrow")} title={say("acc.yourMembership")} />
+      <WaitingHead eyebrow={say("acc.eyebrow")} title={say("acc.yourMembership")} />
 
       {/* A card's own proportions, 85.6 by 54, which on a phone is 214 points
           tall inside the gutter. The bone was 180, so the whole screen under it

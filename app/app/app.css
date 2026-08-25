@@ -3434,6 +3434,14 @@ body:has(.app-shell) {
   align-self: flex-start;
 }
 
+/* The room the wave keeps in a waiting header: the badge's own 34 points, held
+   empty. Drawing a bone in its shape would be a promise that somebody waved. */
+.waiting-wave {
+  display: block;
+  width: 34px;
+  height: 34px;
+}
+
 /* The composer's band, where the composer is: at the foot of the screen. Same
    hairline, same air above and below it as .compose-shut, and the same trick for
    getting it down there when there is not enough above it to push it — the screen

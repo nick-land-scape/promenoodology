@@ -1,15 +1,16 @@
-import AppHeader from "@/components/app/AppHeader";
+"use client";
+
+import WaitingHead from "@/components/app/WaitingHead";
 import { Bone, BoneCompose } from "@/components/app/Bones";
-import { readingIn } from "@/lib/app/me";
-import { getFrench } from "@/lib/source";
-import { speaking } from "@/lib/words";
+import { useSay } from "@/components/app/Words";
 
 /** Connect: three views, the posts, and the line you write in at the foot. */
-export default async function Loading() {
-  const say = speaking(await readingIn(), await getFrench());
+export default function Loading() {
+  const say = useSay();
+
   return (
     <div className="waiting" aria-busy="true">
-      <AppHeader eyebrow={say("con.eyebrow")} title={say("con.whatEveryone")} />
+      <WaitingHead eyebrow={say("con.eyebrow")} title={say("con.whatEveryone")} />
 
       {/* Three, not two: what people said, what the club is being asked to do,
           and who is in it. The third arrived with the ideas tab and this stayed

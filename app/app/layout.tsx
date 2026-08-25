@@ -44,7 +44,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const [me, lang, french] = await Promise.all([whoIsThis(), readingIn(), getFrench()]);
 
   return (
-    <Words lang={lang} words={saying(lang, french, "app")}>
+    <Words lang={lang} words={saying(lang, french, "app")} you={me?.name?.split(" ")[0] ?? ""}>
       <div className="app-shell" lang={lang}>
         {/* The floor under a white screen: anything uncaught says so on the paper
             instead of leaving nothing at all. */}

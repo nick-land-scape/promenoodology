@@ -1,15 +1,16 @@
-import AppHeader from "@/components/app/AppHeader";
+"use client";
+
+import WaitingHead from "@/components/app/WaitingHead";
 import { Bone, BoneEvening, BoneHeading } from "@/components/app/Bones";
-import { readingIn } from "@/lib/app/me";
-import { getFrench } from "@/lib/source";
-import { speaking } from "@/lib/words";
+import { useSay } from "@/components/app/Words";
 
 /** What's on: two ways of looking, the places, then the evenings. */
-export default async function Loading() {
-  const say = speaking(await readingIn(), await getFrench());
+export default function Loading() {
+  const say = useSay();
+
   return (
     <div className="waiting" aria-busy="true">
-      <AppHeader eyebrow={say("on.eyebrow")} title={say("on.whatToJoin")} />
+      <WaitingHead eyebrow={say("on.eyebrow")} title={say("on.whatToJoin")} />
 
       <div className="waiting-switcher">
         <Bone w="50%" h={40} />
