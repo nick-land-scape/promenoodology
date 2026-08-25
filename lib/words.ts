@@ -472,6 +472,14 @@ export const PHRASES: Phrase[] = [
   { key: "report.neverMind", en: "never mind", fr: "annuler", where: "app" },
   { key: "report.blocked", en: "{name} is blocked. Undo it in your account.", fr: "{name} est bloqué. Annulez dans votre compte.", where: "app", note: "Keep {name} exactly as it is." },
 
+  /* The two marks at the top right of anything you wrote. Read out by a screen
+     reader and shown as a tooltip; the buttons themselves are drawings. */
+  { key: "mine.editThis", en: "Change {what}", fr: "Modifier {what}", where: "app", note: "Keep {what} exactly as it is." },
+  { key: "mine.takeThisDown", en: "Take {what} down", fr: "Retirer {what}", where: "app", note: "Keep {what} exactly as it is." },
+  { key: "mine.reallyTakeDown", en: "Press again to take {what} down", fr: "Appuyez encore pour retirer {what}", where: "app", note: "The second press. Keep {what} exactly as it is." },
+  { key: "mine.thisPost", en: "this post", fr: "ce message", where: "app" },
+  { key: "mine.thisIdea", en: "this suggestion", fr: "cette suggestion", where: "app" },
+
   /* What the club should do next, according to the club. The middle tab of
      Connect: a sentence anybody can write, and a number anybody can add to. */
   { key: "con.ideas", en: "ideas", fr: "idées", where: "app", note: "The middle tab of Connect." },

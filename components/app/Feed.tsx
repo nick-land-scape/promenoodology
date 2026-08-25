@@ -6,6 +6,7 @@ import Photo from "../Photo";
 import Sheet from "./Sheet";
 import Trouble from "./Trouble";
 import Ideas from "./Ideas";
+import Mine from "./Mine";
 import type { Member, Post } from "@/lib/content";
 import type { Idea } from "@/app/app/actions";
 import {
@@ -13,6 +14,7 @@ import {
   /* Renamed here only: the action that posts and the hook that reads the app's
      own words were both called `say`, which is a fair name for either. */
   say as postToEveryone,
+  editMyPost,
   takeDownMyPost,
   takeDownMyReply,
   wave,
@@ -518,7 +520,12 @@ function PostCard({
   const say = useSay();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [words, setWords] = useState("");
+  const [words, setWords] = useState(post.text);
+  /* The reply being typed, which is a different thing from the post's own words
+     and used to share a name with them. */
+  const [reply, setReply] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(post.text);
   const [trouble, setTrouble] = useState("");
   const [pending, start] = useTransition();
   /* What is being complained about, or null. A post or one of its replies —
@@ -556,12 +563,18 @@ function PostCard({
             {[post.place, post.when].filter(Boolean).join(" · ")}
           </span>
         </span>
-        {mine ? (
-          <button
-            type="button"
-            className="post-action"
-            onClick={() => {
-              if (!confirm(say("post.reallyTakeDown"))) return;
+        {/* Yours only, and at the top right where a title's own controls belong.
+            An admin who wants something gone reports it and settles the report,
+            which leaves a record of why it went. */}
+        {mine && !editing ? (
+          <Mine
+            what={say("mine.thisPost")}
+            pending={pending}
+            onEdit={() => {
+              setDraft(words);
+              setEditing(true);
+            }}
+            onDelete={() =>
               start(async () => {
                 const answer = await takeDownMyPost(post.id);
                 if (!answer.ok) {
@@ -569,16 +582,56 @@ function PostCard({
                   return;
                 }
                 router.refresh();
-              });
-            }}
-            disabled={pending}
-          >
-            {say("post.takeItDown")}
-          </button>
+              })
+            }
+          />
         ) : null}
       </div>
 
-      {post.text ? <p className="post-text">{post.text}</p> : null}
+      {editing ? (
+        <form
+          className="post-editing"
+          onSubmit={(submit) => {
+            submit.preventDefault();
+            setTrouble("");
+            start(async () => {
+              const answer = await editMyPost(post.id, draft, post.place);
+              if (!answer.ok) {
+                setTrouble(answer.error ?? say("join.didNotWork"));
+                return;
+              }
+              setWords(draft.trim());
+              setEditing(false);
+              router.refresh();
+            });
+          }}
+        >
+          <textarea
+            value={draft}
+            onChange={(change) => setDraft(change.target.value)}
+            rows={4}
+            aria-label={say("post.writeAPost")}
+          />
+          <div className="post-editing-feet">
+            <button type="submit" className="pill pill-small pill-solid" disabled={pending}>
+              {say("idea.saveEdit")}
+            </button>
+            <button
+              type="button"
+              className="pill pill-small"
+              onClick={() => {
+                setDraft(words);
+                setEditing(false);
+              }}
+              disabled={pending}
+            >
+              {say("report.neverMind")}
+            </button>
+          </div>
+        </form>
+      ) : words ? (
+        <p className="post-text">{words}</p>
+      ) : null}
 
       {/* One fills the width; several become a strip you push sideways, which is
           what a phone does with more than one picture. */}
@@ -682,26 +735,26 @@ function PostCard({
             submit.preventDefault();
             setTrouble("");
             start(async () => {
-              const answer = await replyTo(post.id, words);
+              const answer = await replyTo(post.id, reply);
               if (!answer.ok) {
                 setTrouble(answer.error ?? say("join.didNotGoThrough"));
                 return;
               }
-              setWords("");
+              setReply("");
               router.refresh();
             });
           }}
         >
           <input
-            value={words}
-            onChange={(change) => setWords(change.target.value)}
+            value={reply}
+            onChange={(change) => setReply(change.target.value)}
             placeholder={say("post.answerName").replace("{name}", post.author.split(" ")[0])}
             aria-label={say("post.yourReply")}
           />
           <button
             type="submit"
             className="pill pill-small"
-            disabled={pending || !words.trim()}
+            disabled={pending || !reply.trim()}
           >
             {pending ? "…" : say("post.send")}
           </button>

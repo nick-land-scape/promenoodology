@@ -5701,3 +5701,84 @@ body:has(.app-shell) {
   height: 26px;
   font-size: 0.6rem;
 }
+
+/* ------------------------------------ the two marks on something you wrote
+
+   Top right of the thing, drawn rather than spelled. Under it they were two more
+   words at the end of a post, in a row with "reply" and "pass it on" — which put
+   your own two private controls in the same line as the two things anybody can
+   do, at the same weight, on every post in the feed. */
+.mine-marks {
+  flex: none;
+  align-self: flex-start;
+  display: flex;
+  gap: 4px;
+}
+
+.mine-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.mine-mark:hover {
+  color: var(--ink);
+  border-color: var(--hair);
+}
+
+/* Asked once. The same button, filled in, rather than a dialogue somewhere else:
+   the second press is the answer to the first. */
+.mine-mark.is-sure {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.mine-mark[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Editing a post in place, where the post was. */
+.post-editing {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px var(--gutter) 8px;
+}
+
+.post-editing textarea {
+  width: 100%;
+  font: inherit;
+  padding: 10px 11px;
+  border: 1px solid var(--hair);
+  background: none;
+  color: inherit;
+  resize: none;
+}
+
+.post-editing-feet {
+  display: flex;
+  gap: 8px;
+}
+
+/* The idea's pair sits against the top of its words rather than in the flow. */
+.idea-body {
+  position: relative;
+}
+
+.idea-body .mine-marks {
+  position: absolute;
+  top: -4px;
+  right: 0;
+}
+
+/* And the words make room for them, so a long first line does not run underneath. */
+.idea-words {
+  padding-right: 68px;
+}

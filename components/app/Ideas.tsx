@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import Sheet from "./Sheet";
+import Mine from "./Mine";
 import { Face } from "./Feed";
 import {
   agreeWith,
@@ -176,7 +177,6 @@ function One({ idea, mine, admin }: { idea: Idea; mine: boolean; admin: boolean 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(idea.words);
   const [gone, setGone] = useState(false);
-  const [sure, setSure] = useState(false);
   const [answering, setAnswering] = useState(false);
   const [answer, setAnswer] = useState(idea.answer);
   const [state, setState] = useState(idea.state);
@@ -228,6 +228,31 @@ function One({ idea, mine, admin }: { idea: Idea; mine: boolean; admin: boolean 
       </button>
 
       <div className="idea-body">
+        {/* Yours only. An admin who wants something gone reports it first and
+            settles the report, which leaves a record of why it went — see
+            /admin/reports. A pair of delete buttons on every post in the club,
+            visible to two people, is a different app. */}
+        {mine && !editing ? (
+          <Mine
+            what={say("mine.thisIdea")}
+            pending={pending}
+            onEdit={() => {
+              setDraft(words);
+              setEditing(true);
+            }}
+            onDelete={() =>
+              start(async () => {
+                const said = await takeDownIdea(idea.id);
+                if (!said.ok) {
+                  setTrouble(said.error ?? say("idea.didNotWork"));
+                  return;
+                }
+                setGone(true);
+              })
+            }
+          />
+        ) : null}
+
         {editing ? (
           <form
             className="idea-editing"
@@ -357,68 +382,6 @@ function One({ idea, mine, admin }: { idea: Idea; mine: boolean; admin: boolean 
               {answer ? say("idea.changeAnswer") : say("idea.answerIt")}
             </button>
           )
-        ) : null}
-
-        {/* Yours to change and yours to take down. Asked out loud rather than in a
-            confirm() box: the browser's own dialogue is the one thing on a phone
-            that can be suppressed by a setting nobody remembers turning on, and a
-            take-down that silently does nothing is worse than one that asks. */}
-        {(mine || admin) && !editing ? (
-          <div className="idea-mine">
-            {mine ? (
-              <button
-                type="button"
-                className="post-action"
-                onClick={() => {
-                  setDraft(words);
-                  setEditing(true);
-                }}
-                disabled={pending}
-              >
-                {say("idea.editIt")}
-              </button>
-            ) : null}
-
-            {sure ? (
-              <>
-                <button
-                  type="button"
-                  className="post-action post-action-quiet"
-                  disabled={pending}
-                  onClick={() =>
-                    start(async () => {
-                      const said = await takeDownIdea(idea.id);
-                      if (!said.ok) {
-                        setTrouble(said.error ?? say("idea.didNotWork"));
-                        setSure(false);
-                        return;
-                      }
-                      setGone(true);
-                    })
-                  }
-                >
-                  {say("idea.reallyTakeDown")}
-                </button>
-                <button
-                  type="button"
-                  className="post-action"
-                  onClick={() => setSure(false)}
-                  disabled={pending}
-                >
-                  {say("report.neverMind")}
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                className="post-action post-action-quiet"
-                onClick={() => setSure(true)}
-                disabled={pending}
-              >
-                {say("idea.takeItDown")}
-              </button>
-            )}
-          </div>
         ) : null}
 
         {trouble ? <p className="app-error">{trouble}</p> : null}
