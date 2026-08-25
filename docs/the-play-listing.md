@@ -144,6 +144,17 @@ club's database, not a third party we hand data to, so nothing here is "shared".
 | Other in-app messages (posts and replies) | Yes | No | No | App functionality |
 | Other actions (what you have said yes to) | Yes | No | No | App functionality |
 
+**About the screening**, because it is the answer somebody will get wrong: every
+post and every suggestion is read once by Anthropic's model before it appears
+(lib/app/screening.ts). That makes Anthropic a **service provider processing on
+the club's behalf**, exactly as Supabase and Vercel are — so the words and
+photographs are *collected* (they already are) and **not shared**. Google's
+definition of sharing excludes a transfer to a service provider acting for the
+developer. Declaring it as shared would not be a policy breach, only a worse
+description of what happens; declaring it as neither would be. What is sent is the
+words and the pictures, once; what is not sent is the name of whoever wrote them.
+It is described on the privacy page in the same words.
+
 **Not collected, and worth being able to say so**: no location, no contacts, no
 calendar, no financial information, no health information, no advertising ID, no
 device identifiers, no third-party analytics of any kind. Nothing is collected for
@@ -218,21 +229,65 @@ Instructions to paste into the form:
 
 ---
 
+## The order to do it in
+
+The console's dashboard will not let anything else start until **App einrichten**
+is finished, and that is one long checklist rather than one page. The order below
+is the one that avoids going back: everything with an answer already written comes
+first, and the two things that need a decision or a file come last.
+
+1. **App-Zugriff** — all functionality needs an account; paste the reviewer
+   instructions from the App access section above.
+2. **Anzeigen** — no ads.
+3. **Inhaltseinstufung** — the IARC questionnaire, answered in the section above.
+4. **Zielgruppe** — 18 and over. The club is adults, and 13+ pulls the app into
+   Google's Families policy: a different review, a different set of requirements,
+   and none of it true of this app. It does not have to match Apple's computed
+   13+; they are different systems asking different questions.
+5. **Datensicherheit** — the table above, including the note on the screening.
+   The deletion URL is `https://www.promenoodology.com/support`, and Google checks
+   that it says what you say it says.
+6. **Nachrichten-App / COVID-19 / Regierungs-App / Finanzfeatures** — no to all
+   four.
+7. **Store-Eintrag** — name, both descriptions, the icon and the feature graphic
+   from the Graphics table. Screenshots are the one thing still missing: two at
+   minimum, taken on a signed-in phone or emulator.
+8. **Store-Einstellungen** — category Events, tags, and `info@promeNOODology.com`
+   with `https://www.promenoodology.com/support` as the website.
+
+Then the release itself, which needs the two things nobody else can do:
+
+- **The upload key.** The `keytool` command is at the top of
+  `scripts/ship-android.sh`. It is not automated on purpose — it means choosing a
+  password, and a password nobody but you has ever seen is the point of it.
+- **The bundle.** `./scripts/ship-android.sh` once the key exists, then drag the
+  .aab into Production → Create release.
+
+Because the account is an organisation, there is no closed-testing requirement to
+serve first: production is reachable as soon as the checklist above is green. An
+internal test with a couple of phones is still worth one afternoon, because it is
+the only way to see the app on hardware that is not a Mac pretending.
+
 ## What is not done yet, and would stop a release
 
-**A way to report somebody else's post, and a way to block a member.** Play's
-user-generated content policy requires an in-app mechanism for flagging
-objectionable content and users; Apple's guideline 1.2 asks for the same, and it
-is one of the most common rejections for an app with a feed. Today a member can
-take down their *own* post and nothing else. This is a feature, not a form field:
-a `reports` table, a `blocks` table, the two controls on a post, and somewhere in
-/admin for the club to see what has been flagged. It should be built before either
-store sees a build with the feed in it.
+**Screenshots.** Two to eight, 9:16, of a signed-in app. Everything else in this
+document is written; these need a phone or an emulator with somebody's account in
+it.
 
 **Android App Links.** So a sign-in link from an email opens the app rather than
 Chrome. The `assetlinks.json` needs the SHA-256 fingerprint of the *Play* signing
-key, which does not exist until the first bundle is uploaded — so this is a job for
-the day after the upload, not before it.
+key, which does not exist until the first bundle is uploaded — a job for the day
+after the upload, not before it.
 
 **Push on Android.** Firebase, a `google-services.json`, and the
 POST_NOTIFICATIONS permission. Deliberately out of the first release.
+
+## What was on this list and is now done
+
+Reporting and blocking — the thing that would have stopped a release in both
+stores. Members can report any post or reply, block any member from inside the
+app, and see and undo their blocks in their account; the club sees what has been
+reported at /admin/reports and on a phone. Every post is also read by an automatic
+screening before it appears. The terms say there is no tolerance for objectionable
+content, name the twenty-four hours a report is answered in, and describe all
+three mechanisms. See migration 0041 and lib/app/screening.ts.
