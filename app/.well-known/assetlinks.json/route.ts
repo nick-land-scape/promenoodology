@@ -24,7 +24,7 @@
  * lives in the repository rather than in an environment variable, where it can
  * be read, reviewed and noticed when it changes.
  */
-const SIGNED_BY = "";
+const SIGNED_BY = "F6:30:91:8E:A5:5D:83:6B:F4:9F:45:BB:AD:25:DA:55:05:49:27:DB:DE:5F:22:7E:7B:DA:A3:9A:EA:CA:92:F5";
 
 const PACKAGE = "com.promenoodology.community";
 
