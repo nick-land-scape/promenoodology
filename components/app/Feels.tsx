@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { buzz, inTheApp } from "@/lib/native";
 
@@ -122,6 +122,8 @@ export default function Feels() {
    * links are cheap, so this asks for all four the moment the first screen is
    * quiet. After that a tab is a paint rather than a request.
    */
+  const warmed = useRef<Record<string, number>>({});
+
   useEffect(() => {
     const rest = [
       "/app",
@@ -132,7 +134,22 @@ export default function Feels() {
     ].filter((where) => where !== pathname);
 
     const idle = onIdle(() => {
-      for (const where of rest) router.prefetch(where);
+      for (const where of rest) {
+        /* Once every few minutes, not once per screen.
+         *
+         * This effect runs again on every tab change, and it used to ask for all
+         * four again each time — so five presses round the app was twenty screens
+         * fetched, each one a full render of somebody's own account, session and
+         * database and all. What was gained by the second, third and fourth ask
+         * was nothing: the router keeps what it has been given for five minutes
+         * (see staleTimes in next.config), so it already had them.
+         *
+         * Four minutes, which is just inside that, so what is warmed is always
+         * still warm when it is wanted. */
+        if (Date.now() - (warmed.current[where] ?? 0) < 4 * 60 * 1000) continue;
+        warmed.current[where] = Date.now();
+        router.prefetch(where);
+      }
     });
     return () => cancelIdle(idle);
   }, [pathname, router]);
