@@ -16,6 +16,21 @@ const nextConfig: NextConfig = {
    * back, posting — is seen straight away, because every one of those calls
    * revalidates the paths it touched and that clears this too.
    */
+  /* Which build a browser is talking to, kept the same as the build it started on.
+   *
+   * This app is a web view over a site published several times on a busy day, and
+   * a phone can sit on one screen for an hour. Its files are named after what is
+   * in them, so the moment a new version goes up, the pieces the phone is still
+   * holding stop existing — and the next tab somebody presses asks for one, gets
+   * nothing, and the web view puts up its own "this page couldn't load".
+   *
+   * With this, every request the browser makes says which build it came from and
+   * Vercel answers from that one, so a session that began before a deploy carries
+   * on working after it. It needs Skew Protection switched on for the project
+   * (Vercel → Settings → Advanced); the variable is set by Vercel itself, so
+   * anywhere else this is undefined and nothing changes. */
+  deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
+
   experimental: {
     /*
      * Everything is rendered per request unless it says it may be cached.

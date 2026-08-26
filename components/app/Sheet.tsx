@@ -242,12 +242,18 @@ export default function Sheet({
    * measurement does arrive, which is why this watches `covered` rather than
    * deciding once. */
   useEffect(() => {
-    /* Inside the app there is nothing to leap over. The web view is made shorter
-       by the keyboard, so the bottom of this window *is* the top of the keyboard
-       and a sheet resting there is already clear of it — and the plugin saying a
-       keyboard is up is how we know that has happened rather than guessing from a
-       measurement that no longer moves. */
-    if (!focused || covered >= 120 || (inTheApp() && keyboard)) {
+    /* Inside the app there is nothing to leap over, ever. The web view is made
+       shorter by the keyboard, so the bottom of this window *is* the top of the
+       keyboard and a sheet resting there is already clear of it.
+     *
+     * Waiting for the plugin to confirm that was the flicker: for a third of a
+     * second after the field took focus, nothing had said a keyboard was coming,
+     * the timer below fired, and the sheet leapt to the top of the screen — then
+     * came straight back down when the keyboard announced itself. A jump and a
+     * jump back, in the moment somebody is looking at it hardest. The condition
+     * for leaping is "the web view will not tell us", and inside the app it always
+     * tells us, by shortening itself. */
+    if (!focused || covered >= 120 || inTheApp()) {
       setTyping(false);
       return;
     }
