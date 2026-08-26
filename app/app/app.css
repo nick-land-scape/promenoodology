@@ -3827,6 +3827,44 @@ body:has(.app-shell) {
   padding-left: 1px;
 }
 
+/* A screen that did not come. Plain, roomy, and nothing to work out. */
+.app-broken {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 60px var(--gutter) 40px;
+}
+
+.app-broken-said {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+
+.app-broken-what {
+  margin: 0;
+  max-width: 26rem;
+  color: var(--muted);
+}
+
+/* The one thing that ties this screen to the line in the log that explains it. */
+.app-broken-digest {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+  word-break: break-all;
+}
+
+.app-broken-does {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 8px;
+}
+
 /* A bookmark: no promise, no number, nothing sent to anybody. */
 .mark {
   display: grid;
