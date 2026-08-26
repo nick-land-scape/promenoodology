@@ -44,22 +44,11 @@ export default async function EveningPage({ params }: { params: Promise<{ id: st
   const found = all.find((one) => one.id === id || one.slug === id);
   if (!found) notFound();
 
-  /* TEMPORARY — reading the fault rather than guessing at it. Remove. */
-  let event, mine, bringing;
-  try {
-    [event, mine, bringing] = await Promise.all([
-      getEvent(found.slug, lang),
-      myBookings(),
-      whoIsBringingWhat(found.id),
-    ]);
-  } catch (why) {
-    return (
-      <div style={{ padding: 20, fontFamily: "monospace", fontSize: 12, whiteSpace: "pre-wrap" }}>
-        {`WHERE: reading the evening\n${why instanceof Error ? why.stack ?? why.message : String(why)}`}
-      </div>
-    );
-  }
-  if (!event) notFound();
+  const [event, mine, bringing] = await Promise.all([
+    getEvent(found.slug, lang),
+    myBookings(),
+    whoIsBringingWhat(found.id),
+  ]);  if (!event) notFound();
 
   const booking = mine.find((one) => one.eventId === event.id);
   const over = (event.until || event.date) < new Date().toISOString().slice(0, 10);
