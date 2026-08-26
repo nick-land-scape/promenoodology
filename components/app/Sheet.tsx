@@ -103,17 +103,43 @@ export default function Sheet({
    * keyboard; if it does not, the sheet is at the top of the screen and its own
    * scroller reaches the rest, which is the difference between cramped and gone. */
   const [covered, setCovered] = useState(0);
+  /* Whether a keyboard is up at all. Inside the app this is all the plugin is
+     asked for: how *tall* it is belongs to the web view, which has already been
+     made that much shorter. */
+  const [keyboard, setKeyboard] = useState(false);
 
-  /* The phone's own number, where there is a phone to ask.
+  /* The phone's own number — and inside the app it is *not* the number to keep
+   * clear at the foot of the sheet, which is the whole of this bug.
    *
-   * This is the measurement `visualViewport` cannot give inside the app: the web
-   * view has the whole screen and a keyboard arriving changes nothing the page can
-   * read. The plugin says how tall it is, twice — as it starts coming up and again
-   * when it is up — and the first of those is what lets the sheet move *with* the
-   * keyboard instead of after it. */
+   * The paragraph above was written for an app with no keyboard plugin in it: the
+   * web view had the whole screen, a keyboard arriving changed nothing any
+   * measurement could see, and something had to say how much of the glass was
+   * gone. Then @capacitor/keyboard was added for the fields, and its iOS default
+   * is `resize: "native"` — the web view is made shorter by exactly the height of
+   * the keyboard the moment it appears.
+   *
+   * So the room is already gone from the window this sheet is fixed to, and
+   * keeping the same three hundred points clear *again* takes them off a screen
+   * that no longer has them: the sheet is pushed up until its head is off the top
+   * and its field is nowhere. Which is what a member saw on a phone this morning —
+   * the composer at the top of the screen, the feed under it, the keyboard under
+   * that. The old fallback, a sheet that leaps to the top when nothing is
+   * reported, made it look like the deliberate behaviour rather than a bug.
+   *
+   * Two mechanisms accounting for one strip of glass, each unaware of the other —
+   * the same shape as the safe-area inset that made the bar grow at the bottom,
+   * and settled the same way: the native one wins, and the page stops counting.
+   * A sheet resting on the bottom of a window that ends where the keyboard begins
+   * is already resting on the keyboard.
+   *
+   * The listener stays, because *whether* a keyboard is up is still worth knowing:
+   * it is what tells the sheet not to leap. */
   useEffect(() => {
     if (!open) return;
-    return whenTheKeyboard((height) => setCovered(Math.round(height)));
+    return whenTheKeyboard((height) => {
+      setKeyboard(height > 0);
+      if (!inTheApp()) setCovered(Math.round(height));
+    });
   }, [open]);
 
   /* And the browser's own, where that is the right answer — but only there.
@@ -216,13 +242,18 @@ export default function Sheet({
    * measurement does arrive, which is why this watches `covered` rather than
    * deciding once. */
   useEffect(() => {
-    if (!focused || covered >= 120) {
+    /* Inside the app there is nothing to leap over. The web view is made shorter
+       by the keyboard, so the bottom of this window *is* the top of the keyboard
+       and a sheet resting there is already clear of it — and the plugin saying a
+       keyboard is up is how we know that has happened rather than guessing from a
+       measurement that no longer moves. */
+    if (!focused || covered >= 120 || (inTheApp() && keyboard)) {
       setTyping(false);
       return;
     }
     const waiting = window.setTimeout(() => setTyping(true), 340);
     return () => window.clearTimeout(waiting);
-  }, [focused, covered]);
+  }, [focused, covered, keyboard]);
 
   /* Escape closes it, and the page behind does not move while it is open. */
   useEffect(() => {
