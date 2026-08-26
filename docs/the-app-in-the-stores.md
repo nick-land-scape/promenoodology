@@ -186,7 +186,8 @@ then Google asks for a different pile:
 One command, once the key exists:
 
 ```bash
-ASC_KEY_ID=ABCD123456 ASC_ISSUER_ID=69a6de00-… ./scripts/ship-ios.sh
+ASC_ISSUER_ID=69a6de00-… ./scripts/ship-ios.sh   # the first time
+./scripts/ship-ios.sh                            # every time after
 ```
 
 It syncs the web shell into the native project, archives Release, exports an ipa

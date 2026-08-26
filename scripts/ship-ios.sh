@@ -10,14 +10,26 @@
 # What it needs, once, from App Store Connect → Users and Access → Integrations →
 # App Store Connect API (a *team* key, role App Manager):
 #
-#   ASC_KEY_ID      the ten-character Key ID
-#   ASC_ISSUER_ID   the issuer UUID, at the top of that page
-#   AuthKey_<ASC_KEY_ID>.p8 in ~/.appstoreconnect/private_keys/
+#   AuthKey_<KEY_ID>.p8 in ~/.appstoreconnect/private_keys/ — the .p8 downloads
+#                       exactly once and cannot be downloaded again, and that
+#                       folder is where every Apple tool looks, so put it there
+#                       and nowhere else.
+#   the issuer UUID     printed at the top of that same page.
 #
-# The .p8 downloads exactly once and cannot be downloaded again; that folder is
-# where every Apple tool looks for it, so put it there and nowhere else.
+# The first time, hand it the issuer:
 #
-#   ASC_KEY_ID=ABCD123456 ASC_ISSUER_ID=69a6de… ./scripts/ship-ios.sh
+#   ASC_ISSUER_ID=69a6de00-… ./scripts/ship-ios.sh
+#
+# and every time after that, nothing:
+#
+#   ./scripts/ship-ios.sh
+#
+# because the issuer is remembered in ~/.appstoreconnect/issuer and the key id is
+# read off the name of the .p8 itself. Neither is a secret — the key is the
+# secret, and it stays where it was put. This exists because the two of them were
+# being copied out of a browser and pasted onto a command line every time, which
+# is exactly the kind of thing that ends with a paste going wrong at the point of
+# shipping.
 #
 # The build number is the minute it was built (202608221930), so it always goes
 # up and there is nothing to remember or increment. The version people see is
@@ -36,10 +48,44 @@ ARCHIVE="$OUT/App.xcarchive"
 say() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 stop() { printf '\n\033[31m%s\033[0m\n' "$1" >&2; exit 1; }
 
-[ -n "${ASC_KEY_ID:-}" ]    || stop "ASC_KEY_ID is not set. See the top of this file."
-[ -n "${ASC_ISSUER_ID:-}" ] || stop "ASC_ISSUER_ID is not set. See the top of this file."
+# The key id, off the name of the key itself. One .p8 in that folder is the usual
+# state of things; where there are several, say which.
+if [ -z "${ASC_KEY_ID:-}" ]; then
+  found=("$KEY_DIR"/AuthKey_*.p8)
+  if [ -f "${found[0]}" ] && [ "${#found[@]}" -eq 1 ]; then
+    ASC_KEY_ID="$(basename "${found[0]}" .p8)"
+    ASC_KEY_ID="${ASC_KEY_ID#AuthKey_}"
+  elif [ "${#found[@]}" -gt 1 ]; then
+    stop "More than one key in $KEY_DIR. Say which: ASC_KEY_ID=… $0"
+  else
+    stop "No key in $KEY_DIR. See the top of this file."
+  fi
+fi
+
 [ -f "$KEY_DIR/AuthKey_$ASC_KEY_ID.p8" ] || \
   stop "No key at $KEY_DIR/AuthKey_$ASC_KEY_ID.p8 — that exact name, that exact folder."
+
+# The issuer, remembered the first time it is given.
+ISSUER_FILE="$HOME/.appstoreconnect/issuer"
+if [ -z "${ASC_ISSUER_ID:-}" ] && [ -f "$ISSUER_FILE" ]; then
+  ASC_ISSUER_ID="$(tr -d '[:space:]' < "$ISSUER_FILE")"
+fi
+if [ -z "${ASC_ISSUER_ID:-}" ]; then
+  stop "No issuer id. It is the UUID at the top of App Store Connect → Users and
+Access → Integrations → App Store Connect API. Once:
+
+  ASC_ISSUER_ID=69a6de00-… $0
+
+and it is remembered in $ISSUER_FILE for every time after."
+fi
+if [ ! -f "$ISSUER_FILE" ] || [ "$(tr -d '[:space:]' < "$ISSUER_FILE")" != "$ASC_ISSUER_ID" ]; then
+  mkdir -p "$(dirname "$ISSUER_FILE")"
+  printf '%s\n' "$ASC_ISSUER_ID" > "$ISSUER_FILE"
+  chmod 600 "$ISSUER_FILE"
+  say "Remembered the issuer in $ISSUER_FILE"
+fi
+
+export ASC_KEY_ID ASC_ISSUER_ID
 
 say "Asking Apple whether the key works and the app exists"
 node scripts/asc-check.mjs
