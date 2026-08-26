@@ -70,6 +70,18 @@ ISSUER_FILE="$HOME/.appstoreconnect/issuer"
 if [ -z "${ASC_ISSUER_ID:-}" ] && [ -f "$ISSUER_FILE" ]; then
   ASC_ISSUER_ID="$(tr -d '[:space:]' < "$ISSUER_FILE")"
 fi
+# A UUID, or nothing. This is here because the first thing that ever went into
+# that file was the example out of a set of instructions — "69a6de00-…", ellipsis
+# and all — which Apple answered with a 401 that reads like a broken key. A shape
+# this exact is worth checking before it is believed, let alone remembered.
+if [ -n "${ASC_ISSUER_ID:-}" ] && ! printf '%s' "$ASC_ISSUER_ID" | grep -Eq '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'; then
+  stop "That is not an issuer id: $ASC_ISSUER_ID
+
+An issuer id is 36 characters, five groups of hex split by dashes, like
+69a6de70-1234-47e3-e053-5b8c7c11a4d1. Copy it from App Store Connect → Users and
+Access → Integrations → App Store Connect API, at the top of the page."
+fi
+
 if [ -z "${ASC_ISSUER_ID:-}" ]; then
   stop "No issuer id. It is the UUID at the top of App Store Connect → Users and
 Access → Integrations → App Store Connect API. Once:
