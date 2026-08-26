@@ -10,3 +10,14 @@ build
 next-env.d.ts
 *.tsbuildinfo
 .claude/settings.local.json
+
+# Keys, in case one is ever put down in here by hand.
+#
+# None is, and none should be: the App Store Connect key lives in
+# ~/.appstoreconnect/private_keys and the Android upload keystore outside the
+# repo — both places the tools look by default. This is only so that a key
+# dropped in here while working cannot be committed by a `git add -A`.
+*.p8
+*.keystore
+*.jks
+*.mobileprovision
