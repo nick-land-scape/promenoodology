@@ -3808,8 +3808,12 @@ body:has(.app-shell) {
   height: 26px;
   font-size: 0.56rem;
   /* Paper, not a hairline: the ring is what separates one face from the one it is
-     lying on, so it has to be opaque rather than a line you can see through. */
+     lying on, so it has to be opaque rather than a line you can see through.
+     Which takes away the hairline that was drawing the *edge* of a face nobody has
+     a photograph of — so those get a wash to stand in for the photograph, or they
+     are two letters floating in the air with a ring of paper round them. */
   border: 2px solid var(--paper);
+  background: var(--wash);
 }
 
 .coming-rest {
