@@ -5149,6 +5149,9 @@ body:has(.app-shell) {
   border-radius: 0 0 16px 16px;
   border-top: 0;
   border-bottom: 1px solid var(--hair);
+  /* And no paper hanging below it — up here there is a whole dimmed page under
+     the sheet, and a band of paper across the middle of it is not a sheet. */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
   /* And short enough to stand above a keyboard nobody measured.
    *
    * `is-typing` only happens when the web view refused to say how tall the
@@ -5182,7 +5185,21 @@ body:has(.app-shell) {
   background: var(--paper);
   border-top: 1px solid var(--hair);
   border-radius: 16px 16px 0 0;
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.18);
+  /* Two shadows, and the second one is not a shadow.
+   *
+   * A sheet ends where the keyboard begins, and what is between them is never
+   * quite nothing: a sliver of window the keyboard does not reach, and the round
+   * of the keyboard's own top corners. Both were showing the darkened page through
+   * them, so the paper appeared to stop short and stand on the keys.
+   *
+   * This is a rectangle of paper the width of the sheet, hanging eighty points
+   * below it. A shadow is drawn behind the thing that casts it, so it cannot cover
+   * anything, and it takes no room — the sheet's own box is exactly as tall as it
+   * was, and what somebody types is exactly where it was. All that changes is that
+   * the paper carries on down behind the keyboard instead of ending at it. */
+  box-shadow:
+    0 -10px 30px rgba(0, 0, 0, 0.18),
+    0 80px 0 0 var(--paper);
   transform: translateY(14px);
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   /* The home indicator's room, so the last field is not under a thumb rest. */
