@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import Photo from "../Photo";
+import Coming from "./Coming";
 import { markInterested } from "@/app/app/actions";
 import { buzz } from "@/lib/native";
 import { useSay } from "./Words";
@@ -27,6 +28,9 @@ export type EveningRow = {
   needs?: string;
   /** What people are already bringing. */
   bringing?: { who: string; what: string }[];
+  /** Who has a place, oldest first, and how many are expected with their guests. */
+  coming?: { who: string; photo: string | null }[];
+  heads?: number;
   /** Your own place or mark, where you have one. */
   mine?: {
     people: number;
@@ -202,6 +206,16 @@ export default function EveningRow({
                 <span key={line}>{line}</span>
               ))}
           </span>
+        ) : null}
+
+        {/* Who is coming, as faces.
+         *
+         * Above what people are bringing rather than below, because it answers
+         * the earlier question: whether to go at all comes before what to carry.
+         * Drawn on both screens that list evenings — this row is the same row on
+         * the front screen and on what's on. */}
+        {event.coming && event.coming.length > 0 ? (
+          <Coming people={event.coming} heads={event.heads ?? event.coming.length} />
         ) : null}
 
         {does && event.bringing && event.bringing.length > 0 ? (

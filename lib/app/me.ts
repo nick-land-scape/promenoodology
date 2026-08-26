@@ -3,6 +3,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PLAIN, isLang, type Lang } from "@/lib/lang";
+import { mediaUrl } from "@/lib/supabase/config";
 import { supabaseServer } from "@/lib/supabase/server";
 import { whoever } from "@/lib/supabase/whoever";
 
@@ -406,19 +407,39 @@ export type Bringing = { who: string; what: string; people: number };
  * meant four downloads of all sixty-six people to put a first name next to a
  * salad. The names are the same names every time; ask once.
  */
-export async function whoIsBringingWhatForAll(
+/** Somebody who is coming, as a row draws them: a face, or their initials. */
+export type Coming = { who: string; photo: string | null };
+
+/**
+ * Who is coming to each of these evenings, and what they are bringing.
+ *
+ * Two reads for a whole list — the bookings, and the names once rather than once
+ * per booking — and both answers come out of the same pass, because they are the
+ * same two rows of the same two tables. Asking twice for "who is bringing what"
+ * and "who is coming" would be four queries for one list of evenings.
+ *
+ * "Coming" is anybody with a place, in the order they said so, whatever they are
+ * bringing: `interested` is a bookmark rather than a promise and is left out at
+ * the query, and somebody who has since said no is left out here. What it counts
+ * is people, not places — a member bringing three guests is one face, because it
+ * is their face, and the number beside the faces says how many are expected.
+ */
+async function whoIsAtThem(
   eventIds: string[],
-): Promise<Map<string, Bringing[]>> {
-  const found = new Map<string, Bringing[]>();
+): Promise<Map<string, { bringing: Bringing[]; coming: Coming[]; heads: number }>> {
+  const found = new Map<string, { bringing: Bringing[]; coming: Coming[]; heads: number }>();
   if (eventIds.length === 0) return found;
 
   const supabase = await supabaseServer();
   const [{ data: rows }, { data: people }] = await Promise.all([
     supabase
       .from("bookings")
-      .select("event_id, profile_id, people, bringing, state")
+      .select("event_id, profile_id, people, bringing, state, created_at")
       .in("event_id", eventIds)
       .neq("state", "interested")
+      /* Oldest first, so the faces on a row are the people who said yes first
+         rather than whichever order the database felt like. */
+      .order("created_at")
       .returns<
         {
           event_id: string;
@@ -426,25 +447,66 @@ export async function whoIsBringingWhatForAll(
           people: number;
           bringing: string;
           state: string;
+          created_at: string | null;
         }[]
       >(),
-    supabase.from("profiles").select("id, name").returns<{ id: string; name: string }[]>(),
+    supabase
+      .from("profiles")
+      .select("id, name, photo_path")
+      .returns<{ id: string; name: string; photo_path: string | null }[]>(),
   ]);
 
-  const named = new Map((people ?? []).map((one) => [one.id, one.name || "somebody"]));
+  const named = new Map(
+    (people ?? []).map((one) => [one.id, { name: one.name || "somebody", photo: one.photo_path }]),
+  );
 
   for (const row of rows ?? []) {
-    if (!(row.bringing ?? "").trim()) continue;
-    const list = found.get(row.event_id) ?? [];
-    list.push({
-      who: named.get(row.profile_id) ?? "somebody",
-      what: row.bringing.trim(),
-      people: row.people ?? 1,
-    });
-    found.set(row.event_id, list);
+    const one = found.get(row.event_id) ?? { bringing: [], coming: [], heads: 0 };
+    const person = named.get(row.profile_id);
+
+    if ((row.bringing ?? "").trim()) {
+      one.bringing.push({
+        who: person?.name ?? "somebody",
+        what: row.bringing.trim(),
+        people: row.people ?? 1,
+      });
+    }
+
+    /* Not the ones who have said no. Everybody else with a booking is coming, and
+       "kept" — a place held for somebody by an admin — counts: it is a place at
+       the table with their name on it. */
+    if (row.state !== "declined") {
+      one.coming.push({
+        who: person?.name ?? "somebody",
+        photo: person?.photo ? mediaUrl(person.photo) : null,
+      });
+      one.heads += row.people ?? 1;
+    }
+
+    found.set(row.event_id, one);
   }
 
   return found;
+}
+
+export async function whoIsBringingWhatForAll(
+  eventIds: string[],
+): Promise<Map<string, Bringing[]>> {
+  const all = await whoIsAtThem(eventIds);
+  return new Map([...all].map(([id, one]) => [id, one.bringing]));
+}
+
+/** Who is coming to each of them, for the faces on a row. */
+export async function whoIsComingToAll(
+  eventIds: string[],
+): Promise<Map<string, { coming: Coming[]; heads: number }>> {
+  const all = await whoIsAtThem(eventIds);
+  return new Map([...all].map(([id, one]) => [id, { coming: one.coming, heads: one.heads }]));
+}
+
+/** Both halves at once, for a screen that wants them both. */
+export async function whoIsAtEachOfThem(eventIds: string[]) {
+  return whoIsAtThem(eventIds);
 }
 
 /** One evening's worth, for the screen that is about one evening. */

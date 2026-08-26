@@ -4,7 +4,7 @@ import AppHeader from "@/components/app/AppHeader";
 import UpcomingEvents from "@/components/app/UpcomingEvents";
 import { dateParts, shortDate, weekday, whenItIs } from "@/lib/app-data";
 import { byDay, placeKey } from "@/lib/occasions";
-import { myBookings, readingIn, requireMember } from "@/lib/app/me";
+import { myBookings, readingIn, requireMember, whoIsComingToAll } from "@/lib/app/me";
 import { getFrench } from "@/lib/source";
 import { speaking, type Said } from "@/lib/words";
 import {
@@ -59,8 +59,14 @@ export default async function AppHome() {
   );
 
   const today = new Date().toISOString().slice(0, 10);
-  const events = byDay(all)
-    .filter((event) => (event.until || event.date) >= today)
+  const ahead = byDay(all).filter((event) => (event.until || event.date) >= today);
+
+  /* Who is coming to each of them, for the faces on a row. One pass for the whole
+     list — see whoIsComingToAll, which is the same two reads the bringing list
+     already does. */
+  const there = await whoIsComingToAll([...new Set(ahead.map((event) => event.id))]);
+
+  const events = ahead
     .map((event) => ({
       ...event,
       ...dateParts(event.date, lang),
@@ -78,6 +84,8 @@ export default async function AppHome() {
             }
           : null;
       })(),
+      coming: there.get(event.id)?.coming ?? [],
+      heads: there.get(event.id)?.heads ?? 0,
       /* Each row is one of the days now, so there is nothing left to choose
          between: it carries the day it is instead. See lib/occasions. */
       onDays: [],

@@ -306,6 +306,8 @@ export const PHRASES: Phrase[] = [
   { key: "row.stillWanted", en: "still wanted", fr: "encore nécessaire", where: "app", note: "Over what people could bring." },
   { key: "row.comingWith", en: "coming with", fr: "apporte", where: "app", note: "Over what people are already bringing." },
   { key: "row.youAreComing", en: "you are coming,", fr: "vous venez,", where: "app", note: "Followed by a number of places." },
+  { key: "row.oneComing", en: "1 person coming", fr: "1 personne vient", where: "app", note: "Read out for the row of faces on an evening; not shown." },
+  { key: "row.howManyComing", en: "{n} people coming", fr: "{n} personnes viennent", where: "app", note: "Read out for the row of faces on an evening; not shown. Keep {n}." },
   { key: "row.place", en: "place", fr: "place", where: "app", note: "One seat at the table." },
   { key: "row.places", en: "places", fr: "places", where: "app", note: "More than one seat at the table." },
   { key: "row.withGuests", en: "with", fr: "avec", where: "app", note: "Before the names of the people they are bringing." },

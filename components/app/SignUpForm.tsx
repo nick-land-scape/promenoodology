@@ -29,6 +29,10 @@ export type Joinable = Occasion & {
   needs: string;
   /** What people are already bringing. */
   bringing: { who: string; what: string; people: number }[];
+  /** Who has a place already, oldest first, and how many are expected with their
+      guests — the faces on the row. */
+  coming: { who: string; photo: string | null }[];
+  heads: number;
   /** Your own place or mark, where you have one. */
   mine: {
     people: number;
@@ -181,6 +185,8 @@ export default function SignUpForm({
             note: event.note,
             needs: event.needs,
             bringing: event.bringing,
+            coming: event.coming,
+            heads: event.heads,
             mine: event.mine,
             spots: event.spots,
             days: event.dayLabels,

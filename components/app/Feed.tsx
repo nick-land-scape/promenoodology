@@ -22,6 +22,7 @@ import {
 import { buzz } from "@/lib/native";
 import { ACCEPTS, uploadPhoto } from "@/lib/admin/upload";
 import { mediaUrl } from "@/lib/supabase/config";
+import Face, { initials } from "./Face";
 import { useSay } from "./Words";
 
 type Props = {
@@ -807,34 +808,8 @@ async function supabaseUserFolder(): Promise<string> {
   return user?.id ?? "nobody";
 }
 
-/**
- * Somebody's portrait, or their initials where the club has no picture of them.
- *
- * One drawing rather than four: the composer's bar, the composer's sheet, the top
- * of a post and the ideas tab all had their own, and three of them could not show
- * a photograph at all — which is why the person writing saw their own initials
- * over a feed full of faces.
- */
-export function Face({ photo, name }: { photo: string | null; name: string }) {
-  if (!photo) {
-    return (
-      <span className="avatar" aria-hidden="true">
-        {initials(name)}
-      </span>
-    );
-  }
-  return (
-    <span className="avatar avatar-photo" aria-hidden="true">
-      <Photo src={photo} alt="" fill sizes="44px" />
-    </span>
-  );
-}
+/* The one drawing of a face, and the initials behind it, live in ./Face — a row
+   of evenings needs them too, and pulling them out of here would have pulled the
+   whole feed with them. Re-exported because half the app imports them from here. */
+export { default as Face, initials } from "./Face";
 
-function initials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("");
-}

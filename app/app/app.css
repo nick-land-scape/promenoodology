@@ -3777,6 +3777,52 @@ body:has(.app-shell) {
   padding-top: 1px;
 }
 
+/* Who is coming, on a row: three faces overlapping, then the rest as a number.
+ *
+ * Overlapping is what makes them read as a group. Three portraits in a line with
+ * air between them is a directory; the same three with a third of each one behind
+ * the last is a table of people. Each wears a ring of paper so that two dark
+ * photographs next to each other still read as two.
+ *
+ * Smaller than the avatars elsewhere in the app — 26 against 34 — because this
+ * sits inside a row of type rather than at the head of a post, and a face the
+ * size of the words beside it competes with them. */
+.coming {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 8px;
+}
+
+.coming-face {
+  position: relative;
+  display: block;
+}
+
+.coming-face + .coming-face {
+  margin-left: -9px;
+}
+
+.coming .avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 0.56rem;
+  /* Paper, not a hairline: the ring is what separates one face from the one it is
+     lying on, so it has to be opaque rather than a line you can see through. */
+  border: 2px solid var(--paper);
+}
+
+.coming-rest {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  /* Level with the middle of the faces rather than the baseline of the row. */
+  align-self: center;
+  padding-left: 1px;
+}
+
 /* A bookmark: no promise, no number, nothing sent to anybody. */
 .mark {
   display: grid;

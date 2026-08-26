@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import Sheet from "./Sheet";
 import Mine from "./Mine";
-import { Face } from "./Feed";
+import Face from "./Face";
 import {
   agreeWith,
   answerIdea,

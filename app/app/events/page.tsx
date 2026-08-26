@@ -1,7 +1,12 @@
 import AppHeader from "@/components/app/AppHeader";
 import SignUpForm, { type Joinable } from "@/components/app/SignUpForm";
 import { dateParts, whenItIs } from "@/lib/app-data";
-import { myBookings, readingIn, requireMember, whoIsBringingWhatForAll } from "@/lib/app/me";
+import {
+  myBookings,
+  readingIn,
+  requireMember,
+  whoIsAtEachOfThem,
+} from "@/lib/app/me";
 import { byDay, placeKey } from "@/lib/occasions";
 import { sharedEvents } from "@/lib/shared";
 import { getFrench } from "@/lib/source";
@@ -40,9 +45,7 @@ export default async function EventsPage() {
   const ahead = all.filter((event) => (event.until || event.date) >= today0);
   /* Two queries for the whole list, not two per evening — and the list of names is
      asked for once rather than once per row. See whoIsBringingWhatForAll. */
-  const bringing = await whoIsBringingWhatForAll([
-    ...new Set(ahead.map((event) => event.id)),
-  ]);
+  const there = await whoIsAtEachOfThem([...new Set(ahead.map((event) => event.id))]);
 
   const today = new Date().toISOString().slice(0, 10);
   const dressed = (event: (typeof all)[number]): Joinable => {
@@ -56,7 +59,11 @@ export default async function EventsPage() {
       ...dateParts(event.date, lang),
       label: whenItIs(event, lang),
       needs: event.needs,
-      bringing: bringing.get(event.id) ?? [],
+      bringing: there.get(event.id)?.bringing ?? [],
+      /* Who is coming, as faces on the row. Same read as the bringing list — see
+         whoIsAtEachOfThem — rather than a second pass over the same two tables. */
+      coming: there.get(event.id)?.coming ?? [],
+      heads: there.get(event.id)?.heads ?? 0,
       mine: booking
         ? {
             people: booking.people,

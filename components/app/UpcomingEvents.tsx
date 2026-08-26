@@ -21,6 +21,9 @@ type Props = {
       guests?: string[];
       state: "interested" | "asked" | "kept" | "declined";
     } | null;
+    /** Who has a place already, and how many are expected with their guests. */
+    coming: { who: string; photo: string | null }[];
+    heads: number;
     /** The days already taken, and the programme's own days. */
     onDays: string[];
     dayLabels: { date: string; title: string; time: string; label: string }[];
@@ -100,6 +103,8 @@ export default function UpcomingEvents({ events, places }: Props) {
                     lead: event.lead,
                     note: event.note,
                     mine: event.mine,
+                    coming: event.coming,
+                    heads: event.heads,
                     spots: event.spots,
                     days: event.dayLabels,
                     onDays: event.onDays,
