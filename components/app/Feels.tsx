@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { buzz, inTheApp } from "@/lib/native";
+import { buzz, inTheApp, whenTheKeyboard } from "@/lib/native";
 
 /**
  * The two things that make a web app feel like an app: it answers your finger,
@@ -56,6 +56,47 @@ export default function Feels() {
 
     document.addEventListener("pointerdown", felt, { capture: true, passive: true });
     return () => document.removeEventListener("pointerdown", felt, { capture: true });
+  }, []);
+
+  /* ------------------------------------------------- the keyboard's room */
+
+  /* How much of the screen the keyboard is standing on, written where the whole
+   * app can read it — and whatever somebody is typing in kept above it.
+   *
+   * This is the price of `resize: "none"` (see capacitor.config.ts), and it is
+   * worth paying: the web view keeps the whole screen, so the paper of a sheet
+   * carries on behind the keys instead of stopping dead at them. In exchange
+   * nothing shrinks by itself any more, so a field at the foot of a scrolling
+   * screen — a reply on a post, the last line of a form — would sit under the
+   * keyboard with a cursor in it and no way to see what is being typed.
+   *
+   * So: the height goes on the root as `--keyboard`, which the stylesheet uses to
+   * leave that much paper under the last thing on every screen, and the field
+   * that has focus is scrolled up until it is clear of the keys with a little air
+   * to spare. A sheet is left alone — it is fixed to the window and keeps its own
+   * room at its foot; scrolling the page under it would move the wrong thing. */
+  useEffect(() => {
+    if (!inTheApp()) return;
+
+    return whenTheKeyboard((height) => {
+      const tall = Math.round(height);
+      document.documentElement.style.setProperty("--keyboard", `${tall}px`);
+      if (tall <= 0) return;
+
+      /* A beat, because the field is often focused in the same breath as the
+         press that opened it and the layout has not settled yet. */
+      window.setTimeout(() => {
+        const what = document.activeElement as HTMLElement | null;
+        if (!what || what === document.body) return;
+        // The sheet keeps its own room; see Sheet.
+        if (what.closest(".sheet")) return;
+
+        const box = what.getBoundingClientRect();
+        const room = window.innerHeight - tall - 14;
+        if (box.bottom <= room) return;
+        window.scrollBy({ top: Math.ceil(box.bottom - room), behavior: "smooth" });
+      }, 60);
+    });
   }, []);
 
   /* ------------------------------------------------------ the chrome fits */

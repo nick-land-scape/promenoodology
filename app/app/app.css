@@ -65,7 +65,17 @@ body:has(.app-shell) {
    * that reads as the bar having grown when you reach the bottom. The real number
    * is measured off the bar itself in components/app/Feels.tsx; the calc below is
    * only what stands until the first measurement, a frame later. */
-  padding-bottom: var(--bar-room, calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)));
+  /* And the keyboard's height on top of it while there is one.
+   *
+   * The web view keeps the whole screen now (resize: "none" — see
+   * capacitor.config.ts), so nothing shrinks when a keyboard arrives and a field
+   * at the foot of a screen can only be scrolled clear of the keys if there is
+   * somewhere to scroll to. This is that somewhere, and it is nothing at all when
+   * no keyboard is up. Set from the plugin in Feels. */
+  padding-bottom: calc(
+    var(--bar-room, calc(var(--tabbar) + env(safe-area-inset-bottom, 0px))) +
+      var(--keyboard, 0px)
+  );
 }
 
 .app-column {

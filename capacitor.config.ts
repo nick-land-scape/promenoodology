@@ -97,6 +97,26 @@ const config: CapacitorConfig = {
       showSpinner: false,
       androidScaleType: "CENTER_CROP",
     },
+    Keyboard: {
+      /* The web view keeps the whole screen, and the page decides what to do
+       * about the keyboard.
+       *
+       * The plugin's own default is `native`, which shortens the web view by the
+       * height of the keyboard. That works, and it costs the thing this club
+       * noticed: a sheet then *ends* where the keyboard begins, so its paper stops
+       * dead at the keys and the round of their top corners shows the system's
+       * black behind them. Nothing in the page can reach that, because the page
+       * is not there — proven by painting the app's own background red and
+       * watching the corners stay black.
+       *
+       * `none` leaves the window whole. The paper carries on underneath the keys,
+       * the corners show paper, and in exchange the page has to keep whatever
+       * somebody is typing in above the keyboard itself. It can: the plugin says
+       * how tall the keyboard is, twice, as it arrives — see whenTheKeyboard. The
+       * sheet already kept that much clear at its foot, and everything else is
+       * handled in one place, in Feels. */
+      resize: "none",
+    },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],
     },

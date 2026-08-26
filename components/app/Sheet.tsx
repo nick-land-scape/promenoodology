@@ -111,34 +111,26 @@ export default function Sheet({
   /* The phone's own number — and inside the app it is *not* the number to keep
    * clear at the foot of the sheet, which is the whole of this bug.
    *
-   * The paragraph above was written for an app with no keyboard plugin in it: the
-   * web view had the whole screen, a keyboard arriving changed nothing any
-   * measurement could see, and something had to say how much of the glass was
-   * gone. Then @capacitor/keyboard was added for the fields, and its iOS default
-   * is `resize: "native"` — the web view is made shorter by exactly the height of
-   * the keyboard the moment it appears.
+   * This is the measurement `visualViewport` cannot give inside the app, and it is
+   * the *only* one now: the keyboard plugin is set to `resize: "none"` (see
+   * capacitor.config.ts), so the web view keeps the whole screen and a keyboard
+   * arriving changes nothing the page can otherwise read. The plugin says how tall
+   * it is, twice — as it starts coming up and again when it is up — and the first
+   * of those is what lets the sheet move *with* the keyboard rather than after it.
    *
-   * So the room is already gone from the window this sheet is fixed to, and
-   * keeping the same three hundred points clear *again* takes them off a screen
-   * that no longer has them: the sheet is pushed up until its head is off the top
-   * and its field is nowhere. Which is what a member saw on a phone this morning —
-   * the composer at the top of the screen, the feed under it, the keyboard under
-   * that. The old fallback, a sheet that leaps to the top when nothing is
-   * reported, made it look like the deliberate behaviour rather than a bug.
+   * For a day this was wrong in the other direction: the plugin was left on its
+   * `native` default, which shortens the web view, and the sheet went on keeping
+   * the same three hundred points clear as well. Two mechanisms accounting for one
+   * strip of glass, and the sheet was pushed until its head left the top of the
+   * screen. One mechanism now, and it is this one.
    *
-   * Two mechanisms accounting for one strip of glass, each unaware of the other —
-   * the same shape as the safe-area inset that made the bar grow at the bottom,
-   * and settled the same way: the native one wins, and the page stops counting.
-   * A sheet resting on the bottom of a window that ends where the keyboard begins
-   * is already resting on the keyboard.
-   *
-   * The listener stays, because *whether* a keyboard is up is still worth knowing:
-   * it is what tells the sheet not to leap. */
+   * Whether a keyboard is up is worth knowing separately: it is what tells the
+   * sheet not to fall back on leaping to the top. */
   useEffect(() => {
     if (!open) return;
     return whenTheKeyboard((height) => {
       setKeyboard(height > 0);
-      if (!inTheApp()) setCovered(Math.round(height));
+      setCovered(Math.round(height));
     });
   }, [open]);
 
