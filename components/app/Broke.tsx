@@ -29,7 +29,43 @@ export default function Broke() {
     const add = (line: string) =>
       setWhat((have) => (have.includes(line) ? have : [...have, line].slice(0, 4)));
 
+    /* A piece of the app that is not there any more, which is not a fault.
+     *
+     * This app is a web view over a site that is published several times on a busy
+     * day, and its files are named after what is in them — so the moment a new
+     * version goes up, the pieces the phone in somebody's hand is still holding
+     * stop existing. The next thing they press asks for one of them, the request
+     * is answered with nothing, and the web view puts up its own "this page
+     * couldn't load", which is a dead end with our app nowhere in it.
+     *
+     * Nothing has broken. The app has simply moved on without them, and the whole
+     * fix is to fetch it again — so this does, rather than showing somebody an
+     * error about a filename.
+     *
+     * Once, and no more: it is written down before the reload, so a genuinely
+     * missing file cannot put the app in a loop of reloading itself. If it happens
+     * again inside a minute, whatever it is is not a stale copy, and it falls
+     * through to being said on the paper like anything else. */
+    const staleCopy = (line: string) =>
+      /chunkloaderror|loading chunk|loading css chunk|importing a module script failed|failed to fetch dynamically imported module/i.test(
+        line,
+      );
+
+    const fetchItAgain = () => {
+      try {
+        const last = Number(sessionStorage.getItem("reloaded") ?? 0);
+        if (Date.now() - last < 60000) return false;
+        sessionStorage.setItem("reloaded", String(Date.now()));
+      } catch {
+        /* No storage: reload anyway. A phone with storage switched off is not a
+           phone that should be left looking at a dead screen. */
+      }
+      window.location.reload();
+      return true;
+    };
+
     const broke = (event: ErrorEvent) => {
+      if (staleCopy(event.message) && fetchItAgain()) return;
       const where = event.filename
         ? ` — ${event.filename.split("/").pop()}:${event.lineno}`
         : "";
@@ -38,6 +74,8 @@ export default function Broke() {
 
     const unkept = (event: PromiseRejectionEvent) => {
       const why = event.reason;
+      const said = why instanceof Error ? `${why.name}: ${why.message}` : String(why ?? "");
+      if (staleCopy(said) && fetchItAgain()) return;
       add(
         typeof why === "string"
           ? why
