@@ -249,6 +249,32 @@ export async function appleSheet(): Promise<
 /* -------------------------------------------------- coming back to the app */
 
 /**
+ * Stop listening, whatever shape the handle arrived in.
+ *
+ * `addListener` is typed as returning a promise of a handle, and on some
+ * platforms and versions it returns the handle itself, there and then. Calling
+ * `.then` on that is `TypeError: e.then is not a function` — thrown from a React
+ * cleanup, which is the worst place for it: React is tearing a tree down, the
+ * throw stops it half torn, and the whole screen goes. In this app that meant
+ * every sheet that closed after doing something — posting, replying, saying you
+ * are coming, reporting — took the screen with it. "The post went live but the
+ * app crashed" is exactly this, and this only.
+ *
+ * `Promise.resolve` takes either: a promise stays one, a plain handle becomes
+ * one. And the whole thing is caught, because a listener that cannot be removed
+ * is not worth a screen.
+ */
+function stopListening(handle: unknown) {
+  try {
+    void Promise.resolve(handle)
+      .then((one) => (one as { remove?: () => void } | null)?.remove?.())
+      .catch(() => {});
+  } catch {
+    /* Nothing to remove, and nothing worth saying about it. */
+  }
+}
+
+/**
  * Reloading after a long time away.
  *
  * A native app does not reload when you come back to it — the WebView keeps the
@@ -301,9 +327,7 @@ export function reloadWhenStale(minutes = 30): () => void {
     window.location.reload();
   });
 
-  return () => {
-    void watching.then((handle) => handle.remove()).catch(() => {});
-  };
+  return () => stopListening(watching);
 }
 
 /**
@@ -338,9 +362,7 @@ export function whenTheKeyboard(
   ];
 
   return () => {
-    for (const one of listening) {
-      void one.then((handle) => handle.remove()).catch(() => {});
-    }
+    for (const one of listening) stopListening(one);
   };
 }
 
