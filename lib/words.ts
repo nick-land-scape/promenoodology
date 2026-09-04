@@ -558,6 +558,10 @@ export const PHRASES: Phrase[] = [
   { key: "door.noAccountThere", en: "There is no account with that address yet. Join us instead — it is one press below.", fr: "Aucun compte à cette adresse. Rejoignez-nous plutôt : c’est le bouton juste en dessous.", where: "app", note: "No longer shown while signing in — saying it there tells anybody with a list of addresses which of them are members. Kept for the joining side, where it is an answer about your own address." },
   { key: "door.alreadyAnAccount", en: "There is already an account here. Sign in instead.", fr: "Un compte existe déjà ici. Connectez-vous plutôt.", where: "app" },
   { key: "door.tooManyCodes", en: "That is a lot of codes in a short time. Give it a minute.", fr: "Beaucoup de codes en peu de temps. Attendez une minute.", where: "app" },
+  { key: "door.byGoingOn", en: "By going on, you agree to", fr: "En continuant, vous acceptez", where: "app", note: "Start of one sentence on the sign-in screen; the two links follow." },
+  { key: "door.theTerms", en: "the terms", fr: "les conditions", where: "app", note: "A link, in the middle of that sentence." },
+  { key: "door.andThe", en: "and", fr: "et", where: "app", note: "Between the two links." },
+  { key: "door.thePrivacyNotice", en: "the privacy notice", fr: "la note de confidentialité", where: "app", note: "The second link, ending the sentence." },
   { key: "door.codeWrong", en: "That code is wrong, or it has been used already. Ask for a new one.", fr: "Ce code est erroné, ou déjà utilisé. Demandez-en un nouveau.", where: "app" },
 
   /* ------------------------------------------- the app: who you are, the form */

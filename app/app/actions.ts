@@ -779,7 +779,12 @@ export async function reportThis(what: {
  * table only ever returns your own rows, because "has this person blocked me" is
  * exactly the question a block exists to stop being asked.
  */
-export async function blockThem(personId: string): Promise<{ ok: boolean; error?: string }> {
+export async function blockThem(
+  personId: string,
+  /* What was on the screen when the block was pressed, so the club is told what
+     the block was about and not only that it happened. */
+  over?: { post?: string; reply?: string },
+): Promise<{ ok: boolean; error?: string }> {
   const me = await whoIsThis();
   if (!me) return { ok: false, error: "You are not signed in any more." };
   if (personId === me.id) return { ok: false, error: "That is you." };
@@ -789,6 +794,23 @@ export async function blockThem(personId: string): Promise<{ ok: boolean; error?
     .from("blocks")
     .upsert({ who: me.id, them: personId }, { onConflict: "who,them" });
   if (error) return { ok: false, error: error.message };
+
+  /* And the club is told. Apple is specific about this (Guideline 1.2): blocking
+     must remove the person from your feed at once — the views do that — *and*
+     notify the developer of the content behind it. So a block writes a report in
+     the same breath, about the post or reply it was pressed on where there was
+     one, and about the person otherwise. It lands where every report lands:
+     /admin/reports and Account → reported on an admin's phone. A block that
+     fails to file its report is still a block; the person is gone from the
+     feed either way, and a missing line in a list is not worth undoing that. */
+  await supabase.from("reports").insert({
+    about_post: over?.post ?? null,
+    about_reply: over?.reply ?? null,
+    about_person: over?.post || over?.reply ? null : personId,
+    by_person: me.id,
+    because: "abuse",
+    said: "Blocked this person.",
+  });
 
   revalidatePath("/app/account");
   return { ok: true };

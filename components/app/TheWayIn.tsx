@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { appleSheet, buzz } from "@/lib/native";
@@ -123,9 +124,18 @@ export default function TheWayIn({ back }: { back: string }) {
       return;
     }
 
-    /* No native sheet — a browser, or Android. The web flow, which comes back to
-       /account/confirm and then in here. */
-    if (sheet.why === "no sheet") {
+    /* No native sheet — a browser, or Android — or a native sheet that failed for
+       a reason that is not somebody pressing cancel. Both take the web flow, which
+       comes back to /account/confirm and then in here.
+     *
+     * The second case is new, and it is what App Review saw on an iPad: the sheet
+     * did not come, and the door printed the plugin's sentence about why in pink.
+     * Whatever the native reason, Apple's own web sign-in is the same account and
+     * the same identity, and it works on every device the app runs on — so a
+     * native failure becomes a web sign-in rather than an error message. The
+     * reason is kept in the console for whoever is looking. */
+    if (sheet.why !== "cancelled") {
+      if (sheet.why !== "no sheet") console.warn("Sign in with Apple, native:", sheet.why);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "apple",
         options: {
@@ -144,7 +154,6 @@ export default function TheWayIn({ back }: { back: string }) {
     }
 
     setBusy("");
-    setTrouble(sheet.why);
   }
 
   async function askForACode() {
@@ -318,6 +327,22 @@ export default function TheWayIn({ back }: { back: string }) {
           </button>
 
           {trouble ? <p className="doorway-trouble">{trouble}</p> : null}
+
+          {/* The terms, agreed by walking through the door.
+           *
+           * Apple asks that anybody signing up or in agrees to terms first, and
+           * that the terms say plainly there is no tolerance for objectionable
+           * content or abusive members (Guideline 1.2). Ours say exactly that —
+           * see lib/legal.ts — and they are one press away from here, opened in the
+           * app rather than in a browser. A checkbox would be a checkbox nobody
+           * reads; a sentence at the point of entry, with the terms themselves
+           * behind it, is the honest version of the same agreement. */}
+          <p className="doorway-terms">
+            {say("door.byGoingOn")}{" "}
+            <Link href="/app/legal/terms">{say("door.theTerms")}</Link>
+            {" "}{say("door.andThe")}{" "}
+            <Link href="/app/legal/privacy">{say("door.thePrivacyNotice")}</Link>.
+          </p>
 
           <div className="doorway-feet">
             <button type="button" onClick={() => { setJoining(!joining); setTrouble(""); }}>

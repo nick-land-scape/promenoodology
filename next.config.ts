@@ -31,9 +31,8 @@ const nextConfig: NextConfig = {
    * anywhere else this is undefined and nothing changes. */
   deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
 
-  experimental: {
-    /*
-     * Everything is rendered per request unless it says it may be cached.
+  /*
+   * Everything is rendered per request unless it says it may be cached.
      *
      * The old model was the other way round and answered by route: a page said
      * `force-dynamic` or `revalidate = 60` at the top, and every read inside it
@@ -46,9 +45,11 @@ const nextConfig: NextConfig = {
      * Under cacheComponents the answer is given where the reading is done: a
      * function that fetches the evenings says `"use cache"` and how long it keeps,
      * and anything touching cookies or the session simply does not. The page needs
-     * no declaration at all, which is why forty-five of them just lost one.
-     */
-    cacheComponents: true,
+   * no declaration at all, which is why forty-five of them just lost one.
+   */
+  cacheComponents: true,
+
+  experimental: {
     /* Five minutes, up from thirty seconds.
      *
      * What this buys is the second and every later visit to a tab: the router

@@ -2980,6 +2980,24 @@ body:has(.app-shell) {
   line-height: 1.4;
 }
 
+/* One sentence at the door, with the terms and the privacy notice behind it.
+   Quiet — it is not a field and not a button — but not fine print: the two links
+   are the real thing, and pressing one opens it in the app. */
+.doorway-terms {
+  margin: 14px 0 0;
+  max-width: 22rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: center;
+}
+
+.doorway-terms a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .doorway-feet {
   display: flex;
   flex-direction: column;
@@ -4577,6 +4595,26 @@ body:has(.app-shell) {
   .waiting-story-words {
     padding-left: 0;
     padding-right: 0;
+  }
+
+  /* The feed reads at the width of a page, not of a screen.
+   *
+   * App Review, on an 11-inch iPad, called the Community tab crowded. Every post
+   * was stretched to the full 1180 points of a landscape iPad: a three-by-two
+   * photograph the size of a poster, a line of text seventy words long, and the
+   * composer's field running the whole way across — which is not crowded so much
+   * as shapeless, and the eye reads shapeless as crowded. A post is a paragraph
+   * with a picture; both have a width they read at. 640 points is that width,
+   * centred, with the tabs above them held to the same column so the switcher
+   * and what it switches are one thing. */
+  .segmented,
+  .feed,
+  .compose,
+  .ideas,
+  .app-column > .app-note {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* And so do people: sixty-four names down the left of a thirteen-inch screen

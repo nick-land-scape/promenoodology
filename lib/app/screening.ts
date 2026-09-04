@@ -99,11 +99,18 @@ export async function readItFirst(
 ): Promise<Verdict> {
   const fine: Verdict = { verdict: "fine", because: "something else", said: "" };
 
-  /* No key, no screening. Deliberately silent: the club can turn this on and off
-     by setting or unsetting one environment variable, and nothing else in the app
-     needs to know which it is. */
-  if (!process.env.ANTHROPIC_API_KEY) return fine;
   if (!words.trim() && pictures.length === 0) return fine;
+
+  /* No key: the words are still read, by a list rather than a model.
+   *
+   * The model is the good version of this and the club turns it on with one
+   * environment variable. Until then — and Apple's Guideline 1.2 asks for "a method
+   * for filtering objectionable content" in the present tense — the plainest
+   * version stands in: a short list of the words that have no place on a feed
+   * about dinner, and a refusal at the point of posting when one of them is in
+   * it. Pictures cannot be read this way and are let through to be reported. It
+   * is a fence, not a reader, and it says so in the list's own name. */
+  if (!process.env.ANTHROPIC_API_KEY) return fence(words);
 
   const client = new Anthropic();
 
@@ -150,4 +157,41 @@ export async function readItFirst(
        service is having a bad morning is the worse failure. */
     return fine;
   }
+}
+
+/* The fence: what a list can catch when there is nothing to read with.
+ *
+ * Kept short and kept to the unambiguous — slurs and the plainest sexual and
+ * violent terms, in the two languages this club writes in. Anything that needs
+ * context to be objectionable is left to reports and to the model, because a list
+ * that reaches for context is a list that stops people saying "breast of lamb".
+ * Matched on whole words, case-insensitively, so "assistant" is not "ass". */
+const FENCE = [
+  // slurs and dehumanising terms
+  "nigger", "nigga", "faggot", "tranny", "retard", "retarded", "kike", "spic", "chink",
+  "nègre", "négro", "pédé", "tarlouze", "bougnoule", "youpin",
+  // the plainest sexual terms
+  "porn", "porno", "cum", "cumshot", "blowjob", "handjob", "dick pic", "tits",
+  "pornographie", "branlette", "fellation", "bite",
+  // violence aimed at a person
+  "kill yourself", "kys", "rape", "raping", "rapist",
+  "suicide-toi", "viol", "violeur",
+];
+
+const FENCE_TEST = new RegExp(
+  `(^|[^\\p{L}\\p{N}])(${FENCE.map((one) => one.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})(?=$|[^\\p{L}\\p{N}])`,
+  "iu",
+);
+
+function fence(words: string): Verdict {
+  const hit = FENCE_TEST.exec(words);
+  if (!hit) return { verdict: "fine", because: "something else", said: "" };
+  const word = hit[2].toLowerCase();
+  const sexual = /porn|cum|blow|hand|dick|tits|branl|fella|bite/.test(word);
+  const violent = /kill|kys|rape|rapi|suicide|viol/.test(word);
+  return {
+    verdict: "no",
+    because: sexual ? "sexual" : violent ? "attacking somebody" : "attacking somebody",
+    said: "That has a word in it that has no place here. Say it another way.",
+  };
 }

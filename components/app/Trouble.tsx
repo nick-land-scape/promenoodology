@@ -77,7 +77,10 @@ export default function Trouble({
   function block() {
     setTrouble("");
     start(async () => {
-      const answer = await blockThem(whoId);
+      const answer = await blockThem(
+        whoId,
+        "post" in about ? { post: about.post } : { reply: about.reply },
+      );
       if (!answer.ok) {
         setTrouble(answer.error ?? say("join.didNotGoThrough"));
         return;
